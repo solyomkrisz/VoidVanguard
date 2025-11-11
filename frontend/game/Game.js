@@ -1,5 +1,9 @@
-export default class Game {
+import WebGLCanvas from "./WebGLCanvas.js";
+
+export default class Game extends WebGLCanvas {
   constructor() {
+    super();
+
     this.running = false;
 
     this.tickrate = 10;
@@ -41,13 +45,26 @@ export default class Game {
 
     while (this.unprocessed >= this.timestep) {
       this.ticks++;
+      this.tick();
       this.unprocessed -= this.timestep;
     }
 
     this.alpha = this.unprocessed / this.timestep;
 
     this.frames++;
+    this.render();
 
     this.frameId = window.requestAnimationFrame(this.update);
+  }
+
+  tick() {}
+
+  render() {
+    const gl = this.gl;
+
+    gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    this.clearCanvas();
+
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 }
