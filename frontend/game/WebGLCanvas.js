@@ -7,6 +7,7 @@ export default class WebGLCanvas extends Canvas {
 
     this.gl = null;
     this.glProgram = null;
+    this.cameraMatrixUniformLocation = -1;
   }
 
   clearCanvas() {

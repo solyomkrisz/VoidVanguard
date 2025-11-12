@@ -16,8 +16,11 @@ export default class Block {
 
     in vec2 vertexPosition;
 
+    uniform mat3 cameraMatrix;
+
     void main() {
-      gl_Position = vec4(vertexPosition, 0.0, 1.0);
+      vec3 position = cameraMatrix * vec3(vertexPosition, 1.0);
+      gl_Position = vec4(position, 1.0);
     }
   `;
 
@@ -53,5 +56,7 @@ export default class Block {
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.vertexAttribPointer(vertexAttrLoc, 2, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    game.cameraMatrixUniformLocation = gl.getUniformLocation(prog, "cameraMatrix");
   }
 }

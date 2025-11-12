@@ -66,3 +66,16 @@ export function set(target, m00, m10, m20, m01, m11, m21, m02, m12, m22) {
 
   return target;
 }
+
+// prettier-ignore
+export function cam(target, aspectRatio, scale) {
+  let scaleX = scale, scaleY = scale;
+
+  if (aspectRatio >= 1) scaleX = scale / aspectRatio;
+  else scaleY = scale * aspectRatio;
+
+  target[0] = scaleX;
+  target[4] = scaleY;
+
+  return target;
+}
