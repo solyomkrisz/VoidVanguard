@@ -17,6 +17,7 @@ export default class Game extends WebGLCanvas {
     this.last = 0;
     this.dt = 0;
     this.unprocessed = 0;
+    this.maxUpdates = 5;
 
     this.tileSize = 15;
     this.scale = 1 / this.tileSize;
@@ -47,6 +48,11 @@ export default class Game extends WebGLCanvas {
     this.last = this.now;
 
     this.unprocessed += this.dt;
+
+    this.unprocessed = Math.min(
+      this.unprocessed,
+      this.maxUpdates * this.timestep
+    );
 
     while (this.unprocessed >= this.timestep) {
       this.ticks++;
