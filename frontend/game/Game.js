@@ -1,4 +1,5 @@
 import WebGLCanvas from "./WebGLCanvas.js";
+import * as mat3 from "../common/mat3.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -16,6 +17,10 @@ export default class Game extends WebGLCanvas {
     this.last = 0;
     this.dt = 0;
     this.unprocessed = 0;
+
+    this.tileSize = 15;
+    this.scale = 1 / this.tileSize;
+    this.cameraMatrix = mat3.identity();
 
     this.frameId = 0;
 
@@ -59,11 +64,15 @@ export default class Game extends WebGLCanvas {
 
   tick() {}
 
+  // prettier-ignore
   render() {
     const gl = this.gl;
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.clearCanvas();
+
+    mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale);
+    gl.uniformMatrix3fv(this.cameraMatrixUniformLocation, false, this.cameraMatrix);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
