@@ -1,4 +1,5 @@
 import WebGLCanvas from "./WebGLCanvas.js";
+import DebugMenu from "./DebugMenu.js";
 import * as mat3 from "../common/mat3.js";
 
 export default class Game extends WebGLCanvas {
@@ -24,6 +25,8 @@ export default class Game extends WebGLCanvas {
     this.cameraMatrix = mat3.identity();
 
     this.frameId = 0;
+
+    this.debugMenu = null;
 
     this.update = this.update.bind(this);
   }
@@ -81,5 +84,42 @@ export default class Game extends WebGLCanvas {
     gl.uniformMatrix3fv(this.cameraMatrixUniformLocation, false, this.cameraMatrix);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  /**
+   * @param {DebugMenu} debugMenu
+   */
+  setDebugMenu(debugMenu) {
+    if (!(debugMenu instanceof DebugMenu)) {
+      throw new Error(
+        "GAME-setDebugMenu: The given argument is not an instance of the DebugMenu class."
+      );
+    }
+
+    this.debugMenu = debugMenu;
+  }
+
+  startDebugging() {
+    if (!this.debugMenu || !(this.debugMenu instanceof DebugMenu)) {
+      console.warn(
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+      );
+      return;
+    }
+
+    this.debugMenu.show();
+    this.debugMenu.startDebugUpdating();
+  }
+
+  stopDebugging() {
+    if (!this.debugMenu || !(this.debugMenu instanceof DebugMenu)) {
+      console.warn(
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+      );
+      return;
+    }
+
+    this.debugMenu.hide();
+    this.debugMenu.stopDebugUpdating();
   }
 }
