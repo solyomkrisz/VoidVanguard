@@ -1,5 +1,6 @@
 import WebGLCanvas from "./WebGLCanvas.js";
 import * as mat3 from "../common/mat3.js";
+import * as MATRIX from "../common/common.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -36,17 +37,14 @@ export default class Game extends WebGLCanvas {
       );
     }
 
-    if (!this.glHandles) {
-      throw new Error(
-        "GAME-start: Couldn't start game: No WebGL program handles are provided."
-      );
-    }
-
     if (this.running) return;
-    this.running = true;
+
+    this.initInstancing(this);
 
     this.last = window.performance.now();
     this.frameId = window.requestAnimationFrame(this.update);
+
+    this.running = true;
   }
 
   stop() {
@@ -83,14 +81,21 @@ export default class Game extends WebGLCanvas {
   // prettier-ignore
   render() {
     const gl = this.gl;
-    const glHandles = this.glHandles;
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.clearCanvas();
 
-    mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale);
-    gl.uniformMatrix3fv(glHandles.uniform.cameraMatrix, false, this.cameraMatrix);
+    this.dataCollector.length = 0;
 
     this.objects.forEach((object) => object.render(this));
+
+    const instanceCount = this.updateInstanceBuffer();
+
+    if (instanceCount < 0) return;
+
+    mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale);
+    gl.uniformMatrix3fv(this.uniform.cameraMatrix, false, this.cameraMatrix);
+
+    this.draw(instanceCount);
   }
 }

@@ -1,5 +1,6 @@
 import Canvas from "./Canvas.js";
 import WebGL from "./WebGL.js";
+import * as MATRIX from "../common/common.js";
 
 export default class WebGLCanvas extends Canvas {
   constructor() {
@@ -7,7 +8,27 @@ export default class WebGLCanvas extends Canvas {
 
     this.gl = null;
     this.glProgram = null;
-    this.glHandles = {};
+    this.uniform = {};
+    this.attribute = {};
+    this.vao = {};
+    this.dataCollector = [];
+    this.instanceCapacity = 128;
+    this.floatPerInstance = 8;
+    this.instanceData = new MATRIX.DATA_STRUCTURE(
+      this.instanceCapacity * this.floatPerInstance
+    );
+  }
+
+  initInstancing() {
+    console.warn("initInstancing() must be implemented if needed!");
+  }
+
+  updateInstanceBuffer() {
+    console.warn("updateInstanceBuffer() must be implemented if needed!");
+  }
+
+  draw() {
+    console.warn("draw() must be implemented!");
   }
 
   clearCanvas() {

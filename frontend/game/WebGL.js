@@ -117,4 +117,26 @@ export default class WebGL {
 
     return buffer;
   }
+
+  // prettier-ignore
+  static SETUP_INSTANCED_ATTRIBUTE(gl, attributeLocation, size, type, normalized, stride, offset, divisor) {
+    WebGL.THROW_NO_GL_ERROR(gl, "WEBGL-setupInstancedAttribute");
+
+    gl.enableVertexAttribArray(attributeLocation);
+    gl.vertexAttribPointer(attributeLocation, size, type, normalized, stride, offset);
+    gl.vertexAttribDivisor(attributeLocation, divisor);
+  }
+
+  static GET_ATTRIB_LOCATIONS(gl, prog, vertexShaderSource, storage) {
+    WebGL.THROW_NO_GL_ERROR(gl, "WEBGL-getAttribLocations");
+
+    vertexShaderSource
+      .split(";")
+      .map((i) => i.replace(/\n/g, "").trim().replace(/\s+/g, " "))
+      .filter((i) => i.startsWith("in"))
+      .map((i) => i.split(" ")[2])
+      .forEach((i) => (storage[i] = gl.getAttribLocation(prog, i)));
+
+    return storage;
+  }
 }

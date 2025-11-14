@@ -9,19 +9,12 @@ export default class Rigidbody {
   }
 
   render(game) {
-    const gl = game.gl;
-    const glHandles = game.glHandles;
-    const uniform = glHandles.uniform;
-
     for (const obj of this.model) {
-      gl.uniform2f(uniform.localPosition, ...obj.localPosition);
-      gl.uniform2f(uniform.parentPosition, ...this.position);
-      gl.uniformMatrix2fv(
-        uniform.rotationMatrix,
-        false,
-        mat2.fromRotation(mat2.identity(), this.rotation)
+      game.dataCollector.push(
+        ...obj.localPosition,
+        ...this.position,
+        ...mat2.fromRotation(mat2.identity(), this.rotation)
       );
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
   }
 
