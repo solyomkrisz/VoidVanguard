@@ -1,4 +1,6 @@
+import * as vec2 from "../common/vec2.js";
 import WebGL from "./WebGL.js";
+import * as MATRIX from "../common/common.js";
 
 export default class Block {
   // prettier-ignore
@@ -15,11 +17,14 @@ export default class Block {
     precision mediump float;
 
     in vec2 vertexPosition;
+    in vec2 localPosition;
+    in vec2 parentPosition;
+    in mat2 rotationMatrix;
 
     uniform mat3 cameraMatrix;
 
     void main() {
-      vec3 position = cameraMatrix * vec3(vertexPosition, 1.0);
+      vec3 position = cameraMatrix * vec3((rotationMatrix * (localPosition + vertexPosition)) + parentPosition, 1.0);
       gl_Position = vec4(position, 1.0);
     }
   `;
@@ -45,18 +50,64 @@ export default class Block {
   // prettier-ignore
   static INIT_RENDER(game) {
     const gl = game.gl;
-    const prog = game.glProgram;
 
     WebGL.THROW_NO_GL_ERROR(gl, "BLOCK-initRender");
 
-    const vertexBuffer = WebGL.CREATE_AND_LOAD_BUFFER(gl, gl.ARRAY_BUFFER, Block.VERTICES, gl.STATIC_DRAW);
-    const vertexAttrLoc = gl.getAttribLocation(prog, "vertexPosition");
-    gl.enableVertexAttribArray(vertexAttrLoc);
+    const prog = game.glProgram;
+    const floatPerInstance = 8;
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.vertexAttribPointer(vertexAttrLoc, 2, gl.FLOAT, false, 0, 0);
+    const a = game.attribute;
+    game.vao._1 = gl.createVertexArray();
+    gl.bindVertexArray(game.vao._1);
+
+    WebGL.GET_ATTRIB_LOCATIONS(gl, prog, Block.VERTEX_SHADER_SOURCE, game.attribute);
+
+    WebGL.CREATE_AND_LOAD_BUFFER(gl, gl.ARRAY_BUFFER, Block.VERTICES, gl.STATIC_DRAW);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.vertex, 2, gl.FLOAT, false, 0, 0, 0);
+
+    game.instanceBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, game.instanceBuffer);
+    game.uniform.cameraMatrix = gl.getUniformLocation(prog, "cameraMatrix");
+
+    const stride = Float32Array.BYTES_PER_ELEMENT * floatPerInstance;
+
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.localPosition, 2, gl.FLOAT, false, stride, 0, 1);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.parentPosition, 2, gl.FLOAT, false, stride, 8, 1);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.rotationMatrix, 2, gl.FLOAT, false, stride, 16, 1);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.rotationMatrix + 1, 2, gl.FLOAT, false, stride, 24, 1);
+
+    game.draw = function(instanceCount) {
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, instanceCount);
+    }
+
+    game.initInstancing = function () {
+      const gl = this.gl;
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer);
+      gl.bindVertexArray(this.vao._1);
+    }
+
+    game.updateInstanceBuffer = function () {
+      const gl = this.gl;
+
+      const instanceCount = this.dataCollector.length / this.floatPerInstance;
+      if (instanceCount === 0) return -1;
+
+      if (instanceCount > this.instanceCapacity) {
+        this.instanceCapacity = instanceCount * 2;
+        this.instanceData = new MATRIX.DATA_STRUCTURE(this.instanceCapacity * this.floatPerInstance);
+      }
+
+      this.instanceData.set(this.dataCollector, 0);
+      gl.bufferData(gl.ARRAY_BUFFER, this.instanceData.subarray(0, instanceCount * this.floatPerInstance), gl.DYNAMIC_DRAW);
+
+      return instanceCount;
+    }
+
+    gl.bindVertexArray(null);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  }
 
-    game.cameraMatrixUniformLocation = gl.getUniformLocation(prog, "cameraMatrix");
+  constructor(x, y) {
+    this.localPosition = vec2.fromValues(x, y);
   }
 }

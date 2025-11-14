@@ -1,6 +1,7 @@
 import WebGLCanvas from "./WebGLCanvas.js";
 import DebugMenu from "./DebugMenu.js";
 import * as mat3 from "../common/mat3.js";
+import * as MATRIX from "../common/common.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -24,6 +25,8 @@ export default class Game extends WebGLCanvas {
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
 
+    this.objects = [];
+
     this.frameId = 0;
 
     this.debugMenu = null;
@@ -32,11 +35,20 @@ export default class Game extends WebGLCanvas {
   }
 
   start() {
+    if (!this.gl) {
+      throw new Error(
+        "GAME-start: Couldn't start game: WebGL hasn't been initalized!"
+      );
+    }
+
     if (this.running) return;
-    this.running = true;
+
+    this.initInstancing(this);
 
     this.last = window.performance.now();
     this.frameId = window.requestAnimationFrame(this.update);
+
+    this.running = true;
   }
 
   stop() {
@@ -71,7 +83,9 @@ export default class Game extends WebGLCanvas {
     this.frameId = window.requestAnimationFrame(this.update);
   }
 
-  tick() {}
+  tick() {
+    this.objects.forEach((object) => object.update(this));
+  }
 
   // prettier-ignore
   render() {
@@ -80,10 +94,18 @@ export default class Game extends WebGLCanvas {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.clearCanvas();
 
-    mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale);
-    gl.uniformMatrix3fv(this.cameraMatrixUniformLocation, false, this.cameraMatrix);
+    this.dataCollector.length = 0;
 
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    this.objects.forEach((object) => object.render(this));
+
+    const instanceCount = this.updateInstanceBuffer();
+
+    if (instanceCount < 0) return;
+
+    mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale);
+    gl.uniformMatrix3fv(this.uniform.cameraMatrix, false, this.cameraMatrix);
+
+    this.draw(instanceCount);
   }
 
   /**
