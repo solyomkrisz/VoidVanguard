@@ -22,12 +22,26 @@ export default class Game extends WebGLCanvas {
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
 
+    this.objects = [];
+
     this.frameId = 0;
 
     this.update = this.update.bind(this);
   }
 
   start() {
+    if (!this.gl) {
+      throw new Error(
+        "GAME-start: Couldn't start game: WebGL hasn't been initalized!"
+      );
+    }
+
+    if (!this.glHandles) {
+      throw new Error(
+        "GAME-start: Couldn't start game: No WebGL program handles are provided."
+      );
+    }
+
     if (this.running) return;
     this.running = true;
 
@@ -62,18 +76,21 @@ export default class Game extends WebGLCanvas {
     this.frameId = window.requestAnimationFrame(this.update);
   }
 
-  tick() {}
+  tick() {
+    this.objects.forEach((object) => object.update(this));
+  }
 
   // prettier-ignore
   render() {
     const gl = this.gl;
+    const glHandles = this.glHandles;
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.clearCanvas();
 
     mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale);
-    gl.uniformMatrix3fv(this.cameraMatrixUniformLocation, false, this.cameraMatrix);
+    gl.uniformMatrix3fv(glHandles.uniform.cameraMatrix, false, this.cameraMatrix);
 
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    this.objects.forEach((object) => object.render(this));
   }
 }

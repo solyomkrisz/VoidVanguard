@@ -1,3 +1,4 @@
+import * as vec2 from "../common/vec2.js";
 import WebGL from "./WebGL.js";
 
 export default class Block {
@@ -16,10 +17,13 @@ export default class Block {
 
     in vec2 vertexPosition;
 
+    uniform vec2 localPosition;
+    uniform vec2 parentPosition;
+    uniform mat2 rotationMatrix;
     uniform mat3 cameraMatrix;
 
     void main() {
-      vec3 position = cameraMatrix * vec3(vertexPosition, 1.0);
+      vec3 position = cameraMatrix * vec3((rotationMatrix * (localPosition + vertexPosition)) + parentPosition, 1.0);
       gl_Position = vec4(position, 1.0);
     }
   `;
@@ -46,6 +50,11 @@ export default class Block {
   static INIT_RENDER(game) {
     const gl = game.gl;
     const prog = game.glProgram;
+    const glHandles = {
+      program: prog,
+      uniform: {},
+      attribute: {}
+    };
 
     WebGL.THROW_NO_GL_ERROR(gl, "BLOCK-initRender");
 
@@ -57,6 +66,15 @@ export default class Block {
     gl.vertexAttribPointer(vertexAttrLoc, 2, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    game.cameraMatrixUniformLocation = gl.getUniformLocation(prog, "cameraMatrix");
+    glHandles.uniform.localPosition = gl.getUniformLocation(prog, "localPosition");
+    glHandles.uniform.parentPosition = gl.getUniformLocation(prog, "parentPosition");
+    glHandles.uniform.rotationMatrix = gl.getUniformLocation(prog, "rotationMatrix");
+    glHandles.uniform.cameraMatrix = gl.getUniformLocation(prog, "cameraMatrix");
+
+    game.glHandles = glHandles;
+  }
+
+  constructor(x, y) {
+    this.localPosition = vec2.fromValues(x, y);
   }
 }
