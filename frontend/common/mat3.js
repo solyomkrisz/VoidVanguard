@@ -68,14 +68,19 @@ export function set(target, m00, m10, m20, m01, m11, m21, m02, m12, m22) {
 }
 
 // prettier-ignore
-export function cam(target, aspectRatio, scale) {
+export function cam(target, aspectRatio, scale, player) {
   let scaleX = scale, scaleY = scale;
 
   if (aspectRatio >= 1) scaleX = scale / aspectRatio;
   else scaleY = scale * aspectRatio;
 
+  const tx = -(player.position[0] * scaleX);
+  const ty = -(player.position[1] * scaleY);
+
   target[0] = scaleX;
   target[4] = scaleY;
+  target[6] = tx;
+  target[7] = ty;
 
   return target;
 }
