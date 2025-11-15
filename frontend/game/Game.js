@@ -91,7 +91,7 @@ export default class Game extends WebGLCanvas {
   }
 
   tick() {
-    const dt = 1000 / this.timestep;
+    const dt = this.timestep / 1000;
 
     this.player.save();
 

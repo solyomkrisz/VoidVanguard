@@ -13,7 +13,7 @@ export default class Player extends Spaceship {
   ];
 
   constructor() {
-    super({ model: Player.MODEL, x: 0, y: 0, vx: 0.1, vy: 0.1 });
+    super({ model: Player.MODEL, x: 0, y: 0, vx: 5, vy: 5 });
   }
 
   // prettier-ignore
@@ -23,10 +23,10 @@ export default class Player extends Spaceship {
     vec2.mul(b.vec2_1, this.velocity, this.forward);
 
     if (activeControls.has(Keyboard.KeyA)) {
-      this.rotation += 0.05 * dt;
+      this.rotation += 2.5 * dt;
     }
     if (activeControls.has(Keyboard.KeyD)) {
-      this.rotation -= 0.05 * dt;
+      this.rotation -= 2.5 * dt;
     }
 
     const rotationMatrix = mat2.fromRotation(b.mat2_1, this.rotation - this.previousRotation);
@@ -37,7 +37,7 @@ export default class Player extends Spaceship {
       vec2.addScaled(this.position, this.position, b.vec2_1, dt);
     }
     if (activeControls.has(Keyboard.KeyS)) {
-      vec2.scale(d, d, -1);
+      vec2.scale(b.vec2_1, b.vec2_1, -1);
       vec2.addScaled(this.position, this.position, b.vec2_1, dt);
     }
   }
