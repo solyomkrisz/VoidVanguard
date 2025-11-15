@@ -1,11 +1,14 @@
 import WebGLCanvas from "./WebGLCanvas.js";
 import DebugMenu from "./DebugMenu.js";
+import Buffer from "./Buffer.js";
 import * as mat3 from "../common/mat3.js";
 import Player from "./Player.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
     super();
+
+    this.buffer = new Buffer();
 
     this.running = false;
 

@@ -16,11 +16,13 @@ export default class Rigidbody {
   }
 
   render(game) {
+    const b = game.buffer;
+
     for (const obj of this.model) {
       game.dataCollector.push(
         ...obj.localPosition,
         ...this.position,
-        ...mat2.fromRotation(mat2.identity(), this.rotation)
+        ...mat2.fromRotation(b.mat2_1, this.rotation)
       );
     }
   }
