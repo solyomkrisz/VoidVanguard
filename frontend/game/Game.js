@@ -12,7 +12,7 @@ export default class Game extends WebGLCanvas {
 
     this.running = false;
 
-    this.tickrate = 10;
+    this.tickrate = 60;
     this.ticks = 0;
     this.frames = 0;
     this.timestep = 1000 / this.tickrate;
@@ -96,7 +96,10 @@ export default class Game extends WebGLCanvas {
     this.player.save();
 
     this.player.update(this, dt);
-    this.objects.forEach((object) => object.update(this, dt));
+    this.objects.forEach((object) => {
+      object.save();
+      object.update(this, dt);
+    });
   }
 
   // prettier-ignore
@@ -115,7 +118,7 @@ export default class Game extends WebGLCanvas {
 
     if (instanceCount < 0) return;
 
-    mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale, this.player);
+    mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale, this.alpha, this.player);
     gl.uniformMatrix3fv(this.uniform.cameraMatrix, false, this.cameraMatrix);
 
     this.draw(instanceCount);
