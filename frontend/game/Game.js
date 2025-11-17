@@ -3,6 +3,7 @@ import DebugMenu from "./DebugMenu.js";
 import Buffer from "./Buffer.js";
 import * as mat3 from "../common/mat3.js";
 import Player from "./Player.js";
+import TextureManager from "./TextureManager.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -34,6 +35,7 @@ export default class Game extends WebGLCanvas {
     this.frameId = 0;
 
     this.debugMenu = null;
+    this.textureManager = null;
 
     this.update = this.update.bind(this);
   }
@@ -50,12 +52,27 @@ export default class Game extends WebGLCanvas {
 
     if (this.running) return;
 
-    this.initInstancing(this);
+    const textureManager = this.textureManager;
 
-    this.last = window.performance.now();
-    this.frameId = window.requestAnimationFrame(this.update);
+    // prettier-ignore
+    Promise.all(textureManager.promises).then(
+      () => {
+        for (const { name, slot, offsetX, offsetY } of textureManager.textureCoordinateQueue) {
+          textureManager.addTextureCoordinates(name, slot, offsetX, offsetY);
+        }
 
-    this.running = true;
+        textureManager.loadFromActiveSlot();
+
+        this.initInstancing(this);
+
+        this.last = window.performance.now();
+        this.frameId = window.requestAnimationFrame(this.update);
+        this.running = true;
+      },
+      (error) => {
+        throw new Error("Failed to load all textures: " + error);
+      }
+    );
   }
 
   stop() {
@@ -78,21 +95,19 @@ export default class Game extends WebGLCanvas {
 
     while (this.unprocessed >= this.timestep) {
       this.ticks++;
-      this.tick();
+      this.tick(this.timestep / 1000);
       this.unprocessed -= this.timestep;
     }
 
     this.alpha = this.unprocessed / this.timestep;
 
     this.frames++;
-    this.render();
+    this.render(this.dt);
 
     this.frameId = window.requestAnimationFrame(this.update);
   }
 
-  tick() {
-    const dt = this.timestep / 1000;
-
+  tick(dt) {
     this.player.save();
 
     this.player.update(this, dt);
@@ -103,13 +118,15 @@ export default class Game extends WebGLCanvas {
   }
 
   // prettier-ignore
-  render() {
+  render(dt) {
     const gl = this.gl;
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.clearCanvas();
 
     this.dataCollector.length = 0;
+
+    this.textureManager.updateSprites(dt);
 
     this.objects.forEach((object) => object.render(this));
     this.player.render(this);
@@ -126,6 +143,20 @@ export default class Game extends WebGLCanvas {
 
   createPlayer() {
     this.player = new Player();
+  }
+
+  /**
+   * @param {TextureManager} textureManager
+   */
+  addTextureManager(textureManager) {
+    if (!(textureManager instanceof TextureManager)) {
+      console.warn(
+        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!"
+      );
+      return;
+    }
+
+    this.textureManager = textureManager;
   }
 
   /**
