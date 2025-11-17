@@ -63,7 +63,7 @@ export default class Block {
     WebGL.GET_ATTRIB_LOCATIONS(gl, prog, Block.VERTEX_SHADER_SOURCE, game.attribute);
 
     WebGL.CREATE_AND_LOAD_BUFFER(gl, gl.ARRAY_BUFFER, Block.VERTICES, gl.STATIC_DRAW);
-    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.vertex, 2, gl.FLOAT, false, 0, 0, 0);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.vertexPosition, 2, gl.FLOAT, false, 0, 0, 0);
 
     game.instanceBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, game.instanceBuffer);

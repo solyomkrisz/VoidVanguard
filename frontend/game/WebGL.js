@@ -120,6 +120,10 @@ export default class WebGL {
 
   // prettier-ignore
   static SETUP_INSTANCED_ATTRIBUTE(gl, attributeLocation, size, type, normalized, stride, offset, divisor) {
+    if (!Number.isInteger(attributeLocation) || attributeLocation < 0) {
+      throw new Error("WEBGL-setupInstancedAttribute: The provided attribute location is not valid!");
+    }
+
     WebGL.THROW_NO_GL_ERROR(gl, "WEBGL-setupInstancedAttribute");
 
     gl.enableVertexAttribArray(attributeLocation);
