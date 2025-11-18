@@ -3,13 +3,14 @@ import Spaceship from "./Spaceship.js";
 import Block from "./Block.js";
 import * as vec2 from "../common/vec2.js";
 import * as mat2 from "../common/mat2.js";
+import { TextureID, SpriteID } from "./texture/Texture.js";
 
 export default class Player extends Spaceship {
   static MODEL = [
-    new Block(0, 0),
-    new Block(-1, 0),
-    new Block(1, 0),
-    new Block(0, 1),
+    new Block(0, 0, SpriteID.TEST),
+    new Block(-1, 0, SpriteID.TEST),
+    new Block(1, 0, SpriteID.TEST),
+    new Block(0, 1, SpriteID.TEST),
   ];
 
   constructor() {

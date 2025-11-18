@@ -25,10 +25,18 @@ export default class Rigidbody {
     const b = game.buffer;
 
     for (const obj of this.model) {
+      const sprite = game.textureManager.sprites[obj.spriteId];
+      const [u0, v0, u1, v1] = game.textureManager.textureCoordinates[sprite.getCurrentTexture()].coordinates;
+
+      vec2.set(b.vec2_2, u0, v0);
+      vec2.set(b.vec2_3, u1 - u0, v1 - v0);
+
       game.dataCollector.push(
         ...obj.localPosition,
         ...vec2.lerp(b.vec2_1, this.previousPosition, this.position, game.alpha),
-        ...mat2.fromRotation(b.mat2_1, LERP(this.previousRotation, this.rotation, game.alpha))
+        ...mat2.fromRotation(b.mat2_1, LERP(this.previousRotation, this.rotation, game.alpha)),
+        ...b.vec2_2,
+        ...b.vec2_3,
       );
     }
   }
