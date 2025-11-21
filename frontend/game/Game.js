@@ -31,6 +31,8 @@ export default class Game extends WebGLCanvas {
 
     this.player = null;
     this.objects = [];
+    this.enemies = [];
+    this.projectiles = [];
 
     this.frameId = 0;
 
@@ -115,6 +117,14 @@ export default class Game extends WebGLCanvas {
       object.save();
       object.update(this, dt);
     });
+    this.enemies.forEach((enemy) => {
+      enemy.save();
+      enemy.update(this, dt);
+    });
+    this.projectiles.forEach((projectile) => {
+      projectile.save();
+      projectile.update(this, dt);
+    });
   }
 
   // prettier-ignore
@@ -129,6 +139,8 @@ export default class Game extends WebGLCanvas {
     this.textureManager.updateSprites(dt);
 
     this.objects.forEach((object) => object.render(this));
+    this.enemies.forEach((enemy) => enemy.render(this));
+    this.projectiles.forEach((projectile) => projectile.render(this));
     this.player.render(this);
 
     const instanceCount = this.updateInstanceBuffer();
