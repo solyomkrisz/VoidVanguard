@@ -6,3 +6,8 @@ export const EPSILON = 0.01;
 export function LERP(a, b, alpha) {
   return a + (b - a) * alpha;
 }
+
+export function getAngleDiff(a, b) {
+  const diff = a - b;
+  return Math.atan2(Math.sin(diff), Math.cos(diff));
+}

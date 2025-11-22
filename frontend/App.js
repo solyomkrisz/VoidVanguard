@@ -6,6 +6,7 @@ import Keyboard from "./game/Keyboard.js";
 import TextureManager from "./game/TextureManager.js";
 import Sprite from "./game/Sprite.js";
 import { TextureID, SpriteID } from "./game/texture/Texture.js";
+import Enemy from "./game/Enemy.js";
 
 const game = new Game();
 game.createCanvas();
@@ -42,16 +43,8 @@ const MODEL = [
   new Block(0, 1, SpriteID.TEST)
 ];
 
-game.objects.push(
-  new Rigidbody({
-    model: MODEL,
-    x: 3,
-    y: 3,
-  })
-);
-
-game.objects.push(
-  new Rigidbody({
+game.enemies.push(
+  new Enemy({
     model: MODEL,
     x: 5,
     y: 5,
@@ -81,6 +74,17 @@ debug.bindSource(
   "playerRotation",
   "playerRotation",
   (p) => (p.src.playerRotation = game.player.rotation)
+);
+
+debug.addElement("P XY");
+debug.bindSource(
+  "P XY",
+  "playerPosition",
+  (p) =>
+    (p.src.playerPosition = [
+      p.src.player.position[0].toFixed(4),
+      p.src.player.position[1].toFixed(4),
+    ])
 );
 
 game.setDebugMenu(debug);
