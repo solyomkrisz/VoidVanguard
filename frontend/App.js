@@ -1,12 +1,13 @@
 import Game from "./game/Game.js";
 import Block from "./game/Block.js";
 import Rigidbody from "./game/Rigidbody.js";
-import DebugMenu from "./game/DebugMenu.js";
+import DebugPanel from "./game/DebugPanel.js";
 import Keyboard from "./game/Keyboard.js";
 import TextureManager from "./game/TextureManager.js";
 import Sprite from "./game/Sprite.js";
 import { TextureID, SpriteID } from "./game/texture/Texture.js";
 import Enemy from "./game/Enemy.js";
+import DebugOverlay from "./game/DebugOverlay.js";
 
 const game = new Game();
 game.createCanvas();
@@ -43,11 +44,11 @@ const MODEL = [
   new Block(0, 1, SpriteID.TEST)
 ];
 
-game.enemies.push(
+game.enemies.add(
   new Enemy({
     model: MODEL,
-    x: 5,
-    y: 5,
+    x: 10,
+    y: 10,
   })
 );
 
@@ -60,7 +61,11 @@ keyboard.observeKey(Keyboard.KeyD);
 keyboard.observeKey(Keyboard.Space);
 keyboard.enableListening();
 
-const debug = new DebugMenu();
+const debugOverlay = new DebugOverlay();
+game.setDebugOverlay(debugOverlay);
+debugOverlay.init();
+
+const debug = new DebugPanel();
 debug.setSource(game);
 
 debug.addElement("frames");
@@ -87,5 +92,5 @@ debug.bindSource(
     ])
 );
 
-game.setDebugMenu(debug);
+game.setDebugPanel(debug);
 game.startDebugging();

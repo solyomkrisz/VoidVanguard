@@ -35,7 +35,7 @@ export function copy(target, source) {
 }
 
 export function fromValues(x, y) {
-  return new Float32Array([x, y]);
+  return new MATRIX.DATA_STRUCTURE([x, y]);
 }
 
 export function scale(target, source, s) {
@@ -175,6 +175,14 @@ export function round(target) {
 
   target[0] = Math.round(x);
   target[1] = Math.round(y);
+
+  return target;
+}
+
+export function toVec3(target, source) {
+  target[0] = source[0];
+  target[1] = source[1];
+  target[2] = 1;
 
   return target;
 }

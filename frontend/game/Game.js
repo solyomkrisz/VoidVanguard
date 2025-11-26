@@ -1,9 +1,13 @@
 import WebGLCanvas from "./WebGLCanvas.js";
-import DebugMenu from "./DebugMenu.js";
+import DebugPanel from "./DebugPanel.js";
 import Buffer from "./Buffer.js";
 import * as mat3 from "../common/mat3.js";
 import Player from "./Player.js";
 import TextureManager from "./TextureManager.js";
+import Grid from "./Grid.js";
+import DebugOverlay from "./DebugOverlay.js";
+import CollisionIDManager from "./CollisionIDManager.js";
+import ObjectCollection from "./ObjectCollection.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -13,7 +17,7 @@ export default class Game extends WebGLCanvas {
 
     this.running = false;
 
-    this.tickrate = 60;
+    this.tickrate = 10;
     this.ticks = 0;
     this.frames = 0;
     this.timestep = 1000 / this.tickrate;
@@ -25,18 +29,22 @@ export default class Game extends WebGLCanvas {
     this.unprocessed = 0;
     this.maxUpdates = 5;
 
+    this.idManager = new CollisionIDManager();
+    this.grid = new Grid(10);
+    this.objects = new ObjectCollection(this);
+
     this.tileSize = 15;
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
 
     this.player = null;
-    this.objects = [];
-    this.enemies = [];
-    this.projectiles = [];
+    this.enemies = new ObjectCollection(this);
+    this.projectiles = new ObjectCollection(this);
 
     this.frameId = 0;
 
-    this.debugMenu = null;
+    this.debugPanel = null;
+    this.debugOverlay = null;
     this.textureManager = null;
 
     this.update = this.update.bind(this);
@@ -113,22 +121,20 @@ export default class Game extends WebGLCanvas {
     this.player.save();
 
     this.player.update(this, dt);
-    this.objects.forEach((object) => {
-      object.save();
-      object.update(this, dt);
-    });
-    this.enemies.forEach((enemy) => {
-      enemy.save();
-      enemy.update(this, dt);
-    });
-    this.projectiles.forEach((projectile) => {
-      projectile.save();
-      projectile.update(this, dt);
-    });
+    this.enemies.update(dt);
+    this.projectiles.update(dt);
+
+    this.objects.merge(this.enemies, this.projectiles);
+    this.grid.filter(this, dt, this.objects.objects);
   }
 
   // prettier-ignore
   render(dt) {
+    if (this.debugOverlay) {
+      this.debugOverlay.clearCanvas();
+      this.grid.debug(this);
+    }
+
     const gl = this.gl;
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -138,9 +144,8 @@ export default class Game extends WebGLCanvas {
 
     this.textureManager.updateSprites(dt);
 
-    this.objects.forEach((object) => object.render(this));
-    this.enemies.forEach((enemy) => enemy.render(this));
-    this.projectiles.forEach((projectile) => projectile.render(this));
+    this.enemies.render();
+    this.projectiles.render();
     this.player.render(this);
 
     const instanceCount = this.updateInstanceBuffer();
@@ -155,6 +160,7 @@ export default class Game extends WebGLCanvas {
 
   createPlayer() {
     this.player = new Player();
+    this.objects.add(this.player); // Player gets collision id
   }
 
   /**
@@ -172,39 +178,49 @@ export default class Game extends WebGLCanvas {
   }
 
   /**
-   * @param {DebugMenu} debugMenu
+   * @param {DebugPanel} debugPanel
    */
-  setDebugMenu(debugMenu) {
-    if (!(debugMenu instanceof DebugMenu)) {
+  setDebugPanel(debugPanel) {
+    if (!(debugPanel instanceof DebugPanel)) {
       throw new Error(
-        "GAME-setDebugMenu: The given argument is not an instance of the DebugMenu class."
+        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class."
       );
     }
 
-    this.debugMenu = debugMenu;
+    this.debugPanel = debugPanel;
+  }
+
+  setDebugOverlay(debugOverlay) {
+    if (!(debugOverlay instanceof DebugOverlay)) {
+      throw new Error(
+        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class."
+      );
+    }
+
+    this.debugOverlay = debugOverlay;
   }
 
   startDebugging() {
-    if (!this.debugMenu || !(this.debugMenu instanceof DebugMenu)) {
+    if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
         "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
       );
       return;
     }
 
-    this.debugMenu.show();
-    this.debugMenu.startDebugUpdating();
+    this.debugPanel.show();
+    this.debugPanel.startDebugUpdating();
   }
 
   stopDebugging() {
-    if (!this.debugMenu || !(this.debugMenu instanceof DebugMenu)) {
+    if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
         "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
       );
       return;
     }
 
-    this.debugMenu.hide();
-    this.debugMenu.stopDebugUpdating();
+    this.debugPanel.hide();
+    this.debugPanel.stopDebugUpdating();
   }
 }

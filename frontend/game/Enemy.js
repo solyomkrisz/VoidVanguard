@@ -87,9 +87,13 @@ export default class Enemy extends Spaceship {
 
     if (this.shootCooldown <= 0) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
-      this.shoot(game, muzzle, game.player, 5, 1);
+      // this.shoot(game, muzzle, game.player, 5, 1);
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
+
+    if (!vec2.isEqual(this.previousPosition, this.position)) {
+      this.proxyCollider.onPositionChange();
+    }
   }
 }
