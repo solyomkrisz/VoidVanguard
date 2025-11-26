@@ -44,8 +44,8 @@ export default class Grid {
 
   build(objects) {
     for (const object of objects) {
-      object.proxyCollider.validate(object, this.cellSize);
-      object.proxyCollider.register(this, object);
+      object.proxyCollider.validate(this.cellSize);
+      object.proxyCollider.register(this);
     }
   }
 
@@ -70,7 +70,7 @@ export default class Grid {
           if (seenPairs.has(pairKey)) continue;
           seenPairs.add(pairKey);
 
-          if (a.proxyCollider.isColliding(a, b)) {
+          if (a.proxyCollider.intersects(b)) {
             const passA = a.onBroadCollision(game, b);
             const passB = b.onBroadCollision(game, a);
 

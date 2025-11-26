@@ -6,7 +6,9 @@ import BC from "./collider/BC.js";
 
 export default class Rigidbody extends Collidable {
   constructor({ model, x, y, vx, vy } = {}) {
-    super(model, new BC());
+    super(model);
+
+    this.setProxyCollider(new BC(this));
 
     this.position = vec2.fromValues(x, y);
     this.previousPosition = vec2.fromValues(x, y);
@@ -20,7 +22,7 @@ export default class Rigidbody extends Collidable {
   }
 
   debug(game) {
-    this.proxyCollider.debug(game, this);
+    this.proxyCollider.debug(game);
   }
 
   save() {

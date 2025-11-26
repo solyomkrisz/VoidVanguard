@@ -12,8 +12,8 @@ export default class BC extends Collider {
     BOUNDS: 1 << 1, // world position changed -> recalculate min and max bounds of BC
   });
 
-  constructor() {
-    super();
+  constructor(entity) {
+    super(entity);
 
     this.dirty = BC.DIRTY.RADIUS | BC.DIRTY.BOUNDS;
     this.r = 0;
@@ -23,26 +23,26 @@ export default class BC extends Collider {
     this.maxY = 0;
   }
 
-  onGeometryChange(entity) {
+  onGeometryChange() {
     this.dirty |= BC.DIRTY.RADIUS | BC.DIRTY.BOUNDS;
   }
 
-  onPositionChange(entity) {
+  onPositionChange() {
     this.dirty |= BC.DIRTY.BOUNDS;
   }
 
-  validate(entity, cellSize) {
+  validate(cellSize) {
     if (this.dirty === BC.DIRTY.NONE) return;
 
-    this.set(entity, cellSize);
+    this.set(cellSize);
   }
 
-  set(entity, cellSize) {
+  set(cellSize) {
     if (this.dirty & BC.DIRTY.RADIUS) {
       let maxDSq = 0;
 
-      for (let i = 0; i < entity.model.length; i++) {
-        const object = entity.model[i];
+      for (let i = 0; i < this.entity.model.length; i++) {
+        const object = this.entity.model[i];
 
         const [lx, ly] = object.localPosition;
 
@@ -59,7 +59,7 @@ export default class BC extends Collider {
     }
 
     if (this.dirty & BC.DIRTY.BOUNDS) {
-      const [x, y] = entity.position;
+      const [x, y] = this.entity.position;
 
       this.minX = Grid.TO_CELL(x - this.r, cellSize);
       this.minY = Grid.TO_CELL(y - this.r, cellSize);
@@ -70,18 +70,18 @@ export default class BC extends Collider {
     }
   }
 
-  register(grid, entity) {
-    entity.cell.length = 0;
+  register(grid) {
+    this.entity.cell.length = 0;
 
     for (let x = this.minX; x <= this.maxX; x++) {
       for (let y = this.minY; y <= this.maxY; y++) {
         const key = Grid.GET_KEY(x, y);
-        entity.cell.push(key);
+        this.entity.cell.push(key);
 
         if (!grid.cells.has(key)) grid.cells.set(key, new Grid.CELL());
 
         const cell = grid.cells.get(key);
-        cell.objects.push(entity);
+        cell.objects.push(this.entity);
         cell.idle = 0;
       }
     }
@@ -94,28 +94,28 @@ export default class BC extends Collider {
    * @param {Rigidbody} b - Object B.
    * @returns {boolean} - True if they are colliding, otherwise false.
    */
-  isColliding(a, b) {
-    const dx = a.position[0] - b.position[0];
-    const dy = a.position[1] - b.position[1];
+  intersects(other) {
+    const dx = this.entity.position[0] - other.position[0];
+    const dy = this.entity.position[1] - other.position[1];
 
     const distSq = dx * dx + dy * dy;
-    const rSum = a.proxyCollider.r + b.proxyCollider.r;
+    const rSum = this.entity.proxyCollider.r + other.proxyCollider.r;
 
     return distSq <= rSum * rSum;
   }
 
   // prettier-ignore
-  debug(game, entity) {
+  debug(game) {
     const g = game, b = g.buffer, d = g.debugOverlay;
 
-    const worldSpace = vec2.toVec3(b.vec3_1, entity.interpolatedPosition);
+    const worldSpace = vec2.toVec3(b.vec3_1, this.entity.interpolatedPosition);
     const [x, y] = vec3.toVec2(b.vec2_1, vec3.transformMat3Into(worldSpace, g.cameraMatrix, worldSpace));
 
     const screenCoords = vec2.set(b.vec2_1, (x + 1) * 0.5 * g.canvas.width, (1 - y) * 0.5 * g.canvas.height);
     const r = this.r * g.cameraMatrix[0] * 0.5 * g.canvas.width;
 
     d.drawCircle(...screenCoords, r, "#fff");
-    d.drawText(screenCoords[0], screenCoords[1] - r - 10, `id: ${entity.id}`, "20px Arial", "#fff");
-    d.drawText(screenCoords[0] + r, screenCoords[1] + r, entity.cell.join(" | "), "20px Arial", "#fff");
+    d.drawText(screenCoords[0], screenCoords[1] - r - 10, `id: ${this.entity.id}`, "20px Arial", "#fff");
+    d.drawText(screenCoords[0] + r, screenCoords[1] + r, this.entity.cell.join(" | "), "20px Arial", "#fff");
   }
 }

@@ -2,6 +2,10 @@
  * Its important that all object must use the same collider for the given phase.
  */
 export default class Collider {
+  constructor(entity) {
+    this.entity = entity;
+  }
+
   /**
    * This function should evalute whether the collider needs updates based on its dirty state.
    */
@@ -40,8 +44,8 @@ export default class Collider {
   /**
    * This function must compare two of the same type colliders and return a boolean value representing the state of the collision between the two.
    */
-  isColliding() {
-    console.warn("isColliding() must be implemented by the subclass!");
+  intersects() {
+    console.warn("intersects() must be implemented by the subclass!");
   }
 
   /**
