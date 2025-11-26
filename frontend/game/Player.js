@@ -76,5 +76,9 @@ export default class Player extends Spaceship {
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
+
+    if (!vec2.isEqual(this.previousPosition, this.position)) {
+      this.proxyCollider.onPositionChange(this);
+    }
   }
 }

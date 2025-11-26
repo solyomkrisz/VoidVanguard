@@ -1,4 +1,4 @@
-export default class DebugMenu {
+export default class DebugPanel {
   static SANITIZE_NAME(name) {
     return name.replace(/[^a-zA-Z0-9_$]/g, "_");
   }
@@ -36,7 +36,7 @@ export default class DebugMenu {
 
   setSource(src) {
     if (!src) {
-      throw new Error("DEBUG-setSource: You didn't specify a source!");
+      throw new Error("DEBUGPANEL-setSource: You didn't specify a source!");
     }
 
     this.src = src;
@@ -50,7 +50,7 @@ export default class DebugMenu {
     a.appendChild(b);
     this.container.appendChild(a);
 
-    this[DebugMenu.SANITIZE_NAME(name)] = b;
+    this[DebugPanel.SANITIZE_NAME(name)] = b;
   }
 
   /**
@@ -60,22 +60,22 @@ export default class DebugMenu {
    */
   bindSource(name, property, func = null) {
     if (typeof property !== "string") {
-      throw new Error("DEBUGMENU-bindSource: The given data source is wrong!");
+      throw new Error("DEBUGPANEL-bindSource: The given data source is wrong!");
     }
 
     if (this.src[property] === undefined) {
       console.warn(
-        `DEBUG-bindSource: Couldn't bind the property [${property}] from [${this.src}] to [${name}]!`
+        `DEBUGPANEL-bindSource: Couldn't bind the property [${property}] from [${this.src}] to [${name}]!`
       );
     }
 
     const updateFunction = func
       ? function () {
-          this[DebugMenu.SANITIZE_NAME(name)].textContent = this.src[property];
+          this[DebugPanel.SANITIZE_NAME(name)].textContent = this.src[property];
           func(this);
         }
       : function () {
-          this[DebugMenu.SANITIZE_NAME(name)].textContent = this.src[property];
+          this[DebugPanel.SANITIZE_NAME(name)].textContent = this.src[property];
         };
 
     this.updateFunctions.push(updateFunction.bind(this));

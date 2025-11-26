@@ -13,7 +13,7 @@ export default class WebGLCanvas extends Canvas {
     this.vao = {};
     this.dataCollector = [];
     this.instanceCapacity = 128;
-    this.floatPerInstance = 8;
+    this.floatPerInstance = 0;
     this.instanceData = new MATRIX.DATA_STRUCTURE(
       this.instanceCapacity * this.floatPerInstance
     );
