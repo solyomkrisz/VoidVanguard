@@ -1,5 +1,6 @@
 export default class PotentialPairs {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.objects = [];
   }
 

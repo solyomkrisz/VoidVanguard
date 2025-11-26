@@ -31,13 +31,15 @@ export default class BC extends Collider {
     this.dirty |= BC.DIRTY.BOUNDS;
   }
 
-  validate(cellSize) {
+  validate() {
     if (this.dirty === BC.DIRTY.NONE) return;
 
-    this.set(cellSize);
+    this.set();
   }
 
-  set(cellSize) {
+  set() {
+    const cellSize = this.entity.game.grid.cellSize;
+
     if (this.dirty & BC.DIRTY.RADIUS) {
       let maxDSq = 0;
 
@@ -70,7 +72,8 @@ export default class BC extends Collider {
     }
   }
 
-  register(grid) {
+  register() {
+    const grid = this.entity.game.grid;
     this.entity.cell.length = 0;
 
     for (let x = this.minX; x <= this.maxX; x++) {
@@ -105,8 +108,8 @@ export default class BC extends Collider {
   }
 
   // prettier-ignore
-  debug(game) {
-    const g = game, b = g.buffer, d = g.debugOverlay;
+  debug() {
+    const g = this.entity.game, b = g.buffer, d = g.debugOverlay;
 
     const worldSpace = vec2.toVec3(b.vec3_1, this.entity.interpolatedPosition);
     const [x, y] = vec3.toVec2(b.vec2_1, vec3.transformMat3Into(worldSpace, g.cameraMatrix, worldSpace));

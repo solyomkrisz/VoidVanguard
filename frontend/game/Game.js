@@ -21,16 +21,17 @@ export default class Game extends WebGLCanvas {
     this.ticks = 0;
     this.frames = 0;
     this.timestep = 1000 / this.tickrate;
+    this.fdt = this.timestep / 1000;
     this.alpha = 0;
 
     this.now = 0;
     this.last = 0;
-    this.dt = 0;
+    this.vdt = 0;
     this.unprocessed = 0;
     this.maxUpdates = 5;
 
     this.idManager = new CollisionIDManager();
-    this.grid = new Grid(10);
+    this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
     this.tileSize = 15;
@@ -93,10 +94,10 @@ export default class Game extends WebGLCanvas {
 
   update() {
     this.now = window.performance.now();
-    this.dt = this.now - this.last;
+    this.vdt = this.now - this.last;
     this.last = this.now;
 
-    this.unprocessed += this.dt;
+    this.unprocessed += this.vdt;
 
     this.unprocessed = Math.min(
       this.unprocessed,
@@ -105,34 +106,34 @@ export default class Game extends WebGLCanvas {
 
     while (this.unprocessed >= this.timestep) {
       this.ticks++;
-      this.tick(this.timestep / 1000);
+      this.tick();
       this.unprocessed -= this.timestep;
     }
 
     this.alpha = this.unprocessed / this.timestep;
 
     this.frames++;
-    this.render(this.dt);
+    this.render();
 
     this.frameId = window.requestAnimationFrame(this.update);
   }
 
-  tick(dt) {
+  tick() {
     this.player.save();
 
-    this.player.update(this, dt);
-    this.enemies.update(dt);
-    this.projectiles.update(dt);
+    this.player.update();
+    this.enemies.update();
+    this.projectiles.update();
 
     this.objects.merge(this.enemies, this.projectiles);
-    this.grid.filter(this, dt, this.objects.objects);
+    this.grid.filter();
   }
 
   // prettier-ignore
-  render(dt) {
+  render() {
     if (this.debugOverlay) {
       this.debugOverlay.clearCanvas();
-      this.grid.debug(this);
+      this.grid.debug();
     }
 
     const gl = this.gl;
@@ -142,11 +143,11 @@ export default class Game extends WebGLCanvas {
 
     this.dataCollector.length = 0;
 
-    this.textureManager.updateSprites(dt);
+    this.textureManager.updateSprites();
 
     this.enemies.render();
     this.projectiles.render();
-    this.player.render(this);
+    this.player.render();
 
     const instanceCount = this.updateInstanceBuffer();
 
@@ -159,7 +160,7 @@ export default class Game extends WebGLCanvas {
   }
 
   createPlayer() {
-    this.player = new Player();
+    this.player = new Player(this);
     this.objects.add(this.player); // Player gets collision id
   }
 

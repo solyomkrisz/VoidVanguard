@@ -37,12 +37,12 @@ export default class WebGLCanvas extends Canvas {
   }
 
   /**
-   * Sets the gl variable of the Game class instance if WebGL is available.
+   * Sets the gl variable of the WebGLCanvas class instance if WebGL is available.
    */
   initWebGL() {
     if (!this.hasCanvas()) {
       throw new Error(
-        "GAME-initWebGL: Couldn't initialize WebGL: there is no canvas selector for this Game instance."
+        "WEBGLCANVAS-initWebGL: Couldn't initialize WebGL: there is no canvas selector for this WebGLCanvas instance."
       );
     }
 
@@ -50,7 +50,7 @@ export default class WebGLCanvas extends Canvas {
 
     if (!this.gl) {
       throw new Error(
-        "GAME-initWebGL: Your browser does not support WebGL or it is disabled! Also you might have already requested another context for this canvas!"
+        "WEBGLCANVAS-initWebGL: Your browser does not support WebGL or it is disabled! Also you might have already requested another context for this canvas!"
       );
     }
   }

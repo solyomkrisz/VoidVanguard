@@ -169,7 +169,7 @@ export default class TextureManager {
     this.spriteKeys = Object.keys(this.sprites);
   }
 
-  updateSprites(dt) {
-    this.spriteKeys.forEach((key) => this.sprites[key].update(dt));
+  updateSprites() {
+    this.spriteKeys.forEach((key) => this.sprites[key].update(this.game.vdt));
   }
 }

@@ -46,6 +46,7 @@ const MODEL = [
 
 game.enemies.add(
   new Enemy({
+    game,
     model: MODEL,
     x: 10,
     y: 10,

@@ -23,18 +23,19 @@ export default class Grid {
     }
   };
 
-  constructor(cellSize, cellIdleTimeout = 30) {
+  constructor(game, cellSize, cellIdleTimeout = 30) {
+    this.game = game;
     this.cells = new Map();
     this.cellSize = cellSize;
     this.cellIdleTimeout = cellIdleTimeout; // seconds
-    this.collector = new PotentialPairs();
+    this.collector = new PotentialPairs(game);
   }
 
-  reset(dt) {
+  reset() {
     for (const key of this.cells.keys()) {
       const cell = this.cells.get(key);
 
-      cell.reset(dt);
+      cell.reset(this.game.fdt);
 
       if (cell.idle >= this.cellIdleTimeout) {
         this.cells.delete(key);
@@ -42,18 +43,18 @@ export default class Grid {
     }
   }
 
-  build(objects) {
-    for (const object of objects) {
-      object.proxyCollider.validate(this.cellSize);
-      object.proxyCollider.register(this);
+  build() {
+    for (const object of this.game.objects.objects) {
+      object.proxyCollider.validate();
+      object.proxyCollider.register();
     }
   }
 
-  filter(game, dt, objects) {
+  filter() {
     this.collector.reset();
 
-    this.reset(dt);
-    this.build(objects);
+    this.reset();
+    this.build();
 
     const seenPairs = new Set();
 
@@ -71,8 +72,8 @@ export default class Grid {
           seenPairs.add(pairKey);
 
           if (a.proxyCollider.intersects(b)) {
-            const passA = a.onBroadCollision(game, b);
-            const passB = b.onBroadCollision(game, a);
+            const passA = a.onBroadCollision(b);
+            const passB = b.onBroadCollision(a);
 
             passA && passB && this.collector.add([a, b]);
           }
@@ -84,8 +85,8 @@ export default class Grid {
   }
 
   // prettier-ignore
-  debug(game) {
-    const g = game, b = g.buffer, d = g.debugOverlay;
+  debug() {
+    const g = this.game, b = g.buffer, d = g.debugOverlay;
     const size = this.cellSize * 0.5 * g.cameraMatrix[0] * g.canvas.width;
 
     for (const [key, cell] of this.cells.entries()) {

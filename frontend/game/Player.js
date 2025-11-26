@@ -14,15 +14,16 @@ export default class Player extends Spaceship {
     new Block(0, 1, SpriteID.TEST),
   ];
 
-  constructor() {
-    super({ model: Player.MODEL, x: 0, y: 0, vx: 0, vy: 0 });
+  constructor(game) {
+    super({ game, model: Player.MODEL, x: 0, y: 0, vx: 0, vy: 0 });
   }
 
-  shoot(game, muzzle, projectileSpeed, cooldown) {
+  shoot(muzzle, projectileSpeed, cooldown) {
     vec2.rotate(muzzle, this.rotation);
     vec2.add(muzzle, muzzle, this.position);
 
     const projectile = new Projectile({
+      game: this.game,
       x: muzzle[0],
       y: muzzle[1],
       vx: projectileSpeed,
@@ -32,14 +33,15 @@ export default class Player extends Spaceship {
     vec2.copy(projectile.forward, this.forward);
     projectile.rotation = this.rotation;
 
-    game.projectiles.push(projectile);
+    this.game.projectiles.add(projectile);
     this.shootCooldown = cooldown;
   }
 
   // prettier-ignore
-  update(game, dt) {
-    const _b = game.buffer;
-    const activeControls = game.keyboard.activeControls;
+  update() {
+    const dt = this.game.fdt;
+    const _b = this.game.buffer;
+    const activeControls = this.game.keyboard.activeControls;
     vec2.set(_b.vec2_1, 5, 5);
     vec2.mul(_b.vec2_1, _b.vec2_1, this.forward);
 
@@ -72,7 +74,7 @@ export default class Player extends Spaceship {
 
     if (this.shootCooldown <= 0 && activeControls.has(Keyboard.Space)) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
-      this.shoot(game, muzzle, 2, 1);
+      this.shoot(muzzle, 2, 1);
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);

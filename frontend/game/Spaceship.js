@@ -1,8 +1,8 @@
 import Rigidbody from "./Rigidbody.js";
 
 export default class Spaceship extends Rigidbody {
-  constructor({ model, x, y, vx, vy } = {}) {
-    super({ model, x, y, vx, vy });
+  constructor({ game, model, x, y, vx, vy } = {}) {
+    super({ game, model, x, y, vx, vy });
 
     this.shootCooldown = 0;
   }
@@ -11,7 +11,8 @@ export default class Spaceship extends Rigidbody {
     console.warn("shoot() must be implemented by the subclass!");
   }
 
-  update(game, dt) {
+  update() {
+    const dt = this.game.fdt;
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
   }
 }

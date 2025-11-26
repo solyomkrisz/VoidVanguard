@@ -5,8 +5,8 @@ import Collidable from "./Collidable.js";
 import BC from "./collider/BC.js";
 
 export default class Rigidbody extends Collidable {
-  constructor({ model, x, y, vx, vy } = {}) {
-    super(model);
+  constructor({ game, model, x, y, vx, vy } = {}) {
+    super(game, model);
 
     this.setProxyCollider(new BC(this));
 
@@ -21,8 +21,8 @@ export default class Rigidbody extends Collidable {
     this.interpolatedRotation = 0;
   }
 
-  debug(game) {
-    this.proxyCollider.debug(game);
+  debug() {
+    this.proxyCollider.debug();
   }
 
   save() {
@@ -32,30 +32,30 @@ export default class Rigidbody extends Collidable {
   }
 
   // prettier-ignore
-  render(game) {
-    const b = game.buffer;
+  render() {
+    const _b = this.game.buffer;
 
-    this.interpolatedPosition = vec2.lerp(this.interpolatedPosition, this.previousPosition, this.position, game.alpha);
-    this.interpolatedRotation = LERP(this.previousRotation, this.rotation, game.alpha);
-    const rotationMatrix = mat2.fromRotation(b.mat2_1, this.interpolatedRotation);
+    this.interpolatedPosition = vec2.lerp(this.interpolatedPosition, this.previousPosition, this.position, this.game.alpha);
+    this.interpolatedRotation = LERP(this.previousRotation, this.rotation, this.game.alpha);
+    const rotationMatrix = mat2.fromRotation(_b.mat2_1, this.interpolatedRotation);
 
     for (const obj of this.model) {
-      const sprite = game.textureManager.sprites[obj.spriteId];
-      const [u0, v0, u1, v1] = game.textureManager.textureCoordinates[sprite.getCurrentTexture()].coordinates;
+      const sprite = this.game.textureManager.sprites[obj.spriteId];
+      const [u0, v0, u1, v1] = this.game.textureManager.textureCoordinates[sprite.getCurrentTexture()].coordinates;
 
-      vec2.set(b.vec2_2, u0, v0);
-      vec2.set(b.vec2_3, u1 - u0, v1 - v0);
+      vec2.set(_b.vec2_2, u0, v0);
+      vec2.set(_b.vec2_3, u1 - u0, v1 - v0);
 
-      game.dataCollector.push(
+      this.game.dataCollector.push(
         ...obj.localPosition,
         ...this.interpolatedPosition,
         ...rotationMatrix,
-        ...b.vec2_2,
-        ...b.vec2_3,
+        ..._b.vec2_2,
+        ..._b.vec2_3,
       );
     }
 
-    this.debug(game); // Must be down here because vec2_1 is used inside it, so it would overwrite it
+    this.debug(); // Must be down here because vec2_1 is used inside it, so it would overwrite it
   }
 
   update() {
