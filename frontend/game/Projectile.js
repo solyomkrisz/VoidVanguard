@@ -9,8 +9,9 @@ export default class Projectile extends Rigidbody {
     new Block(0, 0, SpriteID.TEST)
   ];
 
-  constructor({ x, y, vx, vy, dmg = 0 } = {}) {
+  constructor({ game, x, y, vx, vy, dmg = 0 } = {}) {
     super({
+      game,
       model: Projectile.MODEL,
       x: x,
       y: y,
@@ -21,13 +22,14 @@ export default class Projectile extends Rigidbody {
     this.dmg = dmg;
   }
 
-  update(game, dt) {
-    const b = game.buffer;
+  update() {
+    const dt = this.game.fdt;
+    const _b = this.game.buffer;
 
-    vec2.copy(b.vec2_1, this.velocity);
-    vec2.mul(b.vec2_1, b.vec2_1, this.forward);
-    vec2.scale(b.vec2_1, b.vec2_1, dt);
+    vec2.copy(_b.vec2_1, this.velocity);
+    vec2.mul(_b.vec2_1, _b.vec2_1, this.forward);
+    vec2.scale(_b.vec2_1, _b.vec2_1, dt);
 
-    vec2.add(this.position, this.position, b.vec2_1);
+    vec2.add(this.position, this.position, _b.vec2_1);
   }
 }

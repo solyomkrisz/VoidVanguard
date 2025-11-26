@@ -43,7 +43,7 @@ export default class Canvas {
 
     if (!(element instanceof HTMLCanvasElement)) {
       throw new Error(
-        `GAME-setCanvas: The given selector (${selector}) is not pointing to a HTMLCanvasElement!`
+        `CANVAS-setCanvas: The given selector (${selector}) is not pointing to a HTMLCanvasElement!`
       );
     }
 

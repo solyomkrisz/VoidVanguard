@@ -12,15 +12,15 @@ export default class ObjectCollection {
     this.baseLength++;
   }
 
-  update(dt) {
+  update() {
     this.objects.forEach((object) => {
       object.save();
-      object.update(this.game, dt);
+      object.update();
     });
   }
 
   render() {
-    this.objects.forEach((object) => object.render(this.game));
+    this.objects.forEach((object) => object.render());
   }
 
   merge(...collections) {

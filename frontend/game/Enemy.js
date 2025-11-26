@@ -6,12 +6,12 @@ import * as mat2 from "../common/mat2.js";
 
 export default class Enemy extends Spaceship {
   // prettier-ignore
-  constructor({ model, x, y } = {}) {
-    super({ model, x, y, vx: 0, vy: 0 });
+  constructor({ game, model, x, y } = {}) {
+    super({ game, model, x, y, vx: 0, vy: 0 });
   }
 
-  aim(game, targetPosition) {
-    const _b = game.buffer;
+  aim(targetPosition) {
+    const _b = this.game.buffer;
 
     const toTarget = vec2.create();
     vec2.sub(toTarget, targetPosition, this.position);
@@ -31,10 +31,10 @@ export default class Enemy extends Spaceship {
     vec2.normalize(this.forward, this.forward);
   }
 
-  shoot(game, muzzle, at, projectileSpeed, cooldown) {
-    const _b = game.buffer;
+  shoot(muzzle, at, projectileSpeed, cooldown) {
+    const _b = this.game.buffer;
 
-    this.aim(game, at.position); // Must aim before rotating the muzzle!
+    this.aim(at.position); // Must aim before rotating the muzzle!
 
     vec2.rotate(muzzle, this.rotation); // muzzle = vec2_1
     vec2.add(muzzle, muzzle, this.position);
@@ -69,6 +69,7 @@ export default class Enemy extends Spaceship {
     vec2.normalize(direction, direction);
 
     const projectile = new Projectile({
+      game: this.game,
       x: muzzle[0],
       y: muzzle[1],
       vx: projectileSpeed,
@@ -78,16 +79,17 @@ export default class Enemy extends Spaceship {
     vec2.copy(projectile.forward, direction);
     projectile.rotation = this.rotation;
 
-    game.projectiles.push(projectile);
+    this.game.projectiles.add(projectile);
     this.shootCooldown = cooldown;
   }
 
-  update(game, dt) {
-    const _b = game.buffer;
+  update() {
+    const dt = this.game.fdt;
+    const _b = this.game.buffer;
 
     if (this.shootCooldown <= 0) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
-      // this.shoot(game, muzzle, game.player, 5, 1);
+      // this.shoot(muzzle, this.game.player, 5, 1);
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
