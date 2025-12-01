@@ -1,3 +1,5 @@
+import { GlobalState } from "./State.js";
+
 export default class ObjectCollection {
   constructor(game) {
     this.game = game;
@@ -13,10 +15,17 @@ export default class ObjectCollection {
   }
 
   update() {
-    this.objects.forEach((object) => {
+    let writeIndex = 0;
+
+    for (const object of this.objects) {
+      if (object.hasState(GlobalState.DEAD)) continue;
+
+      this.objects[writeIndex++] = object;
       object.save();
       object.update();
-    });
+    }
+
+    this.objects.length = writeIndex;
   }
 
   render() {

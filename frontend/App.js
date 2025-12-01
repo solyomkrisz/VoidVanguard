@@ -9,6 +9,7 @@ import { TextureID, SpriteID } from "./game/texture/Texture.js";
 import Enemy from "./game/Enemy.js";
 import DebugOverlay from "./game/DebugOverlay.js";
 import Model from "./game/Model.js";
+import { GlobalState } from "./game/State.js";
 
 const game = new Game();
 game.createCanvas();
@@ -45,14 +46,19 @@ const MODEL = [
   new Block(0, 1, SpriteID.TEST)
 ];
 
-game.enemies.add(
-  new Enemy({
-    game,
-    model: new Model(MODEL),
-    x: 10,
-    y: 10,
-  })
-);
+const enemy = new Enemy({
+  game,
+  model: new Model(MODEL),
+  x: 10,
+  y: 10,
+});
+
+enemy.setState(GlobalState.DEAD);
+console.log(enemy.hasState(GlobalState.DEAD));
+enemy.clearState(GlobalState.DEAD);
+console.log(enemy.hasState(GlobalState.DEAD));
+
+game.enemies.add(enemy);
 
 const keyboard = new Keyboard(game);
 game.keyboard = keyboard;

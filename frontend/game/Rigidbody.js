@@ -19,6 +19,34 @@ export default class Rigidbody extends Collidable {
     this.rotation = 0;
     this.previousRotation = 0;
     this.interpolatedRotation = 0;
+    this.state = new Uint32Array(2);
+  }
+
+  setState(state) {
+    const i = Math.floor(state / 32);
+    const b = state % 32;
+
+    if (i >= this.state.length) {
+      const newState = new Uint32Array(i + 1);
+      newState.set(this.state);
+      this.state = newState;
+    }
+
+    this.state[i] |= 1 << b;
+  }
+
+  hasState(state) {
+    const i = Math.floor(state / 32);
+    const b = state % 32;
+
+    return this.state[i] ? ((this.state[i] >> b) & 1) !== 0 : false;
+  }
+
+  clearState(state) {
+    const i = Math.floor(state / 32);
+    const b = state % 32;
+
+    if (i < this.state.length) this.state[i] &= ~(1 << b);
   }
 
   debug() {
