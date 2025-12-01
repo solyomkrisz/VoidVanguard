@@ -2,6 +2,7 @@ import Block from "./Block.js";
 import Rigidbody from "./Rigidbody.js";
 import { SpriteID } from "./texture/Texture.js";
 import * as vec2 from "../common/vec2.js";
+import Model from "./Model.js";
 
 export default class Projectile extends Rigidbody {
   // prettier-ignore
@@ -12,7 +13,7 @@ export default class Projectile extends Rigidbody {
   constructor({ game, x, y, vx, vy, dmg = 0 } = {}) {
     super({
       game,
-      model: Projectile.MODEL,
+      model: new Model(Projectile.MODEL),
       x: x,
       y: y,
       vx: vx,

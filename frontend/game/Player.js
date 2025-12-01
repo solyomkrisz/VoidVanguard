@@ -5,6 +5,7 @@ import * as vec2 from "../common/vec2.js";
 import * as mat2 from "../common/mat2.js";
 import { TextureID, SpriteID } from "./texture/Texture.js";
 import Projectile from "./Projectile.js";
+import Model from "./Model.js";
 
 export default class Player extends Spaceship {
   static MODEL = [
@@ -15,7 +16,7 @@ export default class Player extends Spaceship {
   ];
 
   constructor(game) {
-    super({ game, model: Player.MODEL, x: 0, y: 0, vx: 0, vy: 0 });
+    super({ game, model: new Model(Player.MODEL), x: 0, y: 0, vx: 0, vy: 0 });
   }
 
   shoot(muzzle, projectileSpeed, cooldown) {
