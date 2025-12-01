@@ -8,6 +8,7 @@ import Sprite from "./game/Sprite.js";
 import { TextureID, SpriteID } from "./game/texture/Texture.js";
 import Enemy from "./game/Enemy.js";
 import DebugOverlay from "./game/DebugOverlay.js";
+import Model from "./game/Model.js";
 
 const game = new Game();
 game.createCanvas();
@@ -47,7 +48,7 @@ const MODEL = [
 game.enemies.add(
   new Enemy({
     game,
-    model: MODEL,
+    model: new Model(MODEL),
     x: 10,
     y: 10,
   })

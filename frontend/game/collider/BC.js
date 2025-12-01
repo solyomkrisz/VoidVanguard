@@ -43,8 +43,8 @@ export default class BC extends Collider {
     if (this.dirty & BC.DIRTY.RADIUS) {
       let maxDSq = 0;
 
-      for (let i = 0; i < this.entity.model.length; i++) {
-        const object = this.entity.model[i];
+      for (let i = 0; i < this.entity.model.objects.length; i++) {
+        const object = this.entity.model.objects[i];
 
         const [lx, ly] = object.localPosition;
 

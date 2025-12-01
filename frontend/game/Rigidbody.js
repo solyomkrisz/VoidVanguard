@@ -39,7 +39,7 @@ export default class Rigidbody extends Collidable {
     this.interpolatedRotation = LERP(this.previousRotation, this.rotation, this.game.alpha);
     const rotationMatrix = mat2.fromRotation(_b.mat2_1, this.interpolatedRotation);
 
-    for (const obj of this.model) {
+    for (const obj of this.model.objects) {
       const sprite = this.game.textureManager.sprites[obj.spriteId];
       const [u0, v0, u1, v1] = this.game.textureManager.textureCoordinates[sprite.getCurrentTexture()].coordinates;
 
