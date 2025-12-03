@@ -43,10 +43,10 @@ const triCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.5, 0.5, 0.5, 
 const smallRectCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
 
 const PLAYER_MODEL = [
-  new Block(0, 0, triCollider, SpriteID.TEST),
-  new Block(-1, 0, triCollider, SpriteID.TEST),
-  new Block(1, 0, rectCollider, SpriteID.TEST),
-  new Block(0, 1, smallRectCollider, SpriteID.TEST),
+  new Block(0, 0, triCollider, SpriteID.TEST, 50),
+  new Block(-1, 0, triCollider, SpriteID.TEST, 50),
+  new Block(1, 0, rectCollider, SpriteID.TEST, 50),
+  new Block(0, 1, smallRectCollider, SpriteID.TEST, 50),
 ];
 
 game.createPlayer(PLAYER_MODEL);

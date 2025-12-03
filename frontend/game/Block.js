@@ -136,9 +136,10 @@ export default class Block {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
-  constructor(x, y, shape, spriteId) {
+  constructor(x, y, shape, spriteId, mass = 1) {
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
     this.spriteId = spriteId;
+    this.mass = mass;
   }
 }

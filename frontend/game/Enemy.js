@@ -6,8 +6,8 @@ import * as mat2 from "../common/mat2.js";
 
 export default class Enemy extends Spaceship {
   // prettier-ignore
-  constructor({ game, model, x, y } = {}) {
-    super({ game, model, x, y, vx: 0, vy: 0 });
+  constructor({ game, model, x, y, maxSpeed } = {}) {
+    super({ game, model, x, y, vx: 0, vy: 0, maxSpeed });
   }
 
   aim(targetPosition) {
@@ -87,17 +87,15 @@ export default class Enemy extends Spaceship {
     const dt = this.game.fdt;
     const _b = this.game.buffer;
 
+    this.updateVelocity();
+    this.updatePosition();
+
     if (this.shootCooldown <= 0) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
       // this.shoot(muzzle, this.game.player, 5, 1);
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
-
-    if (!vec2.isEqual(this.previousPosition, this.position, 0)) {
-      this.proxyCollider.onPositionChange();
-      this.shapeCollider.onPositionChange();
-    }
   }
 
   onBroadCollision(other) {

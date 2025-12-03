@@ -4,9 +4,11 @@ import { LERP } from "../common/common.js";
 import Collidable from "./Collidable.js";
 import BC from "./collider/BC.js";
 import CompositeCollider from "./collider/CompositeCollider.js";
+import Force from "./Force.js";
 
 export default class Rigidbody extends Collidable {
-  constructor({ game, model, x = 0, y = 0, vx = 0, vy = 0 } = {}) {
+  // prettier-ignore
+  constructor({ game, model, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1 } = {}) {
     super(game, model);
 
     this.setProxyCollider(new BC());
@@ -16,12 +18,18 @@ export default class Rigidbody extends Collidable {
     this.previousPosition = vec2.fromValues(x, y);
     this.interpolatedPosition = vec2.fromValues(x, y);
     this.velocity = vec2.fromValues(vx, vy);
+    this.acceleration = vec2.create();
+    this.maxSpeed = maxSpeed;
     this.forward = vec2.fromValues(0, 1);
     this.previousForward = vec2.fromValues(0, 1);
     this.rotation = 0;
     this.previousRotation = 0;
     this.interpolatedRotation = 0;
     this.state = new Uint32Array(2);
+    this.mass = 0;
+    this.netForce = new Force();
+
+    this.setMass();
   }
 
   setState(state) {
@@ -49,6 +57,14 @@ export default class Rigidbody extends Collidable {
     const b = state % 32;
 
     if (i < this.state.length) this.state[i] &= ~(1 << b);
+  }
+
+  setMass() {
+    this.mass = 0;
+
+    for (const object of this.model.objects) {
+      this.mass += object.mass;
+    }
   }
 
   apply(rigidbody) {
@@ -100,6 +116,33 @@ export default class Rigidbody extends Collidable {
     }
 
     this.debug(); // Must be down here because vec2_1 is used inside it, so it would overwrite it
+  }
+
+  // prettier-ignore
+  updateVelocity() {
+    const friction = 0.04;
+
+    vec2.scale(this.acceleration, this.netForce.vector, 1 / this.mass);
+    vec2.addScaled(this.velocity, this.velocity, this.acceleration, this.game.fdt);
+    vec2.scale(this.velocity, this.velocity, 1 - friction);
+
+    const speed = vec2.len(this.velocity);
+
+    if (speed > this.maxSpeed) {
+      const scale = this.maxSpeed / speed;
+      vec2.scale(this.velocity, this.velocity, scale);
+    }
+
+    speed < 0.05 && vec2.reset(this.velocity);
+  }
+
+  updatePosition() {
+    vec2.addScaled(this.position, this.position, this.velocity, this.game.fdt);
+
+    if (!vec2.isEqual(this.previousPosition, this.position, 0)) {
+      this.proxyCollider.onPositionChange();
+      this.shapeCollider.onPositionChange();
+    }
   }
 
   update() {
