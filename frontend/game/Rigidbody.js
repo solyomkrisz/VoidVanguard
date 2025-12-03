@@ -3,12 +3,14 @@ import * as mat2 from "../common/mat2.js";
 import { LERP } from "../common/common.js";
 import Collidable from "./Collidable.js";
 import BC from "./collider/BC.js";
+import CompositeCollider from "./collider/CompositeCollider.js";
 
 export default class Rigidbody extends Collidable {
-  constructor({ game, model, x, y, vx, vy } = {}) {
+  constructor({ game, model, x = 0, y = 0, vx = 0, vy = 0 } = {}) {
     super(game, model);
 
-    this.setProxyCollider(new BC(this));
+    this.setProxyCollider(new BC());
+    this.setShapeCollider(new CompositeCollider());
 
     this.position = vec2.fromValues(x, y);
     this.previousPosition = vec2.fromValues(x, y);
@@ -49,8 +51,22 @@ export default class Rigidbody extends Collidable {
     if (i < this.state.length) this.state[i] &= ~(1 << b);
   }
 
+  apply(rigidbody) {
+    vec2.copy(this.position, rigidbody.position);
+    vec2.copy(this.previousPosition, rigidbody.previousPosition);
+    vec2.copy(this.interpolatedPosition, rigidbody.interpolatedPosition);
+    vec2.copy(this.velocity, rigidbody.velocity);
+    vec2.copy(this.forward, rigidbody.forward);
+    vec2.copy(this.previousForward, rigidbody.previousForward);
+    this.rotation = rigidbody.rotation;
+    this.previousRotation = rigidbody.previousRotation;
+    this.interpolatedRotation = rigidbody.interpolatedRotation;
+    return this;
+  }
+
   debug() {
     this.proxyCollider.debug();
+    this.shapeCollider.debug();
   }
 
   save() {

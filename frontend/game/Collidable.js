@@ -10,13 +10,26 @@ export default class Collidable {
     this.id = null;
     this.cell = [];
     this.proxyCollider = null;
+    this.shapeCollider = null;
   }
 
   setProxyCollider(collider) {
     this.proxyCollider = collider;
+    this.proxyCollider.onAttach(this);
+    return this;
+  }
+
+  setShapeCollider(collider) {
+    this.shapeCollider = collider;
+    this.shapeCollider.onAttach(this);
+    return this;
   }
 
   onBroadCollision() {
     console.warn("onBroadCollision() must be implemented by the subclass!");
+  }
+
+  onNarrowCollision() {
+    console.warn("onNarrowCollision() must be implemented by the subclass!");
   }
 }

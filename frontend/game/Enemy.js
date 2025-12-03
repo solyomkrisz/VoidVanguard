@@ -94,8 +94,13 @@ export default class Enemy extends Spaceship {
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
 
-    if (!vec2.isEqual(this.previousPosition, this.position)) {
+    if (!vec2.isEqual(this.previousPosition, this.position, 0)) {
       this.proxyCollider.onPositionChange();
+      this.shapeCollider.onPositionChange();
     }
+  }
+
+  onBroadCollision(other) {
+    return true;
   }
 }

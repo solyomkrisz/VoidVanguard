@@ -2,6 +2,7 @@ import * as vec2 from "../common/vec2.js";
 import * as vec3 from "../common/vec3.js";
 import * as mat2 from "../common/mat2.js";
 import * as mat3 from "../common/mat3.js";
+import Collision from "./Collision.js";
 
 export default class Buffer {
   constructor() {
@@ -24,5 +25,8 @@ export default class Buffer {
     this.mat3_1 = mat3.identity();
     this.mat3_2 = mat3.identity();
     this.mat3_3 = mat3.identity();
+
+    this.collision_1 = new Collision();
+    this.collision_2 = new Collision();
   }
 }

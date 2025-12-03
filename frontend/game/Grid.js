@@ -1,6 +1,6 @@
 import * as vec2 from "../common/vec2.js";
 import * as vec3 from "../common/vec3.js";
-import PotentialPairs from "./PotentialPairs.js";
+import CollisionCollection from "./CollisionCollection.js";
 
 export default class Grid {
   static TO_CELL(n, cellSize) {
@@ -28,7 +28,7 @@ export default class Grid {
     this.cells = new Map();
     this.cellSize = cellSize;
     this.cellIdleTimeout = cellIdleTimeout; // seconds
-    this.collector = new PotentialPairs(game);
+    this.collector = new CollisionCollection(game);
   }
 
   reset() {
