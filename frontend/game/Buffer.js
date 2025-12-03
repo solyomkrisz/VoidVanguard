@@ -3,6 +3,7 @@ import * as vec3 from "../common/vec3.js";
 import * as mat2 from "../common/mat2.js";
 import * as mat3 from "../common/mat3.js";
 import Collision from "./Collision.js";
+import Force from "./Force.js";
 
 export default class Buffer {
   constructor() {
@@ -28,5 +29,8 @@ export default class Buffer {
 
     this.collision_1 = new Collision();
     this.collision_2 = new Collision();
+
+    this.force_1 = new Force();
+    this.force_2 = new Force();
   }
 }

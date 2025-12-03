@@ -8,7 +8,15 @@ import Model from "./Model.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
-    super({ game, model: new Model(model), x: 0, y: 0, vx: 0, vy: 0 });
+    super({
+      game,
+      model: new Model(model),
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      maxSped: 10,
+    });
   }
 
   shoot(muzzle, projectileSpeed, cooldown) {
@@ -35,8 +43,6 @@ export default class Player extends Spaceship {
     const dt = this.game.fdt;
     const _b = this.game.buffer;
     const activeControls = this.game.keyboard.activeControls;
-    vec2.set(_b.vec2_1, 5, 5);
-    vec2.mul(_b.vec2_1, _b.vec2_1, this.forward);
 
     if (activeControls.has(Keyboard.KeyA)) {
       this.rotation += 2.5 * dt;
@@ -49,21 +55,17 @@ export default class Player extends Spaceship {
     vec2.transformMat2(this.forward, rotationMatrix, this.forward);
     vec2.normalize(this.forward, this.forward);
 
-    let isControlled = false;
-
     if (activeControls.has(Keyboard.KeyW)) {
-      vec2.copy(this.velocity, _b.vec2_1);
-      vec2.addScaled(this.position, this.position, _b.vec2_1, dt);
-      isControlled = true;
+      _b.force_1.setFromMagDir(500, this.forward);
+      this.netForce.apply(_b.force_1);
     }
     if (activeControls.has(Keyboard.KeyS)) {
-      vec2.scale(_b.vec2_1, _b.vec2_1, -1);
-      vec2.copy(this.velocity, _b.vec2_1);
-      vec2.addScaled(this.position, this.position, _b.vec2_1, dt);
-      isControlled = true;
+      _b.force_1.setFromMagDir(500, this.forward).negate();
+      this.netForce.apply(_b.force_1);
     }
 
-    if (!isControlled) vec2.reset(this.velocity);
+    this.updateVelocity();
+    this.updatePosition();
 
     if (this.shootCooldown <= 0 && activeControls.has(Keyboard.Space)) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
@@ -71,11 +73,6 @@ export default class Player extends Spaceship {
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
-
-    if (!vec2.isEqual(this.previousPosition, this.position, 0)) {
-      this.proxyCollider.onPositionChange();
-      this.shapeCollider.onPositionChange();
-    }
   }
 
   onBroadCollision(other) {

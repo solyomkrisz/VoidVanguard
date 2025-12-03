@@ -119,6 +119,7 @@ export default class Game extends WebGLCanvas {
   }
 
   tick() {
+    this.player.netForce.reset();
     this.player.save();
 
     this.player.update();
