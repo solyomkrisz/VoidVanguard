@@ -12,7 +12,7 @@ export default class BC extends Collider {
     BOUNDS: 1 << 1, // world position changed -> recalculate min and max bounds of BC
   });
 
-  constructor(entity) {
+  constructor(entity = null) {
     super(entity);
 
     this.dirty = BC.DIRTY.RADIUS | BC.DIRTY.BOUNDS;
@@ -21,6 +21,10 @@ export default class BC extends Collider {
     this.minY = 0;
     this.maxX = 0;
     this.maxY = 0;
+  }
+
+  onAttach(entity) {
+    this.entity = entity;
   }
 
   onGeometryChange() {

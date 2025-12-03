@@ -10,6 +10,7 @@ import Enemy from "./game/Enemy.js";
 import DebugOverlay from "./game/DebugOverlay.js";
 import Model from "./game/Model.js";
 import { GlobalState } from "./game/State.js";
+import Shape from "./game/Shape.js";
 
 const game = new Game();
 game.createCanvas();
@@ -34,21 +35,47 @@ sprite.addFrame(TextureID.CANON, 2);
 
 tm.addSprite(SpriteID.TEST, sprite);
 
-game.createPlayer();
+// prettier-ignore
+const rectCollider = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
+// prettier-ignore
+const triCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
+// prettier-ignore
+const smallRectCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
+
+const PLAYER_MODEL = [
+  new Block(0, 0, triCollider, SpriteID.TEST),
+  new Block(-1, 0, triCollider, SpriteID.TEST),
+  new Block(1, 0, rectCollider, SpriteID.TEST),
+  new Block(0, 1, smallRectCollider, SpriteID.TEST),
+];
+
+game.createPlayer(PLAYER_MODEL);
 game.start();
 game.enablePointerLock();
 
 // prettier-ignore
-const MODEL = [
-  new Block(0, 0, SpriteID.TEST),
-  new Block(-1, 0, SpriteID.TEST),
-  new Block(1, 0, SpriteID.TEST),
-  new Block(0, 1, SpriteID.TEST)
+const ENEMY_MODEL = [
+  new Block(0, 0, rectCollider, SpriteID.TEST),
+  new Block(-1, 0, rectCollider, SpriteID.TEST),
+  new Block(1, 0, rectCollider, SpriteID.TEST),
+  new Block(0, 1, rectCollider, SpriteID.TEST)
+];
+
+const ENEMY_MODEL_2 = [
+  new Block(0, 0, rectCollider, SpriteID.TEST),
+  new Block(1, 0, rectCollider, SpriteID.TEST),
+  new Block(-1, 0, rectCollider, SpriteID.TEST),
+  new Block(2, 0, rectCollider, SpriteID.TEST),
+  new Block(-2, 0, rectCollider, SpriteID.TEST),
+  new Block(0, 1, rectCollider, SpriteID.TEST),
+  new Block(1, 1, rectCollider, SpriteID.TEST),
+  new Block(-1, 1, rectCollider, SpriteID.TEST),
+  new Block(0, 2, triCollider, SpriteID.TEST),
 ];
 
 const enemy = new Enemy({
   game,
-  model: new Model(MODEL),
+  model: new Model(ENEMY_MODEL_2),
   x: 10,
   y: 10,
 });

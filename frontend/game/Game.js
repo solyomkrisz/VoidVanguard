@@ -17,7 +17,7 @@ export default class Game extends WebGLCanvas {
 
     this.running = false;
 
-    this.tickrate = 10;
+    this.tickrate = 30;
     this.ticks = 0;
     this.frames = 0;
     this.timestep = 1000 / this.tickrate;
@@ -126,7 +126,7 @@ export default class Game extends WebGLCanvas {
     this.projectiles.update();
 
     this.objects.merge(this.enemies, this.projectiles);
-    this.grid.filter();
+    this.grid.filter().detect();
   }
 
   // prettier-ignore
@@ -159,8 +159,8 @@ export default class Game extends WebGLCanvas {
     this.draw(instanceCount);
   }
 
-  createPlayer() {
-    this.player = new Player(this);
+  createPlayer(model) {
+    this.player = new Player(this, model);
     this.objects.add(this.player); // Player gets collision id
   }
 

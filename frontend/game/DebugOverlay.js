@@ -77,4 +77,24 @@ export default class DebugOverlay extends Canvas {
 
     return m;
   }
+
+  drawPolygon(vertices, color = "rgba(255, 255, 255, 0.5)") {
+    const c = this.ctx;
+
+    c.beginPath();
+    c.moveTo(vertices[0], vertices[1]);
+
+    for (let i = 2; i < vertices.length; i += 2) {
+      c.lineTo(vertices[i], vertices[i + 1]);
+    }
+    c.closePath();
+
+    c.save();
+    c.strokeStyle = "#fff";
+    c.lineWidth = "2";
+    c.stroke();
+    c.fillStyle = color;
+    c.fill();
+    c.restore();
+  }
 }

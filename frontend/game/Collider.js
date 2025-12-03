@@ -7,6 +7,13 @@ export default class Collider {
   }
 
   /**
+   * Runs when the collider is attached to an entity.
+   */
+  onAttach(entity) {
+    console.warn("onAttach() must be implemented by the subclass!");
+  }
+
+  /**
    * This function should evalute whether the collider needs updates based on its dirty state.
    */
   validate() {

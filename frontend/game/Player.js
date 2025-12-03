@@ -3,20 +3,12 @@ import Spaceship from "./Spaceship.js";
 import Block from "./Block.js";
 import * as vec2 from "../common/vec2.js";
 import * as mat2 from "../common/mat2.js";
-import { TextureID, SpriteID } from "./texture/Texture.js";
 import Projectile from "./Projectile.js";
 import Model from "./Model.js";
 
 export default class Player extends Spaceship {
-  static MODEL = [
-    new Block(0, 0, SpriteID.TEST),
-    new Block(-1, 0, SpriteID.TEST),
-    new Block(1, 0, SpriteID.TEST),
-    new Block(0, 1, SpriteID.TEST),
-  ];
-
-  constructor(game) {
-    super({ game, model: new Model(Player.MODEL), x: 0, y: 0, vx: 0, vy: 0 });
+  constructor(game, model) {
+    super({ game, model: new Model(model), x: 0, y: 0, vx: 0, vy: 0 });
   }
 
   shoot(muzzle, projectileSpeed, cooldown) {
@@ -80,8 +72,13 @@ export default class Player extends Spaceship {
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
 
-    if (!vec2.isEqual(this.previousPosition, this.position)) {
+    if (!vec2.isEqual(this.previousPosition, this.position, 0)) {
       this.proxyCollider.onPositionChange();
+      this.shapeCollider.onPositionChange();
     }
+  }
+
+  onBroadCollision(other) {
+    return true;
   }
 }
