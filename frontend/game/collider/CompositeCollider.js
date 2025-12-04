@@ -117,8 +117,6 @@ export default class CompositeCollider extends Collider {
         if (!subCollision.status) continue;
 
         collision.status = subCollision.status;
-        subCollision.a = this.entity;
-        subCollision.b = other;
 
         if (
           vec2.dot(a.shapeCollider.center, subCollision.normal) >
@@ -131,8 +129,8 @@ export default class CompositeCollider extends Collider {
 
         if (subCollision.depth > collision.depth) {
           collision.depth = subCollision.depth;
-          collision.a = subCollision.a;
-          collision.b = subCollision.b;
+          collision.a = this.entity;
+          collision.b = other;
         }
       }
     }

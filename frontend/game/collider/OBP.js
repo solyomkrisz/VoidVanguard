@@ -122,14 +122,11 @@ export default class OBP extends Collider {
     if (!axes.length) return collision.reset();
 
     let minOverlap = Infinity,
-      minOverlapAxis = null;
+      minOverlapAxis = _b.vec2_3;
 
     // prettier-ignore
     for (let i = 0; i < axes.length; i += 2) {
-      const x = axes[i];
-      const y = axes[i + 1];
-
-      const axis = vec2.set(_b.vec2_2, x, y);
+      const axis = vec2.set(_b.vec2_2, axes[i], axes[i + 1]);
 
       const [minA, maxA] = this.project(_b.arrn_2, this.worldVertices, axis);
       const [minB, maxB] = this.project(_b.arrn_3, other.shapeCollider.worldVertices, axis);
@@ -140,7 +137,7 @@ export default class OBP extends Collider {
 
       if (overlap < minOverlap) {
         minOverlap = overlap;
-        minOverlapAxis = axis;
+        vec2.copy(minOverlapAxis, axis);
       }
     }
 

@@ -101,4 +101,8 @@ export default class Enemy extends Spaceship {
   onBroadCollision(other) {
     return true;
   }
+
+  onNarrowCollision(other) {
+    return true;
+  }
 }
