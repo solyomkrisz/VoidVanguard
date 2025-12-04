@@ -18,4 +18,17 @@ export default class Collision {
 
     return this;
   }
+
+  // prettier-ignore
+  resolve() {
+    const correction = this.depth + 0.001;
+
+    const totalMass = this.a.mass + this.b.mass;
+
+    vec2.subScaled(this.a.position, this.a.position, this.normal, correction * (this.a.mass / totalMass));
+    vec2.addScaled(this.b.position, this.b.position, this.normal, correction * (this.b.mass / totalMass));
+
+    vec2.reset(this.a.velocity);
+    vec2.reset(this.b.velocity);
+  }
 }

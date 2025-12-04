@@ -15,7 +15,7 @@ export default class Player extends Spaceship {
       y: 0,
       vx: 0,
       vy: 0,
-      maxSped: 10,
+      maxSpeed: 5,
     });
   }
 
@@ -56,11 +56,11 @@ export default class Player extends Spaceship {
     vec2.normalize(this.forward, this.forward);
 
     if (activeControls.has(Keyboard.KeyW)) {
-      _b.force_1.setFromMagDir(500, this.forward);
+      _b.force_1.setFromMagDir(1000, this.forward);
       this.netForce.apply(_b.force_1);
     }
     if (activeControls.has(Keyboard.KeyS)) {
-      _b.force_1.setFromMagDir(500, this.forward).negate();
+      _b.force_1.setFromMagDir(1000, this.forward).negate();
       this.netForce.apply(_b.force_1);
     }
 
@@ -76,6 +76,10 @@ export default class Player extends Spaceship {
   }
 
   onBroadCollision(other) {
+    return true;
+  }
+
+  onNarrowCollision(other) {
     return true;
   }
 }

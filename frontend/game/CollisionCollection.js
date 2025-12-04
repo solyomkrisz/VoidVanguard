@@ -14,6 +14,8 @@ export default class CollisionCollection {
   }
 
   detect() {
+    this.collisions.length = 0;
+
     for (const [a, b] of this.objects) {
       a.shapeCollider.validate();
       b.shapeCollider.validate();
@@ -29,5 +31,11 @@ export default class CollisionCollection {
     }
 
     return this;
+  }
+
+  resolve() {
+    for (const collision of this.collisions) {
+      collision.resolve();
+    }
   }
 }
