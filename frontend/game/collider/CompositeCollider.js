@@ -5,6 +5,7 @@ import OBP from "./OBP.js";
 import Shape from "../Shape.js";
 import * as vec2 from "../../common/vec2.js";
 import Model from "../Model.js";
+import Collision from "../Collision.js";
 
 export default class CompositeCollider extends Collider {
   static DIRTY = Object.freeze({
@@ -108,7 +109,7 @@ export default class CompositeCollider extends Collider {
   }
 
   intersects(other) {
-    const collision = this.entity.game.buffer.collision_1.reset();
+    const collision = new Collision();
 
     for (const a of this.decomposed) {
       for (const b of other.shapeCollider.decomposed) {
@@ -117,6 +118,8 @@ export default class CompositeCollider extends Collider {
         if (!subCollision.status) continue;
 
         collision.status = subCollision.status;
+        collision.a = this.entity;
+        collision.b = other;
 
         if (
           vec2.dot(a.shapeCollider.center, subCollision.normal) >
@@ -129,8 +132,6 @@ export default class CompositeCollider extends Collider {
 
         if (subCollision.depth > collision.depth) {
           collision.depth = subCollision.depth;
-          collision.a = this.entity;
-          collision.b = other;
         }
       }
     }

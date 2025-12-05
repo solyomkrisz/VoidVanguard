@@ -11,6 +11,7 @@ import DebugOverlay from "./game/DebugOverlay.js";
 import Model from "./game/Model.js";
 import { GlobalState } from "./game/State.js";
 import Shape from "./game/Shape.js";
+import Mouse from "./game/Mouse.js";
 
 const game = new Game();
 game.createCanvas();
@@ -18,6 +19,11 @@ game.initWebGL();
 game.canvasToResponsiveFullWindow();
 game.setProgram(Block.VERTEX_SHADER_SOURCE, Block.FRAGMENT_SHADER_SOURCE);
 Block.INIT_RENDER(game);
+
+const mouse = new Mouse(game);
+game.coreObjects.add(mouse);
+game.mouse = mouse;
+mouse.enableListening();
 
 const tm = new TextureManager(game);
 game.addTextureManager(tm);
@@ -124,6 +130,17 @@ debug.bindSource(
     (p.src.playerPosition = [
       p.src.player.position[0].toFixed(4),
       p.src.player.position[1].toFixed(4),
+    ])
+);
+
+debug.addElement("M XY");
+debug.bindSource(
+  "M XY",
+  "mousePosition",
+  (p) =>
+    (p.src.mousePosition = [
+      p.src.mouse.position[0].toFixed(4),
+      p.src.mouse.position[1].toFixed(4),
     ])
 );
 

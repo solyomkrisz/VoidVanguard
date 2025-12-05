@@ -1,7 +1,14 @@
 import * as vec2 from "../common/vec2.js";
 
 export default class Collision {
+  static TYPE = Object.freeze({
+    NONE: 0,
+    RIGIDBODY: 1 << 0,
+    INTERACTION: 1 << 1,
+  });
+
   constructor() {
+    this.type = Collision.TYPE.NONE;
     this.status = false;
     this.a = null;
     this.b = null;

@@ -49,7 +49,7 @@ export default class Enemy extends Spaceship {
 
     if (disc < 0) return;
 
-    if (Math.abs(a) < 0.0000001) return;
+    if (Math.abs(a) < 1e-7) return;
 
     const discSqrt = Math.sqrt(disc);
     const denom = 2 * a;

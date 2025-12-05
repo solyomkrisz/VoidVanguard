@@ -37,10 +37,13 @@ export default class Game extends WebGLCanvas {
     this.tileSize = 15;
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
+    this.cameraMatrixInverse = mat3.identity();
 
     this.player = null;
+    this.mouse = null;
     this.enemies = new ObjectCollection(this);
     this.projectiles = new ObjectCollection(this);
+    this.coreObjects = new ObjectCollection(this);
 
     this.frameId = 0;
 
@@ -119,14 +122,11 @@ export default class Game extends WebGLCanvas {
   }
 
   tick() {
-    this.player.netForce.reset();
-    this.player.save();
-
-    this.player.update();
+    this.coreObjects.update();
     this.enemies.update();
     this.projectiles.update();
 
-    this.objects.merge(this.enemies, this.projectiles);
+    this.objects.merge(this.coreObjects, this.enemies, this.projectiles);
     this.grid.filter().detect().resolve();
   }
 
@@ -148,13 +148,14 @@ export default class Game extends WebGLCanvas {
 
     this.enemies.render();
     this.projectiles.render();
-    this.player.render();
+    this.coreObjects.render();
 
     const instanceCount = this.updateInstanceBuffer();
 
     if (instanceCount < 0) return;
 
     mat3.cam(this.cameraMatrix, this.aspectRatio, this.scale, this.alpha, this.player);
+    mat3.camInverse(this.cameraMatrixInverse, this.aspectRatio, this.scale, this.alpha, this.player);
     gl.uniformMatrix3fv(this.uniform.cameraMatrix, false, this.cameraMatrix);
 
     this.draw(instanceCount);
@@ -162,7 +163,7 @@ export default class Game extends WebGLCanvas {
 
   createPlayer(model) {
     this.player = new Player(this, model);
-    this.objects.add(this.player); // Player gets collision id
+    this.coreObjects.add(this.player);
   }
 
   /**

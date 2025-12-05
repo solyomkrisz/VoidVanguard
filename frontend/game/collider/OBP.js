@@ -108,9 +108,41 @@ export default class OBP extends Collider {
     return result;
   }
 
-  intersects(other) {
-    const _b = this.entity.game.buffer;
+  pointInPoly(point, shape) {
+    const collision = this.entity.game.buffer.collision_2;
 
+    const vertices = shape.shapeCollider.worldVertices;
+    const [px, py] = point.shapeCollider.worldVertices;
+    let sign = 0;
+
+    collision.reset();
+
+    for (let i = 0; i < vertices.length / 2; i++) {
+      const x0i = i * 2;
+      const x1i = ((i + 1) % (vertices.length / 2)) * 2;
+
+      const x0 = vertices[x0i];
+      const y0 = vertices[x0i + 1];
+      const x1 = vertices[x1i];
+      const y1 = vertices[x1i + 1];
+
+      const cross = (x1 - x0) * (py - y0) - (y1 - y0) * (px - x0);
+
+      const currSign = Math.sign(cross);
+      if (currSign === 0) continue;
+      if (sign === 0) sign = currSign;
+      else if (sign != currSign) return collision;
+    }
+
+    collision.status = true;
+    collision.a = this.entity;
+    collision.b = shape;
+
+    return collision;
+  }
+
+  polyInPoly(other) {
+    const _b = this.entity.game.buffer;
     const collision = _b.collision_2;
 
     const axes = _b.arrn_1;
@@ -118,7 +150,6 @@ export default class OBP extends Collider {
 
     axes.push(...this.axes);
     axes.push(...other.shapeCollider.axes);
-
     if (!axes.length) return collision.reset();
 
     let minOverlap = Infinity,
@@ -149,6 +180,13 @@ export default class OBP extends Collider {
     vec2.copy(collision.normal, minOverlapAxis);
 
     return collision;
+  }
+
+  intersects(other) {
+    if (this.vertices.length === 2) return this.pointInPoly(this.entity, other);
+    else if (other.shapeCollider.vertices.length === 2)
+      return this.pointInPoly(other, this.entity);
+    else return this.polyInPoly(other);
   }
 
   debug() {

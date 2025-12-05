@@ -4,10 +4,12 @@ export default class Collidable {
   static MODEL_CENTER = vec2.create();
 
   constructor(game, model) {
+    this.halfDiagonal = Math.SQRT2 / 2;
+
     this.game = game;
     this.model = model;
 
-    this.id = null;
+    this.id = game.idManager.get();
     this.cell = [];
     this.proxyCollider = null;
     this.shapeCollider = null;

@@ -91,3 +91,19 @@ export function cam(target, aspectRatio, scale, alpha, player) {
 
   return target;
 }
+
+// prettier-ignore
+export function camInverse(target, aspectRatio, scale, alpha, player) {
+  let scaleX = scale,
+    scaleY = scale;
+
+  if (aspectRatio >= 1) scaleX = scale / aspectRatio;
+  else scaleY = scale * aspectRatio;
+
+  target[0] = 1 / scaleX;
+  target[4] = 1 / scaleY;
+  target[6] = player.position[0];
+  target[7] = player.position[1];
+
+  return target;
+}
