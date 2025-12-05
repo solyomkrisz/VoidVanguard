@@ -5,13 +5,21 @@ export default class ObjectCollection {
     this.game = game;
     this.objects = [];
     this.deleted = [];
-    this.baseLength = this.objects.length;
   }
 
-  add(entity) {
-    entity.id = this.game.idManager.get();
-    this.objects.push(entity);
-    this.baseLength++;
+  clear() {
+    this.objects.length = 0;
+    this.deleted.length = 0;
+
+    return this;
+  }
+
+  add(...entities) {
+    for (const entity of entities) {
+      this.objects.push(entity);
+    }
+
+    return this;
   }
 
   update() {
@@ -27,17 +35,21 @@ export default class ObjectCollection {
     }
 
     this.objects.length = writeIndex;
+
+    return this;
   }
 
   render() {
     this.objects.forEach((object) => object.render());
+
+    return this;
   }
 
   merge(...collections) {
-    this.objects.length = this.baseLength;
+    this.objects.length = 0;
 
-    for (const collection of collections) {
-      this.objects.push(...collection.objects);
+    for (const { objects } of collections) {
+      this.objects.push(...objects);
     }
 
     return this;

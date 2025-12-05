@@ -60,7 +60,7 @@ export default class BC extends Collider {
         if (dSq > maxDSq) maxDSq = dSq;
       }
 
-      this.r = Math.sqrt(maxDSq) + Math.SQRT2 / 2;
+      this.r = Math.sqrt(maxDSq) + this.entity.halfDiagonal;
       this.dirty &= ~BC.DIRTY.RADIUS;
     }
 
