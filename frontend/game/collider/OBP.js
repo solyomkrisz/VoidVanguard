@@ -172,7 +172,6 @@ export default class OBP extends Collider {
       }
     }
 
-    vec2.normalize(minOverlapAxis, minOverlapAxis);
     collision.status = true;
     collision.depth = minOverlap;
     collision.a = this.entity;

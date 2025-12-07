@@ -4,11 +4,12 @@ import Rigidbody from "./Rigidbody.js";
 import Model from "./Model.js";
 import Block from "./Block.js";
 import Shape from "./Shape.js";
-import { SpriteID } from "./texture/Texture.js";
+import * as Type from "./Type.js";
 
 export default class Mouse extends Rigidbody {
   constructor(game) {
     super({
+      type: Type.MOUSE,
       game,
       model: new Model(
         // prettier-ignore
@@ -21,9 +22,13 @@ export default class Mouse extends Rigidbody {
       vy: 0,
     });
 
+    this.id = game.idManager.get();
+
     this.halfDiagonal = 0;
 
     this.isDown = false;
+    this.dragged = null;
+
     this.ndc = new Float32Array([0, 0, 1]);
 
     this.mouseMoveEventHandler = this.mouseMoveEventHandler.bind(this);
@@ -59,7 +64,33 @@ export default class Mouse extends Rigidbody {
   }
 
   mouseUpEventHandler(event) {
-    event.button === 0 && (this.isDown = false);
+    event.button === 0 && this.reset();
+  }
+
+  reset() {
+    this.isDown = false;
+    this.detach();
+  }
+
+  attach(entity) {
+    this.dragged = entity;
+  }
+
+  detach() {
+    this.dragged = null;
+  }
+
+  drag() {
+    const _b = this.game.buffer;
+
+    const dragged = this.dragged;
+    if (!dragged) return;
+
+    const dir = vec2.sub(_b.vec2_1, this.position, dragged.position);
+    vec2.normalize(dir, dir);
+
+    _b.force_1.setFromMagDir(20, dir);
+    dragged.netForce.apply(_b.force_1);
   }
 
   // prettier-ignore
@@ -69,6 +100,8 @@ export default class Mouse extends Rigidbody {
     vec3.copy(_b.vec3_1, this.ndc);
     vec3.transformMat3Into(_b.vec3_1, this.game.cameraMatrixInverse, _b.vec3_1);
     vec3.toVec2(this.position, _b.vec3_1);
+
+    this.drag();
 
     if (!vec2.isEqual(this.position, this.previousPosition, 0)) {
       this.proxyCollider.onPositionChange();

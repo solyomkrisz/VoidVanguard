@@ -15,4 +15,12 @@ export default class Model {
       }
     }
   }
+
+  reset() {
+    this.objects.length = 0;
+  }
+
+  add(object) {
+    this.objects.push(object);
+  }
 }

@@ -29,9 +29,9 @@ export default class ObjectCollection {
       if (object.hasState(GlobalState.DEAD)) continue;
 
       this.objects[writeIndex++] = object;
-      object.netForce.reset(); // csak az erőket reseteljkük, a sebességet soha, így a collision dependent erőkből módosított sebesség alkalmazza az erőt
       object.save();
       object.update();
+      object.netForce.reset(); // csak az erőket reseteljük, a sebességet soha, így a collision dependent erőkből módosított sebesség alkalmazza az erőt
     }
 
     this.objects.length = writeIndex;

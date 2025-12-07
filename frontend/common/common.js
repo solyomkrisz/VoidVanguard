@@ -37,3 +37,10 @@ export function getMinMaxXY(
 
   return target;
 }
+
+export function isAdjacent(objects, i, x, y) {
+  const [ox, oy] = objects[i].localPosition;
+  const dx = Math.abs(x - ox);
+  const dy = Math.abs(y - oy);
+  return dx + dy === 1;
+}
