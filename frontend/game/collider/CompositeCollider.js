@@ -38,15 +38,12 @@ export default class CompositeCollider extends Collider {
 
   // prettier-ignore
   createConvexPart(vertexBuffer, objectGroup) {
-    const model = new Model(objectGroup, Model.COPY_MODE.PRESERVE);
-
-    Shape.MERGE(vertexBuffer, objectGroup[0].shape.mergeModeRequest, model.objects);
     const rigidbody = new Rigidbody({
       game: this.entity.game,
-      model: model,
+      model: new Model(objectGroup, Model.COPY_MODE.PRESERVE),
     })
       .apply(this.entity)
-      .setShapeCollider(new OBP(null, ...vertexBuffer));
+      .setShapeCollider(new OBP());
 
     this.decomposed.push(rigidbody);
   }

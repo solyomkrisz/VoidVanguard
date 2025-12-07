@@ -39,5 +39,7 @@ export default class Collision {
 
     // vec2.reset(this.a.velocity);
     // vec2.reset(this.b.velocity);
+
+    return this;
   }
 }
