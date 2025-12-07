@@ -2,6 +2,7 @@ import Collider from "../Collider.js";
 import * as vec from "../../common/vec.js";
 import * as vec2 from "../../common/vec2.js";
 import * as vec3 from "../../common/vec3.js";
+import Shape from "../Shape.js";
 
 export default class OBP extends Collider {
   static DIRTY = Object.freeze({
@@ -9,18 +10,19 @@ export default class OBP extends Collider {
     TRANSFORM: 1 << 0,
   });
 
-  constructor(entity = null, ...vertices) {
+  constructor(entity = null) {
     super(entity);
-
-    this.vertices = vec.create(vertices.length);
-    for (let i = 0; i < vertices.length; i++) this.vertices[i] = vertices[i];
-    this.worldVertices = vec.create(vertices.length);
-    this.axes = vec.create(vertices.length);
-    this.center = vec2.create();
   }
 
   onAttach(entity) {
     this.entity = entity;
+
+    // prettier-ignore
+    {
+      this.init(
+        ...Shape.MERGE(entity.game.buffer.arrn_1, entity.model.objects[0].shape.mergeModeRequest, entity.model.objects)
+      );
+    }
   }
 
   onGeometryChange() {
@@ -35,6 +37,14 @@ export default class OBP extends Collider {
     if (this.dirty === OBP.DIRTY.NONE) return;
 
     this.set();
+  }
+
+  init(...vertices) {
+    this.vertices = vec.create(vertices.length);
+    for (let i = 0; i < vertices.length; i++) this.vertices[i] = vertices[i];
+    this.worldVertices = vec.create(vertices.length);
+    this.axes = vec.create(vertices.length);
+    this.center = vec2.create();
   }
 
   set() {
