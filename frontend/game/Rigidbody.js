@@ -8,8 +8,10 @@ import Force from "./Force.js";
 
 export default class Rigidbody extends Collidable {
   // prettier-ignore
-  constructor({ game, model, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1 } = {}) {
+  constructor({ type, game, model, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1 } = {}) {
     super(game, model);
+
+    this.type = type;
 
     this.setProxyCollider(new BC());
     this.setShapeCollider(new CompositeCollider());
@@ -89,6 +91,23 @@ export default class Rigidbody extends Collidable {
     this.previousPosition.set(this.position);
     this.previousRotation = this.rotation;
     this.previousForward.set(this.forward);
+  }
+
+  is(type) {
+    return this.type === type;
+  }
+
+  isDragged() {
+    return this.game.mouse.dragged === this;
+  }
+
+  posDiff() {
+    const vec2_1 = this.game.buffer.vec2_1;
+
+    vec2.copy(vec2_1, this.position);
+    vec2.sub(vec2_1, vec2_1, this.previousPosition);
+
+    return vec2.len(vec2_1);
   }
 
   // prettier-ignore

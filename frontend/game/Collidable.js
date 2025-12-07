@@ -9,7 +9,7 @@ export default class Collidable {
     this.game = game;
     this.model = model;
 
-    this.id = game.idManager.get();
+    this.id = null;
     this.cell = [];
     this.proxyCollider = null;
     this.shapeCollider = null;

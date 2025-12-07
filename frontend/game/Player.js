@@ -5,10 +5,12 @@ import * as vec2 from "../common/vec2.js";
 import * as mat2 from "../common/mat2.js";
 import Projectile from "./Projectile.js";
 import Model from "./Model.js";
+import * as Type from "./Type.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
     super({
+      type: Type.PLAYER,
       game,
       model: new Model(model),
       x: 0,

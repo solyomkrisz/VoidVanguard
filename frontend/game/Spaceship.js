@@ -1,9 +1,12 @@
 import Rigidbody from "./Rigidbody.js";
+import * as Type from "./Type.js";
 
 export default class Spaceship extends Rigidbody {
-  constructor({ game, model, x, y, vx, vy, maxSpeed } = {}) {
-    super({ game, model, x, y, vx, vy, maxSpeed });
+  // prettier-ignore
+  constructor({ type = Type.UNKNOWN, game, model, x, y, vx, vy, maxSpeed } = {}) {
+    super({ type, game, model, x, y, vx, vy, maxSpeed });
 
+    this.id = game.idManager.get();
     this.shootCooldown = 0;
   }
 

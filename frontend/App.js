@@ -12,6 +12,7 @@ import Model from "./game/Model.js";
 import { GlobalState } from "./game/State.js";
 import Shape from "./game/Shape.js";
 import Mouse from "./game/Mouse.js";
+import BuildingBlock from "./game/BuildingBlock.js";
 
 const game = new Game();
 game.createCanvas();
@@ -57,7 +58,7 @@ const PLAYER_MODEL = [
 
 game.createPlayer(PLAYER_MODEL);
 game.start();
-game.enablePointerLock();
+// game.enablePointerLock();
 
 // prettier-ignore
 const ENEMY_MODEL = [
@@ -84,7 +85,17 @@ const enemy = new Enemy({
   model: new Model(ENEMY_MODEL_2),
   x: 10,
   y: 10,
+  maxSpeed: 10,
 });
+
+const bblock_1 = new BuildingBlock({
+  game,
+  model: new Model([new Block(0, 0, rectCollider, SpriteID.TEST)]),
+  x: -5,
+  y: -4,
+});
+
+game.enemies.add(bblock_1);
 
 enemy.setState(GlobalState.DEAD);
 console.log(enemy.hasState(GlobalState.DEAD));

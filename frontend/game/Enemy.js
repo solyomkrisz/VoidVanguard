@@ -3,11 +3,12 @@ import Spaceship from "./Spaceship.js";
 import * as vec2 from "../common/vec2.js";
 import { getAngleDiff } from "../common/common.js";
 import * as mat2 from "../common/mat2.js";
+import * as Type from "./Type.js";
 
 export default class Enemy extends Spaceship {
   // prettier-ignore
   constructor({ game, model, x, y, maxSpeed } = {}) {
-    super({ game, model, x, y, vx: 0, vy: 0, maxSpeed });
+    super({ type: Type.ENEMY, game, model, x, y, vx: 0, vy: 0, maxSpeed });
   }
 
   aim(targetPosition) {
