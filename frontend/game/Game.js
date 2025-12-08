@@ -29,6 +29,7 @@ export default class Game extends WebGLCanvas {
     this.vdt = 0;
     this.unprocessed = 0;
     this.maxUpdates = 5;
+    this.iterationCount = 6;
 
     this.idManager = new CollisionIDManager();
     this.grid = new Grid(this, 10);
@@ -127,7 +128,7 @@ export default class Game extends WebGLCanvas {
     this.projectiles.update();
 
     this.objects.merge(this.coreObjects, this.enemies, this.projectiles);
-    this.grid.filter().detect().contact().resolve();
+    this.grid.filter().iterate();
   }
 
   // prettier-ignore

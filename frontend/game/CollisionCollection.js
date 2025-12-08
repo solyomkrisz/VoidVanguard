@@ -19,6 +19,9 @@ export default class CollisionCollection {
   }
 
   detect() {
+    this.toResolve.length = 0;
+    this.forContactPhase.length = 0;
+
     for (const [a, b] of this.objects) {
       a.shapeCollider.validate();
       b.shapeCollider.validate();
@@ -62,6 +65,28 @@ export default class CollisionCollection {
   resolve() {
     for (const collision of this.toResolve) {
       collision.resolve();
+    }
+
+    return this;
+  }
+
+  iterate() {
+    if (!this.objects.length) return this;
+
+    let i = 0;
+    let _continue = true;
+
+    while (i < this.game.iterationCount && _continue) {
+      _continue = false;
+
+      this.detect().contact();
+
+      for (const collision of this.toResolve) {
+        collision.resolve();
+        _continue = true;
+      }
+
+      i++;
     }
 
     return this.reset();
