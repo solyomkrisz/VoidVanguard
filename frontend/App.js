@@ -22,7 +22,7 @@ game.setProgram(Block.VERTEX_SHADER_SOURCE, Block.FRAGMENT_SHADER_SOURCE);
 Block.INIT_RENDER(game);
 
 const mouse = new Mouse(game);
-game.coreObjects.add(mouse);
+// game.coreObjects.add(mouse);
 game.mouse = mouse;
 mouse.enableListening();
 
@@ -53,6 +53,7 @@ const PLAYER_MODEL = [
   new Block(0, 0, rectCollider, SpriteID.TEST, 50),
   new Block(-1, 0, rectCollider, SpriteID.TEST, 50),
   new Block(1, 0, rectCollider, SpriteID.TEST, 50),
+  new Block(2, 0, rectCollider, SpriteID.TEST, 50),
   new Block(0, 1, triCollider, SpriteID.TEST, 50),
 ];
 

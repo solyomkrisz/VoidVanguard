@@ -127,7 +127,7 @@ export default class Game extends WebGLCanvas {
     this.projectiles.update();
 
     this.objects.merge(this.coreObjects, this.enemies, this.projectiles);
-    this.grid.filter().detect().resolve();
+    this.grid.filter().detect().contact().resolve();
   }
 
   // prettier-ignore

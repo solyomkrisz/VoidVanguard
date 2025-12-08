@@ -142,5 +142,6 @@ export default class Block {
     this.spriteId = spriteId;
     this.mass = mass;
     this.isRemovable = false;
+    this.health = 100;
   }
 }

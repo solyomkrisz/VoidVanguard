@@ -14,6 +14,7 @@ export default class Collision {
     this.b = null;
     this.depth = 0;
     this.normal = vec2.create();
+    this.subCollisions = [];
   }
 
   reset() {
@@ -22,6 +23,7 @@ export default class Collision {
     this.b = null;
     this.depth = 0;
     vec2.reset(this.normal);
+    this.subCollisions.length = 0;
 
     return this;
   }

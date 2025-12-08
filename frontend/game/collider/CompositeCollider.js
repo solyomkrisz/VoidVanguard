@@ -14,9 +14,15 @@ export default class CompositeCollider extends Collider {
     LAYOUT: 1 << 1,
   });
 
-  constructor(entity = null) {
+  constructor({
+    entity = null,
+    rule = (current, group) =>
+      Shape.IS_STRICT_IDENTICAL(current.shape, group[group.length - 1].shape) &&
+      current.shape.mergeable,
+  } = {}) {
     super(entity);
 
+    this.rule = rule;
     // prettier-ignore
     this.dirty = CompositeCollider.DIRTY.TRANSFORM | CompositeCollider.DIRTY.LAYOUT;
     this.AABB = new AABB(entity);
@@ -37,20 +43,20 @@ export default class CompositeCollider extends Collider {
   }
 
   // prettier-ignore
-  createConvexPart(vertexBuffer, objectGroup) {
+  createConvexPart(objectGroup) {
     const rigidbody = new Rigidbody({
+      parent: this.entity,
       game: this.entity.game,
       model: new Model(objectGroup, Model.COPY_MODE.PRESERVE),
     })
       .apply(this.entity)
-      .setShapeCollider(new OBP());
+      .setShapeCollider(new OBP())
+      .setContactCollider(new CompositeCollider({ rule: () => false }));
 
     this.decomposed.push(rigidbody);
   }
 
   decompose() {
-    const _b = this.entity.game.buffer;
-
     this.decomposed.length = 0;
 
     const { minX, minY, maxX, maxY } = this.AABB.set();
@@ -71,17 +77,18 @@ export default class CompositeCollider extends Collider {
       let group = [];
 
       for (let x = 0; x < w; x++) {
-        // prettier-ignore
-        if (grid[y][x] && (!group.length || (Shape.IS_STRICT_IDENTICAL(grid[y][x].shape, group[group.length - 1].shape) && grid[y][x].shape.mergeable))) {
-          group.push(grid[y][x]);
+        const object = grid[y][x];
+
+        if (object && (!group.length || this.rule(object, group))) {
+          group.push(object);
         } else if (group.length) {
-          this.createConvexPart(_b.arrn_1, group);
+          this.createConvexPart(group);
           group = [];
-          if (grid[y][x]) group.push(grid[y][x]);
+          object && group.push(object);
         }
       }
 
-      if (group.length) this.createConvexPart(_b.arrn_1, group);
+      group.length && this.createConvexPart(group);
     }
 
     this.dirty &= ~CompositeCollider.DIRTY.LAYOUT;
@@ -105,15 +112,16 @@ export default class CompositeCollider extends Collider {
     }
   }
 
-  intersects(other) {
+  intersects(other, getDecomposed = (other) => other.shapeCollider) {
     const collision = new Collision();
 
     for (const a of this.decomposed) {
-      for (const b of other.shapeCollider.decomposed) {
+      for (const b of getDecomposed(other).decomposed) {
         const subCollision = a.shapeCollider.intersects(b);
 
         if (!subCollision.status) continue;
 
+        collision.subCollisions.push(subCollision);
         collision.status = subCollision.status;
         collision.a = this.entity;
         collision.b = other;
