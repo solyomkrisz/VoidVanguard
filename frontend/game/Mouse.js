@@ -107,6 +107,8 @@ export default class Mouse extends Rigidbody {
       this.proxyCollider.onPositionChange();
       this.shapeCollider.onPositionChange();
     }
+
+    this.onGeometryChange();
   }
 
   onBroadCollision(other) {

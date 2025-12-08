@@ -38,6 +38,10 @@ export default class Collider {
     console.warn("onPositionChange() must be implemented by the subclass!");
   }
 
+  onRotationChange() {
+    console.warn("onRotationChange() must be implemented by the subclass!");
+  }
+
   /**
    * This function should take care of updating the collider.
    */

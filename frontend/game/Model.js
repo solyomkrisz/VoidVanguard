@@ -16,6 +16,19 @@ export default class Model {
     }
   }
 
+  clear() {
+    let writeIndex = 0;
+
+    for (const object of this.objects) {
+      if (object.health <= 0) continue;
+      this.objects[writeIndex++] = object;
+    }
+
+    this.objects.length = writeIndex;
+
+    return this;
+  }
+
   reset() {
     this.objects.length = 0;
   }

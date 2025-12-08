@@ -35,6 +35,10 @@ export default class BC extends Collider {
     this.dirty |= BC.DIRTY.BOUNDS;
   }
 
+  onRotationChange() {
+    return;
+  }
+
   validate() {
     if (this.dirty === BC.DIRTY.NONE) return;
 

@@ -106,4 +106,11 @@ export default class Enemy extends Spaceship {
   onNarrowCollision(other) {
     return true;
   }
+
+  onContact(object) {
+    object.health = 0;
+    this.model.clear();
+    this.proxyCollider.onGeometryChange();
+    this.shapeCollider.onGeometryChange();
+  }
 }

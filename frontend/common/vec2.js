@@ -134,7 +134,9 @@ export function transformMat2(target, m, v) {
 }
 
 export function isEqual(v1, v2, epsilon = MATRIX.EPSILON) {
-  return Math.abs(v1[0] - v2[0]) < epsilon && Math.abs(v1[1] - v2[1]) < epsilon;
+  return (
+    Math.abs(v1[0] - v2[0]) <= epsilon && Math.abs(v1[1] - v2[1]) <= epsilon
+  );
 }
 
 export function lerp(target, a, b, t) {

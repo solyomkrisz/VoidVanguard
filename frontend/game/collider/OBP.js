@@ -3,6 +3,7 @@ import * as vec from "../../common/vec.js";
 import * as vec2 from "../../common/vec2.js";
 import * as vec3 from "../../common/vec3.js";
 import Shape from "../Shape.js";
+import Collision from "../Collision.js";
 
 export default class OBP extends Collider {
   static DIRTY = Object.freeze({
@@ -30,6 +31,10 @@ export default class OBP extends Collider {
   }
 
   onPositionChange() {
+    this.dirty |= OBP.DIRTY.TRANSFORM;
+  }
+
+  onRotationChange() {
     this.dirty |= OBP.DIRTY.TRANSFORM;
   }
 
@@ -119,7 +124,7 @@ export default class OBP extends Collider {
   }
 
   pointInPoly(point, shape) {
-    const collision = this.entity.game.buffer.collision_2;
+    const collision = new Collision();
 
     const vertices = shape.shapeCollider.worldVertices;
     const [px, py] = point.shapeCollider.worldVertices;
@@ -153,7 +158,7 @@ export default class OBP extends Collider {
 
   polyInPoly(other) {
     const _b = this.entity.game.buffer;
-    const collision = _b.collision_2;
+    const collision = new Collision();
 
     const axes = _b.arrn_1;
     axes.length = 0;

@@ -8,10 +8,11 @@ import Force from "./Force.js";
 
 export default class Rigidbody extends Collidable {
   // prettier-ignore
-  constructor({ type, game, model, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1 } = {}) {
+  constructor({ type, game, model, parent = null, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1 } = {}) {
     super(game, model);
 
     this.type = type;
+    this.parent = parent;
 
     this.setProxyCollider(new BC());
     this.setShapeCollider(new CompositeCollider());

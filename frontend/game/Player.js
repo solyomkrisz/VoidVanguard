@@ -75,6 +75,8 @@ export default class Player extends Spaceship {
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
+
+    if (this.rotation !== this.previousRotation) this.onRotationChange();
   }
 
   onBroadCollision(other) {
@@ -83,5 +85,13 @@ export default class Player extends Spaceship {
 
   onNarrowCollision(other) {
     return true;
+  }
+
+  // prettier-ignore
+  onContact(object) {
+    object.health = 0;
+    this.model.clear();
+    this.proxyCollider.onGeometryChange();
+    this.shapeCollider.onGeometryChange();
   }
 }

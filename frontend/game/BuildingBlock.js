@@ -70,6 +70,6 @@ export default class BuildingBlock extends Rigidbody {
       this.setState(GlobalState.DEAD);
     }
 
-    return false;
+    return true;
   }
 }
