@@ -2,12 +2,14 @@ export default class CollisionCollection {
   constructor(game) {
     this.game = game;
     this.objects = [];
-    this.collisions = [];
+    this.toResolve = [];
+    this.forContactPhase = [];
   }
 
   reset() {
     this.objects.length = 0;
-    this.collisions.length = 0;
+    this.toResolve.length = 0;
+    this.forContactPhase.length = 0;
 
     return this;
   }
@@ -25,10 +27,12 @@ export default class CollisionCollection {
 
       if (!collision.status) continue;
 
+      this.toResolve.push(collision);
+
       const passA = a.onNarrowCollision(b);
       const passB = b.onNarrowCollision(a);
 
-      passA && passB && this.collisions.push(collision);
+      passA && passB && this.forContactPhase.push(collision);
     }
 
     return this;
@@ -36,7 +40,7 @@ export default class CollisionCollection {
 
   // prettier-ignore
   contact() {
-    for (const { subCollisions } of this.collisions) {
+    for (const { subCollisions } of this.forContactPhase) {
       for (const { a, b } of subCollisions) {
         a.contactCollider.validate();
         b.contactCollider.validate();
@@ -56,7 +60,7 @@ export default class CollisionCollection {
   }
 
   resolve() {
-    for (const collision of this.collisions) {
+    for (const collision of this.toResolve) {
       collision.resolve();
     }
 

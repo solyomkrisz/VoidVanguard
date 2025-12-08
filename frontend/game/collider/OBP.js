@@ -34,6 +34,10 @@ export default class OBP extends Collider {
     this.dirty |= OBP.DIRTY.TRANSFORM;
   }
 
+  onRotationChange() {
+    this.dirty |= OBP.DIRTY.TRANSFORM;
+  }
+
   validate() {
     if (this.dirty === OBP.DIRTY.NONE) return;
 

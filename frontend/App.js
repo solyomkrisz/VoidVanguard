@@ -22,7 +22,7 @@ game.setProgram(Block.VERTEX_SHADER_SOURCE, Block.FRAGMENT_SHADER_SOURCE);
 Block.INIT_RENDER(game);
 
 const mouse = new Mouse(game);
-// game.coreObjects.add(mouse);
+game.coreObjects.add(mouse);
 game.mouse = mouse;
 mouse.enableListening();
 

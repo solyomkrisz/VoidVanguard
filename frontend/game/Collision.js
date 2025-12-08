@@ -39,6 +39,9 @@ export default class Collision {
     vec2.subScaled(this.a.position, this.a.position, this.normal, correction * (this.a.mass / totalMass));
     vec2.addScaled(this.b.position, this.b.position, this.normal, correction * (this.b.mass / totalMass));
 
+    this.a.onPositionChange();
+    this.b.onPositionChange();
+
     // vec2.reset(this.a.velocity);
     // vec2.reset(this.b.velocity);
 

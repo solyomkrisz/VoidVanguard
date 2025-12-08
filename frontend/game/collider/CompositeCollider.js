@@ -42,6 +42,10 @@ export default class CompositeCollider extends Collider {
     this.dirty |= CompositeCollider.DIRTY.TRANSFORM;
   }
 
+  onRotationChange() {
+    this.dirty |= CompositeCollider.DIRTY.TRANSFORM;
+  }
+
   // prettier-ignore
   createConvexPart(objectGroup) {
     const rigidbody = new Rigidbody({
@@ -105,6 +109,7 @@ export default class CompositeCollider extends Collider {
       for (const rigidbody of this.decomposed) {
         rigidbody.apply(this.entity);
         rigidbody.shapeCollider.onPositionChange();
+        rigidbody.shapeCollider.onRotationChange();
         rigidbody.shapeCollider.validate();
       }
 

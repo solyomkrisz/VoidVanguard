@@ -34,6 +34,21 @@ export default class Collidable {
     return this;
   }
 
+  onPositionChange() {
+    this.proxyCollider.onPositionChange();
+    this.shapeCollider.onPositionChange();
+  }
+
+  onRotationChange() {
+    this.proxyCollider.onRotationChange();
+    this.shapeCollider.onRotationChange();
+  }
+
+  onGeometryChange() {
+    this.proxyCollider.onGeometryChange();
+    this.shapeCollider.onGeometryChange();
+  }
+
   onBroadCollision(other) {
     console.warn("onBroadCollision() must be implemented by the subclass!");
   }
