@@ -84,7 +84,7 @@ export default class Player extends Spaceship {
   }
 
   onNarrowCollision(other) {
-    return true;
+    return false;
   }
 
   // prettier-ignore
