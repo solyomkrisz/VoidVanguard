@@ -42,10 +42,15 @@ sprite.addFrame(TextureID.CANON, 2);
 
 tm.addSprite(SpriteID.TEST, sprite);
 
+// Collider structure: new Shape(can be merged with adjacent shapens, mergeMode, vertices: x1, y1, x2, y2, x3, y3, x4, y4)
+// Merge Modes: AABB - only a square shape is possible - 4 vertices required
+//              KEEP_ALL - no merging, all vertices are kept - opens room for complex shapes
 // prettier-ignore
 const rectCollider = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
 // prettier-ignore
 const triCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
+// prettier-ignore
+const turretCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.2, 0.5, 0.2, 0.5, 0.5, -0.5, -0.5, -0.5); 
 // prettier-ignore
 const smallRectCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
 
@@ -53,7 +58,7 @@ const PLAYER_MODEL = [
   new Block(0, 0, rectCollider, SpriteID.TEST, 50),
   new Block(-1, 0, rectCollider, SpriteID.TEST, 50),
   new Block(1, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(0, 1, triCollider, SpriteID.TEST, 50),
+  new Block(0, 1, turretCollider, SpriteID.TEST, 50),
 ];
 
 game.createPlayer(PLAYER_MODEL);
@@ -104,6 +109,7 @@ console.log(enemy.hasState(GlobalState.DEAD));
 
 game.enemies.add(enemy);
 
+// Keyboard setup
 const keyboard = new Keyboard(game);
 game.keyboard = keyboard;
 keyboard.observeKey(Keyboard.KeyW);

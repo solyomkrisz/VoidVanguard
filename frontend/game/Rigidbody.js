@@ -50,20 +50,20 @@ export default class Rigidbody extends Collidable {
   hasState(state) {
     const i = Math.floor(state / 32);
     const b = state % 32;
-
+    
     return this.state[i] ? ((this.state[i] >> b) & 1) !== 0 : false;
   }
 
   clearState(state) {
     const i = Math.floor(state / 32);
     const b = state % 32;
-
+    
     if (i < this.state.length) this.state[i] &= ~(1 << b);
   }
 
   setMass() {
     this.mass = 0;
-
+    // Checks the mass of each block in the model and adds it to the rigidbody's overall mass
     for (const object of this.model.objects) {
       this.mass += object.mass;
     }

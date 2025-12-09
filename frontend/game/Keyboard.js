@@ -1,5 +1,6 @@
 import Game from "./Game.js";
 
+// Define controls for further interactions
 export default class Keyboard {
   static KeyW = "KeyW";
   static KeyA = "KeyA";

@@ -35,6 +35,7 @@ export default class DebugOverlay extends Canvas {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
+  // Draws a circle at (x,y) - usually around an spaceship/object position
   drawCircle(x, y, r, color) {
     const c = this.ctx;
 
@@ -48,6 +49,7 @@ export default class DebugOverlay extends Canvas {
   }
 
   // prettier-ignore
+  // Draws a box at (x,y) with width w and height h - usually around a block's bounding box
   drawBox(x, y, w, h, color, callback = (ctx, color) => {
     ctx.strokeStyle = color;
     ctx.stroke();
@@ -63,6 +65,7 @@ export default class DebugOverlay extends Canvas {
     c.restore();
   }
 
+  // Draws text at (x,y) with given font and color - usually for debug info
   drawText(x, y, text, font, color) {
     const c = this.ctx;
 
@@ -77,7 +80,7 @@ export default class DebugOverlay extends Canvas {
 
     return m;
   }
-
+  // Draws a polygon with given vertices and color - usually for debug shapes
   drawPolygon(vertices, color = "rgba(255, 255, 255, 0.5)") {
     const c = this.ctx;
 
