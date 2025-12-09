@@ -5,10 +5,11 @@ import Collidable from "./Collidable.js";
 import BC from "./collider/BC.js";
 import CompositeCollider from "./collider/CompositeCollider.js";
 import Force from "./Force.js";
+import * as Type from "./Type.js";
 
 export default class Rigidbody extends Collidable {
   // prettier-ignore
-  constructor({ type, game, model, parent = null, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1 } = {}) {
+  constructor({ type = Type.UNKNOWN, game, model, parent = null, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1 } = {}) {
     super(game, model);
 
     this.type = type;
@@ -31,6 +32,7 @@ export default class Rigidbody extends Collidable {
     this.state = new Uint32Array(2);
     this.mass = 0;
     this.netForce = new Force();
+    this.previousNetForce = new Force();
 
     this.setMass();
   }
@@ -88,6 +90,35 @@ export default class Rigidbody extends Collidable {
     this.shapeCollider.debug();
   }
 
+  showDetailsOnContact(object) {
+    const ttip = this.game.tooltip;
+    const { parent: p, block: b } = ttip.layout.debug;
+
+    p.type.field.textContent = this.type;
+    p.position.field.textContent = this.position;
+    p.rotation.field.textContent = this.rotation;
+    p.velocity.field.textContent = this.velocity;
+    p.acceleration.field.textContent = this.acceleration;
+    p.forward.field.textContent = this.forward;
+    p.mass.field.textContent = this.mass;
+    p.netForce.field.textContent = this.previousNetForce.vector;
+    this.previousNetForce.update();
+    p.netForceMagnitude.field.textContent = this.previousNetForce.magnitude();
+    p.cells.field.textContent = this.cells;
+    p.proxyCollider.field.textContent = `{r: ${this.proxyCollider.r}}`;
+    p.shapeCollider.field.textContent = `{decomposed_length: ${this.shapeCollider.decomposed.length}}`;
+
+    b.localPosition.field.textContent = object.localPosition;
+    b.health.field.textContent = object.health;
+    b.mass.field.textContent = object.mass;
+    b.isRemovable.field.textContent = object.isRemovable;
+    b.spriteId.field.textContent = object.spriteId;
+    b.shape.field.textContent = object.shape.vertices;
+
+    ttip.setContent(ttip.layout.debug.html);
+    ttip.show();
+  }
+
   save() {
     this.previousPosition.set(this.position);
     this.previousRotation = this.rotation;
@@ -113,6 +144,8 @@ export default class Rigidbody extends Collidable {
 
   // prettier-ignore
   render() {
+    this.previousNetForce.reset();
+
     const _b = this.game.buffer;
 
     this.interpolatedPosition = vec2.lerp(this.interpolatedPosition, this.previousPosition, this.position, this.game.alpha);

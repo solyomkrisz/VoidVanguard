@@ -31,6 +31,7 @@ export default class ObjectCollection {
       this.objects[writeIndex++] = object;
       object.save();
       object.update();
+      object.previousNetForce.apply(object.netForce);
       object.netForce.reset(); // csak az erőket reseteljük, a sebességet soha, így a collision dependent erőkből módosított sebesség alkalmazza az erőt
     }
 

@@ -84,14 +84,15 @@ export default class Player extends Spaceship {
   }
 
   onNarrowCollision(other) {
-    return false;
+    return true;
   }
 
   // prettier-ignore
   onContact(object) {
-    object.health = 0;
-    this.model.clear();
-    this.proxyCollider.onGeometryChange();
-    this.shapeCollider.onGeometryChange();
+    this.showDetailsOnContact(object);
+    // object.health = 0;
+    // this.model.clear();
+    // this.proxyCollider.onGeometryChange();
+    // this.shapeCollider.onGeometryChange();
   }
 }
