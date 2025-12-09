@@ -13,6 +13,7 @@ import { GlobalState } from "./game/State.js";
 import Shape from "./game/Shape.js";
 import Mouse from "./game/Mouse.js";
 import BuildingBlock from "./game/BuildingBlock.js";
+import Tooltip from "./ui/component/Tooltip.js";
 
 const game = new Game();
 game.createCanvas();
@@ -20,6 +21,35 @@ game.initWebGL();
 game.canvasToResponsiveFullWindow();
 game.setProgram(Block.VERTEX_SHADER_SOURCE, Block.FRAGMENT_SHADER_SOURCE);
 Block.INIT_RENDER(game);
+
+const ttipDebugTemplate = `
+  -> parent |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
+  type/
+  position/
+  rotation/
+  velocity/
+  acceleration/
+  forward/
+  mass/
+  netForce/
+  netForceMagnitude/
+  cells/
+  proxyCollider/
+  shapeCollider/
+  ------
+  -> block |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
+  localPosition/
+  health/
+  mass/
+  isRemovable/
+  spriteId/
+  shape/
+  `;
+
+const ttip = new Tooltip();
+ttip.reset = () => ttip.hide();
+game.setTooltip(ttip);
+ttip.createLayout("debug", ttipDebugTemplate);
 
 const mouse = new Mouse(game);
 game.coreObjects.add(mouse);

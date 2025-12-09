@@ -111,6 +111,8 @@ export default class CompositeCollider extends Collider {
         rigidbody.shapeCollider.onPositionChange();
         rigidbody.shapeCollider.onRotationChange();
         rigidbody.shapeCollider.validate();
+        rigidbody.contactCollider.onPositionChange();
+        rigidbody.contactCollider.onRotationChange();
       }
 
       this.dirty &= ~CompositeCollider.DIRTY.TRANSFORM;
