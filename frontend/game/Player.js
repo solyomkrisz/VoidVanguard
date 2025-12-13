@@ -12,7 +12,7 @@ export default class Player extends Spaceship {
     super({
       type: Type.PLAYER,
       game,
-      model: new Model(model),
+      model,
       x: 0,
       y: 0,
       vx: 0,

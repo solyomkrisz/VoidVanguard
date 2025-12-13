@@ -14,6 +14,7 @@ import Shape from "./game/Shape.js";
 import Mouse from "./game/Mouse.js";
 import BuildingBlock from "./game/BuildingBlock.js";
 import Tooltip from "./ui/component/Tooltip.js";
+import Models from "./game/SpaceShipModels.js";
 
 const game = new Game();
 game.createCanvas();
@@ -63,72 +64,28 @@ tm.queueTextureCoordinate(TextureID.HEART, TextureManager.S0, 0, 2);
 tm.queueTextureCoordinate(TextureID.CANON, TextureManager.S0, 0, 1);
 tm.queueTextureCoordinate(TextureID.BLOCK, TextureManager.S0, 0, 0);
 tm.addTexture(TextureManager.S0, "./image/atlas.png", 1, 3);
+
+// Wait for textures to load, then add coordinates and sprites
 tm.setActiveSlot(TextureManager.S0);
 
 const sprite = new Sprite();
 sprite.addFrame(TextureID.HEART, 2);
 sprite.addFrame(TextureID.BLOCK, 2);
 sprite.addFrame(TextureID.CANON, 2);
-
 tm.addSprite(SpriteID.TEST, sprite);
 
-// prettier-ignore
-const rectCollider = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
-// prettier-ignore
-const triCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
-// prettier-ignore
-const smallRectCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
-// prettier-ignore
-const turretCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.2, 0.5, 0.2, 0.5, 0.5, -0.5, -0.5, -0.5);
-
-const PLAYER_MODEL = [
-  new Block(0, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(-1, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(1, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(2, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(0, 1, turretCollider, SpriteID.TEST, 50),
-];
-
-game.createPlayer(PLAYER_MODEL);
+game.createPlayer(Models.PLAYER);
 game.start();
 // game.enablePointerLock();
 
-// prettier-ignore
-const ENEMY_MODEL = [
-  new Block(0, 0, rectCollider, SpriteID.TEST),
-  new Block(-1, 0, rectCollider, SpriteID.TEST),
-  new Block(1, 0, rectCollider, SpriteID.TEST),
-  new Block(0, 1, rectCollider, SpriteID.TEST)
-];
-
-const ENEMY_MODEL_2 = [
-  new Block(0, 0, rectCollider, SpriteID.TEST),
-  new Block(1, 0, rectCollider, SpriteID.TEST),
-  new Block(-1, 0, rectCollider, SpriteID.TEST),
-  new Block(2, 0, rectCollider, SpriteID.TEST),
-  new Block(-2, 0, rectCollider, SpriteID.TEST),
-  new Block(0, 1, rectCollider, SpriteID.TEST),
-  new Block(1, 1, rectCollider, SpriteID.TEST),
-  new Block(-1, 1, rectCollider, SpriteID.TEST),
-  new Block(0, 2, triCollider, SpriteID.TEST),
-];
 
 const enemy = new Enemy({
   game,
-  model: new Model(ENEMY_MODEL_2),
+  model: Models.SCOUT2,
   x: 10,
   y: 10,
   maxSpeed: 10,
 });
-
-const bblock_1 = new BuildingBlock({
-  game,
-  model: new Model([new Block(0, 0, rectCollider, SpriteID.TEST)]),
-  x: -5,
-  y: -4,
-});
-
-game.enemies.add(bblock_1);
 
 enemy.setState(GlobalState.DEAD);
 console.log(enemy.hasState(GlobalState.DEAD));
