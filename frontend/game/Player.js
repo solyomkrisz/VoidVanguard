@@ -1,11 +1,11 @@
 import Keyboard from "./Keyboard.js";
 import Spaceship from "./Spaceship.js";
-import Block from "./Block.js";
 import * as vec2 from "../common/vec2.js";
-import * as mat2 from "../common/mat2.js";
 import Projectile from "./Projectile.js";
 import Model from "./Model.js";
 import * as Type from "./Type.js";
+import * as UI from "../ui/UI.js";
+import _ from "../ui/component/ShipPropulsionPanel.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
@@ -19,6 +19,14 @@ export default class Player extends Spaceship {
       vy: 0,
       maxSpeed: 5,
     });
+
+    this.createUI();
+  }
+
+  createUI() {
+    const propulsionPanel = UI.element("ship-propulsion-panel");
+    propulsionPanel.source = this;
+    document.body.appendChild(propulsionPanel);
   }
 
   shoot(muzzle, projectileSpeed, cooldown) {
@@ -42,32 +50,50 @@ export default class Player extends Spaceship {
 
   // prettier-ignore
   update() {
+    this.angularAcceleration = 0;
+
     const dt = this.game.fdt;
     const _b = this.game.buffer;
     const activeControls = this.game.keyboard.activeControls;
+    console.log(activeControls)
 
-    if (activeControls.has(Keyboard.KeyA)) {
-      this.rotation += 2.5 * dt;
-    }
-    if (activeControls.has(Keyboard.KeyD)) {
-      this.rotation -= 2.5 * dt;
-    }
+    const _W = activeControls.has(Keyboard.KeyW);
+    const _A = activeControls.has(Keyboard.KeyA);
+    const _D = activeControls.has(Keyboard.KeyD);
+    const _R = activeControls.has(Keyboard.KeyR);
+    const _LCtrl = activeControls.has(Keyboard.LCtrl);
+    const _LShift = activeControls.has(Keyboard.LShift);
 
-    const rotationMatrix = mat2.fromRotation(_b.mat2_1, this.rotation - this.previousRotation);
-    vec2.transformMat2(this.forward, rotationMatrix, this.forward);
-    vec2.normalize(this.forward, this.forward);
+    if (this.controlledThrusters.size > 0) {
+      let T = 0;
 
-    if (activeControls.has(Keyboard.KeyW)) {
-      _b.force_1.setFromMagDir(1000, this.forward);
-      this.netForce.apply(_b.force_1);
-    }
-    if (activeControls.has(Keyboard.KeyS)) {
-      _b.force_1.setFromMagDir(1000, this.forward).negate();
-      this.netForce.apply(_b.force_1);
+      for (const thruster of this.controlledThrusters.values()) {
+        _A && thruster.gimbal(2.5 * dt);
+        _D && thruster.gimbal(-2.5 * dt);
+        _LCtrl && thruster.setThrottle(-0.2 * dt);
+        _LShift && thruster.setThrottle(0.2 * dt);
+        _R && thruster.reset(-2.5 * dt);
+
+        if (_W) {
+          const thrustVector = vec2.rotate(
+            vec2.copy(_b.vec2_1, thruster.thrustVector),
+            this.rotation
+          );
+          this.netForce.apply(
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector).negate()
+          );
+          T += thruster.getTorque(this);
+        }
+      }
+
+      this.angularAcceleration = T / this.I;
     }
 
     this.updateVelocity();
     this.updatePosition();
+
+    this.updateAngularVelocity();
+    this.updateRotation();
 
     if (this.shootCooldown <= 0 && activeControls.has(Keyboard.Space)) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
@@ -75,8 +101,11 @@ export default class Player extends Spaceship {
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
+  }
 
-    if (this.rotation !== this.previousRotation) this.onRotationChange();
+  onPositionChange() {
+    this.proxyCollider.onPositionChange();
+    this.shapeCollider.onPositionChange();
   }
 
   onBroadCollision(other) {
@@ -89,7 +118,7 @@ export default class Player extends Spaceship {
 
   // prettier-ignore
   onContact(object) {
-    this.showDetailsOnContact(object);
+    object.showDetailsOnContact(this);
     // object.health = 0;
     // this.model.clear();
     // this.proxyCollider.onGeometryChange();

@@ -1,5 +1,6 @@
 import { getMinMaxXY } from "../common/common.js";
 import * as vec from "../common/vec.js";
+import * as vec2 from "../common/vec2.js";
 
 export default class Shape {
   static MERGE_MODE = Object.freeze({
@@ -63,5 +64,35 @@ export default class Shape {
     this.mergeModeRequest = mergeModeRequest;
     this.vertices = vec.create(vertices.length);
     for (let i = 0; i < vertices.length; i++) this.vertices[i] = vertices[i];
+  }
+
+  getCentroid(target = vec2.create()) {
+    // prettier-ignore
+    const a = this.vertices, n = a.length / 2;
+    vec2.reset(target);
+
+    let s1 = 0;
+    let s2 = 0;
+
+    for (let i = 0; i < n; i++) {
+      const x0i = i * 2;
+      const x1i = ((i + 1) % n) * 2;
+
+      const x0 = a[x0i];
+      const y0 = a[x0i + 1];
+      const x1 = a[x1i];
+      const y1 = a[x1i + 1];
+
+      s1 += x0 * y1;
+      s2 += y0 * x1;
+
+      const c = x0 * y1 - x1 * y0;
+
+      target[0] += (x0 + x1) * c;
+      target[1] += (y0 + y1) * c;
+    }
+
+    const A = Math.abs(s1 - s2) / 2;
+    return vec2.scale(target, 1 / (6 * A));
   }
 }

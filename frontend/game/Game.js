@@ -6,7 +6,7 @@ import Player from "./Player.js";
 import TextureManager from "./TextureManager.js";
 import Grid from "./Grid.js";
 import DebugOverlay from "./DebugOverlay.js";
-import CollisionIDManager from "./CollisionIDManager.js";
+import IDManager from "./IDManager.js";
 import ObjectCollection from "./ObjectCollection.js";
 import Tooltip from "../ui/component/Tooltip.js";
 
@@ -33,7 +33,7 @@ export default class Game extends WebGLCanvas {
     this.maxUpdates = 5;
     this.iterationCount = 6;
 
-    this.idManager = new CollisionIDManager();
+    this.idManager = new IDManager();
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 

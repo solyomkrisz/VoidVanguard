@@ -14,6 +14,7 @@ import Shape from "./game/Shape.js";
 import Mouse from "./game/Mouse.js";
 import BuildingBlock from "./game/BuildingBlock.js";
 import Tooltip from "./ui/component/Tooltip.js";
+import Thruster from "./game/Thruster.js";
 
 const game = new Game();
 game.createCanvas();
@@ -46,10 +47,46 @@ const ttipDebugTemplate = `
   shape/
   `;
 
+const ttipThrusterDebugTemplate = `
+  -> parent |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
+  type/
+  position/
+  rotation/
+  velocity/
+  acceleration/
+  forward/
+  mass/
+  netForce/
+  netForceMagnitude/
+  cells/
+  proxyCollider/
+  shapeCollider/
+  ------
+  -> block |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
+  localPosition/
+  health/
+  mass/
+  isRemovable/
+  spriteId/
+  shape/
+  ------
+  -> thruster |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
+  fuelType/
+  Isp/
+  massFlowRate/
+  thrustVector/
+  hasGimbal/
+  gimbalRange/
+  gimbal/
+  force/
+  throttle/
+  `;
+
 const ttip = new Tooltip();
 ttip.reset = () => ttip.hide();
 game.setTooltip(ttip);
 ttip.createLayout("debug", ttipDebugTemplate);
+ttip.createLayout("thrusterDebug", ttipThrusterDebugTemplate);
 
 const mouse = new Mouse(game);
 game.coreObjects.add(mouse);
@@ -85,8 +122,29 @@ const PLAYER_MODEL = [
   new Block(0, 0, rectCollider, SpriteID.TEST, 50),
   new Block(-1, 0, rectCollider, SpriteID.TEST, 50),
   new Block(1, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(2, 0, rectCollider, SpriteID.TEST, 50),
   new Block(0, 1, turretCollider, SpriteID.TEST, 50),
+  new Thruster({
+    x: -1,
+    y: -1,
+    shape: rectCollider,
+    spriteId: SpriteID.TEST,
+    fuelType: 0,
+    Isp: 400,
+    massFlowRate: 600,
+    hasGimbal: true,
+    gimbalRange: 15,
+  }),
+  new Thruster({
+    x: 1,
+    y: -1,
+    shape: rectCollider,
+    spriteId: SpriteID.TEST,
+    fuelType: 0,
+    Isp: 400,
+    massFlowRate: 600,
+    hasGimbal: true,
+    gimbalRange: 15,
+  }),
 ];
 
 game.createPlayer(PLAYER_MODEL);
@@ -98,7 +156,6 @@ const ENEMY_MODEL = [
   new Block(0, 0, rectCollider, SpriteID.TEST),
   new Block(-1, 0, rectCollider, SpriteID.TEST),
   new Block(1, 0, rectCollider, SpriteID.TEST),
-  new Block(0, 1, rectCollider, SpriteID.TEST)
 ];
 
 const ENEMY_MODEL_2 = [
@@ -115,9 +172,9 @@ const ENEMY_MODEL_2 = [
 
 const enemy = new Enemy({
   game,
-  model: new Model(ENEMY_MODEL_2),
-  x: 10,
-  y: 10,
+  model: new Model(ENEMY_MODEL),
+  x: 0,
+  y: -5,
   maxSpeed: 10,
 });
 
@@ -144,6 +201,9 @@ keyboard.observeKey(Keyboard.KeyS);
 keyboard.observeKey(Keyboard.KeyA);
 keyboard.observeKey(Keyboard.KeyD);
 keyboard.observeKey(Keyboard.Space);
+keyboard.observeKey(Keyboard.LCtrl);
+keyboard.observeKey(Keyboard.LShift);
+keyboard.observeKey(Keyboard.KeyR);
 keyboard.enableListening();
 
 const debugOverlay = new DebugOverlay();

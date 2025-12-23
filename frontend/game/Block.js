@@ -143,5 +143,43 @@ export default class Block {
     this.mass = mass;
     this.isRemovable = false;
     this.health = 100;
+    this.CoM = this.shape.getCentroid();
+  }
+
+  onRemove(parent) {
+    return this;
+  }
+
+  onInsert(parent) {
+    return this;
+  }
+
+  showDetailsOnContact(parent) {
+    const ttip = parent.game.tooltip;
+    const { parent: p, block: b } = ttip.layout.debug;
+
+    p.type.field.textContent = parent.type;
+    p.position.field.textContent = parent.position;
+    p.rotation.field.textContent = parent.rotation;
+    p.velocity.field.textContent = parent.velocity;
+    p.acceleration.field.textContent = parent.acceleration;
+    p.forward.field.textContent = parent.forward;
+    p.mass.field.textContent = parent.mass;
+    p.netForce.field.textContent = parent.previousNetForce.vector;
+    parent.previousNetForce.update();
+    p.netForceMagnitude.field.textContent = parent.previousNetForce.magnitude();
+    p.cells.field.textContent = parent.cells;
+    p.proxyCollider.field.textContent = `{r: ${parent.proxyCollider.r}}`;
+    p.shapeCollider.field.textContent = `{decomposed_length: ${parent.shapeCollider.decomposed.length}}`;
+
+    b.localPosition.field.textContent = this.localPosition;
+    b.health.field.textContent = this.health;
+    b.mass.field.textContent = this.mass;
+    b.isRemovable.field.textContent = this.isRemovable;
+    b.spriteId.field.textContent = this.spriteId;
+    b.shape.field.textContent = this.shape.vertices;
+
+    ttip.setContent(ttip.layout.debug.html);
+    ttip.show();
   }
 }
