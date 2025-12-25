@@ -93,6 +93,6 @@ export default class Shape {
     }
 
     const A = Math.abs(s1 - s2) / 2;
-    return vec2.scale(target, 1 / (6 * A));
+    return vec2.scale(target, target, 1 / (6 * A));
   }
 }

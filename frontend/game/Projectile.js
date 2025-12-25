@@ -3,11 +3,12 @@ import Rigidbody from "./Rigidbody.js";
 import { SpriteID } from "./texture/Texture.js";
 import * as vec2 from "../common/vec2.js";
 import Model from "./Model.js";
+import Shape from "./Shape.js";
 
 export default class Projectile extends Rigidbody {
   // prettier-ignore
   static MODEL = [
-    new Block(0, 0, SpriteID.TEST)
+    new Block(0, 0, new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0, 0, 0, 0, 0, 0, 0), SpriteID.TEST)
   ];
 
   constructor({ game, x, y, vx, vy, dmg = 0 } = {}) {

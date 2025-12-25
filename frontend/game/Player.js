@@ -55,7 +55,6 @@ export default class Player extends Spaceship {
     const dt = this.game.fdt;
     const _b = this.game.buffer;
     const activeControls = this.game.keyboard.activeControls;
-    console.log(activeControls)
 
     const _W = activeControls.has(Keyboard.KeyW);
     const _A = activeControls.has(Keyboard.KeyA);
