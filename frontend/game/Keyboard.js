@@ -7,6 +7,9 @@ export default class Keyboard {
   static KeyD = "KeyD";
   static Space = "Space";
   static Escape = "Escape";
+  static LCtrl = "ControlLeft";
+  static LShift = "ShiftLeft";
+  static KeyR = "KeyR";
 
   constructor(game) {
     if (!(game instanceof Game)) {

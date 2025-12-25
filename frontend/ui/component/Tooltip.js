@@ -98,7 +98,7 @@ export default class Tooltip {
   setContent(html) {
     if (!this.anchor) return;
     if (this.element.children[0] === html) return;
-    this.element.appendChild(html);
+    this.element.replaceChildren(html);
     queueMicrotask(() => (this.domRect = this.element.getBoundingClientRect()));
   }
 

@@ -1,4 +1,4 @@
-export default class CollisionIDManager {
+export default class IDManager {
   constructor() {
     this.next = 0;
     this.pool = [];
@@ -9,7 +9,7 @@ export default class CollisionIDManager {
     if (this.pool.length) return this.pool.pop();
 
     if (this.next >= this.max) {
-      throw new Error("COLLISIONIDMANAGER-get: Maximum ID limit reached!");
+      throw new Error("IDManager-get: Maximum ID limit reached!");
     }
 
     return this.next++;
