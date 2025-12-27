@@ -1,6 +1,7 @@
 import * as vec2 from "../common/vec2.js";
 import WebGL from "./WebGL.js";
 import * as MATRIX from "../common/common.js";
+import DynamicTooltip from "../ui/component/DynamicTooltip.js";
 
 export default class Block {
   // prettier-ignore
@@ -154,32 +155,22 @@ export default class Block {
     return this;
   }
 
-  showDetailsOnContact(parent) {
+  // prettier-ignore
+  showBasicDetails(parent) {
     const ttip = parent.game.tooltip;
-    const { parent: p, block: b } = ttip.layout.debug;
+    if (ttip.showTemplate(this, ttip.template.BLOCK_INFO, parent.game.frameId)) return;
 
-    p.type.field.textContent = parent.type;
-    p.position.field.textContent = parent.position;
-    p.rotation.field.textContent = parent.rotation;
-    p.velocity.field.textContent = parent.velocity;
-    p.acceleration.field.textContent = parent.acceleration;
-    p.forward.field.textContent = parent.forward;
-    p.mass.field.textContent = parent.mass;
-    p.netForce.field.textContent = parent.previousNetForce.vector;
-    parent.previousNetForce.update();
-    p.netForceMagnitude.field.textContent = parent.previousNetForce.magnitude();
-    p.cells.field.textContent = parent.cells;
-    p.proxyCollider.field.textContent = `{r: ${parent.proxyCollider.r}}`;
-    p.shapeCollider.field.textContent = `{decomposed_length: ${parent.shapeCollider.decomposed.length}}`;
+    const t = ttip.template.BLOCK_INFO;
+    t.localPosition.textContent = this.localPosition;
+    t.shapeVertices.textContent = this.shape.vertices;
+    t.mass.textContent = this.mass;
+    t.isRemovable.textContent = this.isRemovable;
+    t.health.textContent = this.health;
+    t.CoM.textContent = this.CoM;
+  }
 
-    b.localPosition.field.textContent = this.localPosition;
-    b.health.field.textContent = this.health;
-    b.mass.field.textContent = this.mass;
-    b.isRemovable.field.textContent = this.isRemovable;
-    b.spriteId.field.textContent = this.spriteId;
-    b.shape.field.textContent = this.shape.vertices;
-
-    ttip.setContent(ttip.layout.debug.html);
-    ttip.show();
+  showDetails(parent) {
+    this.showBasicDetails(parent);
+    parent.game.tooltip.show();
   }
 }
