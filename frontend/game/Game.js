@@ -129,6 +129,7 @@ export default class Game extends WebGLCanvas {
   tick() {
     this.tooltip.hide();
     this.tooltip.displayed = false;
+    this.contextMenu.hovered = null;
 
     this.coreObjects.update(); // az egér is itt van és a drag miatt input-nak számít tehát muszáj felül lennie
     this.enemies.update();

@@ -229,4 +229,8 @@ export default class Rigidbody extends Collidable {
   update() {
     console.warn("update() must be implemented by the subclass!");
   }
+
+  manualRotate(ccw = 1, rad = Math.PI / 2) {
+    this.rotation += rad * ccw;
+  }
 }

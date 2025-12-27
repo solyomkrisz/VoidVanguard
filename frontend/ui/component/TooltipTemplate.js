@@ -49,7 +49,6 @@ export default class TooltipTemplate extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.timer = 0;
     this.active = false;
     this.hide();
   }

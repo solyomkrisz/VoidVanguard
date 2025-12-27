@@ -12,6 +12,7 @@ export default class DynamicTooltip extends HTMLElement {
 
     this.template = {};
 
+    this.disabled = false;
     this.displayed = false;
     this.dirty = DynamicTooltip.DIRTY.CONTENT;
     this.source = null;
@@ -38,6 +39,8 @@ export default class DynamicTooltip extends HTMLElement {
     this.shadowDOM.adoptedStyleSheets = [sheet];
 
     this.onContentChange = this.onContentChange.bind(this);
+    this.enable = this.enable.bind(this);
+    this.disable = this.disable.bind(this);
   }
 
   connectedCallback() {
@@ -49,6 +52,8 @@ export default class DynamicTooltip extends HTMLElement {
     });
 
     this.addEventListener("content-change", this.onContentChange);
+    document.addEventListener("context-menu-active", this.disable);
+    document.addEventListener("context-menu-inactive", this.enable);
   }
 
   createTemplate(name, title, inner) {
@@ -58,17 +63,27 @@ export default class DynamicTooltip extends HTMLElement {
   }
 
   show() {
-    if (this.visible) return;
+    if (this.visible || this.disabled) return;
 
     this.visible = true;
     this.style.display = "flex";
   }
 
   hide() {
-    if (!this.visible || this.displayed) return;
+    if (!this.visible || this.displayed || this.disabled) return;
 
     this.visible = false;
     this.style.display = "none";
+  }
+
+  enable() {
+    this.disabled = false;
+  }
+
+  disable() {
+    this.displayed = false;
+    this.hide();
+    this.disabled = true;
   }
 
   setPosition() {
@@ -104,6 +119,8 @@ export default class DynamicTooltip extends HTMLElement {
    * @returns {boolean} - Returns true if the previous source of the template is the same as the new, otherwise false.
    */
   showTemplate(source, template, frameId) {
+    if (this.disabled) return;
+
     template.lastActive = frameId;
     this.displayed = true;
 

@@ -28,7 +28,7 @@ export default class ThrusterController extends HTMLElement {
 
     this.source.controller = this;
 
-    for (const key of Thruster.LISTED_PROPERTIES) {
+    for (const key of this.source.constructor.LISTED_PROPERTIES) {
       // prettier-ignore
       const container = UI.element("div", UI.element("span", UI.text(key + ": ")));
       this[key] = container.appendChild(
