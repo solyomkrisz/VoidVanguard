@@ -97,6 +97,8 @@ export default class Mouse extends Rigidbody {
   update() {
     const _b = this.game.buffer;
 
+    this.hovered = null;
+
     vec3.copy(_b.vec3_1, this.ndc);
     vec3.transformMat3Into(_b.vec3_1, this.game.cameraMatrixInverse, _b.vec3_1);
     vec3.toVec2(this.position, _b.vec3_1);
@@ -114,6 +116,11 @@ export default class Mouse extends Rigidbody {
   }
 
   onNarrowCollision(other) {
+    this.game.contextMenu.hovered = other;
     return true;
+  }
+
+  onContact(object) {
+    return false;
   }
 }

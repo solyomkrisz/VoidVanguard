@@ -1,9 +1,13 @@
+import ContextMenu from "../ui/component/ContextMenu.js";
+import * as UI from "../ui/UI.js";
+
 export default class Canvas {
   constructor() {
     this.canvas = null;
     this.canvasDomRect = null;
     this.aspectRatio = 1;
     this.pointerLocked = false;
+    this.contextMenu = null;
 
     this.pointerLockRequestHandler = this.pointerLockRequestHandler.bind(this);
     this.pointerLockChangeHandler = this.pointerLockChangeHandler.bind(this);
@@ -18,11 +22,30 @@ export default class Canvas {
     console.warn("stop() is not implemented!");
   }
 
+  createContextMenu() {
+    if (this.contextMenu instanceof ContextMenu || !this.hasCanvas()) return;
+
+    this.contextMenu = UI.element("context-menu");
+    document.body.appendChild(this.contextMenu);
+
+    this.canvas.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+
+      this.contextMenu.show();
+    });
+
+    this.canvas.addEventListener("click", () => {
+      this.contextMenu.hide();
+    });
+  }
+
   hasCanvas() {
     return this.canvas && this.canvas instanceof HTMLCanvasElement;
   }
 
   createCanvas() {
+    if (this.hasCanvas()) return;
+
     const canvas = document.createElement("canvas");
 
     this.canvas = canvas;

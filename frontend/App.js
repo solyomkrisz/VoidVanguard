@@ -13,6 +13,8 @@ import Shape from "./game/Shape.js";
 import Mouse from "./game/Mouse.js";
 import BuildingBlock from "./game/BuildingBlock.js";
 import Thruster from "./game/Thruster.js";
+import * as UI from "./ui/UI.js";
+import _ from "./ui/component/ContextMenuTemplate.js";
 
 const game = new Game();
 
@@ -42,6 +44,23 @@ game.tooltip.createTemplate("THRUSTER_INFO", "HAJTÓMŰ", [
 ]);
 
 game.createCanvas();
+game.createContextMenu();
+
+const playerContextMenu = UI.element("context-menu-template");
+// prettier-ignore
+{
+  playerContextMenu.addMenuItem("CW forgatás", "rotateCW", (src) => src.manualRotate(-1));
+  playerContextMenu.addMenuItem("CCW forgatás", "rotateCCW", (src) => src.manualRotate());
+}
+game.contextMenu.addTemplate("PLAYER_CONTEXT_MENU", playerContextMenu);
+
+const enemyContextMenu = UI.element("context-menu-template");
+// prettier-ignore
+{
+  enemyContextMenu.addMenuItem("Megöl", "kill", (src) => src.setState(GlobalState.DEAD));
+}
+game.contextMenu.addTemplate("ENEMY_CONTEXT_MENU", enemyContextMenu);
+
 game.initWebGL();
 game.canvasToResponsiveFullWindow();
 game.setProgram(Block.VERTEX_SHADER_SOURCE, Block.FRAGMENT_SHADER_SOURCE);
