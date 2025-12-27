@@ -74,6 +74,6 @@ export default class BuildingBlock extends Rigidbody {
   }
 
   onContact(object) {
-    object.showDetailsOnContact(this);
+    object.showDetails(this);
   }
 }

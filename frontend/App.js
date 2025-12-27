@@ -1,6 +1,5 @@
 import Game from "./game/Game.js";
 import Block from "./game/Block.js";
-import Rigidbody from "./game/Rigidbody.js";
 import DebugPanel from "./game/DebugPanel.js";
 import Keyboard from "./game/Keyboard.js";
 import TextureManager from "./game/TextureManager.js";
@@ -13,80 +12,40 @@ import { GlobalState } from "./game/State.js";
 import Shape from "./game/Shape.js";
 import Mouse from "./game/Mouse.js";
 import BuildingBlock from "./game/BuildingBlock.js";
-import Tooltip from "./ui/component/Tooltip.js";
 import Thruster from "./game/Thruster.js";
 
 const game = new Game();
+
+game.tooltip.createTemplate("PARENT_INFO", "ŰRHAJÓ", [
+  ["Pozíció: ", "position"],
+  ["Sebesség: ", "velocity"],
+  ["Forgás: ", "rotation"],
+  ["Össztömeg: ", "mass"],
+  ["Tömegközéppont: ", "CoM"],
+]);
+
+game.tooltip.createTemplate("BLOCK_INFO", "BLOKK", [
+  ["Helyi pozíció: ", "localPosition"],
+  ["Ütközőtest csúcsok: ", "shapeVertices"],
+  ["Tömeg: ", "mass"],
+  ["Eltávolítható: ", "isRemovable"],
+  ["Életpontok: ", "health"],
+  ["Tömegközéppont: ", "CoM"],
+]);
+
+game.tooltip.createTemplate("THRUSTER_INFO", "HAJTÓMŰ", [
+  ["Fajlagos impulzus: ", "Isp"],
+  ["Tömegáram: ", "massFlowRate"],
+  ["Van gimbal: ", "hasGimbal"],
+  ["Gimbal: ", "_gimbal"],
+  ["Throttle: ", "throttle"],
+]);
+
 game.createCanvas();
 game.initWebGL();
 game.canvasToResponsiveFullWindow();
 game.setProgram(Block.VERTEX_SHADER_SOURCE, Block.FRAGMENT_SHADER_SOURCE);
 Block.INIT_RENDER(game);
-
-const ttipDebugTemplate = `
-  -> parent |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
-  type/
-  position/
-  rotation/
-  velocity/
-  acceleration/
-  forward/
-  mass/
-  netForce/
-  netForceMagnitude/
-  cells/
-  proxyCollider/
-  shapeCollider/
-  ------
-  -> block |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
-  localPosition/
-  health/
-  mass/
-  isRemovable/
-  spriteId/
-  shape/
-  `;
-
-const ttipThrusterDebugTemplate = `
-  -> parent |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
-  type/
-  position/
-  rotation/
-  velocity/
-  acceleration/
-  forward/
-  mass/
-  netForce/
-  netForceMagnitude/
-  cells/
-  proxyCollider/
-  shapeCollider/
-  ------
-  -> block |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
-  localPosition/
-  health/
-  mass/
-  isRemovable/
-  spriteId/
-  shape/
-  ------
-  -> thruster |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
-  fuelType/
-  Isp/
-  massFlowRate/
-  thrustVector/
-  hasGimbal/
-  gimbalRange/
-  gimbal/
-  force/
-  throttle/
-  `;
-
-const ttip = new Tooltip();
-ttip.reset = () => ttip.hide();
-game.setTooltip(ttip);
-ttip.createLayout("debug", ttipDebugTemplate);
-ttip.createLayout("thrusterDebug", ttipThrusterDebugTemplate);
 
 const mouse = new Mouse(game);
 game.coreObjects.add(mouse);
@@ -173,8 +132,8 @@ const ENEMY_MODEL_2 = [
 const enemy = new Enemy({
   game,
   model: new Model(ENEMY_MODEL),
-  x: 0,
-  y: -5,
+  x: -23,
+  y: -14,
   maxSpeed: 10,
 });
 
@@ -188,9 +147,9 @@ const bblock_1 = new BuildingBlock({
 game.enemies.add(bblock_1);
 
 enemy.setState(GlobalState.DEAD);
-console.log(enemy.hasState(GlobalState.DEAD));
+// console.log(enemy.hasState(GlobalState.DEAD));
 enemy.clearState(GlobalState.DEAD);
-console.log(enemy.hasState(GlobalState.DEAD));
+// console.log(enemy.hasState(GlobalState.DEAD));
 
 game.enemies.add(enemy);
 

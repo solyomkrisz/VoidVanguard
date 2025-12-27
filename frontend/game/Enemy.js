@@ -108,7 +108,7 @@ export default class Enemy extends Spaceship {
   }
 
   onContact(object) {
-    object.showDetailsOnContact(this);
+    object.showDetails(this);
     // object.health = 0;
     // this.model.clear();
     // this.proxyCollider.onGeometryChange();

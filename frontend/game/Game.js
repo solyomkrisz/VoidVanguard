@@ -8,13 +8,15 @@ import Grid from "./Grid.js";
 import DebugOverlay from "./DebugOverlay.js";
 import IDManager from "./IDManager.js";
 import ObjectCollection from "./ObjectCollection.js";
-import Tooltip from "../ui/component/Tooltip.js";
+import * as UI from "../ui/UI.js";
+import _ from "../ui/component/DynamicTooltip.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
     super();
 
-    this.tooltip = null;
+    this.tooltip = UI.element("dynamic-tooltip");
+    document.body.appendChild(this.tooltip);
     this.buffer = new Buffer();
 
     this.running = false;
@@ -68,11 +70,6 @@ export default class Game extends WebGLCanvas {
     }
 
     if (this.running) return;
-
-    if (this.tooltip) {
-      this.tooltip.init();
-      this.tooltip.enableMouseFollow();
-    }
 
     const textureManager = this.textureManager;
 
@@ -130,13 +127,17 @@ export default class Game extends WebGLCanvas {
   }
 
   tick() {
-    this.tooltip.onUpdate();
+    this.tooltip.hide();
+    this.tooltip.displayed = false;
+
     this.coreObjects.update(); // az egér is itt van és a drag miatt input-nak számít tehát muszáj felül lennie
     this.enemies.update();
     this.projectiles.update();
 
     this.objects.merge(this.coreObjects, this.enemies, this.projectiles);
     this.grid.filter().iterate();
+
+    this.tooltip.updateTemplates(this.frameId);
   }
 
   // prettier-ignore
@@ -187,14 +188,6 @@ export default class Game extends WebGLCanvas {
     }
 
     this.textureManager = textureManager;
-  }
-
-  setTooltip(tooltip) {
-    if (!(tooltip instanceof Tooltip)) {
-      throw new Error("GAME-setTooltip: The provided value is not a tooltip!");
-    }
-
-    this.tooltip = tooltip;
   }
 
   /**

@@ -58,6 +58,6 @@ export default class Collidable {
   }
 
   onContact(object) {
-    console.warn("onContact() must be implemented by the subclass!");
+    // console.warn("onContact() must be implemented by the subclass!");
   }
 }

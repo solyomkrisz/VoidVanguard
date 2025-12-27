@@ -116,8 +116,24 @@ export default class Player extends Spaceship {
   }
 
   // prettier-ignore
+  showDetails() {
+    const ttip = this.game.tooltip;
+    if (ttip.showTemplate(this, ttip.template.PARENT_INFO, this.game.frameId)) return;
+
+    const t = ttip.template.PARENT_INFO;
+    t.position.textContent = this.position;
+    t.velocity.textContent = this.velocity;
+    t.rotation.textContent = this.rotation;
+    t.mass.textContent = this.mass;
+    t.CoM.textContent = this.CoM;
+
+    ttip.show();
+  }
+
+  // prettier-ignore
   onContact(object) {
-    object.showDetailsOnContact(this);
+    this.showDetails();
+    object.showDetails(this);
     // object.health = 0;
     // this.model.clear();
     // this.proxyCollider.onGeometryChange();

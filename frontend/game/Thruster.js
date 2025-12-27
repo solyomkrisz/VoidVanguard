@@ -1,5 +1,6 @@
 import Block from "./Block.js";
 import * as vec2 from "../common/vec2.js";
+import DynamicTooltip from "../ui/component/DynamicTooltip.js";
 
 export default class Thruster extends Block {
   static g0 = 9.81;
@@ -135,41 +136,22 @@ export default class Thruster extends Block {
     if (!this.dirty) return this;
   }
 
-  showDetailsOnContact(parent) {
+  // prettier-ignore
+  showSpecificDetails(parent) {
     const ttip = parent.game.tooltip;
-    const { parent: p, block: b, thruster: t } = ttip.layout.thrusterDebug;
+    if (ttip.showTemplate(this, ttip.template.THRUSTER_INFO, parent.game.frameId) && !this.dirty) return;
 
-    p.type.field.textContent = parent.type;
-    p.position.field.textContent = parent.position;
-    p.rotation.field.textContent = parent.rotation;
-    p.velocity.field.textContent = parent.velocity;
-    p.acceleration.field.textContent = parent.acceleration;
-    p.forward.field.textContent = parent.forward;
-    p.mass.field.textContent = parent.mass;
-    p.netForce.field.textContent = parent.previousNetForce.vector;
-    parent.previousNetForce.update();
-    p.netForceMagnitude.field.textContent = parent.previousNetForce.magnitude();
-    p.cells.field.textContent = parent.cells;
-    p.proxyCollider.field.textContent = `{r: ${parent.proxyCollider.r}}`;
-    p.shapeCollider.field.textContent = `{decomposed_length: ${parent.shapeCollider.decomposed.length}}`;
+    const t = ttip.template.THRUSTER_INFO;
+    t.Isp.textContent = this.Isp;
+    t.massFlowRate.textContent = this.massFlowRate;
+    t.hasGimbal.textContent = this.hasGimbal;
+    t._gimbal.textContent = this._gimbal;
+    t.throttle.textContent = this.throttle;
+  }
 
-    b.localPosition.field.textContent = this.localPosition;
-    b.health.field.textContent = this.health;
-    b.mass.field.textContent = this.mass;
-    b.isRemovable.field.textContent = this.isRemovable;
-    b.spriteId.field.textContent = this.spriteId;
-    b.shape.field.textContent = this.shape.vertices;
-
-    t.fuelType.field.textContent = this.fuelType;
-    t.Isp.field.textContent = this.Isp;
-    t.massFlowRate.field.textContent = this.massFlowRate;
-    t.thrustVector.field.textContent = this.thrustVector;
-    t.hasGimbal.field.textContent = this.hasGimbal;
-    t.gimbalRange.field.textContent = this.gimbalRange;
-    t.gimbal.field.textContent = this._gimbal;
-    t.throttle.field.textContent = this.throttle;
-
-    ttip.setContent(ttip.layout.thrusterDebug.html);
-    ttip.show();
+  showDetails(parent) {
+    this.showBasicDetails(parent);
+    this.showSpecificDetails(parent);
+    parent.game.tooltip.show();
   }
 }
