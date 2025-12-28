@@ -3,7 +3,7 @@ import * as vec2 from "../common/vec2.js";
 
 export default class Thruster extends Block {
   static g0 = 9.81;
-  static LISTED_PROPERTIES = ["thrustVector", "_gimbal", "throttle", "Isp"];
+  static LISTED_PROPERTIES = ["exhaustDirection", "_gimbal", "throttle", "Isp"];
 
   constructor({
     x,
@@ -25,8 +25,9 @@ export default class Thruster extends Block {
     this.fuelType = fuelType;
     this.Isp = Isp;
     this.massFlowRate = massFlowRate;
-    this.defaultThrustVector = vec2.fromValues(0, -1);
-    this.thrustVector = vec2.fromValues(0, -1);
+    this.defaultExhaustDirection = vec2.fromValues(0, -1);
+    this.exhaustDirection = vec2.fromValues(0, -1);
+    this.thrustVector = vec2.fromValues(0, 1);
     this.thrust = 0;
     this.hasGimbal = hasGimbal;
     this.gimbalRange = gimbalRange;
@@ -52,13 +53,13 @@ export default class Thruster extends Block {
   }
 
   reset() {
-    vec2.copy(this.thrustVector, this.defaultThrustVector);
+    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
     this._gimbal = 0;
     this.throttle = 1;
 
     // prettier-ignore
     {
-      this.controller.thrustVector.textContent = `[${this.thrustVector[0].toFixed(4)}, ${this.thrustVector[1].toFixed(4)}]`;
+      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
       this.controller._gimbal.textContent = this._gimbal.toFixed(4);
       this.controller.throttle.textContent = this.throttle.toFixed(4);
     }
@@ -76,14 +77,14 @@ export default class Thruster extends Block {
 
     if (this._gimbal === this.previousGimbal) return;
 
-    vec2.copy(this.thrustVector, this.defaultThrustVector);
+    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
 
-    vec2.rotate(this.thrustVector, this._gimbal * (Math.PI / 180));
+    vec2.rotate(this.exhaustDirection, this._gimbal * (Math.PI / 180));
     this.previousGimbal = this._gimbal;
 
     // prettier-ignore
     {
-      this.controller.thrustVector.textContent = `[${this.thrustVector[0].toFixed(4)}, ${this.thrustVector[1].toFixed(4)}]`;
+      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
       this.controller._gimbal.textContent = this._gimbal.toFixed(4);
     }
 
@@ -97,14 +98,14 @@ export default class Thruster extends Block {
 
     if (this._gimbal === this.previousGimbal) return;
 
-    vec2.copy(this.thrustVector, this.defaultThrustVector);
+    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
 
-    vec2.rotate(this.thrustVector, this._gimbal * (Math.PI / 180));
+    vec2.rotate(this.exhaustDirection, this._gimbal * (Math.PI / 180));
     this.previousGimbal = this._gimbal;
 
     // prettier-ignore
     {
-      this.controller.thrustVector.textContent = `[${this.thrustVector[0].toFixed(4)}, ${this.thrustVector[1].toFixed(4)}]`;
+      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
       this.controller._gimbal.textContent = this._gimbal.toFixed(4);
     }
 
@@ -113,6 +114,13 @@ export default class Thruster extends Block {
 
   getExhaustVelocity() {
     return this.Isp * Thruster.g0;
+  }
+
+  getThrustVector() {
+    vec2.copy(this.thrustVector, this.exhaustDirection);
+    vec2.scale(this.thrustVector, this.thrustVector, -1);
+
+    return this.thrustVector;
   }
 
   getThrust() {
@@ -141,7 +149,7 @@ export default class Thruster extends Block {
 
     const _b = parent.game.buffer;
 
-    const F = vec2.scale(_b.vec2_1, vec2.copy(_b.vec2_1, this.thrustVector), this.getThrust());
+    const F = vec2.scale(_b.vec2_1, vec2.copy(_b.vec2_1, this.getThrustVector()), this.getThrust());
     const r = vec2.sub(_b.vec2_2, this.localPosition, parent.CoM);
     this.torque = r[0] * F[1] - r[1] * F[0];
 
