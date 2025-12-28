@@ -1,6 +1,5 @@
 import Block from "./Block.js";
 import * as vec2 from "../common/vec2.js";
-import DynamicTooltip from "../ui/component/DynamicTooltip.js";
 
 export default class Thruster extends Block {
   static g0 = 9.81;
@@ -91,6 +90,25 @@ export default class Thruster extends Block {
     this.dirty = true;
 
     return this;
+  }
+
+  reset() {
+    this._gimbal = 0;
+
+    if (this._gimbal === this.previousGimbal) return;
+
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
+
+    vec2.rotate(this.thrustVector, this._gimbal * (Math.PI / 180));
+    this.previousGimbal = this._gimbal;
+
+    // prettier-ignore
+    {
+      this.controller.thrustVector.textContent = `[${this.thrustVector[0].toFixed(4)}, ${this.thrustVector[1].toFixed(4)}]`;
+      this.controller._gimbal.textContent = this._gimbal.toFixed(4);
+    }
+
+    this.dirty = true;
   }
 
   getExhaustVelocity() {

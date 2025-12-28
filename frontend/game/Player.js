@@ -6,6 +6,7 @@ import Model from "./Model.js";
 import * as Type from "./Type.js";
 import * as UI from "../ui/UI.js";
 import _ from "../ui/component/ShipPropulsionPanel.js";
+import _1 from "../ui/component/FlightComputer.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
@@ -20,6 +21,8 @@ export default class Player extends Spaceship {
       maxSpeed: 5,
     });
 
+    this.updatePropulsion = this.manualPropulsionUpdate;
+
     this.createUI();
   }
 
@@ -27,6 +30,10 @@ export default class Player extends Spaceship {
     const propulsionPanel = UI.element("ship-propulsion-panel");
     propulsionPanel.source = this;
     document.body.appendChild(propulsionPanel);
+
+    const flightComputer = UI.element("flight-computer");
+    flightComputer.source = this;
+    document.body.appendChild(flightComputer);
   }
 
   shoot(muzzle, projectileSpeed, cooldown) {
@@ -48,14 +55,7 @@ export default class Player extends Spaceship {
     this.shootCooldown = cooldown;
   }
 
-  // prettier-ignore
-  update() {
-    this.angularAcceleration = 0;
-
-    const dt = this.game.fdt;
-    const _b = this.game.buffer;
-    const activeControls = this.game.keyboard.activeControls;
-
+  manualPropulsionUpdate(dt, _b, activeControls) {
     const _W = activeControls.has(Keyboard.KeyW);
     const _A = activeControls.has(Keyboard.KeyA);
     const _D = activeControls.has(Keyboard.KeyD);
@@ -79,7 +79,9 @@ export default class Player extends Spaceship {
             this.rotation
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector).negate()
+            _b.force_1
+              .setFromMagDir(thruster.getThrust(), thrustVector)
+              .negate()
           );
           T += thruster.getTorque(this);
         }
@@ -87,6 +89,54 @@ export default class Player extends Spaceship {
 
       this.angularAcceleration = T / this.I;
     }
+  }
+
+  autoPropulsionUpdate(dt, _b, activeControls) {
+    const _W = activeControls.has(Keyboard.KeyW);
+    const _A = activeControls.has(Keyboard.KeyA);
+    const _D = activeControls.has(Keyboard.KeyD);
+    const _R = activeControls.has(Keyboard.KeyR);
+    const _LCtrl = activeControls.has(Keyboard.LCtrl);
+    const _LShift = activeControls.has(Keyboard.LShift);
+
+    if (this.controlledThrusters.size > 0) {
+      let T = 0;
+
+      for (const thruster of this.controlledThrusters.values()) {
+        if (_A) thruster.gimbal(2.5 * dt);
+        if (_D) thruster.gimbal(-2.5 * dt);
+        if (!_A && !_D) thruster.reset();
+
+        _LCtrl && thruster.setThrottle(-0.2 * dt);
+        _LShift && thruster.setThrottle(0.2 * dt);
+        _R && thruster.reset(-2.5 * dt);
+
+        if (_W) {
+          const thrustVector = vec2.rotate(
+            vec2.copy(_b.vec2_1, thruster.thrustVector),
+            this.rotation
+          );
+          this.netForce.apply(
+            _b.force_1
+              .setFromMagDir(thruster.getThrust(), thrustVector)
+              .negate()
+          );
+          T += thruster.getTorque(this);
+        }
+      }
+
+      this.angularAcceleration = T / this.I;
+    }
+  }
+
+  update() {
+    this.angularAcceleration = 0;
+
+    const dt = this.game.fdt;
+    const _b = this.game.buffer;
+    const activeControls = this.game.keyboard.activeControls;
+
+    this.updatePropulsion(dt, _b, activeControls);
 
     this.updateVelocity();
     this.updatePosition();
