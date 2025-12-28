@@ -47,9 +47,9 @@ export default class ThrusterController extends HTMLElement {
           detail: {
             checked: target.checked,
             thruster: this.source,
-            bubbles: false,
-            composed: true,
           },
+          bubbles: false,
+          composed: true,
         })
       );
     });
