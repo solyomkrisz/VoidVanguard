@@ -101,6 +101,7 @@ const PLAYER_MODEL = [
   new Block(-1, 0, rectCollider, SpriteID.TEST, 50),
   new Block(1, 0, rectCollider, SpriteID.TEST, 50),
   new Block(0, 1, turretCollider, SpriteID.TEST, 50),
+  // new Block(-2, -1, rectCollider, SpriteID.TEST, 1),
   new Thruster({
     x: -1,
     y: -1,

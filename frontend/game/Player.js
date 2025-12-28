@@ -67,21 +67,19 @@ export default class Player extends Spaceship {
       let T = 0;
 
       for (const thruster of this.controlledThrusters.values()) {
-        _A && thruster.gimbal(2.5 * dt);
-        _D && thruster.gimbal(-2.5 * dt);
+        _A && thruster.gimbal(-2.5 * dt);
+        _D && thruster.gimbal(2.5 * dt);
         _LCtrl && thruster.setThrottle(-0.2 * dt);
         _LShift && thruster.setThrottle(0.2 * dt);
         _R && thruster.reset(-2.5 * dt);
 
         if (_W) {
           const thrustVector = vec2.rotate(
-            vec2.copy(_b.vec2_1, thruster.thrustVector),
+            vec2.copy(_b.vec2_1, thruster.getThrustVector()),
             this.rotation
           );
           this.netForce.apply(
-            _b.force_1
-              .setFromMagDir(thruster.getThrust(), thrustVector)
-              .negate()
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
           );
           T += thruster.getTorque(this);
         }
@@ -103,8 +101,8 @@ export default class Player extends Spaceship {
       let T = 0;
 
       for (const thruster of this.controlledThrusters.values()) {
-        if (_A) thruster.gimbal(2.5 * dt);
-        if (_D) thruster.gimbal(-2.5 * dt);
+        if (_A) thruster.gimbal(-2.5 * dt);
+        if (_D) thruster.gimbal(2.5 * dt);
         if (!_A && !_D) thruster.reset();
 
         _LCtrl && thruster.setThrottle(-0.2 * dt);
@@ -113,13 +111,11 @@ export default class Player extends Spaceship {
 
         if (_W) {
           const thrustVector = vec2.rotate(
-            vec2.copy(_b.vec2_1, thruster.thrustVector),
+            vec2.copy(_b.vec2_1, thruster.getThrustVector()),
             this.rotation
           );
           this.netForce.apply(
-            _b.force_1
-              .setFromMagDir(thruster.getThrust(), thrustVector)
-              .negate()
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
           );
           T += thruster.getTorque(this);
         }
