@@ -144,7 +144,8 @@ export default class Block {
     this.mass = mass;
     this.isRemovable = false;
     this.health = 100;
-    this.CoM = this.shape.getCentroid();
+    this.CoM = vec2.create();
+    this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
   }
 
   onRemove(parent) {
