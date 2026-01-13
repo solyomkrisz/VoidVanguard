@@ -76,7 +76,7 @@ export default class Rigidbody extends Collidable {
 
     for (const object of this.model.objects) {
       this.mass += object.mass;
-      vec2.addScaled(this.CoM, this.CoM, object.localPosition, object.mass);
+      vec2.addScaled(this.CoM, this.CoM, object.CoM, object.mass);
     }
 
     vec2.scale(this.CoM, this.CoM, 1 / this.mass);
@@ -89,7 +89,7 @@ export default class Rigidbody extends Collidable {
 
     for (const object of this.model.objects) {
       const r = vec2.sub(_b.vec2_1, object.CoM, this.CoM);
-      this.I += object.mass * vec2.dot(r, r);
+      this.I += object.I + object.mass * vec2.dot(r, r);
     }
   }
 
