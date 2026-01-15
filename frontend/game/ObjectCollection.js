@@ -33,6 +33,9 @@ export default class ObjectCollection {
       object.update();
       object.previousNetForce.apply(object.netForce);
       object.netForce.reset(); // csak az erőket reseteljük, a sebességet soha, így a collision dependent erőkből módosított sebesség alkalmazza az erőt
+
+      //
+      object.model.clear() && object.onGeometryChange();
     }
 
     this.objects.length = writeIndex;
@@ -43,6 +46,11 @@ export default class ObjectCollection {
   render() {
     this.objects.forEach((object) => object.render());
 
+    return this;
+  }
+
+  forEach(cb) {
+    for (const object of this.objects) cb(object);
     return this;
   }
 

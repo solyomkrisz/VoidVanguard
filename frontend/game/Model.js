@@ -42,10 +42,12 @@ export default class Model {
 
   clear() {
     let writeIndex = 0;
+    let geometryChanged = false;
 
     for (const object of this.objects) {
       if (object.health <= 0) {
         object.onRemove();
+        geometryChanged = true;
         continue;
       }
 
@@ -54,7 +56,7 @@ export default class Model {
 
     this.objects.length = writeIndex;
 
-    return this;
+    return geometryChanged;
   }
 
   reset() {

@@ -1,6 +1,7 @@
 import * as vec2 from "../common/vec2.js";
 import WebGL from "./WebGL.js";
 import * as MATRIX from "../common/common.js";
+import * as vec from "../common/vec.js";
 import DynamicTooltip from "../ui/component/DynamicTooltip.js";
 
 export default class Block {
@@ -137,13 +138,15 @@ export default class Block {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
-  constructor(x, y, shape, spriteId, mass = 1) {
+  // prettier-ignore
+  constructor({ x, y, shape, spriteId, mass = 1, health = 100, adjacencyRules = vec.create(0) } = {}) {
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
     this.spriteId = spriteId;
     this.mass = mass;
-    this.isRemovable = false;
-    this.health = 100;
+    this.isRemovable = true;
+    this.health = health;
+    this.adjacencyRules = adjacencyRules;
     this.CoM = vec2.create();
     this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
   }
