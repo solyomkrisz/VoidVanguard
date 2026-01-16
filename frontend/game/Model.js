@@ -29,7 +29,7 @@ export default class Model {
   init(parent) {
     if (!parent) {
       throw new Error(
-        "MODEL-init: Couldn't initialize model (no parent is provided)!"
+        "MODEL-init: Couldn't initialize model (no parent is provided)!",
       );
     }
 

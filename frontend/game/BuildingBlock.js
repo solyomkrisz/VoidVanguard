@@ -116,9 +116,11 @@ export default class BuildingBlock extends Rigidbody {
     ttip.show();
   }
 
-  onContact(object) {
-    this.showDetails();
-    object.showDetails(this);
+  onContact(collision, object) {
+    if (collision.is(Type.INTERACTION)) {
+      this.showDetails();
+      object.showDetails(this);
+    }
   }
 
   // prettier-ignore

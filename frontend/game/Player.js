@@ -77,10 +77,10 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation
+            this.rotation,
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
         }
@@ -113,10 +113,10 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation
+            this.rotation,
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
         }
@@ -177,9 +177,11 @@ export default class Player extends Spaceship {
     ttip.show();
   }
 
-  onContact(object) {
-    this.showDetails();
-    object.showDetails(this);
+  onContact(collision, object) {
+    if (collision.is(Type.INTERACTION)) {
+      this.showDetails();
+      object.showDetails(this);
+    }
 
     const mouse = this.game.mouse;
 
