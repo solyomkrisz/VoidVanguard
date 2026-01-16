@@ -15,6 +15,7 @@ import BuildingBlock from "./game/BuildingBlock.js";
 import Thruster from "./game/Thruster.js";
 import * as UI from "./ui/UI.js";
 import _ from "./ui/component/ContextMenuTemplate.js";
+import * as vec from "../frontend/common/vec.js";
 
 const game = new Game();
 
@@ -97,10 +98,34 @@ const smallRectCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.1
 const turretCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.2, 0.5, 0.2, 0.5, 0.5, -0.5, -0.5, -0.5);
 
 const PLAYER_MODEL = [
-  new Block(0, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(-1, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(1, 0, rectCollider, SpriteID.TEST, 50),
-  new Block(0, 1, turretCollider, SpriteID.TEST, 50),
+  new Block({
+    x: 0,
+    y: 0,
+    shape: rectCollider,
+    spriteId: SpriteID.TEST,
+    mass: 1,
+  }),
+  new Block({
+    x: -1,
+    y: 0,
+    shape: rectCollider,
+    spriteId: SpriteID.TEST,
+    mass: 1,
+  }),
+  new Block({
+    x: 1,
+    y: 0,
+    shape: rectCollider,
+    spriteId: SpriteID.TEST,
+    mass: 1,
+  }),
+  new Block({
+    x: 0,
+    y: 1,
+    shape: turretCollider,
+    spriteId: SpriteID.TEST,
+    mass: 1,
+  }),
   // new Block(-2, -1, rectCollider, SpriteID.TEST, 1),
   new Thruster({
     x: -1,
@@ -132,21 +157,21 @@ game.start();
 
 // prettier-ignore
 const ENEMY_MODEL = [
-  new Block(0, 0, rectCollider, SpriteID.TEST),
-  new Block(-1, 0, rectCollider, SpriteID.TEST),
-  new Block(1, 0, rectCollider, SpriteID.TEST),
+  new Block({x:0, y:0, shape:rectCollider, spriteId:SpriteID.TEST}),
+  new Block({x:-1,y: 0,shape: rectCollider,spriteId: SpriteID.TEST}),
+  new Block({x:1, y:0, shape:rectCollider, spriteId:SpriteID.TEST}),
 ];
 
 const ENEMY_MODEL_2 = [
-  new Block(0, 0, rectCollider, SpriteID.TEST),
-  new Block(1, 0, rectCollider, SpriteID.TEST),
-  new Block(-1, 0, rectCollider, SpriteID.TEST),
-  new Block(2, 0, rectCollider, SpriteID.TEST),
-  new Block(-2, 0, rectCollider, SpriteID.TEST),
-  new Block(0, 1, rectCollider, SpriteID.TEST),
-  new Block(1, 1, rectCollider, SpriteID.TEST),
-  new Block(-1, 1, rectCollider, SpriteID.TEST),
-  new Block(0, 2, triCollider, SpriteID.TEST),
+  new Block({ x: 0, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
+  new Block({ x: 1, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
+  new Block({ x: -1, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
+  new Block({ x: 2, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
+  new Block({ x: -2, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
+  new Block({ x: 0, y: 1, shape: rectCollider, spriteId: SpriteID.TEST }),
+  new Block({ x: 1, y: 1, shape: rectCollider, spriteId: SpriteID.TEST }),
+  new Block({ x: -1, y: 1, shape: rectCollider, spriteId: SpriteID.TEST }),
+  new Block({ x: 0, y: 2, shape: triCollider, spriteId: SpriteID.TEST }),
 ];
 
 const enemy = new Enemy({
@@ -159,12 +184,20 @@ const enemy = new Enemy({
 
 const bblock_1 = new BuildingBlock({
   game,
-  model: new Model([new Block(0, 0, rectCollider, SpriteID.TEST)]),
+  model: new Model([
+    new Block({
+      x: 0,
+      y: 0,
+      shape: rectCollider,
+      spriteId: SpriteID.TEST,
+      adjacencyRules: vec.fromValues(0, -1),
+    }),
+  ]),
   x: -5,
   y: -4,
 });
 
-game.enemies.add(bblock_1);
+game.buildingBlocks.add(bblock_1);
 
 enemy.setState(GlobalState.DEAD);
 // console.log(enemy.hasState(GlobalState.DEAD));

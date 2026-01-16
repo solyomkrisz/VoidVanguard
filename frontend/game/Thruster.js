@@ -1,4 +1,5 @@
 import Block from "./Block.js";
+import * as vec from "../common/vec.js";
 import * as vec2 from "../common/vec2.js";
 
 export default class Thruster extends Block {
@@ -11,6 +12,8 @@ export default class Thruster extends Block {
     shape,
     spriteId,
     mass = 1,
+    health = 100,
+    adjacencyRules = vec.create(0),
     description = null,
     fuelType,
     Isp,
@@ -18,7 +21,7 @@ export default class Thruster extends Block {
     hasGimbal = false,
     gimbalRange = 0,
   } = {}) {
-    super(x, y, shape, spriteId, mass);
+    super({ x, y, shape, spriteId, mass, health, adjacencyRules });
 
     this.id = null;
     this.description = description;

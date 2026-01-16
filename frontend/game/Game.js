@@ -47,6 +47,7 @@ export default class Game extends WebGLCanvas {
     this.player = null;
     this.mouse = null;
     this.enemies = new ObjectCollection(this);
+    this.buildingBlocks = new ObjectCollection(this);
     this.projectiles = new ObjectCollection(this);
     this.coreObjects = new ObjectCollection(this);
 
@@ -134,8 +135,10 @@ export default class Game extends WebGLCanvas {
     this.coreObjects.update(); // az egér is itt van és a drag miatt input-nak számít tehát muszáj felül lennie
     this.enemies.update();
     this.projectiles.update();
+    this.buildingBlocks.update();
 
-    this.objects.merge(this.coreObjects, this.enemies, this.projectiles);
+    // prettier-ignore
+    this.objects.merge(this.coreObjects, this.enemies, this.projectiles, this.buildingBlocks);
     this.grid.filter().iterate();
 
     this.tooltip.updateTemplates(this.frameId);
@@ -159,6 +162,7 @@ export default class Game extends WebGLCanvas {
 
     this.enemies.render();
     this.projectiles.render();
+    this.buildingBlocks.render();
     this.coreObjects.render();
 
     const instanceCount = this.updateInstanceBuffer();

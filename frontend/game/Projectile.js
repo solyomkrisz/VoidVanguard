@@ -8,7 +8,7 @@ import Shape from "./Shape.js";
 export default class Projectile extends Rigidbody {
   // prettier-ignore
   static MODEL = [
-    new Block(0, 0, new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0, 0, 0, 0, 0, 0, 0), SpriteID.TEST)
+    new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0, 0, 0, 0, 0, 0, 0), spriteId: SpriteID.TEST })
   ];
 
   constructor({ game, x, y, vx, vy, dmg = 0 } = {}) {

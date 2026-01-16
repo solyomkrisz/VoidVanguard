@@ -7,6 +7,7 @@ import * as Type from "./Type.js";
 import * as UI from "../ui/UI.js";
 import _ from "../ui/component/ShipPropulsionPanel.js";
 import _1 from "../ui/component/FlightComputer.js";
+import BuildingBlock from "./BuildingBlock.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
@@ -176,13 +177,53 @@ export default class Player extends Spaceship {
     ttip.show();
   }
 
-  // prettier-ignore
   onContact(object) {
     this.showDetails();
     object.showDetails(this);
-    // object.health = 0;
-    // this.model.clear();
-    // this.proxyCollider.onGeometryChange();
-    // this.shapeCollider.onGeometryChange();
+
+    const mouse = this.game.mouse;
+
+    // Detaching mechanism
+    // prettier-ignore
+    if (mouse.isDown && !mouse.dragged && object.isRemovable && object.health > 0) {
+      const [ox, oy] = object.localPosition;
+
+      let dirs = 0;
+
+      // prettier-ignore
+      for (const { localPosition: [x, y] } of this.model.objects) {
+        if (ox + 1 === x && oy === y) dirs++;
+        else if (ox - 1 === x && oy === y) dirs++;
+        else if (ox === x && oy + 1 === y) dirs++;
+        else if (ox === x && oy - 1 === y) dirs++;
+      }
+
+      if (dirs >= 4) return;
+
+      const [px, py] = this.position;
+
+      const bblock = new BuildingBlock({
+        game: this.game,
+        model: new Model([object], Model.COPY_MODE.PRESERVE),
+        x: px + ox,
+        y: py + oy,
+      });
+
+      const originalHealth = object.health;
+
+      object.onRemove = function () {
+        this.health = originalHealth;
+
+        this.onRemove = function (parent) {
+          return this;
+        };
+      };
+
+      vec2.copy(bblock.position, this.game.mouse.position);
+
+      this.game.buildingBlocks.add(bblock);
+
+      object.health = 0;
+    }
   }
 }
