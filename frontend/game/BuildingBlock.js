@@ -15,7 +15,7 @@ export default class BuildingBlock extends Rigidbody {
 
     vec2.reset(model.objects[0].localPosition);
 
-    super({ game, model, x, y, vx, vy, maxSpeed: 1 });
+    super({ type: Type.BUILDING_BLOCK, game, model, x, y, vx, vy, maxSpeed: 1 });
 
     this.id = game.idManager.get();
 
@@ -119,5 +119,12 @@ export default class BuildingBlock extends Rigidbody {
   onContact(object) {
     this.showDetails();
     object.showDetails(this);
+  }
+
+  // prettier-ignore
+  resolvePenetration(other, collision, epsilon, direction) {
+    const correction = other.is(Type.PLAYER) ? collision.depth + epsilon : this.getDefaultPenetrationCorrection(other, collision, epsilon);
+
+    vec2.addScaled(this.position, this.position, collision.normal, correction * direction);
   }
 }

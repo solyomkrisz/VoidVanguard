@@ -61,4 +61,14 @@ export default class Collidable {
   onContact(object) {
     console.warn("onContact() must be implemented by the subclass!");
   }
+
+  getDefaultPenetrationCorrection() {
+    console.warn(
+      "getDefaultPenetrationCorrection() must be implemented by the subclass!"
+    );
+  }
+
+  resolvePenetration(other, collision, epsilon, direction) {
+    console.warn("resolvePenetration() must be implemented by the subclass!");
+  }
 }

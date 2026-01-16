@@ -122,7 +122,7 @@ const PLAYER_MODEL = [
   new Block({
     x: 0,
     y: 1,
-    shape: turretCollider,
+    shape: rectCollider,
     spriteId: SpriteID.TEST,
     mass: 1,
   }),
@@ -193,8 +193,8 @@ const bblock_1 = new BuildingBlock({
       adjacencyRules: vec.fromValues(0, -1),
     }),
   ]),
-  x: -5,
-  y: -4,
+  x: -0.5,
+  y: 5,
 });
 
 game.buildingBlocks.add(bblock_1);

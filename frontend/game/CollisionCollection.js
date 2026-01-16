@@ -82,7 +82,7 @@ export default class CollisionCollection {
       this.detect().contact();
 
       for (const collision of this.toResolve) {
-        collision.resolve();
+        collision.resolvePenetration();
         _continue = true;
       }
 
