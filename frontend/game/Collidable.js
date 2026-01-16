@@ -58,7 +58,7 @@ export default class Collidable {
     console.warn("onNarrowCollision() must be implemented by the subclass!");
   }
 
-  onContact(object) {
+  onContact(collision, object) {
     console.warn("onContact() must be implemented by the subclass!");
   }
 

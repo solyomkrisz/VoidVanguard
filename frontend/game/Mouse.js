@@ -120,7 +120,7 @@ export default class Mouse extends Rigidbody {
     return true;
   }
 
-  onContact(object) {
+  onContact(collision, object) {
     return false;
   }
 }

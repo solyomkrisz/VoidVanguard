@@ -152,6 +152,7 @@ export default class Block {
   }
 
   onRemove(parent) {
+    this.toRemove = false;
     return this;
   }
 

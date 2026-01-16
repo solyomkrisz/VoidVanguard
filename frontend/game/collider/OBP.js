@@ -4,6 +4,7 @@ import * as vec2 from "../../common/vec2.js";
 import * as vec3 from "../../common/vec3.js";
 import Shape from "../Shape.js";
 import Collision from "../Collision.js";
+import * as Type from "../Type.js";
 
 export default class OBP extends Collider {
   static DIRTY = Object.freeze({
@@ -149,6 +150,7 @@ export default class OBP extends Collider {
       else if (sign != currSign) return collision;
     }
 
+    collision.type = Type.INTERACTION;
     collision.status = true;
     collision.a = this.entity;
     collision.b = shape;
@@ -187,6 +189,7 @@ export default class OBP extends Collider {
       }
     }
 
+    collision.type = Type.RIGIDBODY;
     collision.status = true;
     collision.depth = minOverlap;
     collision.a = this.entity;
