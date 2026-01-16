@@ -64,8 +64,8 @@ export default class Model {
     this.objects.length = 0;
   }
 
-  add(object) {
-    object.onInsert();
+  add(parent, object) {
+    object.onInsert(parent);
     this.objects.push(object);
   }
 }

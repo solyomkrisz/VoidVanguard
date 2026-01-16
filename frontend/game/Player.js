@@ -222,7 +222,6 @@ export default class Player extends Spaceship {
       vec2.copy(bblock.position, this.game.mouse.position);
 
       this.game.buildingBlocks.add(bblock);
-      console.log(this.game.buildingBlocks.objects.length);
 
       object.health = 0;
     }

@@ -86,7 +86,7 @@ export default class BuildingBlock extends Rigidbody {
 
       const [object] = this.model.objects;
       vec2.copy(object.localPosition, nLP);
-      other.model.add(object);
+      other.model.add(other, object);
       object.isRemovable = true;
 
       this.model.reset();
