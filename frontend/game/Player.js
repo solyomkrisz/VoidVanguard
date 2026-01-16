@@ -226,4 +226,11 @@ export default class Player extends Spaceship {
       object.health = 0;
     }
   }
+
+  // prettier-ignore
+  resolvePenetration(other, collision, epsilon, direction) {
+    if (other.is(Type.BUILDING_BLOCK)) return;
+
+    vec2.addScaled(this.position, this.position, collision.normal, this.getDefaultPenetrationCorrection(other, collision, epsilon) * direction);
+  }
 }

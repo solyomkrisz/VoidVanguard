@@ -233,4 +233,13 @@ export default class Rigidbody extends Collidable {
   manualRotate(ccw = 1, rad = Math.PI / 2) {
     this.rotation += rad * ccw;
   }
+
+  getDefaultPenetrationCorrection(other, { depth }, epsilon) {
+    return (depth + epsilon) * (this.mass / (this.mass + other.mass));
+  }
+
+  // prettier-ignore
+  resolvePenetration(other, collision, epsilon, direction) {
+    vec2.add(this.position, this.position, collision.normal, this.getDefaultPenetrationCorrection(other, collision, epsilon) * direction);
+  }
 }
