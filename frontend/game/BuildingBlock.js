@@ -18,6 +18,7 @@ export default class BuildingBlock extends Rigidbody {
     super({ type: Type.BUILDING_BLOCK, game, model, x, y, vx, vy, maxSpeed: 1 });
 
     this.id = game.idManager.get();
+    this.model.init(this);
 
     this.contextMenuTemplate = game.contextMenu.template.ENEMY_CONTEXT_MENU;
   }

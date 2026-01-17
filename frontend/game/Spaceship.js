@@ -13,8 +13,6 @@ export default class Spaceship extends Rigidbody {
     this.thrusters = new Map();
     this.controlledThrusters = new Map();
     this.shootCooldown = 0;
-
-    this.model.init(this);
   }
 
   shoot() {

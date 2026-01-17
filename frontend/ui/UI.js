@@ -5,6 +5,12 @@ export function element(name, ...children) {
     result.appendChild(child);
   }
 
+  result.insertInto = function (e = document.body) {
+    e.appendChild(this);
+
+    return this;
+  };
+
   return result;
 }
 

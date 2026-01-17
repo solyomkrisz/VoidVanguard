@@ -1,10 +1,15 @@
 import Block from "./Block.js";
 import * as vec from "../common/vec.js";
 import * as vec2 from "../common/vec2.js";
+import * as Type from "./Type.js";
+import * as UI from "../ui/UI.js";
+import _ from "../ui/component/ThrusterController.js";
 
 export default class Thruster extends Block {
   static g0 = 9.81;
-  static LISTED_PROPERTIES = ["exhaustDirection", "_gimbal", "throttle", "Isp"];
+
+  // prettier-ignore
+  static LISTED_PROPERTIES = ["localPosition", "exhaustDirection", "_gimbal", "throttle", "Isp"];
 
   constructor({
     x,
@@ -43,15 +48,42 @@ export default class Thruster extends Block {
   }
 
   onRemove(parent) {
-    parent.idManager.release(this.id);
-    parent.thrusters.delete(this.id);
-    this.controller.remove();
+    this.toRemove = false;
+
+    if (parent.is(Type.PLAYER)) {
+      parent.thrusters.delete(this.id);
+      parent.controlledThrusters.delete(this.id);
+      console.log(parent.controlledThrusters);
+      parent.idManager.release(this.id);
+      this.id = null;
+      if (this.controller) {
+        this.controller.remove();
+        this.controller.toggleCheckbox();
+      }
+    }
+
     return this;
   }
 
+  // prettier-ignore
   onInsert(parent) {
-    this.id = parent.idManager.get();
-    parent.thrusters.set(this.id, this);
+    this.dirty = true; // Lehet, hogy új localPosition-t kapott szóval a nyomatékot újra kell számolni!
+
+    if (parent.is(Type.PLAYER)) {
+      !this.controller && (this.controller = UI.element("thruster-controller").setSource(this)).build();
+      parent.UI.propulsionPanel.dispatchEvent(
+        new CustomEvent("thruster-insert", {
+          detail: {
+            thruster: this,
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      this.id = parent.idManager.get();
+      parent.thrusters.set(this.id, this);
+    }
+
     return this;
   }
 

@@ -45,8 +45,8 @@ export default class Model {
     let geometryChanged = false;
 
     for (const object of this.objects) {
-      if (object.health <= 0) {
-        object.onRemove();
+      if (object.health <= 0 || object.toRemove) {
+        object.onRemove(this.parent);
         geometryChanged = true;
         continue;
       }
@@ -60,7 +60,7 @@ export default class Model {
   }
 
   reset() {
-    this.objects.forEach((object) => object.onRemove());
+    this.objects.forEach((object) => object.onRemove(this.parent));
     this.objects.length = 0;
   }
 

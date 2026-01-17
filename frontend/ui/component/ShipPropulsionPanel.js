@@ -24,6 +24,11 @@ export default class ShipPropulsionPanel extends HTMLElement {
     this.shadowDOM.adoptedStyleSheets = [sheet];
   }
 
+  setSource(source) {
+    this.source = source;
+    return this;
+  }
+
   connectedCallback() {
     if (!this.source) return;
 
@@ -33,11 +38,10 @@ export default class ShipPropulsionPanel extends HTMLElement {
       else this.source.controlledThrusters.delete(thruster.id);
     });
 
-    for (const thruster of this.source.thrusters.values()) {
-      const controller = UI.element("thruster-controller");
-      controller.source = thruster;
-      this.shadowDOM.appendChild(controller);
-    }
+    // prettier-ignore
+    this.addEventListener("thruster-insert", ({ detail: { thruster } }) => {
+      this.shadowDOM.appendChild(thruster.controller);
+    });
   }
 }
 
