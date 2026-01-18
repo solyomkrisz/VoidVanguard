@@ -15,6 +15,8 @@ import BuildingBlock from "./game/BuildingBlock.js";
 import Thruster from "./game/Thruster.js";
 import * as UI from "./ui/UI.js";
 import _ from "./ui/component/ContextMenuTemplate.js";
+import _1 from "./ui/component/LoginForm.js";
+import _2 from "./ui/component/RegisterForm.js";
 
 const game = new Game();
 
@@ -202,7 +204,7 @@ debug.addElement("playerRotation");
 debug.bindSource(
   "playerRotation",
   "playerRotation",
-  (p) => (p.src.playerRotation = game.player.rotation)
+  (p) => (p.src.playerRotation = game.player.rotation),
 );
 
 debug.addElement("P XY");
@@ -213,7 +215,7 @@ debug.bindSource(
     (p.src.playerPosition = [
       p.src.player.position[0].toFixed(4),
       p.src.player.position[1].toFixed(4),
-    ])
+    ]),
 );
 
 debug.addElement("M XY");
@@ -224,7 +226,7 @@ debug.bindSource(
     (p.src.mousePosition = [
       p.src.mouse.position[0].toFixed(4),
       p.src.mouse.position[1].toFixed(4),
-    ])
+    ]),
 );
 
 game.setDebugPanel(debug);

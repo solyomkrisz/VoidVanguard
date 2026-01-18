@@ -5,6 +5,11 @@ export function element(name, ...children) {
     result.appendChild(child);
   }
 
+  result.attr = function (name, value) {
+    this.setAttribute(name, value);
+    return this;
+  };
+
   return result;
 }
 

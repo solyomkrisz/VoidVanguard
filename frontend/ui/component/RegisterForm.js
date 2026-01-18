@@ -1,7 +1,7 @@
 import * as UI from "../UI.js";
 import _ from "./InputGroup.js";
 
-export default class LoginForm extends HTMLElement {
+export default class RegisterForm extends HTMLElement {
   constructor() {
     super();
 
@@ -9,7 +9,7 @@ export default class LoginForm extends HTMLElement {
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
-      :host form{
+      :host form {
         display:flex;
         flex-direction:column;
         align-items:center;
@@ -21,14 +21,33 @@ export default class LoginForm extends HTMLElement {
   connectedCallback() {
     const form = this.shadowDOM.appendChild(UI.element("form"));
     form.appendChild(
-      UI.element("input-group").add("Felhasználónév", "text", "loginUsername"),
+      UI.element("input-group").add(
+        "Felhasználónév",
+        "text",
+        "registerUsername",
+      ),
     );
     form.appendChild(
-      UI.element("input-group").add("Jelszó", "password", "loginPassword"),
+      UI.element("input-group").add("Jelszó", "password", "registerPassword"),
+    );
+
+    form.appendChild(
+      UI.element("input-group").add(
+        "Jelszó megerősítése",
+        "password",
+        "registerConfirmPassword",
+      ),
+    );
+
+    form.appendChild(
+      UI.element("input-group").add("Nem", "radio", "registerGender", {
+        male: "Férfi",
+        female: "Nő",
+      }),
     );
 
     const button = form.appendChild(
-      UI.element("button", UI.text("Bejelentkezés")),
+      UI.element("button", UI.text("Regisztráció")),
     );
 
     form.addEventListener("submit", (e) => {
@@ -39,4 +58,4 @@ export default class LoginForm extends HTMLElement {
   }
 }
 
-window.customElements.define("login-form", LoginForm);
+window.customElements.define("register-form", RegisterForm);
