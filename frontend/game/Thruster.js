@@ -84,7 +84,7 @@ export default class Thruster extends Block {
 
   // prettier-ignore
   updateThrottleDiagram() {
-    G2D.setSize(50, 50);
+    G2D.setSize(50, 50).setTileSize(1);
     G2D.fillRect("#111", 0, 0, G2D.W, G2D.H);
 
     const rad = LERP(Math.PI, 0, this.throttle);
@@ -100,7 +100,7 @@ export default class Thruster extends Block {
     G2D.line("#fff", 2, sx, sy, rx, ry, true);
 
     G2D.setFontFamily("Arial").setFontSize(G2D.toResponsive(0.5)).setTextAlignment("center");
-    G2D.fillText(0, -1 + 0.01, this.throttle.toFixed(3) + "%", "#fff", true);
+    G2D.fillText(0, -1 + 0.01, (this.throttle * 100).toFixed(1) + "%", "#fff", true);
 
     this.controller.throttleDiagram.set(G2D.canvas, "image/jpeg", 1.0);
   }
