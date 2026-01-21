@@ -15,15 +15,19 @@ export default class ThrusterController extends HTMLElement {
           align-items: center;
           gap: 10px;
           padding: 10px;
-          border-top-left-radius: 8px;
+          /*border-top-left-radius: 8px;
           border-bottom-left-radius: 8px;
-          background-color: #555;
+          background-color: #555;*/
           color: white;
           font-family: Arial;
-          -webkit-box-shadow: inset 8px -8px 6px -5px #898989; 
-          box-shadow: inset 8px -8px 6px -5px #898989;
+          /*-webkit-box-shadow: inset 8px -8px 6px -5px #898989; 
+          box-shadow: inset 8px -8px 6px -5px #898989;*/
           cursor: pointer;
           user-select: none;
+        }
+
+        :host(:hover) {
+          background-color: #444;
         }
 
         :host.active {
