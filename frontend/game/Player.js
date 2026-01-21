@@ -22,19 +22,18 @@ export default class Player extends Spaceship {
       maxSpeed: 5,
     });
 
+    this.UI = {};
+
+    // Creating UI
+    // prettier-ignore
+    {
+      this.UI.propulsionPanel = UI.element("ship-propulsion-panel").setSource(this).insertInto();
+      this.UI.flightComputer = UI.element("flight-computer").setSource(this).insertInto();
+    }
+
     this.updatePropulsion = this.manualPropulsionUpdate;
 
-    this.createUI();
-  }
-
-  createUI() {
-    const propulsionPanel = UI.element("ship-propulsion-panel");
-    propulsionPanel.source = this;
-    document.body.appendChild(propulsionPanel);
-
-    const flightComputer = UI.element("flight-computer");
-    flightComputer.source = this;
-    document.body.appendChild(flightComputer);
+    this.model.init(this);
   }
 
   shoot(muzzle, projectileSpeed, cooldown) {
@@ -177,17 +176,11 @@ export default class Player extends Spaceship {
     ttip.show();
   }
 
-  onContact(collision, object) {
-    if (collision.is(Type.INTERACTION)) {
-      this.showDetails();
-      object.showDetails(this);
-    }
-
+  // prettier-ignore
+  detachBlock(object) {
     const mouse = this.game.mouse;
 
-    // Detaching mechanism
-    // prettier-ignore
-    if (mouse.isDown && !mouse.dragged && object.isRemovable && object.health > 0) {
+    if (mouse.isDown && !mouse.dragged && object.isRemovable && !object.toRemove) {
       const [ox, oy] = object.localPosition;
 
       let dirs = 0;
@@ -211,21 +204,23 @@ export default class Player extends Spaceship {
         y: py + oy,
       });
 
-      const originalHealth = object.health;
-
-      object.onRemove = function () {
-        this.health = originalHealth;
-
-        this.onRemove = function (parent) {
-          return this;
-        };
-      };
+      object.toRemove = true;
 
       vec2.copy(bblock.position, this.game.mouse.position);
 
       this.game.buildingBlocks.add(bblock);
+    }
+  }
 
-      object.health = 0;
+  onContact(collision, object) {
+    if (collision.is(Type.INTERACTION)) {
+      if (this.game.mouse.isDown) {
+        this.detachBlock(object);
+        return;
+      }
+
+      this.showDetails();
+      object.showDetails(this);
     }
   }
 

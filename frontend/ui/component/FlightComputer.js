@@ -32,6 +32,11 @@ export default class FlightComputer extends HTMLElement {
     this.shadowDOM.adoptedStyleSheets = [sheet];
   }
 
+  setSource(source) {
+    this.source = source;
+    return this;
+  }
+
   connectedCallback() {
     if (!this.source) return;
 

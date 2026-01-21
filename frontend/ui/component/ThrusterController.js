@@ -21,28 +21,38 @@ export default class ThrusterController extends HTMLElement {
         }
     `);
     this.shadowDOM.adoptedStyleSheets = [sheet];
+
+    this.checkbox = null;
   }
 
-  connectedCallback() {
-    if (!this.source) return;
+  setSource(source) {
+    this.source = source;
+    return this;
+  }
 
-    this.source.controller = this;
+  toggleCheckbox() {
+    this.checkbox && (this.checkbox.checked = false);
+    return this;
+  }
+
+  build() {
+    if (!this.source) return;
 
     for (const key of this.source.constructor.LISTED_PROPERTIES) {
       // prettier-ignore
       const container = UI.element("div", UI.element("span", UI.text(key + ": ")));
       this[key] = container.appendChild(
-        UI.element("span", UI.text(this.source[key]))
+        UI.element("span", UI.text(this.source[key])),
       );
 
       this.shadowDOM.appendChild(container);
     }
 
-    const checkbox = UI.element("input");
-    checkbox.type = "checkbox";
+    this.checkbox = UI.element("input");
+    this.checkbox.type = "checkbox";
 
-    checkbox.addEventListener("change", ({ target }) => {
-      this.getRootNode().host.dispatchEvent(
+    this.checkbox.addEventListener("change", ({ target }) => {
+      this.dispatchEvent(
         new CustomEvent("thruster-selection-change", {
           detail: {
             checked: target.checked,
@@ -50,11 +60,11 @@ export default class ThrusterController extends HTMLElement {
           },
           bubbles: false,
           composed: true,
-        })
+        }),
       );
     });
 
-    this.shadowDOM.appendChild(checkbox);
+    this.shadowDOM.appendChild(this.checkbox);
   }
 }
 

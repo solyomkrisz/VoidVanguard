@@ -70,13 +70,14 @@ export default class Rigidbody extends Collidable {
     if (i < this.state.length) this.state[i] &= ~(1 << b);
   }
 
+  // prettier-ignore
   setMassAndCoM() {
     this.mass = 0;
     vec2.reset(this.CoM);
 
     for (const object of this.model.objects) {
       this.mass += object.mass;
-      vec2.addScaled(this.CoM, this.CoM, object.CoM, object.mass);
+      vec2.addScaled(this.CoM, this.CoM, vec2.add(this.game.buffer.vec2_1, object.CoM, object.localPosition), object.mass);
     }
 
     vec2.scale(this.CoM, this.CoM, 1 / this.mass);

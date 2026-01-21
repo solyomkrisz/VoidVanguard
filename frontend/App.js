@@ -235,7 +235,7 @@ debug.addElement("playerRotation");
 debug.bindSource(
   "playerRotation",
   "playerRotation",
-  (p) => (p.src.playerRotation = game.player.rotation)
+  (p) => (p.src.playerRotation = game.player.rotation),
 );
 
 debug.addElement("P XY");
@@ -246,7 +246,7 @@ debug.bindSource(
     (p.src.playerPosition = [
       p.src.player.position[0].toFixed(4),
       p.src.player.position[1].toFixed(4),
-    ])
+    ]),
 );
 
 debug.addElement("M XY");
@@ -257,7 +257,7 @@ debug.bindSource(
     (p.src.mousePosition = [
       p.src.mouse.position[0].toFixed(4),
       p.src.mouse.position[1].toFixed(4),
-    ])
+    ]),
 );
 
 game.setDebugPanel(debug);

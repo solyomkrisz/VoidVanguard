@@ -145,6 +145,7 @@ export default class Block {
     this.spriteId = spriteId;
     this.mass = mass;
     this.isRemovable = true;
+    this.toRemove = false;
     this.health = health;
     this.adjacencyRules = adjacencyRules;
     this.CoM = vec2.create();
