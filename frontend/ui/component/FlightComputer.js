@@ -1,12 +1,13 @@
 import * as UI from "../UI.js";
 import _ from "./AutopilotToggle.js";
+import _1 from "./StatusDiagram.js";
 
 export default class FlightComputer extends HTMLElement {
   constructor() {
     super();
 
     this.source = null;
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
@@ -20,7 +21,10 @@ export default class FlightComputer extends HTMLElement {
         width: 100%;
         max-height: 100px;
         height: 100%;
-        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
         border-top-left-radius: 8px;
         border-top-right-radius: 8px;
         background-color: #555;
@@ -29,7 +33,9 @@ export default class FlightComputer extends HTMLElement {
         box-shadow: inset 8px -8px 6px -5px #898989;
       }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
+
+    this.statusDiagram = UI.element("status-diagram").enableHover();
   }
 
   setSource(source) {
@@ -40,8 +46,10 @@ export default class FlightComputer extends HTMLElement {
   connectedCallback() {
     if (!this.source) return;
 
+    this.shadowRoot.appendChild(this.statusDiagram);
+
     const autopilotToggle = UI.element("autopilot-toggle");
-    this.shadowDOM.appendChild(autopilotToggle);
+    this.shadowRoot.appendChild(autopilotToggle);
 
     this.addEventListener("autopilot-toggle", (e) => {
       if (e.detail.checked)

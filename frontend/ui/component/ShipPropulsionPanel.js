@@ -6,7 +6,7 @@ export default class ShipPropulsionPanel extends HTMLElement {
     super();
 
     this.source = null;
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
@@ -21,7 +21,7 @@ export default class ShipPropulsionPanel extends HTMLElement {
           gap: 20px;
         }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
   }
 
   setSource(source) {
@@ -33,14 +33,14 @@ export default class ShipPropulsionPanel extends HTMLElement {
     if (!this.source) return;
 
     // prettier-ignore
-    this.addEventListener("thruster-selection-change", ({ detail: { checked, thruster } }) => {
-      if (checked) this.source.controlledThrusters.set(thruster.id, thruster);
+    this.addEventListener("thruster-selection-change", ({ detail: { active, thruster } }) => {
+      if (active) this.source.controlledThrusters.set(thruster.id, thruster);
       else this.source.controlledThrusters.delete(thruster.id);
     });
 
     // prettier-ignore
     this.addEventListener("thruster-insert", ({ detail: { thruster } }) => {
-      this.shadowDOM.appendChild(thruster.controller);
+      this.shadowRoot.appendChild(thruster.controller);
     });
   }
 }

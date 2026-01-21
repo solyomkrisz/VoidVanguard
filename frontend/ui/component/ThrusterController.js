@@ -1,4 +1,4 @@
-import Thruster from "../../game/Thruster.js";
+import _ from "./StatusDiagram.js";
 import * as UI from "../UI.js";
 
 export default class ThrusterController extends HTMLElement {
@@ -6,23 +6,44 @@ export default class ThrusterController extends HTMLElement {
     super();
 
     this.source = null;
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
         :host {
+          display: flex;
+          align-items: center;
+          gap: 10px;
           padding: 10px;
           border-top-left-radius: 8px;
           border-bottom-left-radius: 8px;
           background-color: #555;
           color: white;
-          -webkit-box-shadow: inset 10px -10px 6px -5px #898989; 
-          box-shadow: inset 10px -10px 6px -5px #898989;
+          font-family: Arial;
+          -webkit-box-shadow: inset 8px -8px 6px -5px #898989; 
+          box-shadow: inset 8px -8px 6px -5px #898989;
+          cursor: pointer;
+          user-select: none;
+        }
+
+        :host.active {
+          background-color: green;
+        }
+
+        .identificator {
+          font-size: 26px;
         }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
 
-    this.checkbox = null;
+    this.clicked = false;
+
+    this.gimbalDiagram = this.shadowRoot.appendChild(
+      UI.element("status-diagram"),
+    );
+    this.throttleDiagram = this.shadowRoot.appendChild(
+      UI.element("status-diagram"),
+    );
   }
 
   setSource(source) {
@@ -30,32 +51,20 @@ export default class ThrusterController extends HTMLElement {
     return this;
   }
 
-  toggleCheckbox() {
-    this.checkbox && (this.checkbox.checked = false);
-    return this;
-  }
-
+  // prettier-ignore
   build() {
     if (!this.source) return;
 
-    for (const key of this.source.constructor.LISTED_PROPERTIES) {
-      // prettier-ignore
-      const container = UI.element("div", UI.element("span", UI.text(key + ": ")));
-      this[key] = container.appendChild(
-        UI.element("span", UI.text(this.source[key])),
-      );
+    const id = this.shadowRoot.insertBefore(UI.element("div", UI.text(this.source.id)), this.gimbalDiagram);
+    id.classList.add("identificator");
 
-      this.shadowDOM.appendChild(container);
-    }
+    this.addEventListener("click", () => {
+      this.clicked = !this.clicked;
 
-    this.checkbox = UI.element("input");
-    this.checkbox.type = "checkbox";
-
-    this.checkbox.addEventListener("change", ({ target }) => {
       this.dispatchEvent(
         new CustomEvent("thruster-selection-change", {
           detail: {
-            checked: target.checked,
+            active: this.clicked,
             thruster: this.source,
           },
           bubbles: false,
@@ -63,8 +72,10 @@ export default class ThrusterController extends HTMLElement {
         }),
       );
     });
+  }
 
-    this.shadowDOM.appendChild(this.checkbox);
+  disconnectedCallback() {
+    this.clicked = false;
   }
 }
 

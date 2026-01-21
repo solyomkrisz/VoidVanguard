@@ -43,7 +43,7 @@ export default class Canvas {
     return this.canvas && this.canvas instanceof HTMLCanvasElement;
   }
 
-  createCanvas() {
+  createCanvas(append = true) {
     if (this.hasCanvas()) return;
 
     const canvas = document.createElement("canvas");
@@ -52,7 +52,7 @@ export default class Canvas {
 
     canvas.style.display = "block";
 
-    document.body.appendChild(canvas);
+    append && document.body.appendChild(canvas);
 
     this.canvasDomRect = canvas.getBoundingClientRect();
 
@@ -66,7 +66,7 @@ export default class Canvas {
 
     if (!(element instanceof HTMLCanvasElement)) {
       throw new Error(
-        `CANVAS-setCanvas: The given selector (${selector}) is not pointing to a HTMLCanvasElement!`
+        `CANVAS-setCanvas: The given selector (${selector}) is not pointing to a HTMLCanvasElement!`,
       );
     }
 
@@ -77,20 +77,42 @@ export default class Canvas {
     this.canvasDomRect = element.getBoundingClientRect();
   }
 
+  onResize() {
+    this.canvasDomRect = this.canvas.getBoundingClientRect();
+    this.aspectRatio = this.canvas.width / this.canvas.height;
+  }
+
+  setWidth(w) {
+    this.canvas.width = w;
+    this.onResize();
+  }
+
+  setHeight(h) {
+    this.canvas.height = h;
+    this.onResize();
+  }
+
+  setSize(w, h) {
+    this.canvas.width = w;
+    this.canvas.height = h;
+    this.onResize();
+
+    return this;
+  }
+
   canvasToFullWindow() {
     const canvas = this.canvas;
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    this.canvasDomRect = canvas.getBoundingClientRect();
-    this.aspectRatio = canvas.width / canvas.height;
+    this.onResize();
   }
 
   canvasToResponsiveFullWindow() {
     if (!this.hasCanvas()) {
       throw new Error(
-        "CANVAS-canvasToResponsiveFullWindow: There is no canvas selected that could be made responsive!"
+        "CANVAS-canvasToResponsiveFullWindow: There is no canvas selected that could be made responsive!",
       );
     }
 
@@ -120,7 +142,7 @@ export default class Canvas {
   enablePointerLock() {
     if (!this.hasCanvas()) {
       console.error(
-        "CANVAS-enablePointerLock: There is no canvas selected that could have pointer locked to!"
+        "CANVAS-enablePointerLock: There is no canvas selected that could have pointer locked to!",
       );
     }
 
@@ -128,7 +150,7 @@ export default class Canvas {
 
     document.addEventListener(
       "pointerlockchange",
-      this.pointerLockChangeHandler
+      this.pointerLockChangeHandler,
     );
 
     document.addEventListener("pointerlockerror", this.pointerLockErrorHandler);
@@ -138,11 +160,11 @@ export default class Canvas {
     this.canvas.removeEventListener("click", this.pointerLockRequestHandler);
     document.removeEventListener(
       "pointerlockchange",
-      this.pointerLockChangeHandler
+      this.pointerLockChangeHandler,
     );
     document.removeEventListener(
       "pointerlockerror",
-      this.pointerLockErrorHandler
+      this.pointerLockErrorHandler,
     );
   }
 }

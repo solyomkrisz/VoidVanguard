@@ -8,6 +8,7 @@ import * as UI from "../ui/UI.js";
 import _ from "../ui/component/ShipPropulsionPanel.js";
 import _1 from "../ui/component/FlightComputer.js";
 import BuildingBlock from "./BuildingBlock.js";
+import { General2DCanvas as G2D } from "./General2DCanvas.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
@@ -34,6 +35,36 @@ export default class Player extends Spaceship {
     this.updatePropulsion = this.manualPropulsionUpdate;
 
     this.model.init(this);
+
+    this.updateStatusDiagram();
+  }
+
+  updateStatusDiagram() {
+    G2D.setSize(600, 300).setTileSize(2);
+    G2D.fillRect("#111", 0, 0, G2D.W, G2D.H);
+
+    // prettier-ignore
+    for (const object of this.model.objects) {
+      const vertices = object.shape.vertices, n = vertices.length;
+      const [tx, ty] = object.localPosition;
+
+      G2D.beginPath();
+      G2D.moveTo(vertices[0] + tx, vertices[1] + ty, true);
+
+      for (let i = 2; i < n; i += 2) {
+        const x = vertices[i % n];
+        const y = vertices[(i + 1) % n];
+
+        G2D.lineTo(x + tx, y + ty, true);
+      }
+
+      G2D.closePath();
+      G2D.stroke("#fff", G2D.toResponsive(0.06));
+
+      G2D.fillCircle("lightblue", this.CoM[0], this.CoM[1], 0.2, 0, Math.PI * 2, true);
+    }
+
+    this.UI.flightComputer.statusDiagram.set(G2D.canvas, "image/jpeg", 1.0);
   }
 
   shoot(muzzle, projectileSpeed, cooldown) {

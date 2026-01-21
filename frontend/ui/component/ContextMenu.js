@@ -10,7 +10,7 @@ export default class ContextMenu extends HTMLElement {
     this.source = null;
     this.template = {};
     this.mouse = { x: 0, y: 0 };
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
@@ -27,7 +27,7 @@ export default class ContextMenu extends HTMLElement {
           box-shadow: inset 6px -6px 6px -5px #898989;
         }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
   }
 
   connectedCallback() {
@@ -41,7 +41,7 @@ export default class ContextMenu extends HTMLElement {
   addTemplate(name, template) {
     template.source = this.source;
     this.template[name] = template;
-    this.shadowDOM.appendChild(template);
+    this.shadowRoot.appendChild(template);
   }
 
   updateTemplates() {
@@ -81,7 +81,7 @@ export default class ContextMenu extends HTMLElement {
       new CustomEvent("context-menu-active", {
         bubbles: true,
         composed: true,
-      })
+      }),
     );
   }
 
@@ -95,7 +95,7 @@ export default class ContextMenu extends HTMLElement {
       new CustomEvent("context-menu-inactive", {
         bubbles: true,
         composed: true,
-      })
+      }),
     );
 
     this.source = null;

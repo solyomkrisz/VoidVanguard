@@ -10,7 +10,7 @@ export default class TooltipTemplate extends HTMLElement {
     this.lastActive = -1;
 
     this.source = null;
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
@@ -33,7 +33,7 @@ export default class TooltipTemplate extends HTMLElement {
           margin-block: 6px;
         }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
   }
 
   dispatchContentChangeEvent() {
@@ -81,10 +81,10 @@ export default class TooltipTemplate extends HTMLElement {
   }
 
   addTitle(title) {
-    this.shadowDOM.appendChild(
-      UI.element("p", UI.element("strong", UI.text(title)))
+    this.shadowRoot.appendChild(
+      UI.element("p", UI.element("strong", UI.text(title))),
     );
-    this.shadowDOM.appendChild(UI.element("hr"));
+    this.shadowRoot.appendChild(UI.element("hr"));
 
     return this;
   }
@@ -96,7 +96,7 @@ export default class TooltipTemplate extends HTMLElement {
     const span = UI.element("span");
     this[id] = span;
     p.appendChild(span);
-    this.shadowDOM.appendChild(p);
+    this.shadowRoot.appendChild(p);
   }
 }
 

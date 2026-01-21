@@ -5,7 +5,7 @@ export default class ContextMenuItem extends HTMLElement {
     super();
 
     this.action = null;
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
@@ -25,7 +25,7 @@ export default class ContextMenuItem extends HTMLElement {
         background: #333;
       }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
   }
 
   connectedCallback() {
@@ -37,13 +37,13 @@ export default class ContextMenuItem extends HTMLElement {
           },
           bubbles: true,
           composed: true,
-        })
+        }),
       );
     });
   }
 
   addTitle(title) {
-    this.shadowDOM.appendChild(UI.element("p", UI.text(title)));
+    this.shadowRoot.appendChild(UI.element("p", UI.text(title)));
     return this;
   }
 

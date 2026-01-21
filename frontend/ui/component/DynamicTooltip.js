@@ -17,7 +17,7 @@ export default class DynamicTooltip extends HTMLElement {
     this.dirty = DynamicTooltip.DIRTY.CONTENT;
     this.source = null;
     this.visible = false;
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
     this.domRect = new DOMRect();
 
     this.offset = { x: 5, y: 5 };
@@ -36,7 +36,7 @@ export default class DynamicTooltip extends HTMLElement {
         max-width: 250px;
       }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
 
     this.onContentChange = this.onContentChange.bind(this);
     this.enable = this.enable.bind(this);
@@ -124,7 +124,7 @@ export default class DynamicTooltip extends HTMLElement {
     template.lastActive = frameId;
     this.displayed = true;
 
-    !template.active && this.shadowDOM.appendChild(template);
+    !template.active && this.shadowRoot.appendChild(template);
     template.show();
 
     return template.setSource(source);

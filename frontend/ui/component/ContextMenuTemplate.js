@@ -8,7 +8,7 @@ export default class ContextMenuTemplate extends HTMLElement {
     this.source = null;
     this.visible = false;
     this.actionHandlers = {};
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
@@ -17,12 +17,12 @@ export default class ContextMenuTemplate extends HTMLElement {
         border-radius: inherit;
       }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
   }
 
   connectedCallback() {
     this.addEventListener("select", (e) =>
-      this.actionHandlers[e.detail.action](this.source)
+      this.actionHandlers[e.detail.action](this.source),
     );
   }
 
@@ -35,7 +35,7 @@ export default class ContextMenuTemplate extends HTMLElement {
     const item = UI.element("context-menu-item")
       .addTitle(title)
       .setAction(action);
-    this.shadowDOM.appendChild(item);
+    this.shadowRoot.appendChild(item);
   }
 
   show() {

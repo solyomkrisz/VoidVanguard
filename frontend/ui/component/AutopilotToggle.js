@@ -4,7 +4,7 @@ export default class AutopilotToggle extends HTMLElement {
   constructor() {
     super();
 
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
@@ -13,13 +13,13 @@ export default class AutopilotToggle extends HTMLElement {
         align-items: center;
       }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
   }
 
   connectedCallback() {
     const label = UI.element("label", UI.text("Autópilóta"));
     label.setAttribute("for", "autopilotToggle");
-    this.shadowDOM.appendChild(label);
+    this.shadowRoot.appendChild(label);
 
     const checkbox = UI.element("input");
     checkbox.id = "autopilotToggle";
@@ -33,11 +33,11 @@ export default class AutopilotToggle extends HTMLElement {
           },
           bubbles: true,
           composed: true,
-        })
+        }),
       );
     });
 
-    this.shadowDOM.appendChild(checkbox);
+    this.shadowRoot.appendChild(checkbox);
   }
 }
 
