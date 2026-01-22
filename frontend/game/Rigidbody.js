@@ -43,6 +43,14 @@ export default class Rigidbody extends Collidable {
     this.setMomentOfInertia();
   }
 
+  onGeometryChange() {
+    this.proxyCollider.onGeometryChange();
+    this.shapeCollider.onGeometryChange();
+
+    this.setMassAndCoM();
+    this.setMomentOfInertia();
+  }
+
   setState(state) {
     const i = Math.floor(state / 32);
     const b = state % 32;

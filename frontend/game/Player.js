@@ -39,6 +39,16 @@ export default class Player extends Spaceship {
     this.updateStatusDiagram();
   }
 
+  onGeometryChange() {
+    this.proxyCollider.onGeometryChange();
+    this.shapeCollider.onGeometryChange();
+
+    this.setMassAndCoM();
+    this.setMomentOfInertia();
+
+    this.updateStatusDiagram();
+  }
+
   updateStatusDiagram() {
     G2D.setSize(600, 300).setTileSize(2);
     G2D.fillRect("#111", 0, 0, G2D.W, G2D.H);
