@@ -26,12 +26,16 @@ export default class ThrusterController extends HTMLElement {
           user-select: none;
         }
 
+        :host > * {
+          box-sizing: border-box;
+        }
+
         :host(:hover) {
           background-color: #444;
         }
 
-        :host.active {
-          background-color: green;
+        :host(.active) {
+          background-color: #728C69;
         }
 
         .identificator {
@@ -55,15 +59,19 @@ export default class ThrusterController extends HTMLElement {
     return this;
   }
 
-  // prettier-ignore
   build() {
     if (!this.source) return;
 
-    const id = this.shadowRoot.insertBefore(UI.element("div", UI.text(this.source.id)), this.gimbalDiagram);
+    const id = this.shadowRoot.insertBefore(
+      UI.element("div", UI.text(this.source.id)),
+      this.gimbalDiagram,
+    );
     id.classList.add("identificator");
 
     this.addEventListener("click", () => {
       this.clicked = !this.clicked;
+
+      this.classList.toggle("active");
 
       this.dispatchEvent(
         new CustomEvent("thruster-selection-change", {

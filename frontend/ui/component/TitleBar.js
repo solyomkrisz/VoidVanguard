@@ -37,6 +37,44 @@ export default class TitleBar extends HTMLElement {
     return this;
   }
 
+  // prettier-ignore
+  snapHorizontal(e, domRect) {
+    const snapOffset = 50;
+
+    if (e.clientX - this.offsetX + domRect.width + snapOffset >= window.innerWidth) {
+      this.source.style.left = window.innerWidth - domRect.width + "px";
+      this.source.dataset.horizontalSnap = "right";
+      return true;
+    }
+
+    if (e.clientX - this.offsetX - snapOffset <= 0) {
+      this.source.style.left = 0 + "px";
+      this.source.dataset.horizontalSnap = "left";
+      return true;
+    }
+
+    return false;
+  }
+
+  // prettier-ignore
+  snapVertical(e, domRect) {
+    const snapOffset = 50;
+
+    if (e.clientY - this.offsetY - snapOffset <= 0) {
+      this.source.style.top = 0 + "px";
+      this.source.dataset.verticalSnap = "top";
+      return true;
+    }
+
+    if (e.clientY - this.offsetY + domRect.height + snapOffset >= window.innerHeight) {
+      this.source.style.top = window.innerHeight - domRect.height + "px";
+      this.source.dataset.verticalSnap = "bottom";
+      return true;
+    }
+
+    return false;
+  }
+
   connectedCallback() {
     // prettier-ignore
     document.addEventListener("mousedown", (e) => {
@@ -57,22 +95,18 @@ export default class TitleBar extends HTMLElement {
 
       const domRect = this.source.getBoundingClientRect();
 
-      const snapOffset = 50;
-
       // prettier-ignore
-      if (e.clientX - this.offsetX + domRect.width + snapOffset >= window.innerWidth) {
-        this.source.style.left = window.innerWidth - domRect.width + "px";
-
-        this.source.style.borderTopRightRadius = 0;
-        this.source.style.borderBottomRightRadius = 0;
-      } else {
+      if (!this.snapHorizontal(e, domRect)) {
         this.source.style.left = e.clientX - this.offsetX + "px";
 
-        this.source.style.borderTopRightRadius = 8 + "px";
-        this.source.style.borderBottomRightRadius = 8 + "px";
+        this.source.dataset.horizontalSnap = "none";
       }
 
-      this.source.style.top = e.clientY - this.offsetY + "px";
+      if (!this.snapVertical(e, domRect)) {
+        this.source.style.top = e.clientY - this.offsetY + "px";
+
+        this.source.dataset.verticalSnap = "none";
+      }
     });
   }
 }

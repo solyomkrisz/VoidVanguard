@@ -12,7 +12,6 @@ export default class StatusDiagram extends HTMLElement {
         --border-radius: 8px;
         --border-width: 2px;
 
-        width: auto;
         height: 100%;
         display: flex;
       }
@@ -22,7 +21,6 @@ export default class StatusDiagram extends HTMLElement {
       }
       
       .border {
-        width: inherit;
         height: 100%;
         display: flex;
         justify-content: center;
@@ -34,9 +32,9 @@ export default class StatusDiagram extends HTMLElement {
       }
 
       img {
-        width: calc(100% - calc(var(--border-width) * 2));
-        height: calc(100% - calc(var(--border-width) * 2));
-        border-radius: calc(var(--border-radius) / 2);
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
         transition: transform 0.3s ease;
         transform-origin: bottom left;
       }

@@ -36,6 +36,7 @@ export default class Player extends Spaceship {
 
     this.model.init(this);
 
+    this.proxyCollider.validate();
     this.updateStatusDiagram();
   }
 
@@ -50,7 +51,7 @@ export default class Player extends Spaceship {
   }
 
   updateStatusDiagram() {
-    G2D.setSize(600, 300).setTileSize(2);
+    G2D.setSize(600, 300).setTileSize(this.proxyCollider.r);
     G2D.fillRect("#111", 0, 0, G2D.W, G2D.H);
 
     // prettier-ignore

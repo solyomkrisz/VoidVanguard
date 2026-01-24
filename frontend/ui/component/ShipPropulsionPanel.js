@@ -22,9 +22,28 @@ export default class ShipPropulsionPanel extends HTMLElement {
           flex-direction: column;
           /*gap: 10px;*/
           /*padding: 10px;*/
-          border-top-left-radius: 8px;
-          border-bottom-left-radius: 8px;
+          border-radius: 8px;
           background-color: #555;
+        }
+
+        :host([data-horizontal-snap="left"]) {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+
+        :host([data-horizontal-snap="right"]) {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+
+        :host([data-vertical-snap="top"]) {
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+        }
+
+        :host([data-vertical-snap="bottom"]) {
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
         }
 
         :host > * {
@@ -37,10 +56,12 @@ export default class ShipPropulsionPanel extends HTMLElement {
 
         :host > thruster-controller:first-child {
           border-top-left-radius: inherit;
+          border-top-right-radius: inherit;
         }
 
         :host > thruster-controller:last-child {
           border-bottom-left-radius: inherit;
+          border-bottom-right-radius: inherit;
         }
     `);
     this.shadowRoot.adoptedStyleSheets = [sheet];
@@ -63,6 +84,9 @@ export default class ShipPropulsionPanel extends HTMLElement {
 
       this.style.left = window.innerWidth - domRect.width + "px";
       this.style.top = window.innerHeight / 2 - domRect.height / 2 + "px";
+
+      this.dataset.horizontalSnap = "right";
+      this.dataset.verticalSnap = "none";
     });
 
     // prettier-ignore
