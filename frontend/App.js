@@ -197,7 +197,7 @@ const bblock_1 = new BuildingBlock({
   y: 5,
 });
 
-game.buildingBlocks.add(bblock_1);
+// game.buildingBlocks.add(bblock_1);
 
 enemy.setState(GlobalState.DEAD);
 // console.log(enemy.hasState(GlobalState.DEAD));
@@ -230,6 +230,9 @@ debug.bindSource("frames", "frames", (p) => (p.src.frames = 0));
 
 debug.addElement("ticks");
 debug.bindSource("ticks", "ticks", (p) => (p.src.ticks = 0));
+
+debug.addElement("seed");
+debug.bindSource("seed", "seed");
 
 debug.addElement("playerRotation");
 debug.bindSource(

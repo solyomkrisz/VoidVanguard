@@ -10,6 +10,9 @@ import IDManager from "./IDManager.js";
 import ObjectCollection from "./ObjectCollection.js";
 import * as UI from "../ui/UI.js";
 import _ from "../ui/component/DynamicTooltip.js";
+import { ValueNoise, PerlinNoise } from "../common/noise.js";
+import ChunkManager from "./ChunkManager.js";
+import * as vec2 from "../common/vec2.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -39,7 +42,14 @@ export default class Game extends WebGLCanvas {
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
+    this.seed = Math.floor(Math.random() * 1000);
+    this.noise = new ValueNoise(this.seed);
+    this.noiseScale = 1 / 15;
     this.tileSize = 15;
+    this.chunkSize = 16;
+    this.renderDistance = vec2.fromValues(1, 1);
+    this.chunks = new ChunkManager(this);
+
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
     this.cameraMatrixInverse = mat3.identity();
@@ -63,7 +73,7 @@ export default class Game extends WebGLCanvas {
   start() {
     if (!this.gl) {
       throw new Error(
-        "GAME-start: Couldn't start game: WebGL hasn't been initalized!"
+        "GAME-start: Couldn't start game: WebGL hasn't been initalized!",
       );
     }
     if (!this.player) {
@@ -84,6 +94,14 @@ export default class Game extends WebGLCanvas {
         textureManager.loadFromActiveSlot();
 
         this.initInstancing(this);
+        
+        this.gl.uniform1fv(this.uniform.r, this.noise.r);
+        this.gl.uniform1iv(this.uniform.p, this.noise.p);
+        this.gl.uniform1f(this.uniform.noiseScale, this.noiseScale);
+
+        const error = this.gl.getError();
+
+        error !== this.gl.NO_ERROR && console.error("WebGL Error: ", error);
 
         this.last = window.performance.now();
         this.frameId = window.requestAnimationFrame(this.update);
@@ -110,7 +128,7 @@ export default class Game extends WebGLCanvas {
 
     this.unprocessed = Math.min(
       this.unprocessed,
-      this.maxUpdates * this.timestep
+      this.maxUpdates * this.timestep,
     );
 
     while (this.unprocessed >= this.timestep) {
@@ -137,6 +155,8 @@ export default class Game extends WebGLCanvas {
     this.projectiles.update();
     this.buildingBlocks.update();
 
+    this.chunks.update();
+
     // prettier-ignore
     this.objects.merge(this.coreObjects, this.enemies, this.projectiles, this.buildingBlocks);
     this.grid.filter().iterate();
@@ -159,6 +179,8 @@ export default class Game extends WebGLCanvas {
     this.dataCollector.length = 0;
 
     this.textureManager.updateSprites();
+
+    this.chunks.render(); // render first so it will be in the background
 
     this.enemies.render();
     this.projectiles.render();
@@ -187,7 +209,7 @@ export default class Game extends WebGLCanvas {
   addTextureManager(textureManager) {
     if (!(textureManager instanceof TextureManager)) {
       console.warn(
-        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!"
+        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!",
       );
       return;
     }
@@ -201,7 +223,7 @@ export default class Game extends WebGLCanvas {
   setDebugPanel(debugPanel) {
     if (!(debugPanel instanceof DebugPanel)) {
       throw new Error(
-        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class."
+        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class.",
       );
     }
 
@@ -211,7 +233,7 @@ export default class Game extends WebGLCanvas {
   setDebugOverlay(debugOverlay) {
     if (!(debugOverlay instanceof DebugOverlay)) {
       throw new Error(
-        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class."
+        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class.",
       );
     }
 
@@ -221,7 +243,7 @@ export default class Game extends WebGLCanvas {
   startDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
       );
       return;
     }
@@ -233,7 +255,7 @@ export default class Game extends WebGLCanvas {
   stopDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
       );
       return;
     }

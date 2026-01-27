@@ -22,6 +22,11 @@ export default class Player extends Spaceship {
       maxSpeed: 5,
     });
 
+    this.chunk = vec2.fromValues(
+      Math.floor(this.position[0]),
+      Math.floor(this.position[1]),
+    );
+
     this.UI = {};
 
     // Creating UI
@@ -151,6 +156,9 @@ export default class Player extends Spaceship {
   onPositionChange() {
     this.proxyCollider.onPositionChange();
     this.shapeCollider.onPositionChange();
+
+    this.chunk[0] = Math.floor(this.position[0] / this.game.chunkSize);
+    this.chunk[1] = Math.floor(this.position[1] / this.game.chunkSize);
   }
 
   onBroadCollision(other) {
