@@ -1,6 +1,7 @@
 import Canvas from "./Canvas.js";
 import WebGL from "./WebGL.js";
 import * as MATRIX from "../common/common.js";
+import * as vec from "../common/vec.js";
 
 export default class WebGLCanvas extends Canvas {
   constructor() {
@@ -17,6 +18,7 @@ export default class WebGLCanvas extends Canvas {
     this.instanceData = new MATRIX.DATA_STRUCTURE(
       this.instanceCapacity * this.floatPerInstance,
     );
+    this.clearColor = vec.fromValues(0.0, 0.0, 0.0, 1.0);
   }
 
   initInstancing() {
@@ -32,7 +34,7 @@ export default class WebGLCanvas extends Canvas {
   }
 
   clearCanvas() {
-    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    this.gl.clearColor(...this.clearColor);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
   }
 

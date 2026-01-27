@@ -164,6 +164,7 @@ export default class Rigidbody extends Collidable {
         ...rotationMatrix,
         ..._b.vec2_2,
         ..._b.vec2_3,
+        -1
       );
     }
 

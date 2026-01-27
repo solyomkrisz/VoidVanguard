@@ -13,6 +13,8 @@ import _ from "../ui/component/DynamicTooltip.js";
 import { ValueNoise, PerlinNoise } from "../common/noise.js";
 import ChunkManager from "./ChunkManager.js";
 import * as vec2 from "../common/vec2.js";
+import NebulaGenerator from "./texture/NebulaGenerator.js";
+import DecorationBlock from "./DecorationBlock.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -42,9 +44,17 @@ export default class Game extends WebGLCanvas {
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
-    this.seed = Math.floor(Math.random() * 1000);
+    this.textureArray = null;
+    this.lastLayer = 0;
+    this.maxLayers = 1024;
+
+    this.seed = Math.floor(Math.random() * 100000); // 555 is nice, 46008
+    this.seed = 555;
     this.noise = new ValueNoise(this.seed);
     this.noiseScale = 1 / 15;
+    // prettier-ignore
+    this.ng = new NebulaGenerator(this.noise, this.noiseScale, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.clearColor);
+
     this.tileSize = 15;
     this.chunkSize = 16;
     this.renderDistance = vec2.fromValues(1, 1);
@@ -70,6 +80,30 @@ export default class Game extends WebGLCanvas {
     this.update = this.update.bind(this);
   }
 
+  // prettier-ignore
+  initTextureArray() {
+    const gl = this.gl;
+
+    this.textureArray = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textureArray);
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.maxLayers);
+
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
+
+    this.lastLayer = 0;
+  }
+
+  bindTextureArray() {
+    const gl = this.gl;
+
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textureArray);
+    gl.uniform1i(this.uniform.textureArray, 1);
+  }
+
   start() {
     if (!this.gl) {
       throw new Error(
@@ -93,11 +127,15 @@ export default class Game extends WebGLCanvas {
 
         textureManager.loadFromActiveSlot();
 
+        this.initTextureArray();
+        this.bindTextureArray();
+
         this.initInstancing(this);
         
-        this.gl.uniform1fv(this.uniform.r, this.noise.r);
-        this.gl.uniform1iv(this.uniform.p, this.noise.p);
-        this.gl.uniform1f(this.uniform.noiseScale, this.noiseScale);
+        this.gl.uniform4fv(this.uniform.backgroundColor, this.clearColor);
+        // this.gl.uniform1fv(this.uniform.r, this.noise.r);
+        // this.gl.uniform1iv(this.uniform.p, this.noise.p);
+        // this.gl.uniform1f(this.uniform.noiseScale, this.noiseScale);
 
         const error = this.gl.getError();
 
@@ -171,6 +209,8 @@ export default class Game extends WebGLCanvas {
       this.grid.debug();
     }
 
+    this.bindTextureArray();
+
     const gl = this.gl;
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -178,6 +218,7 @@ export default class Game extends WebGLCanvas {
 
     this.dataCollector.length = 0;
 
+    this.textureManager.loadFromActiveSlot(); // Remove if no dynamic textures are created
     this.textureManager.updateSprites();
 
     this.chunks.render(); // render first so it will be in the background

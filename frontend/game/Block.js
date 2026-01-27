@@ -35,121 +35,39 @@ export default class Block {
     in mat2 rotationMatrix;
     in vec2 uvOffset;
     in vec2 uvScale;
+    in float layerId;
 
     out vec2 vTexCoord;
-    out vec2 fragCoord;
-    out float hasTexture;
+    flat out int textureLayerId;
 
     uniform mat3 cameraMatrix;
 
     void main() {
       vec2 rotatedAndTranslated = (rotationMatrix * (localPosition + vertexPosition)) + parentPosition;
       vec3 position = cameraMatrix * vec3(rotatedAndTranslated, 1.0);
-      gl_Position = vec4(position, 1.0);
       vTexCoord = uvOffset + textureCoordinate * uvScale;
-      fragCoord = rotatedAndTranslated;
-      hasTexture = uvOffset.x;
+      textureLayerId = int(layerId);
+      gl_Position = vec4(position, 1.0);
     }
   `;
 
   static FRAGMENT_SHADER_SOURCE = `#version 300 es
     precision mediump float;
 
-    uniform float noiseScale;
-
-    uniform float r[256];
-    uniform int p[512];
-    int m = 255;
+    uniform vec4 backgroundColor;
 
     uniform sampler2D uSampler;
+    uniform highp sampler2DArray textureArray;
 
-    in float hasTexture;
-    in vec2 fragCoord;
     in vec2 vTexCoord;
+    flat in int textureLayerId;
     out vec4 outputTexture;
 
-    float lerp(float a, float b, float t) {
-      return a + (b - a) * t;
-    }
-
-    float valuenoise(float x, float y) {
-      int xi = int(floor(x));
-      int yi = int(floor(y));
-
-      float tx = x - float(xi);
-      float ty = y - float(yi);
-
-      float sx = smoothstep(0.0, 1.0, tx);
-      float sy = smoothstep(0.0, 1.0, ty);
-
-      int x0 = xi & m;
-      int y0 = yi & m;
-      int x1 = (x0 + 1) & m;
-      int y1 = (y0 + 1) & m;
-
-      float x0y0 = r[p[p[x0] + y0]];
-      float x1y0 = r[p[p[x1] + y0]];
-      float x0y1 = r[p[p[x0] + y1]];
-      float x1y1 = r[p[p[x1] + y1]];
-
-      float t = mix(x0y0, x1y0, sx);
-      float b = mix(x0y1, x1y1, sx);
-
-      return mix(t, b, sy);
-    }
-
-    float fBm_valuenoise(float x, float y, int layers, float lacunarity, float gain) {
-      float total = 0.0;
-      float frequency = 1.0;
-      float amplitude = 1.0;
-      float maxValue = 0.0;
-
-      for (int i = 0; i < layers; i++) {
-        total += valuenoise(x * frequency, y * frequency) * amplitude;
-        maxValue += amplitude;
-        amplitude *= gain;
-        frequency *= lacunarity;
-      }
-
-      return total / maxValue;
-    }
-
-    float threshold = 0.685;
-
-    float H_scale = 1.0 / 2.0;
-    float H_offset = 100.0;
-
-    float O_scale = 1.0 / 6.0;
-    float O_offset = 200.0;
-
-    float He_scale = 1.0 / 2.0;
-    float He_offset = 300.0;
-
-    vec4 nebula() {
-      vec2 v_xy = fragCoord * noiseScale;
-      float v = fBm_valuenoise(v_xy.x, v_xy.y, 3, 2.0, 0.5);
-      float a = min(1.0, max(0.0, (v - threshold) * 3.0));
-      
-      vec2 H_xy = (fragCoord + H_offset) * H_scale;
-      float H = fBm_valuenoise(H_xy.x, H_xy.y, 5, 2.0, 0.5);
-
-      vec2 O_xy = (fragCoord + O_offset) * O_scale;
-      float O = fBm_valuenoise(O_xy.x, O_xy.y, 5, 2.0, 0.5);
-
-      vec2 He_xy = (fragCoord + He_offset) * He_scale;
-      float He = fBm_valuenoise(He_xy.x, He_xy.y, 5, 2.0, 0.5);
-
-      vec4 nebulaColor = vec4(H, O, He, 1.0);
-      vec4 backgroundColor = vec4(0.0, 0.0, 0.0, 1.0);
-
-      return mix(backgroundColor, nebulaColor, a);
-    }
-
     void main() {
-      if (hasTexture < 0.0) {
-        outputTexture = nebula();
+      if (textureLayerId >= 0) {
+        outputTexture = texture(textureArray, vec3(vTexCoord, float(textureLayerId)));
       } else {
-        outputTexture = texture(uSampler, vTexCoord);  
+        outputTexture = texture(uSampler, vTexCoord);
       }
     }
   `;
@@ -169,7 +87,7 @@ export default class Block {
     WebGL.THROW_NO_GL_ERROR(gl, "BLOCK-initRender");
 
     const prog = game.glProgram;
-    const floatPerInstance = 12;
+    const floatPerInstance = 13;
 
     const a = game.attribute;
     game.vao._1 = gl.createVertexArray();
@@ -186,9 +104,11 @@ export default class Block {
     game.instanceBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, game.instanceBuffer);
     game.uniform.cameraMatrix = gl.getUniformLocation(prog, "cameraMatrix");
+    game.uniform.backgroundColor = gl.getUniformLocation(prog, "backgroundColor");
     game.uniform.r = gl.getUniformLocation(prog, "r");
     game.uniform.p = gl.getUniformLocation(prog, "p");
     game.uniform.noiseScale = gl.getUniformLocation(prog, "noiseScale");
+    game.uniform.textureArray = gl.getUniformLocation(prog, "textureArray");
 
     const stride = Float32Array.BYTES_PER_ELEMENT * floatPerInstance;
 
@@ -198,6 +118,7 @@ export default class Block {
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.rotationMatrix + 1, 2, gl.FLOAT, false, stride, 24, 1);
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.uvOffset, 2, gl.FLOAT, false, stride, 32, 1);
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.uvScale, 2, gl.FLOAT, false, stride, 40, 1);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.layerId, 1, gl.FLOAT, false, stride, 48, 1);
 
     game.draw = function(instanceCount) {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, instanceCount);
@@ -226,7 +147,10 @@ export default class Block {
       }
 
       this.instanceData.set(this.dataCollector, 0);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer);
       gl.bufferData(gl.ARRAY_BUFFER, this.instanceData.subarray(0, instanceCount * this.floatPerInstance), gl.DYNAMIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
       return instanceCount;
     }

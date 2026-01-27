@@ -1,8 +1,8 @@
-import { SpriteID } from "./texture/Texture.js";
 import * as vec2 from "../common/vec2.js";
 import * as vec3 from "../common/vec3.js";
 import ObjectCollection from "./ObjectCollection.js";
 import DecorationBlock from "./DecorationBlock.js";
+import * as Type from "./Type.js";
 
 export default class Chunk {
   constructor(id, game, x, y) {
@@ -29,7 +29,7 @@ export default class Chunk {
     for (let y = y0; y < y1; y++) {
       for (let x = x0; x < x1; x++) {
         if (noise.fBm(x * noiseScale, y * noiseScale) > 0.67) {
-          this.objects.add(new DecorationBlock({ type: 100, game: this.game, spriteId: SpriteID.TEST, x, y }));
+          this.objects.add(new DecorationBlock({ type: Type.NEBULA, game: this.game, x, y }));
         }
       }
     }
