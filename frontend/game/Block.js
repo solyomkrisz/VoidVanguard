@@ -40,10 +40,14 @@ export default class Block {
     out vec2 vTexCoord;
     flat out int textureLayerId;
 
+    uniform float backgroundZoom;
     uniform mat3 cameraMatrix;
 
     void main() {
       vec2 rotatedAndTranslated = (rotationMatrix * (localPosition + vertexPosition)) + parentPosition;
+      if (layerId >= 0.0) {
+        rotatedAndTranslated *= backgroundZoom;
+      }
       vec3 position = cameraMatrix * vec3(rotatedAndTranslated, 1.0);
       vTexCoord = uvOffset + textureCoordinate * uvScale;
       textureLayerId = int(layerId);
@@ -109,6 +113,7 @@ export default class Block {
     game.uniform.p = gl.getUniformLocation(prog, "p");
     game.uniform.noiseScale = gl.getUniformLocation(prog, "noiseScale");
     game.uniform.textureArray = gl.getUniformLocation(prog, "textureArray");
+    game.uniform.backgroundZoom = gl.getUniformLocation(prog, "backgroundZoom");
 
     const stride = Float32Array.BYTES_PER_ELEMENT * floatPerInstance;
 

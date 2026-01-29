@@ -193,8 +193,8 @@ const bblock_1 = new BuildingBlock({
       adjacencyRules: vec.fromValues(0, -1),
     }),
   ]),
-  x: -0.5,
-  y: 5,
+  x: 0.5,
+  y: 3,
 });
 
 // game.buildingBlocks.add(bblock_1);

@@ -63,16 +63,19 @@ export default class Chunk {
   // prettier-ignore
   debug() {
     const g = this.game, b = g.buffer, d = g.debugOverlay;
-    const size = this.game.chunkSize * 0.5 * g.cameraMatrix[0] * g.canvas.width;
+    const size = this.game.chunkSize * 0.5 * g.cameraMatrix[0] * g.canvas.width * g.backgroundZoom;
 
     const position = vec2.copy(b.vec2_1, this.position);
     vec2.scale(position, position, g.chunkSize);
     position[0] += g.chunkSize / 2;
     position[1] += g.chunkSize / 2;
 
+    position[0] *= g.backgroundZoom;
+    position[1] *= g.backgroundZoom;
+
     // Block aligned bounds
-    position[0] -= 0.5;
-    position[1] -= 0.5;
+    position[0] -= 0.5 * g.backgroundZoom;
+    position[1] -= 0.5 * g.backgroundZoom;
 
     const worldSpace = vec2.toVec3(b.vec3_1, position);
     const [csx, csy] = vec3.toVec2(b.vec2_1, vec3.transformMat3Into(worldSpace, g.cameraMatrix, worldSpace));

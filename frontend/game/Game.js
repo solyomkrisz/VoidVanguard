@@ -52,7 +52,8 @@ export default class Game extends WebGLCanvas {
     this.ng = new NebulaGenerator(this.noise, this.noiseScale, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.clearColor);
 
     this.tileSize = 15;
-    this.chunkSize = 16;
+    this.backgroundZoom = 1;
+    this.chunkSize = 4;
     this.renderDistance = vec2.fromValues(1, 1);
     this.chunks = new ChunkManager(this);
 
@@ -117,6 +118,7 @@ export default class Game extends WebGLCanvas {
 
     if (this.running) return;
 
+    const gl = this.gl;
     const textureManager = this.textureManager;
 
     // prettier-ignore
@@ -128,8 +130,12 @@ export default class Game extends WebGLCanvas {
 
         textureManager.loadFromActiveSlot();
 
-        // prettier-ignore
-        this.maxLayers = this.gl.getParameter(this.gl.MAX_ARRAY_TEXTURE_LAYERS);
+        this.maxLayers = gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS);
+
+        if (this.maxLayers < ((2 * this.renderDistance[0]) * (2 * this.renderDistance[1])) * (this.chunkSize * this.chunkSize)) {
+          console.error("GAME-start: The number of textures required for the chunks within the render distance exceeds the maximum allowed texture slots!");
+        }
+
         this.layerId = new IDManager(this.maxLayers);
 
         this.initTextureArray();
@@ -137,14 +143,15 @@ export default class Game extends WebGLCanvas {
 
         this.initInstancing(this);
         
-        this.gl.uniform4fv(this.uniform.backgroundColor, this.clearColor);
+        gl.uniform4fv(this.uniform.backgroundColor, this.clearColor);
+        gl.uniform1f(this.uniform.backgroundZoom, this.backgroundZoom);
         // this.gl.uniform1fv(this.uniform.r, this.noise.r);
         // this.gl.uniform1iv(this.uniform.p, this.noise.p);
         // this.gl.uniform1f(this.uniform.noiseScale, this.noiseScale);
 
-        const error = this.gl.getError();
+        const error = gl.getError();
 
-        error !== this.gl.NO_ERROR && console.error("WebGL Error: ", error);
+        error !== gl.NO_ERROR && console.error("WebGL Error: ", error);
 
         this.last = window.performance.now();
         this.frameId = window.requestAnimationFrame(this.update);

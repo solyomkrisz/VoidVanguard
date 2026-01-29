@@ -3,8 +3,8 @@ import * as vec3 from "../common/vec3.js";
 
 // A lightweight version of Rigidbody for background blocks
 export default class DecorationBlock {
-  static TEXTURE_WIDTH = 64;
-  static TEXTURE_HEIGHT = 64;
+  static TEXTURE_WIDTH = 16;
+  static TEXTURE_HEIGHT = 16;
 
   // prettier-ignore
   constructor({ type, game, x, y } = {}) {
