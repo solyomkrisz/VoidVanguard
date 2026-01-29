@@ -6,13 +6,34 @@ export default class DecorationBlock {
   static TEXTURE_WIDTH = 64;
   static TEXTURE_HEIGHT = 64;
 
+  // prettier-ignore
   constructor({ type, game, x, y } = {}) {
     this.type = type;
     this.game = game;
     this.position = vec2.fromValues(x, y);
     this.id = `${this.position[0]},${this.position[1]}`;
     this.pixels = null;
-    this.textureLayerId = this.createTexture();
+    this.textureLayerId = null;
+  }
+
+  onRemove() {
+    this.game.layerId.release(this.textureLayerId);
+    this.textureLayerId = null;
+
+    return this;
+  }
+
+  onInsert(distanceFromPlayer) {
+    if (!this.pixels) {
+      setTimeout(() => {
+        this.pixels = this.game.ng.get(this.position, true);
+        this.createTexture();
+      }, 10);
+    } else {
+      this.createTexture();
+    }
+
+    return this;
   }
 
   update() {
@@ -28,15 +49,15 @@ export default class DecorationBlock {
 
   // prettier-ignore
   createTexture() {
+    if (this.textureLayerId) return;
+
     const gl = this.game.gl;
 
-    this.pixels = this.game.ng.get(this.position, true);
+    this.textureLayerId = this.game.layerId.get();
 
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.game.textureArray);
-    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, this.game.lastLayer, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels);
+    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, this.textureLayerId, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels);
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
-
-    return this.game.lastLayer++;
   }
 
   // prettier-ignore

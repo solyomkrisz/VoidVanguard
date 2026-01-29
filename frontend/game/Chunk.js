@@ -14,6 +14,18 @@ export default class Chunk {
     this.idle = 0;
   }
 
+  onRemove() {
+    this.objects.forEach((object) => object.onRemove());
+
+    return this;
+  }
+
+  onInsert(distanceFromPlayer) {
+    this.objects.forEach((object) => object.onInsert(distanceFromPlayer));
+
+    return this;
+  }
+
   // We must initialize the noise we want to use in game
   // prettier-ignore
   build() {

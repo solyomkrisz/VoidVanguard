@@ -44,10 +44,6 @@ export default class Game extends WebGLCanvas {
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
-    this.textureArray = null;
-    this.lastLayer = 0;
-    this.maxLayers = 1024;
-
     this.seed = Math.floor(Math.random() * 100000); // 555 is nice, 46008
     this.seed = 555;
     this.noise = new ValueNoise(this.seed);
@@ -59,6 +55,11 @@ export default class Game extends WebGLCanvas {
     this.chunkSize = 16;
     this.renderDistance = vec2.fromValues(1, 1);
     this.chunks = new ChunkManager(this);
+
+    this.textureArray = null;
+    // prettier-ignore
+    this.maxLayers = ((2 * this.renderDistance[0]) * (2 * this.renderDistance[1])) * (this.chunkSize * this.chunkSize);
+    this.layerId = new IDManager(this.maxLayers);
 
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
