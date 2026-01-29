@@ -58,8 +58,8 @@ export default class Game extends WebGLCanvas {
 
     this.textureArray = null;
     // prettier-ignore
-    this.maxLayers = ((2 * this.renderDistance[0]) * (2 * this.renderDistance[1])) * (this.chunkSize * this.chunkSize);
-    this.layerId = new IDManager(this.maxLayers);
+    this.maxLayers = -1;
+    this.layerId = null;
 
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
@@ -127,6 +127,10 @@ export default class Game extends WebGLCanvas {
         }
 
         textureManager.loadFromActiveSlot();
+
+        // prettier-ignore
+        this.maxLayers = this.gl.getParameter(this.gl.MAX_ARRAY_TEXTURE_LAYERS);
+        this.layerId = new IDManager(this.maxLayers);
 
         this.initTextureArray();
         this.bindTextureArray();
