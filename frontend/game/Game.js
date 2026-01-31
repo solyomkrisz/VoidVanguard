@@ -15,6 +15,7 @@ import ChunkManager from "./ChunkManager.js";
 import * as vec2 from "../common/vec2.js";
 import NebulaGenerator from "./texture/NebulaGenerator.js";
 import DecorationBlock from "./DecorationBlock.js";
+import StarGenerator from "./texture/StarGenerator.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -44,16 +45,19 @@ export default class Game extends WebGLCanvas {
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
-    this.seed = Math.floor(Math.random() * 100000); // 555 is nice, 46008
+    this.seed = Math.floor(Math.random() * 100000); // 555 is nice, 46008, 676
     this.seed = 555;
     this.noise = new ValueNoise(this.seed);
-    this.noiseScale = 1 / 15;
+    this.noiseScale = 1 / 10;
     // prettier-ignore
-    this.ng = new NebulaGenerator(this.noise, this.noiseScale, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.clearColor);
+    {
+      this.ng = new NebulaGenerator(this.noise, this.noiseScale, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.clearColor);
+      this.sg = new StarGenerator(this.noise, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT);
+    }
 
     this.tileSize = 15;
-    this.backgroundZoom = 1;
-    this.chunkSize = 4;
+    this.backgroundZoom = 2;
+    this.chunkSize = 6;
     this.renderDistance = vec2.fromValues(1, 1);
     this.chunks = new ChunkManager(this);
 

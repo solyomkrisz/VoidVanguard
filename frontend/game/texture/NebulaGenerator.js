@@ -39,13 +39,13 @@ export default class NebulaGenerator {
     const O_offset = 200.0;
     const He_offset = 300.0;
 
-    const H_threshold = 0.0;
-    const O_threshold = 0.75;
+    const H_threshold = 0.1;
+    const O_threshold = 0.5;
     const He_threshold = 0.0;
 
-    const H_scale = 1.0 / 2.0;
+    const H_scale = 1.0 / 1.0;
     const O_scale = 1.0 / 2.0;
-    const He_scale = 1.0 / 2.0;
+    const He_scale = 1.0 / 1.0;
 
     const H_pos = vec2.set(this.v2b, (this.fragCoord[0] + H_offset) * H_scale, (this.fragCoord[1] + H_offset) * H_scale);
     const H = Math.min(1.0, Math.max(0.0, this.n.fBm(H_pos[0], H_pos[1], 7, 2.0, 0.5) - H_threshold));

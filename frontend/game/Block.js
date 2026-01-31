@@ -44,14 +44,18 @@ export default class Block {
     uniform mat3 cameraMatrix;
 
     void main() {
-      vec2 rotatedAndTranslated = (rotationMatrix * (localPosition + vertexPosition)) + parentPosition;
-      if (layerId >= 0.0) {
-        rotatedAndTranslated *= backgroundZoom;
-      }
-      vec3 position = cameraMatrix * vec3(rotatedAndTranslated, 1.0);
       vTexCoord = uvOffset + textureCoordinate * uvScale;
       textureLayerId = int(layerId);
-      gl_Position = vec4(position, 1.0);
+
+      vec2 translatedAndRotated = (rotationMatrix * (localPosition + vertexPosition)) + parentPosition; 
+
+      if (layerId >= 0.0) {
+        vec2 aligned = translatedAndRotated + 0.5;
+        vec2 zoomed = aligned * backgroundZoom;
+        gl_Position = vec4(cameraMatrix * vec3(zoomed, 1.0), 1.0);
+      } else {
+        gl_Position = vec4(cameraMatrix * vec3(translatedAndRotated, 1.0), 1.0); 
+      }
     }
   `;
 

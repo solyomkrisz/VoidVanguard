@@ -20,8 +20,8 @@ export default class Chunk {
     return this;
   }
 
-  onInsert(distanceFromPlayer) {
-    this.objects.forEach((object) => object.onInsert(distanceFromPlayer));
+  onInsert() {
+    this.objects.forEach((object) => object.onInsert());
 
     return this;
   }
@@ -40,8 +40,10 @@ export default class Chunk {
 
     for (let y = y0; y < y1; y++) {
       for (let x = x0; x < x1; x++) {
-        if (noise.fBm(x * noiseScale, y * noiseScale) > 0.67) {
-          this.objects.add(new DecorationBlock({ type: Type.NEBULA, game: this.game, x, y }));
+        const density = noise.fBm(x * noiseScale, y * noiseScale);
+
+        if (density > 0.64) {
+          this.objects.add(new DecorationBlock({ type: Type.NEBULA, game: this.game, x, y, density }));
         }
       }
     }
@@ -74,8 +76,9 @@ export default class Chunk {
     position[1] *= g.backgroundZoom;
 
     // Block aligned bounds
-    position[0] -= 0.5 * g.backgroundZoom;
-    position[1] -= 0.5 * g.backgroundZoom;
+    // In the vertex shader we shift the background tiles by 0.5 so their corner is at their given position (instead of the their center)
+    // position[0] -= 0.5 * g.backgroundZoom;
+    // position[1] -= 0.5 * g.backgroundZoom;
 
     const worldSpace = vec2.toVec3(b.vec3_1, position);
     const [csx, csy] = vec3.toVec2(b.vec2_1, vec3.transformMat3Into(worldSpace, g.cameraMatrix, worldSpace));
@@ -83,7 +86,7 @@ export default class Chunk {
     const x = (csx + 1) * 0.5 * g.canvas.width;
     const y = (1 - csy) * 0.5 * g.canvas.height;
 
-    d.drawBox(x, y, size, size, "rgba(0, 255, 0, 1)");
+    d.drawBox(x, y, size, size, "rgba(0, 255, 0, 1)", 1);
     d.drawText(x, y, `chunk: (${this.position}), id: ${this.id}`, "20px Arial", "rgba(0, 255, 0, 1)");
   }
 }

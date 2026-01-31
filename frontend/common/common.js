@@ -59,3 +59,11 @@ export function mulberry32(seed) {
 export function smoothstep(t) {
   return t * t * (3 - 2 * t);
 }
+
+export function clamp(n, min = 0, max = 1) {
+  return Math.min(max, Math.max(min, n));
+}
+
+export function inCircle(x, y, u, v, r) {
+  return (x - u) * (x - u) + (y - v) * (y - v) <= r * r;
+}
