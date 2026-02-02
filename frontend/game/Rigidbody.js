@@ -1,4 +1,5 @@
 import * as vec2 from "../common/vec2.js";
+import * as vec3 from "../common/vec3.js";
 import * as mat2 from "../common/mat2.js";
 import { LERP } from "../common/common.js";
 import Collidable from "./Collidable.js";
@@ -153,9 +154,9 @@ export default class Rigidbody extends Collidable {
     const rotationMatrix = mat2.fromRotation(_b.mat2_1, this.interpolatedRotation);
 
     for (const obj of this.model.objects) {
-      if (obj.spriteId === null) continue;
+      if (obj.spriteID === null) continue;
 
-      const sprite = this.game.textureManager.sprites[obj.spriteId];
+      const sprite = this.game.textureManager.sprites[obj.spriteID];
       const [u0, v0, u1, v1] = this.game.textureManager.textureCoordinates[sprite.getCurrentTexture()].coordinates;
 
       vec2.set(_b.vec2_2, u0, v0);

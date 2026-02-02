@@ -32,7 +32,7 @@ export default class WebGLCanvas extends Canvas {
   }
 
   clearCanvas() {
-    this.gl.clearColor(0.1, 0.1, 0.1, 1.0);
+    this.gl.clearColor(0, 0, 0, 1.0);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
   }
 
@@ -53,6 +53,10 @@ export default class WebGLCanvas extends Canvas {
         "WEBGLCANVAS-initWebGL: Your browser does not support WebGL or it is disabled! Also you might have already requested another context for this canvas!"
       );
     }
+
+    // Enable alpha blending - needed for transparent textures (beforehand it was instead just black)
+    this.gl.enable(this.gl.BLEND);
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
   }
 
   /**

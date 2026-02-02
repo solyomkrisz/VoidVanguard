@@ -1,6 +1,7 @@
 import Keyboard from "./Keyboard.js";
 import Spaceship from "./Spaceship.js";
 import Block from "./Block.js";
+import BlockStyle from "./BlockStyle.js";
 import * as vec2 from "../common/vec2.js";
 import * as mat2 from "../common/mat2.js";
 import Projectile from "./Projectile.js";
@@ -95,4 +96,5 @@ export default class Player extends Spaceship {
     // this.proxyCollider.onGeometryChange();
     // this.shapeCollider.onGeometryChange();
   }
+
 }

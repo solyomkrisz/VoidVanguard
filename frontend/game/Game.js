@@ -6,6 +6,7 @@ import Player from "./Player.js";
 import TextureManager from "./TextureManager.js";
 import Grid from "./Grid.js";
 import DebugOverlay from "./DebugOverlay.js";
+import BlockStyle from "./BlockStyle.js";
 import CollisionIDManager from "./CollisionIDManager.js";
 import ObjectCollection from "./ObjectCollection.js";
 import Tooltip from "../ui/component/Tooltip.js";
@@ -37,7 +38,7 @@ export default class Game extends WebGLCanvas {
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
-    this.tileSize = 15;
+    this.tileSize = 14;
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
     this.cameraMatrixInverse = mat3.identity();
@@ -48,10 +49,10 @@ export default class Game extends WebGLCanvas {
     this.projectiles = new ObjectCollection(this);
     this.coreObjects = new ObjectCollection(this);
 
-    this.frameId = 0;
 
     this.debugPanel = null;
     this.debugOverlay = null;
+    this.blockStyle = null;
     this.textureManager = null;
 
     this.update = this.update.bind(this);
@@ -146,6 +147,10 @@ export default class Game extends WebGLCanvas {
       this.grid.debug();
     }
 
+    if (this.blockStyle) {
+      this.blockStyle.clearCanvas();
+    }
+
     const gl = this.gl;
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -218,6 +223,16 @@ export default class Game extends WebGLCanvas {
     }
 
     this.debugOverlay = debugOverlay;
+  }
+
+  setBlockStyle(blockStyle) {
+    if (!(blockStyle instanceof BlockStyle)) {
+      throw new Error(
+        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class."
+      );
+    }
+
+    this.blockStyle = blockStyle;
   }
 
   startDebugging() {
