@@ -1,5 +1,7 @@
 import Keyboard from "./Keyboard.js";
 import Spaceship from "./Spaceship.js";
+import Block from "./Block.js";
+import BlockStyle from "./BlockStyle.js";
 import * as vec2 from "../common/vec2.js";
 import Projectile from "./Projectile.js";
 import Model from "./Model.js";
@@ -14,7 +16,7 @@ export default class Player extends Spaceship {
     super({
       type: Type.PLAYER,
       game,
-      model: new Model(model),
+      model,
       x: 0,
       y: 0,
       vx: 0,
@@ -241,4 +243,5 @@ export default class Player extends Spaceship {
 
     vec2.addScaled(this.position, this.position, collision.normal, this.getDefaultPenetrationCorrection(other, collision, epsilon) * direction);
   }
+
 }

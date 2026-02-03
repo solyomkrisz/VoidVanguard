@@ -28,10 +28,12 @@ export default class TextureManager {
    * @returns {Float32Array | Array}
    */
   static GET_UV_COORD(tileNumX, tileNumY, offsetX, offsetY) {
-    const u0 = offsetX / tileNumX;
-    const u1 = (offsetX + 1) / tileNumX;
-    const v0 = (tileNumY - 1 - offsetY) / tileNumY;
-    const v1 = (tileNumY - 1 - offsetY + 1) / tileNumY;
+    // Add a small inset (0.01) to prevent texture bleeding from adjacent tiles
+    const inset = 0.00175;
+    const u0 = (offsetX / tileNumX) + inset;
+    const u1 = ((offsetX + 1) / tileNumX) - inset;
+    const v0 = ((tileNumY - 1 - offsetY) / tileNumY) + inset;
+    const v1 = ((tileNumY - 1 - offsetY + 1) / tileNumY) - inset;
 
     return new MATRIX.DATA_STRUCTURE([u0, v0, u1, v1]);
   }
@@ -113,6 +115,8 @@ export default class TextureManager {
           gl.generateMipmap(gl.TEXTURE_2D);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
           gl.bindTexture(gl.TEXTURE_2D, null);
           gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);

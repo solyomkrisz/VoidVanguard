@@ -7,11 +7,13 @@ import Sprite from "./game/Sprite.js";
 import { TextureID, SpriteID } from "./game/texture/Texture.js";
 import Enemy from "./game/Enemy.js";
 import DebugOverlay from "./game/DebugOverlay.js";
+import BlockStyle from "./game/BlockStyle.js";
 import Model from "./game/Model.js";
 import { GlobalState } from "./game/State.js";
 import Shape from "./game/Shape.js";
 import Mouse from "./game/Mouse.js";
 import BuildingBlock from "./game/BuildingBlock.js";
+import Models from "./game/SpaceShipModels.js";
 import Thruster from "./game/Thruster.js";
 import * as UI from "./ui/UI.js";
 import _ from "./ui/component/ContextMenuTemplate.js";
@@ -75,129 +77,48 @@ mouse.enableListening();
 const tm = new TextureManager(game);
 game.addTextureManager(tm);
 
-tm.queueTextureCoordinate(TextureID.HEART, TextureManager.S0, 0, 2);
-tm.queueTextureCoordinate(TextureID.CANON, TextureManager.S0, 0, 1);
-tm.queueTextureCoordinate(TextureID.BLOCK, TextureManager.S0, 0, 0);
-tm.addTexture(TextureManager.S0, "./image/atlas.png", 1, 3);
+// Texture setup - 960x192 atlas (15 columns × 3 rows, 64x64 per texture)
+// Row 0: Block grades 0-14 with connector texture
+// Row 1: Block grades 0-14 without connector (unused for now) - reserved for dragging the blocks around, cause they look weird with connectors when not connected to anything
+// Row 2: Turret textures
+for (let i = 0; i < 15; i++) {
+  tm.queueTextureCoordinate(TextureID[`BLOCK_${i}`], TextureManager.S0, i, 0);
+}
+// Queue turret textures from row 2 (all 15 columns)
+for (let i = 0; i < 15; i++) {
+  tm.queueTextureCoordinate(TextureID[`TURRET${i === 0 ? '' : i + 1}`], TextureManager.S0, i, 2);
+}
+tm.addTexture(TextureManager.S0, "./image/atlas.png", 15, 3);
+
+// Wait for textures to load, then add coordinates and sprites
 tm.setActiveSlot(TextureManager.S0);
 
-const sprite = new Sprite();
-sprite.addFrame(TextureID.HEART, 2);
-sprite.addFrame(TextureID.BLOCK, 2);
-sprite.addFrame(TextureID.CANON, 2);
+// Create sprites for all 15 block grades
+for (let i = 0; i < 15; i++) {
+  const blockGradeSprite = new Sprite();
+  blockGradeSprite.addFrame(TextureID[`BLOCK_${i}`], 2);
+  tm.addSprite(SpriteID[`BLOCK_${i}`], blockGradeSprite);
+}
 
-tm.addSprite(SpriteID.TEST, sprite);
+// Create sprites for all 15 turrets
+for (let i = 1; i <= 15; i++) {
+  const turretSprite = new Sprite();
+  turretSprite.addFrame(TextureID[`TURRET${i === 1 ? '' : i}`], 2);
+  tm.addSprite(SpriteID[`TURRET${i === 1 ? '' : i}`], turretSprite);
+}
 
-// prettier-ignore
-const rectCollider = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
-// prettier-ignore
-const triCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
-// prettier-ignore
-const smallRectCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
-// prettier-ignore
-const turretCollider = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.2, 0.5, 0.2, 0.5, 0.5, -0.5, -0.5, -0.5);
-
-const PLAYER_MODEL = [
-  new Block({
-    x: 0,
-    y: 0,
-    shape: rectCollider,
-    spriteId: SpriteID.TEST,
-    mass: 1,
-  }),
-  new Block({
-    x: -1,
-    y: 0,
-    shape: rectCollider,
-    spriteId: SpriteID.TEST,
-    mass: 1,
-  }),
-  new Block({
-    x: 1,
-    y: 0,
-    shape: rectCollider,
-    spriteId: SpriteID.TEST,
-    mass: 1,
-  }),
-  new Block({
-    x: 0,
-    y: 1,
-    shape: rectCollider,
-    spriteId: SpriteID.TEST,
-    mass: 1,
-  }).rotateTexture(TextureID.CANON, -Math.PI / 2),
-  // new Block(-2, -1, rectCollider, SpriteID.TEST, 1),
-  new Thruster({
-    x: -1,
-    y: -1,
-    shape: rectCollider,
-    spriteId: SpriteID.TEST,
-    fuelType: 0,
-    Isp: 400,
-    massFlowRate: 600,
-    hasGimbal: true,
-    gimbalRange: 15,
-  }),
-  new Thruster({
-    x: 1,
-    y: -1,
-    shape: rectCollider,
-    spriteId: SpriteID.TEST,
-    fuelType: 0,
-    Isp: 400,
-    massFlowRate: 600,
-    hasGimbal: true,
-    gimbalRange: 15,
-  }),
-];
-
-game.createPlayer(PLAYER_MODEL);
+game.createPlayer(Models.PLAYER);
 game.start();
 // game.enablePointerLock();
 
-// prettier-ignore
-const ENEMY_MODEL = [
-  new Block({x:0, y:0, shape:rectCollider, spriteId:SpriteID.TEST}),
-  new Block({x:-1,y: 0,shape: rectCollider,spriteId: SpriteID.TEST}),
-  new Block({x:1, y:0, shape:rectCollider, spriteId:SpriteID.TEST}),
-];
-
-const ENEMY_MODEL_2 = [
-  new Block({ x: 0, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
-  new Block({ x: 1, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
-  new Block({ x: -1, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
-  new Block({ x: 2, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
-  new Block({ x: -2, y: 0, shape: rectCollider, spriteId: SpriteID.TEST }),
-  new Block({ x: 0, y: 1, shape: rectCollider, spriteId: SpriteID.TEST }),
-  new Block({ x: 1, y: 1, shape: rectCollider, spriteId: SpriteID.TEST }),
-  new Block({ x: -1, y: 1, shape: rectCollider, spriteId: SpriteID.TEST }),
-  new Block({ x: 0, y: 2, shape: triCollider, spriteId: SpriteID.TEST }),
-];
 
 const enemy = new Enemy({
   game,
-  model: new Model(ENEMY_MODEL),
-  x: -23,
-  y: -14,
+  model: Models.SCOUT2,
+  x: 10,
+  y: 10,
   maxSpeed: 10,
 });
-
-const bblock_1 = new BuildingBlock({
-  game,
-  model: new Model([
-    new Block({
-      x: 0,
-      y: 0,
-      shape: rectCollider,
-      spriteId: SpriteID.TEST,
-      adjacencyRules: vec.fromValues(0, -1, -1, 0),
-    }),
-  ]),
-  x: 0.5,
-  y: -3,
-});
-
-game.buildingBlocks.add(bblock_1);
 
 enemy.setState(GlobalState.DEAD);
 // console.log(enemy.hasState(GlobalState.DEAD));
@@ -221,6 +142,10 @@ keyboard.enableListening();
 const debugOverlay = new DebugOverlay();
 game.setDebugOverlay(debugOverlay);
 debugOverlay.init();
+
+const blockStyle = new BlockStyle();
+game.setBlockStyle(blockStyle);
+blockStyle.init();
 
 const debug = new DebugPanel();
 debug.setSource(game);

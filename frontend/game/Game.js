@@ -6,6 +6,7 @@ import Player from "./Player.js";
 import TextureManager from "./TextureManager.js";
 import Grid from "./Grid.js";
 import DebugOverlay from "./DebugOverlay.js";
+import BlockStyle from "./BlockStyle.js";
 import IDManager from "./IDManager.js";
 import ObjectCollection from "./ObjectCollection.js";
 import * as UI from "../ui/UI.js";
@@ -55,7 +56,7 @@ export default class Game extends WebGLCanvas {
       this.sg = new StarGenerator(this.noise, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT);
     }
 
-    this.tileSize = 15;
+    this.tileSize = 14;
     this.backgroundZoom = 2;
     this.chunkSize = 8;
     this.renderDistance = vec2.fromValues(3, 2);
@@ -77,10 +78,10 @@ export default class Game extends WebGLCanvas {
     this.projectiles = new ObjectCollection(this);
     this.coreObjects = new ObjectCollection(this);
 
-    this.frameId = 0;
 
     this.debugPanel = null;
     this.debugOverlay = null;
+    this.blockStyle = null;
     this.textureManager = null;
 
     this.update = this.update.bind(this);
@@ -225,6 +226,10 @@ export default class Game extends WebGLCanvas {
       this.grid.debug();
     }
 
+    if (this.blockStyle) {
+      this.blockStyle.clearCanvas();
+    }
+    
     this.bindTextureArray();
 
     const gl = this.gl;
@@ -295,6 +300,16 @@ export default class Game extends WebGLCanvas {
     }
 
     this.debugOverlay = debugOverlay;
+  }
+
+  setBlockStyle(blockStyle) {
+    if (!(blockStyle instanceof BlockStyle)) {
+      throw new Error(
+        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class."
+      );
+    }
+
+    this.blockStyle = blockStyle;
   }
 
   startDebugging() {
