@@ -125,7 +125,7 @@ const PLAYER_MODEL = [
     shape: rectCollider,
     spriteId: SpriteID.TEST,
     mass: 1,
-  }),
+  }).rotateTexture(TextureID.CANON, -Math.PI / 2),
   // new Block(-2, -1, rectCollider, SpriteID.TEST, 1),
   new Thruster({
     x: -1,
@@ -190,11 +190,11 @@ const bblock_1 = new BuildingBlock({
       y: 0,
       shape: rectCollider,
       spriteId: SpriteID.TEST,
-      adjacencyRules: vec.fromValues(0, -1),
+      adjacencyRules: vec.fromValues(0, -1, -1, 0),
     }),
   ]),
-  x: -0.5,
-  y: 5,
+  x: 0.5,
+  y: -3,
 });
 
 game.buildingBlocks.add(bblock_1);
@@ -230,6 +230,9 @@ debug.bindSource("frames", "frames", (p) => (p.src.frames = 0));
 
 debug.addElement("ticks");
 debug.bindSource("ticks", "ticks", (p) => (p.src.ticks = 0));
+
+debug.addElement("seed");
+debug.bindSource("seed", "seed");
 
 debug.addElement("playerRotation");
 debug.bindSource(

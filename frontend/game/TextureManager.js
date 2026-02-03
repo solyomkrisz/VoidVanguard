@@ -50,13 +50,13 @@ export default class TextureManager {
   setActiveSlot(slot) {
     if (typeof slot != "number") {
       throw new Error(
-        "TEXTUREMANAGER-setActiveSlot: The value for the 'slot' parameter is not a number!"
+        "TEXTUREMANAGER-setActiveSlot: The value for the 'slot' parameter is not a number!",
       );
     }
 
     if (slot < 0 || slot > 7) {
       throw new Error(
-        "TEXTUREMANAGER-setActiveSlot: Value for slot is out of range. It must be between 0 and 7."
+        "TEXTUREMANAGER-setActiveSlot: Value for slot is out of range. It must be between 0 and 7.",
       );
     }
 
@@ -66,7 +66,7 @@ export default class TextureManager {
   loadFromActiveSlot() {
     if (!this.texture[this.activeSlot]) {
       throw new Error(
-        `TEXTUREMANAGER-loadFromActiveSlot: There is no texture bound to the slot (${this.activeSlot}) which you marked as active!`
+        `TEXTUREMANAGER-loadFromActiveSlot: There is no texture bound to the slot (${this.activeSlot}) which you marked as active!`,
       );
     }
 
@@ -83,13 +83,13 @@ export default class TextureManager {
 
     if (typeof slot != "number") {
       throw new Error(
-        "TEXTUREMANAGER-addTexture: The value for the 'slot' parameter is not a number!"
+        "TEXTUREMANAGER-addTexture: The value for the 'slot' parameter is not a number!",
       );
     }
 
     if (slot < 0 || slot > 7) {
       throw new Error(
-        "TEXTUREMANAGER-addTexture: Value for slot is out of range. It must be between 0 and 7."
+        "TEXTUREMANAGER-addTexture: Value for slot is out of range. It must be between 0 and 7.",
       );
     }
 
@@ -115,6 +115,7 @@ export default class TextureManager {
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
           gl.bindTexture(gl.TEXTURE_2D, null);
+          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
           this.texture[slot] = {
             gl_texture: texture,
@@ -129,11 +130,11 @@ export default class TextureManager {
         image.onerror = function () {
           reject(
             new Error(
-              "TEXTUREMANAGER-addTexture: Failed to load texture: " + path
-            )
+              "TEXTUREMANAGER-addTexture: Failed to load texture: " + path,
+            ),
           );
         };
-      })
+      }),
     );
   }
 
@@ -145,7 +146,7 @@ export default class TextureManager {
   addTextureCoordinates(name, slot, offsetX, offsetY) {
     if (this.texture.length - 1 < slot) {
       throw new Error(
-        "TEXTUREMANAGER-addTextureCoordinates: The texture you are looking for doesn't exist!"
+        "TEXTUREMANAGER-addTextureCoordinates: The texture you are looking for doesn't exist!",
       );
     }
 
@@ -161,7 +162,7 @@ export default class TextureManager {
   addSprite(name, sprite) {
     if (!(sprite instanceof Sprite)) {
       throw new Error(
-        "TEXTUREMANAGER-addSprite: The provided value is not a Sprite!"
+        "TEXTUREMANAGER-addSprite: The provided value is not a Sprite!",
       );
     }
 

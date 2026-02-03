@@ -48,8 +48,9 @@ export default class DebugOverlay extends Canvas {
   }
 
   // prettier-ignore
-  drawBox(x, y, w, h, color, callback = (ctx, color) => {
+  drawBox(x, y, w, h, color, lineWidth, callback = (ctx, color, lineWidth) => {
     ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth,
     ctx.stroke();
   }) {
     const c = this.ctx;
@@ -59,7 +60,7 @@ export default class DebugOverlay extends Canvas {
     c.closePath();
 
     c.save();
-    callback(c, color);
+    callback(c, color, lineWidth);
     c.restore();
   }
 

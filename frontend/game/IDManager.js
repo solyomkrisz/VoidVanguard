@@ -1,8 +1,8 @@
 export default class IDManager {
-  constructor() {
+  constructor(max = 2 ** 16) {
     this.next = 0;
     this.pool = [];
-    this.max = 2 ** 16;
+    this.max = max;
   }
 
   get() {

@@ -22,6 +22,9 @@ export default class Player extends Spaceship {
       maxSpeed: 5,
     });
 
+    this.chunk = vec2.create();
+    this.setCurrentChunk();
+
     this.UI = {};
 
     // Creating UI
@@ -34,6 +37,12 @@ export default class Player extends Spaceship {
     this.updatePropulsion = this.manualPropulsionUpdate;
 
     this.model.init(this);
+  }
+
+  // prettier-ignore
+  setCurrentChunk() {
+    this.chunk[0] = Math.floor(this.position[0] / this.game.chunkSize / this.game.backgroundZoom);
+    this.chunk[1] = Math.floor(this.position[1] / this.game.chunkSize / this.game.backgroundZoom);
   }
 
   shoot(muzzle, projectileSpeed, cooldown) {
@@ -151,6 +160,8 @@ export default class Player extends Spaceship {
   onPositionChange() {
     this.proxyCollider.onPositionChange();
     this.shapeCollider.onPositionChange();
+
+    this.setCurrentChunk();
   }
 
   onBroadCollision(other) {

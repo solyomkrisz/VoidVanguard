@@ -16,7 +16,7 @@ export function getMinMaxXY(
   target,
   objects,
   getX = (o) => o.localPosition[0],
-  getY = (o) => o.localPosition[1]
+  getY = (o) => o.localPosition[1],
 ) {
   let minX = Infinity;
   let minY = Infinity;
@@ -43,4 +43,27 @@ export function isAdjacent(objects, i, x, y) {
   const dx = Math.abs(x - ox);
   const dy = Math.abs(y - oy);
   return dx + dy === 1;
+}
+
+export function mulberry32(seed) {
+  return {
+    random: function () {
+      let t = (seed += 0x6d2b79f5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    },
+  };
+}
+
+export function smoothstep(t) {
+  return t * t * (3 - 2 * t);
+}
+
+export function clamp(n, min = 0, max = 1) {
+  return Math.min(max, Math.max(min, n));
+}
+
+export function inCircle(x, y, u, v, r) {
+  return (x - u) * (x - u) + (y - v) * (y - v) <= r * r;
 }

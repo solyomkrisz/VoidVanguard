@@ -14,7 +14,7 @@ export default class Mouse extends Rigidbody {
       model: new Model(
         // prettier-ignore
         [new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0), spriteId: null, mass: 1e-10 })],
-        Model.COPY_MODE.PRESERVE
+        Model.COPY_MODE.PRESERVE,
       ),
       x: 0,
       y: 0,
@@ -29,7 +29,7 @@ export default class Mouse extends Rigidbody {
     this.isDown = false;
     this.dragged = null;
 
-    this.ndc = new Float32Array([0, 0, 1]);
+    this.ndc = new Float32Array([-1, -1, 1]);
 
     this.mouseMoveEventHandler = this.mouseMoveEventHandler.bind(this);
     this.mouseDownEventHandler = this.mouseDownEventHandler.bind(this);

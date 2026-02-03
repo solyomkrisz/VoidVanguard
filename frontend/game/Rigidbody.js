@@ -153,7 +153,8 @@ export default class Rigidbody extends Collidable {
       if (obj.spriteId === null) continue;
 
       const sprite = this.game.textureManager.sprites[obj.spriteId];
-      const [u0, v0, u1, v1] = this.game.textureManager.textureCoordinates[sprite.getCurrentTexture()].coordinates;
+      const currentTexture = sprite.getCurrentTexture();
+      const [u0, v0, u1, v1] = this.game.textureManager.textureCoordinates[currentTexture].coordinates;
 
       vec2.set(_b.vec2_2, u0, v0);
       vec2.set(_b.vec2_3, u1 - u0, v1 - v0);
@@ -164,6 +165,8 @@ export default class Rigidbody extends Collidable {
         ...rotationMatrix,
         ..._b.vec2_2,
         ..._b.vec2_3,
+        obj.getTextureRotation(currentTexture),
+        -1
       );
     }
 
