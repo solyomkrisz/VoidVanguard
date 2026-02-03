@@ -52,9 +52,9 @@ export default class CollisionCollection {
 
         if (!collision.status) continue;
 
-        for (const { a: { model: { objects: [_a] } }, b: { model: { objects: [_b] } } } of collision.subCollisions) {
-          a.parent.onContact(_a);
-          b.parent.onContact(_b);
+        for (const subCollision of collision.subCollisions) {
+          a.parent.onContact(subCollision, ...subCollision.a.model.objects);
+          b.parent.onContact(subCollision, ...subCollision.b.model.objects);
         }
       }
     }
@@ -82,7 +82,7 @@ export default class CollisionCollection {
       this.detect().contact();
 
       for (const collision of this.toResolve) {
-        collision.resolve();
+        collision.resolvePenetration();
         _continue = true;
       }
 

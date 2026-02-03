@@ -10,7 +10,7 @@ import * as Type from "./Type.js";
 
 export default class Rigidbody extends Collidable {
   // prettier-ignore
-  constructor({ type = Type.UNKNOWN, game, model, parent = null, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1 } = {}) {
+  constructor({ type = Type.UNKNOWN, game, model, parent = null, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1, maxAngularSpeed = 1 } = {}) {
     super(game, model);
 
     this.type = type;
@@ -24,7 +24,10 @@ export default class Rigidbody extends Collidable {
     this.interpolatedPosition = vec2.fromValues(x, y);
     this.velocity = vec2.fromValues(vx, vy);
     this.acceleration = vec2.create();
+    this.angularVelocity = 0;
+    this.angularAcceleration = 0;
     this.maxSpeed = maxSpeed;
+    this.maxAngularSpeed = maxAngularSpeed;
     this.forward = vec2.fromValues(0, 1);
     this.previousForward = vec2.fromValues(0, 1);
     this.rotation = 0;
@@ -32,10 +35,13 @@ export default class Rigidbody extends Collidable {
     this.interpolatedRotation = 0;
     this.state = new Uint32Array(2);
     this.mass = 0;
+    this.CoM = vec2.create();
+    this.I = 0;
     this.netForce = new Force();
     this.previousNetForce = new Force();
 
-    this.setMass();
+    this.setMassAndCoM();
+    this.setMomentOfInertia();
   }
 
   setState(state) {
@@ -65,11 +71,27 @@ export default class Rigidbody extends Collidable {
     if (i < this.state.length) this.state[i] &= ~(1 << b);
   }
 
-  setMass() {
+  // prettier-ignore
+  setMassAndCoM() {
     this.mass = 0;
+    vec2.reset(this.CoM);
 
     for (const object of this.model.objects) {
       this.mass += object.mass;
+      vec2.addScaled(this.CoM, this.CoM, vec2.add(this.game.buffer.vec2_1, object.CoM, object.localPosition), object.mass);
+    }
+
+    vec2.scale(this.CoM, this.CoM, 1 / this.mass);
+  }
+
+  setMomentOfInertia() {
+    const _b = this.game.buffer;
+
+    this.I = 0;
+
+    for (const object of this.model.objects) {
+      const r = vec2.sub(_b.vec2_1, object.CoM, this.CoM);
+      this.I += object.I + object.mass * vec2.dot(r, r);
     }
   }
 
@@ -80,44 +102,19 @@ export default class Rigidbody extends Collidable {
     vec2.copy(this.velocity, rigidbody.velocity);
     vec2.copy(this.forward, rigidbody.forward);
     vec2.copy(this.previousForward, rigidbody.previousForward);
+
+    this.angularAcceleration = rigidbody.angularAcceleration;
+    this.angularVelocity = rigidbody.angularVelocity;
     this.rotation = rigidbody.rotation;
     this.previousRotation = rigidbody.previousRotation;
     this.interpolatedRotation = rigidbody.interpolatedRotation;
+
     return this;
   }
 
   debug() {
     this.proxyCollider.debug();
     this.shapeCollider.debug();
-  }
-
-  showDetailsOnContact(object) {
-    const ttip = this.game.tooltip;
-    const { parent: p, block: b } = ttip.layout.debug;
-
-    p.type.field.textContent = this.type;
-    p.position.field.textContent = this.position;
-    p.rotation.field.textContent = this.rotation;
-    p.velocity.field.textContent = this.velocity;
-    p.acceleration.field.textContent = this.acceleration;
-    p.forward.field.textContent = this.forward;
-    p.mass.field.textContent = this.mass;
-    p.netForce.field.textContent = this.previousNetForce.vector;
-    this.previousNetForce.update();
-    p.netForceMagnitude.field.textContent = this.previousNetForce.magnitude();
-    p.cells.field.textContent = this.cells;
-    p.proxyCollider.field.textContent = `{r: ${this.proxyCollider.r}}`;
-    p.shapeCollider.field.textContent = `{decomposed_length: ${this.shapeCollider.decomposed.length}}`;
-
-    b.localPosition.field.textContent = object.localPosition;
-    b.health.field.textContent = object.health;
-    b.mass.field.textContent = object.mass;
-    b.isRemovable.field.textContent = object.isRemovable;
-    b.spriteId.field.textContent = object.spriteId;
-    b.shape.field.textContent = object.shape.vertices;
-
-    ttip.setContent(ttip.layout.debug.html);
-    ttip.show();
   }
 
   save() {
@@ -156,8 +153,9 @@ export default class Rigidbody extends Collidable {
     for (const obj of this.model.objects) {
       if (obj.spriteID === null) continue;
 
-      const sprite = this.game.textureManager.sprites[obj.spriteID];
-      const [u0, v0, u1, v1] = this.game.textureManager.textureCoordinates[sprite.getCurrentTexture()].coordinates;
+      const sprite = this.game.textureManager.sprites[obj.spriteId];
+      const currentTexture = sprite.getCurrentTexture();
+      const [u0, v0, u1, v1] = this.game.textureManager.textureCoordinates[currentTexture].coordinates;
 
       vec2.set(_b.vec2_2, u0, v0);
       vec2.set(_b.vec2_3, u1 - u0, v1 - v0);
@@ -168,6 +166,8 @@ export default class Rigidbody extends Collidable {
         ...rotationMatrix,
         ..._b.vec2_2,
         ..._b.vec2_3,
+        obj.getTextureRotation(currentTexture),
+        -1
       );
     }
 
@@ -196,12 +196,55 @@ export default class Rigidbody extends Collidable {
     vec2.addScaled(this.position, this.position, this.velocity, this.game.fdt);
 
     if (!vec2.isEqual(this.previousPosition, this.position, 0)) {
-      this.proxyCollider.onPositionChange();
-      this.shapeCollider.onPositionChange();
+      this.onPositionChange();
+    }
+  }
+
+  updateAngularVelocity() {
+    const angularFriction = 0.04;
+
+    this.angularVelocity += this.angularAcceleration * this.game.fdt;
+    this.angularVelocity *= 1 - angularFriction;
+
+    const angularSpeed = Math.abs(this.angularVelocity);
+
+    if (angularSpeed > this.maxAngularSpeed) {
+      this.angularVelocity =
+        Math.sign(this.angularVelocity) * this.maxAngularSpeed;
+    }
+
+    angularSpeed < 0.05 && (this.angularVelocity = 0);
+  }
+
+  updateRotation() {
+    const _b = this.game.buffer;
+
+    this.rotation += this.angularVelocity * this.game.fdt;
+
+    // prettier-ignore
+    if (this.previousRotation !== this.rotation) {
+      const rotationMatrix = mat2.fromRotation(_b.mat2_1, this.rotation - this.previousRotation);
+      vec2.transformMat2(this.forward, rotationMatrix, this.forward);
+      vec2.normalize(this.forward, this.forward);
+
+      this.onRotationChange();
     }
   }
 
   update() {
     console.warn("update() must be implemented by the subclass!");
+  }
+
+  manualRotate(ccw = 1, rad = Math.PI / 2) {
+    this.rotation += rad * ccw;
+  }
+
+  getDefaultPenetrationCorrection(other, { depth }, epsilon) {
+    return (depth + epsilon) * (this.mass / (this.mass + other.mass));
+  }
+
+  // prettier-ignore
+  resolvePenetration(other, collision, epsilon, direction) {
+    vec2.add(this.position, this.position, collision.normal, this.getDefaultPenetrationCorrection(other, collision, epsilon) * direction);
   }
 }

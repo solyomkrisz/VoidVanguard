@@ -1,6 +1,5 @@
 import Game from "./game/Game.js";
 import Block from "./game/Block.js";
-import Rigidbody from "./game/Rigidbody.js";
 import DebugPanel from "./game/DebugPanel.js";
 import Keyboard from "./game/Keyboard.js";
 import TextureManager from "./game/TextureManager.js";
@@ -14,44 +13,61 @@ import { GlobalState } from "./game/State.js";
 import Shape from "./game/Shape.js";
 import Mouse from "./game/Mouse.js";
 import BuildingBlock from "./game/BuildingBlock.js";
-import Tooltip from "./ui/component/Tooltip.js";
 import Models from "./game/SpaceShipModels.js";
+import Thruster from "./game/Thruster.js";
+import * as UI from "./ui/UI.js";
+import _ from "./ui/component/ContextMenuTemplate.js";
+import * as vec from "../frontend/common/vec.js";
 
 const game = new Game();
+
+game.tooltip.createTemplate("PARENT_INFO", "ŰRHAJÓ", [
+  ["Pozíció: ", "position"],
+  ["Sebesség: ", "velocity"],
+  ["Forgás: ", "rotation"],
+  ["Össztömeg: ", "mass"],
+  ["Tömegközéppont: ", "CoM"],
+]);
+
+game.tooltip.createTemplate("BLOCK_INFO", "BLOKK", [
+  ["Helyi pozíció: ", "localPosition"],
+  ["Ütközőtest csúcsok: ", "shapeVertices"],
+  ["Tömeg: ", "mass"],
+  ["Eltávolítható: ", "isRemovable"],
+  ["Életpontok: ", "health"],
+  ["Tömegközéppont: ", "CoM"],
+]);
+
+game.tooltip.createTemplate("THRUSTER_INFO", "HAJTÓMŰ", [
+  ["Fajlagos impulzus: ", "Isp"],
+  ["Tömegáram: ", "massFlowRate"],
+  ["Van gimbal: ", "hasGimbal"],
+  ["Gimbal: ", "_gimbal"],
+  ["Throttle: ", "throttle"],
+]);
+
 game.createCanvas();
+game.createContextMenu();
+
+const playerContextMenu = UI.element("context-menu-template");
+// prettier-ignore
+{
+  playerContextMenu.addMenuItem("CW forgatás", "rotateCW", (src) => src.manualRotate(-1));
+  playerContextMenu.addMenuItem("CCW forgatás", "rotateCCW", (src) => src.manualRotate());
+}
+game.contextMenu.addTemplate("PLAYER_CONTEXT_MENU", playerContextMenu);
+
+const enemyContextMenu = UI.element("context-menu-template");
+// prettier-ignore
+{
+  enemyContextMenu.addMenuItem("Megöl", "kill", (src) => src.setState(GlobalState.DEAD));
+}
+game.contextMenu.addTemplate("ENEMY_CONTEXT_MENU", enemyContextMenu);
+
 game.initWebGL();
 game.canvasToResponsiveFullWindow();
 game.setProgram(Block.VERTEX_SHADER_SOURCE, Block.FRAGMENT_SHADER_SOURCE);
 Block.INIT_RENDER(game);
-
-const ttipDebugTemplate = `
-  -> parent |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
-  type/
-  position/
-  rotation/
-  velocity/
-  acceleration/
-  forward/
-  mass/
-  netForce/
-  netForceMagnitude/
-  cells/
-  proxyCollider/
-  shapeCollider/
-  ------
-  -> block |background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: #fff; padding: 10px; border-radius: 8px;|/
-  localPosition/
-  health/
-  mass/
-  isRemovable/
-  spriteId/
-  shape/
-  `;
-
-const ttip = new Tooltip();
-ttip.reset = () => ttip.hide();
-game.setTooltip(ttip);
-ttip.createLayout("debug", ttipDebugTemplate);
 
 const mouse = new Mouse(game);
 game.coreObjects.add(mouse);
@@ -105,9 +121,9 @@ const enemy = new Enemy({
 });
 
 enemy.setState(GlobalState.DEAD);
-console.log(enemy.hasState(GlobalState.DEAD));
+// console.log(enemy.hasState(GlobalState.DEAD));
 enemy.clearState(GlobalState.DEAD);
-console.log(enemy.hasState(GlobalState.DEAD));
+// console.log(enemy.hasState(GlobalState.DEAD));
 
 game.enemies.add(enemy);
 
@@ -118,6 +134,9 @@ keyboard.observeKey(Keyboard.KeyS);
 keyboard.observeKey(Keyboard.KeyA);
 keyboard.observeKey(Keyboard.KeyD);
 keyboard.observeKey(Keyboard.Space);
+keyboard.observeKey(Keyboard.LCtrl);
+keyboard.observeKey(Keyboard.LShift);
+keyboard.observeKey(Keyboard.KeyR);
 keyboard.enableListening();
 
 const debugOverlay = new DebugOverlay();
@@ -137,11 +156,14 @@ debug.bindSource("frames", "frames", (p) => (p.src.frames = 0));
 debug.addElement("ticks");
 debug.bindSource("ticks", "ticks", (p) => (p.src.ticks = 0));
 
+debug.addElement("seed");
+debug.bindSource("seed", "seed");
+
 debug.addElement("playerRotation");
 debug.bindSource(
   "playerRotation",
   "playerRotation",
-  (p) => (p.src.playerRotation = game.player.rotation)
+  (p) => (p.src.playerRotation = game.player.rotation),
 );
 
 debug.addElement("P XY");
@@ -152,7 +174,7 @@ debug.bindSource(
     (p.src.playerPosition = [
       p.src.player.position[0].toFixed(4),
       p.src.player.position[1].toFixed(4),
-    ])
+    ]),
 );
 
 debug.addElement("M XY");
@@ -163,7 +185,7 @@ debug.bindSource(
     (p.src.mousePosition = [
       p.src.mouse.position[0].toFixed(4),
       p.src.mouse.position[1].toFixed(4),
-    ])
+    ]),
 );
 
 game.setDebugPanel(debug);

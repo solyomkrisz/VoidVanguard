@@ -123,6 +123,10 @@ export function len(v) {
   return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
 }
 
+export function len2(v) {
+  return Math.abs(v[0]) + Math.abs(v[1]);
+}
+
 export function transformMat2(target, m, v) {
   let x = v[0],
     y = v[1];

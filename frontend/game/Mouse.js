@@ -13,8 +13,8 @@ export default class Mouse extends Rigidbody {
       game,
       model: new Model(
         // prettier-ignore
-        [new Block(0, 0, new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0), null, 1e-10)],
-        Model.COPY_MODE.PRESERVE
+        [new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0), spriteId: null, mass: 1e-10 })],
+        Model.COPY_MODE.PRESERVE,
       ),
       x: 0,
       y: 0,
@@ -29,7 +29,7 @@ export default class Mouse extends Rigidbody {
     this.isDown = false;
     this.dragged = null;
 
-    this.ndc = new Float32Array([0, 0, 1]);
+    this.ndc = new Float32Array([-1, -1, 1]);
 
     this.mouseMoveEventHandler = this.mouseMoveEventHandler.bind(this);
     this.mouseDownEventHandler = this.mouseDownEventHandler.bind(this);
@@ -97,6 +97,8 @@ export default class Mouse extends Rigidbody {
   update() {
     const _b = this.game.buffer;
 
+    this.hovered = null;
+
     vec3.copy(_b.vec3_1, this.ndc);
     vec3.transformMat3Into(_b.vec3_1, this.game.cameraMatrixInverse, _b.vec3_1);
     vec3.toVec2(this.position, _b.vec3_1);
@@ -114,6 +116,11 @@ export default class Mouse extends Rigidbody {
   }
 
   onNarrowCollision(other) {
+    this.game.contextMenu.hovered = other;
     return true;
+  }
+
+  onContact(collision, object) {
+    return false;
   }
 }

@@ -7,15 +7,23 @@ import TextureManager from "./TextureManager.js";
 import Grid from "./Grid.js";
 import DebugOverlay from "./DebugOverlay.js";
 import BlockStyle from "./BlockStyle.js";
-import CollisionIDManager from "./CollisionIDManager.js";
+import IDManager from "./IDManager.js";
 import ObjectCollection from "./ObjectCollection.js";
-import Tooltip from "../ui/component/Tooltip.js";
+import * as UI from "../ui/UI.js";
+import _ from "../ui/component/DynamicTooltip.js";
+import { ValueNoise, PerlinNoise } from "../common/noise.js";
+import ChunkManager from "./ChunkManager.js";
+import * as vec2 from "../common/vec2.js";
+import NebulaGenerator from "./texture/NebulaGenerator.js";
+import DecorationBlock from "./DecorationBlock.js";
+import StarGenerator from "./texture/StarGenerator.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
     super();
 
-    this.tooltip = null;
+    this.tooltip = UI.element("dynamic-tooltip");
+    document.body.appendChild(this.tooltip);
     this.buffer = new Buffer();
 
     this.running = false;
@@ -34,11 +42,31 @@ export default class Game extends WebGLCanvas {
     this.maxUpdates = 5;
     this.iterationCount = 6;
 
-    this.idManager = new CollisionIDManager();
+    this.idManager = new IDManager();
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
+    this.seed = Math.floor(Math.random() * 100000); // 555 is nice, 46008, 676
+    this.seed = 555;
+    this.noise = new ValueNoise(this.seed);
+    this.noiseScale = 1 / 10;
+    // prettier-ignore
+    {
+      this.ng = new NebulaGenerator(this.noise, this.noiseScale, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.clearColor);
+      this.sg = new StarGenerator(this.noise, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT);
+    }
+
     this.tileSize = 14;
+    this.backgroundZoom = 2;
+    this.chunkSize = 8;
+    this.renderDistance = vec2.fromValues(3, 2);
+    this.chunks = new ChunkManager(this);
+
+    this.textureArray = null;
+    // prettier-ignore
+    this.maxLayers = -1;
+    this.layerId = null;
+
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
     this.cameraMatrixInverse = mat3.identity();
@@ -46,6 +74,7 @@ export default class Game extends WebGLCanvas {
     this.player = null;
     this.mouse = null;
     this.enemies = new ObjectCollection(this);
+    this.buildingBlocks = new ObjectCollection(this);
     this.projectiles = new ObjectCollection(this);
     this.coreObjects = new ObjectCollection(this);
 
@@ -58,10 +87,34 @@ export default class Game extends WebGLCanvas {
     this.update = this.update.bind(this);
   }
 
+  // prettier-ignore
+  initTextureArray() {
+    const gl = this.gl;
+
+    this.textureArray = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textureArray);
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.maxLayers);
+
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
+
+    this.lastLayer = 0;
+  }
+
+  bindTextureArray() {
+    const gl = this.gl;
+
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textureArray);
+    gl.uniform1i(this.uniform.textureArray, 1);
+  }
+
   start() {
     if (!this.gl) {
       throw new Error(
-        "GAME-start: Couldn't start game: WebGL hasn't been initalized!"
+        "GAME-start: Couldn't start game: WebGL hasn't been initalized!",
       );
     }
     if (!this.player) {
@@ -70,11 +123,7 @@ export default class Game extends WebGLCanvas {
 
     if (this.running) return;
 
-    if (this.tooltip) {
-      this.tooltip.init();
-      this.tooltip.enableMouseFollow();
-    }
-
+    const gl = this.gl;
     const textureManager = this.textureManager;
 
     // prettier-ignore
@@ -86,7 +135,28 @@ export default class Game extends WebGLCanvas {
 
         textureManager.loadFromActiveSlot();
 
+        this.maxLayers = gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS);
+
+        if (this.maxLayers < ((2 * this.renderDistance[0]) * (2 * this.renderDistance[1])) * (this.chunkSize * this.chunkSize)) {
+          console.error("GAME-start: The number of textures required for the chunks within the render distance exceeds the maximum allowed texture slots!");
+        }
+
+        this.layerId = new IDManager(this.maxLayers);
+
+        this.initTextureArray();
+        this.bindTextureArray();
+
         this.initInstancing(this);
+        
+        gl.uniform4fv(this.uniform.backgroundColor, this.clearColor);
+        gl.uniform1f(this.uniform.backgroundZoom, this.backgroundZoom);
+        // this.gl.uniform1fv(this.uniform.r, this.noise.r);
+        // this.gl.uniform1iv(this.uniform.p, this.noise.p);
+        // this.gl.uniform1f(this.uniform.noiseScale, this.noiseScale);
+
+        const error = gl.getError();
+
+        error !== gl.NO_ERROR && console.error("WebGL Error: ", error);
 
         this.last = window.performance.now();
         this.frameId = window.requestAnimationFrame(this.update);
@@ -113,7 +183,7 @@ export default class Game extends WebGLCanvas {
 
     this.unprocessed = Math.min(
       this.unprocessed,
-      this.maxUpdates * this.timestep
+      this.maxUpdates * this.timestep,
     );
 
     while (this.unprocessed >= this.timestep) {
@@ -131,13 +201,22 @@ export default class Game extends WebGLCanvas {
   }
 
   tick() {
-    this.tooltip.onUpdate();
+    this.tooltip.hide();
+    this.tooltip.displayed = false;
+    this.contextMenu.hovered = null;
+
     this.coreObjects.update(); // az egér is itt van és a drag miatt input-nak számít tehát muszáj felül lennie
     this.enemies.update();
     this.projectiles.update();
+    this.buildingBlocks.update();
 
-    this.objects.merge(this.coreObjects, this.enemies, this.projectiles);
+    this.chunks.update();
+
+    // prettier-ignore
+    this.objects.merge(this.coreObjects, this.enemies, this.projectiles, this.buildingBlocks);
     this.grid.filter().iterate();
+
+    this.tooltip.updateTemplates(this.frameId);
   }
 
   // prettier-ignore
@@ -150,6 +229,8 @@ export default class Game extends WebGLCanvas {
     if (this.blockStyle) {
       this.blockStyle.clearCanvas();
     }
+    
+    this.bindTextureArray();
 
     const gl = this.gl;
 
@@ -158,10 +239,14 @@ export default class Game extends WebGLCanvas {
 
     this.dataCollector.length = 0;
 
+    this.textureManager.loadFromActiveSlot(); // Remove if no dynamic textures are created
     this.textureManager.updateSprites();
+
+    this.chunks.render(); // render first so it will be in the background
 
     this.enemies.render();
     this.projectiles.render();
+    this.buildingBlocks.render();
     this.coreObjects.render();
 
     const instanceCount = this.updateInstanceBuffer();
@@ -186,20 +271,12 @@ export default class Game extends WebGLCanvas {
   addTextureManager(textureManager) {
     if (!(textureManager instanceof TextureManager)) {
       console.warn(
-        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!"
+        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!",
       );
       return;
     }
 
     this.textureManager = textureManager;
-  }
-
-  setTooltip(tooltip) {
-    if (!(tooltip instanceof Tooltip)) {
-      throw new Error("GAME-setTooltip: The provided value is not a tooltip!");
-    }
-
-    this.tooltip = tooltip;
   }
 
   /**
@@ -208,7 +285,7 @@ export default class Game extends WebGLCanvas {
   setDebugPanel(debugPanel) {
     if (!(debugPanel instanceof DebugPanel)) {
       throw new Error(
-        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class."
+        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class.",
       );
     }
 
@@ -218,7 +295,7 @@ export default class Game extends WebGLCanvas {
   setDebugOverlay(debugOverlay) {
     if (!(debugOverlay instanceof DebugOverlay)) {
       throw new Error(
-        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class."
+        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class.",
       );
     }
 
@@ -238,7 +315,7 @@ export default class Game extends WebGLCanvas {
   startDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
       );
       return;
     }
@@ -250,7 +327,7 @@ export default class Game extends WebGLCanvas {
   stopDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
       );
       return;
     }

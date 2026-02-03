@@ -1,5 +1,7 @@
 import Rigidbody from "./Rigidbody.js";
 import * as Type from "./Type.js";
+import IDManager from "./IDManager.js";
+import * as vec2 from "../common/vec2.js";
 
 export default class Spaceship extends Rigidbody {
   // prettier-ignore
@@ -7,6 +9,9 @@ export default class Spaceship extends Rigidbody {
     super({ type, game, model, x, y, vx, vy, maxSpeed });
 
     this.id = game.idManager.get();
+    this.idManager = new IDManager();
+    this.thrusters = new Map();
+    this.controlledThrusters = new Map();
     this.shootCooldown = 0;
   }
 

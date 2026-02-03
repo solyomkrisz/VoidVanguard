@@ -1,14 +1,11 @@
 import * as vec2 from "../common/vec2.js";
+import * as Type from "./Type.js";
 
 export default class Collision {
-  static TYPE = Object.freeze({
-    NONE: 0,
-    RIGIDBODY: 1 << 0,
-    INTERACTION: 1 << 1,
-  });
+  static EPSILON = 0.001;
 
   constructor() {
-    this.type = Collision.TYPE.NONE;
+    this.type = Type.NONE;
     this.status = false;
     this.a = null;
     this.b = null;
@@ -18,6 +15,7 @@ export default class Collision {
   }
 
   reset() {
+    this.type = Type.NONE;
     this.status = false;
     this.a = null;
     this.b = null;
@@ -28,22 +26,19 @@ export default class Collision {
     return this;
   }
 
+  is(type) {
+    return this.type === type;
+  }
+
   // prettier-ignore
-  resolve() {
+  resolvePenetration() {
     vec2.normalize(this.normal, this.normal); // Must be normalized here because of the accumulating approach we use
 
-    const correction = this.depth + 0.001;
-
-    const totalMass = this.a.mass + this.b.mass;
-
-    vec2.subScaled(this.a.position, this.a.position, this.normal, correction * (this.a.mass / totalMass));
-    vec2.addScaled(this.b.position, this.b.position, this.normal, correction * (this.b.mass / totalMass));
+    this.a.resolvePenetration(this.b, this, Collision.EPSILON, -1);
+    this.b.resolvePenetration(this.a, this, Collision.EPSILON, 1);
 
     this.a.onPositionChange();
     this.b.onPositionChange();
-
-    // vec2.reset(this.a.velocity);
-    // vec2.reset(this.b.velocity);
 
     return this;
   }

@@ -15,3 +15,7 @@ export function reset(target) {
 
   return target;
 }
+
+export function fromValues(...values) {
+  return new MATRIX.DATA_STRUCTURE(values);
+}
