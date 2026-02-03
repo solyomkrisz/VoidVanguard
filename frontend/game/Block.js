@@ -28,6 +28,8 @@ export default class Block {
   static VERTEX_SHADER_SOURCE = `#version 300 es
     precision mediump float;
 
+    const float PI = 3.141592653589793;
+
     in vec2 vertexPosition;
     in vec2 textureCoordinate;
     in vec2 localPosition;
@@ -35,6 +37,7 @@ export default class Block {
     in mat2 rotationMatrix;
     in vec2 uvOffset;
     in vec2 uvScale;
+    in float texRotationRad;
     in float layerId;
 
     out vec2 vTexCoord;
@@ -43,8 +46,20 @@ export default class Block {
     uniform float backgroundZoom;
     uniform mat3 cameraMatrix;
 
+    vec2 rotateTexture(vec2 texCoord, float rad) {
+      mat2 texRotationMatrix = mat2(
+        cos(rad), sin(rad),
+        -sin(rad), cos(rad)
+      );
+
+      vec2 centeredTexCoord = texCoord - 0.5;
+      vec2 rotatedTexCoord = texRotationMatrix * centeredTexCoord;
+
+      return rotatedTexCoord + 0.5; // We also shift it back to the original position
+    }
+
     void main() {
-      vTexCoord = uvOffset + textureCoordinate * uvScale;
+      vTexCoord = uvOffset + rotateTexture(textureCoordinate, texRotationRad) * uvScale;
       textureLayerId = int(layerId);
 
       vec2 translatedAndRotated = (rotationMatrix * (localPosition + vertexPosition)) + parentPosition; 
@@ -95,7 +110,7 @@ export default class Block {
     WebGL.THROW_NO_GL_ERROR(gl, "BLOCK-initRender");
 
     const prog = game.glProgram;
-    const floatPerInstance = 13;
+    const floatPerInstance = 14;
 
     const a = game.attribute;
     game.vao._1 = gl.createVertexArray();
@@ -127,7 +142,8 @@ export default class Block {
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.rotationMatrix + 1, 2, gl.FLOAT, false, stride, 24, 1);
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.uvOffset, 2, gl.FLOAT, false, stride, 32, 1);
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.uvScale, 2, gl.FLOAT, false, stride, 40, 1);
-    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.layerId, 1, gl.FLOAT, false, stride, 48, 1);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.texRotationRad, 1, gl.FLOAT, false, stride, 48, 1);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.layerId, 1, gl.FLOAT, false, stride, 52, 1);
 
     game.draw = function(instanceCount) {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, instanceCount);
@@ -173,6 +189,7 @@ export default class Block {
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
     this.spriteId = spriteId;
+    this.textureRotation = new Map();
     this.mass = mass;
     this.isRemovable = true;
     this.toRemove = false;
@@ -180,6 +197,23 @@ export default class Block {
     this.adjacencyRules = adjacencyRules;
     this.CoM = vec2.create();
     this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
+  }
+
+  rotateTexture(textureName, rad) {
+    this.textureRotation.set(textureName, rad);
+    return this;
+  }
+
+  removeTextureRotation(textureName) {
+    this.textureRotation.has(textureName) &&
+      this.textureRotation.delete(textureName);
+    return this;
+  }
+
+  getTextureRotation(textureName) {
+    return this.textureRotation.has(textureName)
+      ? this.textureRotation.get(textureName)
+      : 0;
   }
 
   onRemove(parent) {

@@ -54,7 +54,7 @@ export default class DecorationBlock {
 
   // prettier-ignore
   render() {
-    this.game.dataCollector.push(0, 0, ...this.position, 1, 0, 0, 1, 0, 0, 1, 1, this.textureLayerId);
+    this.game.dataCollector.push(0, 0, ...this.position, 1, 0, 0, 1, 0, 0, 1, 1, 0, this.textureLayerId);
 
     // this.debug();
   }

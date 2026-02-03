@@ -125,7 +125,7 @@ const PLAYER_MODEL = [
     shape: rectCollider,
     spriteId: SpriteID.TEST,
     mass: 1,
-  }),
+  }).rotateTexture(TextureID.CANON, -Math.PI / 2),
   // new Block(-2, -1, rectCollider, SpriteID.TEST, 1),
   new Thruster({
     x: -1,
@@ -190,14 +190,14 @@ const bblock_1 = new BuildingBlock({
       y: 0,
       shape: rectCollider,
       spriteId: SpriteID.TEST,
-      adjacencyRules: vec.fromValues(0, -1),
+      adjacencyRules: vec.fromValues(0, -1, -1, 0),
     }),
   ]),
   x: 0.5,
-  y: 3,
+  y: -3,
 });
 
-// game.buildingBlocks.add(bblock_1);
+game.buildingBlocks.add(bblock_1);
 
 enemy.setState(GlobalState.DEAD);
 // console.log(enemy.hasState(GlobalState.DEAD));

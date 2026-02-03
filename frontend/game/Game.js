@@ -57,8 +57,8 @@ export default class Game extends WebGLCanvas {
 
     this.tileSize = 15;
     this.backgroundZoom = 2;
-    this.chunkSize = 6;
-    this.renderDistance = vec2.fromValues(1, 1);
+    this.chunkSize = 8;
+    this.renderDistance = vec2.fromValues(3, 2);
     this.chunks = new ChunkManager(this);
 
     this.textureArray = null;
