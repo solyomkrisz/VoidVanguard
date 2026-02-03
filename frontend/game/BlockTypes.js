@@ -4,71 +4,97 @@ import Shape from "./Shape.js";
 
 // #region SHAPE COLLIDERS
 // BLOCK COLLIDERS
+
 // (BASE BLOCK) RECTANGLE COLLIDER
+// prettier-ignore
 const RECTCOLLIDER = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
+
 // SMALL RECTANGLE COLLIDER
+// prettier-ignore
 const S_RECTCOLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
 
 // SPECIAL TURRET COLLIDERS
 // S.U.L.O - Szingularitás-alapú Ultra-Lézer Oscillátor
+// prettier-ignore
 const SULO_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.01, 1, 0.01, 1, 0.1, -0.5, -0.1, -0.5);
+
 // Aphelion
+// prettier-ignore
 const APHELION_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.065, 1, 0.065, 1, 0.3, -0.5, -0.3, -0.5);
+
 // Sigma-Impulzuságyú
+// prettier-ignore
 const SIGMA_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.25, 1, 0.25, 1, 0.2, -0.5, -0.2, -0.5);
+
 // TURRET COLLIDERS
+// prettier-ignore
 const N1_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0, 0.1, 0, 0.15, -0.5, -0.15, -0.5); // TURRET
+// prettier-ignore
 const N2_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0.25, 0.1, 0.25, 0.15, -0.5, -0.15, -0.5); // TALLER TURRET
+// prettier-ignore
 const N3_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0.375, 0.1, 0.375, 0.15, -0.5, -0.15, -0.5); // TALLEST TURRET
+
 // SIDE TURRET COLLIDERS
+// prettier-ignore
 const R1_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.25, 0.1, 0.25, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED
+// prettier-ignore
 const R2_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.35, 0.1, 0.35, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED TALLER
+// prettier-ignore
 const R3_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.5, 0.1, 0.5, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED TALLEST
-const L1_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.25, -0.1, 0.25, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED 
+// prettier-ignore
+const L1_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.25, -0.1, 0.25, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED
+// prettier-ignore
 const L2_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.35, -0.1, 0.35, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED TALLER
+// prettier-ignore
 const L3_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.5, -0.1, 0.5, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED TALLEST
 //#endregion
 
 // FŐLEG ANYAGSŰRŰSÉG ALAPJÁN SZÁMOLT TÖMEGÉRTÉKEK (kg/dm³)
 const MASS_VALUES = Object.freeze({
-    MASS_1: 1,       // - Alumínium                 - Grade 1 
-    MASS_2: 0.30,    // - Magnéziumötvözet          - Grade 2 
-    MASS_3: 1.05,    // - Alumíniumötvözet (6061)   - Grade 3 
-    MASS_4: 2.75,    // - Rozsdamentes acél         - Grade 4 
-    MASS_5: 3.05,    // - Nikkelötvözet             - Grade 5  
-    MASS_6: 1.65,    // - Titánötvözet (Ti-6Al-4V)  - Grade 6 
-    MASS_7: 0.85,    // - Üvegszálas kompozit       - Grade 7 
-    MASS_8: 0.50,    // - Karbonkompozit (CFRP)     - Grade 8  
-    MASS_9: 0.70,    // - Kevlar (aramid)           - Grade 9 
-    MASS_10: 3.15,   // - Inconel                   - Grade 10 
-    MASS_11: 0.325,  // - Berillium                 - Grade 11
-    MASS_12: 1.20,   // - Bór-karbid (B₄C)          - Grade 12 
-    MASS_13: 1.30,   // - Szilícium-karbid (SiC)    - Grade 13
-    MASS_14: 0.85,   // - Fejlett karbon-kerámia kompozit   - Grade 14
-    MASS_15: 1.15,   // - Titán–kompozit hibrid szerkezet   - Grade 15 (Csúcstechnológia)
+  MASS_1: 1, // - Alumínium                 - Grade 1
+  MASS_2: 0.3, // - Magnéziumötvözet          - Grade 2
+  MASS_3: 1.05, // - Alumíniumötvözet (6061)   - Grade 3
+  MASS_4: 2.75, // - Rozsdamentes acél         - Grade 4
+  MASS_5: 3.05, // - Nikkelötvözet             - Grade 5
+  MASS_6: 1.65, // - Titánötvözet (Ti-6Al-4V)  - Grade 6
+  MASS_7: 0.85, // - Üvegszálas kompozit       - Grade 7
+  MASS_8: 0.5, // - Karbonkompozit (CFRP)     - Grade 8
+  MASS_9: 0.7, // - Kevlar (aramid)           - Grade 9
+  MASS_10: 3.15, // - Inconel                   - Grade 10
+  MASS_11: 0.325, // - Berillium                 - Grade 11
+  MASS_12: 1.2, // - Bór-karbid (B₄C)          - Grade 12
+  MASS_13: 1.3, // - Szilícium-karbid (SiC)    - Grade 13
+  MASS_14: 0.85, // - Fejlett karbon-kerámia kompozit   - Grade 14
+  MASS_15: 1.15, // - Titán–kompozit hibrid szerkezet   - Grade 15 (Csúcstechnológia)
 });
 
-// FŐLEG (SZAKITÓSZILÁRDSÁG x TÖMEG ARÁNY + ÉRTÉK-BALANCE) ALAPJÁN 
+// FŐLEG (SZAKITÓSZILÁRDSÁG x TÖMEG ARÁNY + ÉRTÉK-BALANCE) ALAPJÁN
 const HEALTH_VALUES = Object.freeze({
-    HEALTH_1: 200,    // - Alumínium                - Grade 1 - Kezdő, alap
-    HEALTH_2: 105,    // - Magnéziumötvözet         - Grade 2 - Ultralight, high skill
-    HEALTH_3: 290,    // - Alumíniumötvözet (6061)  - Grade 3 - Erősebb mint az alumínium
-    HEALTH_4: 1500,   // - Rozsdamentes acél        - Grade 4 - Nehéz, tankos
-    HEALTH_5: 2250,   // - Nikkelötvözet            - Grade 5 - Egyik legtankosabb earlygame anyag
-    HEALTH_6: 1500,   // - Titánötvözet (Ti-6Al-4V) - Grade 6 - Legjobb HP/tömeg arány alapján
-    HEALTH_7: 750,    // - Üvegszálas kompozit      - Grade 7 - Gyors + közepes HP  
-    HEALTH_8: 500,    // - Karbonkompozit (CFRP)    - Grade 8 - Ultralight, midgame 
-    HEALTH_9: 1000,   // - Kevlar (aramid)          - Grade 9 - Egyik legjobb HP/tömeg arány
-    HEALTH_10: 6500,  // - Inconel                  - Grade 10 - Legnehezebb anyag + Legtöbb HP -> Kritikus védelem
-    HEALTH_11: 750,   // - Berillium                - Grade 11 - Ultralight, high skill, endgame
-    HEALTH_12: 2250,  // - Bór-karbid (B₄C)         - Grade 12 - Közepes tömeg + közepes HP
-    HEALTH_13: 3000,  // - Szilícium-karbid (SiC)   - Grade 13 - Közepes tömeg + magas HP
-    HEALTH_14: 2650,  // - Fejlett karbon-kerámia kompozit   - Grade 14 - Gyors + magas HP
-    HEALTH_15: 4250,  // - Titán–kompozit hibrid szerkezet   - Grade 15 (Csúcstechnológia) Közepes tömeg + nagyon magas HP
+  HEALTH_1: 200, // - Alumínium                - Grade 1 - Kezdő, alap
+  HEALTH_2: 105, // - Magnéziumötvözet         - Grade 2 - Ultralight, high skill
+  HEALTH_3: 290, // - Alumíniumötvözet (6061)  - Grade 3 - Erősebb mint az alumínium
+  HEALTH_4: 1500, // - Rozsdamentes acél        - Grade 4 - Nehéz, tankos
+  HEALTH_5: 2250, // - Nikkelötvözet            - Grade 5 - Egyik legtankosabb earlygame anyag
+  HEALTH_6: 1500, // - Titánötvözet (Ti-6Al-4V) - Grade 6 - Legjobb HP/tömeg arány alapján
+  HEALTH_7: 750, // - Üvegszálas kompozit      - Grade 7 - Gyors + közepes HP
+  HEALTH_8: 500, // - Karbonkompozit (CFRP)    - Grade 8 - Ultralight, midgame
+  HEALTH_9: 1000, // - Kevlar (aramid)          - Grade 9 - Egyik legjobb HP/tömeg arány
+  HEALTH_10: 6500, // - Inconel                  - Grade 10 - Legnehezebb anyag + Legtöbb HP -> Kritikus védelem
+  HEALTH_11: 750, // - Berillium                - Grade 11 - Ultralight, high skill, endgame
+  HEALTH_12: 2250, // - Bór-karbid (B₄C)         - Grade 12 - Közepes tömeg + közepes HP
+  HEALTH_13: 3000, // - Szilícium-karbid (SiC)   - Grade 13 - Közepes tömeg + magas HP
+  HEALTH_14: 2650, // - Fejlett karbon-kerámia kompozit   - Grade 14 - Gyors + magas HP
+  HEALTH_15: 4250, // - Titán–kompozit hibrid szerkezet   - Grade 15 (Csúcstechnológia) Közepes tömeg + nagyon magas HP
 });
 // Helper function to generate block type variants for all 15 grades
 // factorok h a masst mennyivel szorozza be (regen kelett a haromszogek miatt 1 helyett 0.5)
-function generateBlockVariants(baseName, shape, spriteIDBase, massFactor = 1, healthFactor = 1) {
+function generateBlockVariants(
+  baseName,
+  shape,
+  spriteIDBase,
+  massFactor = 1,
+  healthFactor = 1,
+) {
   const variants = {};
   const spriteIDs = [
     SpriteID.BLOCK_0,
@@ -87,11 +113,10 @@ function generateBlockVariants(baseName, shape, spriteIDBase, massFactor = 1, he
     SpriteID.BLOCK_13,
     SpriteID.BLOCK_14,
   ];
-  
+
   for (let i = 1; i <= 15; i++) {
     const gradeIndex = i - 1;
-    variants[`${baseName}_${i}`] = 
-    {
+    variants[`${baseName}_${i}`] = {
       shape,
       spriteID: spriteIDs[gradeIndex],
       mass: MASS_VALUES[`MASS_${i}`] * massFactor,
@@ -209,13 +234,13 @@ const TURRET_TYPES = {
     mass: 1.05,
     gradeID: 14,
     health: 210,
-  }
-}
+  },
+};
 
 const BLOCK_TYPES = {
   // Rectangle blocks (full mass/health)
-  ...generateBlockVariants('BLOCK', RECTCOLLIDER, SpriteID.BLOCK, 1, 1),
-  
+  ...generateBlockVariants("BLOCK", RECTCOLLIDER, SpriteID.BLOCK, 1, 1),
+
   // Turret blocks
   ...TURRET_TYPES,
 };
@@ -223,10 +248,12 @@ const BLOCK_TYPES = {
 export function createBlock(x, y, typeKey, overrides = {}) {
   const type = BLOCK_TYPES[typeKey];
   if (!type) {
-    throw new Error(`BlockTypes.createBlock: Unknown block type '${typeKey}'. Available types: ${Object.keys(BLOCK_TYPES).join(', ')}`);
+    throw new Error(
+      `BlockTypes.createBlock: Unknown block type '${typeKey}'. Available types: ${Object.keys(BLOCK_TYPES).join(", ")}`,
+    );
   }
   const config = { ...type, ...overrides };
-  return new Block(x, y, config.shape, config.spriteID, config.mass, config.gradeID, config.health, config.outlineWidth);
+  return new Block({ x, y, ...config });
 }
 
 export { BLOCK_TYPES, TURRET_TYPES };

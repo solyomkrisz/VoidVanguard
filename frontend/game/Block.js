@@ -185,11 +185,11 @@ export default class Block {
   }
 
   // prettier-ignore
-  constructor({ x, y, shape, spriteId, gradeId = 0, mass = 1, health = 100, adjacencyRules = vec.create(0) } = {}) {
+  constructor({ x, y, shape, spriteID, gradeID = 0, mass = 1, health = 100, adjacencyRules = vec.create(0) } = {}) {
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
-    this.spriteId = spriteId;
-    this.gradeId = gradeId;
+    this.spriteID = spriteID;
+    this.gradeID = gradeID;
     this.textureRotation = new Map();
     this.mass = mass;
     this.isRemovable = true;

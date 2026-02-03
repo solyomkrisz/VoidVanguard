@@ -13,7 +13,7 @@ export default class Mouse extends Rigidbody {
       game,
       model: new Model(
         // prettier-ignore
-        [new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0), spriteId: null, mass: 1e-10 })],
+        [new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0), spriteID: null, mass: 1e-10 })],
         Model.COPY_MODE.PRESERVE,
       ),
       x: 0,

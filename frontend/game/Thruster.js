@@ -15,7 +15,7 @@ export default class Thruster extends Block {
     x,
     y,
     shape,
-    spriteId,
+    spriteID,
     mass = 1,
     health = 100,
     adjacencyRules = vec.create(0),
@@ -26,7 +26,7 @@ export default class Thruster extends Block {
     hasGimbal = false,
     gimbalRange = 0,
   } = {}) {
-    super({ x, y, shape, spriteId, mass, health, adjacencyRules });
+    super({ x, y, shape, spriteID, mass, health, adjacencyRules });
 
     this.id = null;
     this.description = description;

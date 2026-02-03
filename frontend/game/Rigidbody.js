@@ -153,7 +153,7 @@ export default class Rigidbody extends Collidable {
     for (const obj of this.model.objects) {
       if (obj.spriteID === null) continue;
 
-      const sprite = this.game.textureManager.sprites[obj.spriteId];
+      const sprite = this.game.textureManager.sprites[obj.spriteID];
       const currentTexture = sprite.getCurrentTexture();
       const [u0, v0, u1, v1] = this.game.textureManager.textureCoordinates[currentTexture].coordinates;
 

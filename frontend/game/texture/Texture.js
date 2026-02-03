@@ -1,7 +1,7 @@
 export class TextureID {
   static HEART = 0;
   static BLOCK = 1;
-  
+
   // Block grade textures (0-14)
   static BLOCK_0 = 2;
   static BLOCK_1 = 3;
@@ -18,7 +18,7 @@ export class TextureID {
   static BLOCK_12 = 14;
   static BLOCK_13 = 15;
   static BLOCK_14 = 16;
-  
+
   // Turret textures from third row of atlas
   static TURRET = 17;
   static TURRET2 = 18;
@@ -41,7 +41,7 @@ export class SpriteID {
   static TEST = -1;
   static HEART = 0;
   static BLOCK = 1;
-  
+
   // Block grade sprites (0-14)
   static BLOCK_0 = 2;
   static BLOCK_1 = 3;
@@ -58,7 +58,7 @@ export class SpriteID {
   static BLOCK_12 = 14;
   static BLOCK_13 = 15;
   static BLOCK_14 = 16;
-  
+
   // Turret sprites
   static TURRET = 17;
   static TURRET2 = 18;
