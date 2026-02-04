@@ -17,7 +17,6 @@ import Models from "./game/SpaceShipModels.js";
 import Thruster from "./game/Thruster.js";
 import * as UI from "./ui/UI.js";
 import _ from "./ui/component/ContextMenuTemplate.js";
-import * as vec from "../frontend/common/vec.js";
 
 const game = new Game();
 
@@ -86,7 +85,12 @@ for (let i = 0; i < 15; i++) {
 }
 // Queue turret textures from row 2 (all 15 columns)
 for (let i = 0; i < 15; i++) {
-  tm.queueTextureCoordinate(TextureID[`TURRET${i === 0 ? '' : i + 1}`], TextureManager.S0, i, 2);
+  tm.queueTextureCoordinate(
+    TextureID[`TURRET${i === 0 ? "" : i + 1}`],
+    TextureManager.S0,
+    i,
+    2,
+  );
 }
 tm.addTexture(TextureManager.S0, "./image/atlas.png", 15, 3);
 
@@ -103,14 +107,13 @@ for (let i = 0; i < 15; i++) {
 // Create sprites for all 15 turrets
 for (let i = 1; i <= 15; i++) {
   const turretSprite = new Sprite();
-  turretSprite.addFrame(TextureID[`TURRET${i === 1 ? '' : i}`], 2);
-  tm.addSprite(SpriteID[`TURRET${i === 1 ? '' : i}`], turretSprite);
+  turretSprite.addFrame(TextureID[`TURRET${i === 1 ? "" : i}`], 2);
+  tm.addSprite(SpriteID[`TURRET${i === 1 ? "" : i}`], turretSprite);
 }
 
 game.createPlayer(Models.PLAYER);
 game.start();
 // game.enablePointerLock();
-
 
 const enemy = new Enemy({
   game,
