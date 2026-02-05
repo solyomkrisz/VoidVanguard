@@ -6,46 +6,32 @@ import Shape from "./Shape.js";
 // BLOCK COLLIDERS
 
 // (BASE BLOCK) RECTANGLE COLLIDER
-// prettier-ignore
 const RECTCOLLIDER = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
 
 // SMALL RECTANGLE COLLIDER
-// prettier-ignore
 const S_RECTCOLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
 
 // SPECIAL TURRET COLLIDERS
 // S.U.L.O - Szingularitás-alapú Ultra-Lézer Oscillátor
-// prettier-ignore
 const SULO_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.01, 1, 0.01, 1, 0.1, -0.5, -0.1, -0.5);
 
 // Aphelion
-// prettier-ignore
 const APHELION_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.065, 1, 0.065, 1, 0.3, -0.5, -0.3, -0.5);
 
 // Sigma-Impulzuságyú
-// prettier-ignore
 const SIGMA_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.25, 1, 0.25, 1, 0.2, -0.5, -0.2, -0.5);
 
 // TURRET COLLIDERS
-// prettier-ignore
 const N1_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0, 0.1, 0, 0.15, -0.5, -0.15, -0.5); // TURRET
-// prettier-ignore
 const N2_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0.25, 0.1, 0.25, 0.15, -0.5, -0.15, -0.5); // TALLER TURRET
-// prettier-ignore
 const N3_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0.375, 0.1, 0.375, 0.15, -0.5, -0.15, -0.5); // TALLEST TURRET
 
 // SIDE TURRET COLLIDERS
-// prettier-ignore
 const R1_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.25, 0.1, 0.25, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED
-// prettier-ignore
 const R2_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.35, 0.1, 0.35, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED TALLER
-// prettier-ignore
 const R3_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.5, 0.1, 0.5, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED TALLEST
-// prettier-ignore
 const L1_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.25, -0.1, 0.25, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED
-// prettier-ignore
 const L2_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.35, -0.1, 0.35, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED TALLER
-// prettier-ignore
 const L3_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.5, -0.1, 0.5, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED TALLEST
 //#endregion
 

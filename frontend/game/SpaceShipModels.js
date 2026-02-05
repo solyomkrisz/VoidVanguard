@@ -1,23 +1,23 @@
 import Shape from "./Shape.js";
 import Block from "./Block.js";
-import { SpriteID } from "./texture/Texture.js";
+import { SpriteID, TextureID } from "./texture/Texture.js";
 import Model from "./Model.js";
 import { createBlock } from "./BlockTypes.js";
+import Thruster from "./Thruster.js";
 
 const offset = 0;
 // starting player model
 const PLAYER = [
-  createBlock(0, 0, 'BLOCK_12'),
-  createBlock(1 - offset, 0, 'BLOCK_12'),
-  createBlock(-1 + offset, 0, 'BLOCK_12'),
-  createBlock(-2 + offset, 0, 'BLOCK_12'),
-  createBlock(2 - offset, 0, 'BLOCK_12'),
-  createBlock(0, 1 - offset, 'TURRET_12'),
-  createBlock(1 - offset, 1 - offset, 'BLOCK_15'),
-  createBlock(-1 + offset, 1 - offset, 'BLOCK_15'),
-  createBlock(0, -1 + offset, 'BLOCK_15'),
-  createBlock(1 - offset, -1 + offset, 'BLOCK_15'),
-  createBlock(-1 + offset, -1 + offset, 'BLOCK_15'),
+  createBlock(0, 0, "BLOCK_12"),
+  createBlock(1 - offset, 0, "BLOCK_12"),
+  createBlock(-1 + offset, 0, "BLOCK_12"),
+  createBlock(0, 1 - offset, "TURRET_12"),
+  new Thruster({
+    x: -1, y: -1, shape: new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5), spriteID: TextureID.BLOCK_1, mass: 1, health: 1, Isp: 100, massFlowRate: 100, hasGimbal: true, gimbalRange: 15
+  }),
+  new Thruster({
+    x: 1, y: -1, shape: new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5), spriteID: TextureID.BLOCK_1, mass: 1, health: 1, Isp: 100, massFlowRate: 100, hasGimbal: true, gimbalRange: 15
+  })
 ];
 
 // scout models, scouts for resources and is not/lightly armed
