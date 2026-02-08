@@ -1,22 +1,26 @@
+require("dotenv").config();
 //!Module-ok importálása
 const express = require("express"); //?npm install express
 const session = require("express-session"); //?npm install express-session
+const cookerParser = require("cookie-parser"); //?npm install cookie-parser
 const path = require("path");
 
 //!Beállítások
 const app = express();
 const router = express.Router();
 
-const ip = "127.0.0.1";
-const port = 3000;
+const ip = process.env.SERVER_IP;
+const port = process.env.SERVER_PORT;
 
 app.use(express.json()); //?Middleware JSON
+app.use(express.urlencoded({ extended: true })); //?Middleware URL-encoded adatok
+app.use(cookerParser()); //?Middleware Cookie-k
 app.set("trust proxy", 1); //?Middleware Proxy
 
 //!Session beállítása:
 app.use(
   session({
-    secret: "titkos_kulcs", //?Ezt generálni kell a későbbiekben
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
   }),

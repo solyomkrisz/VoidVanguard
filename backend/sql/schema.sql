@@ -1,0 +1,13 @@
+CREATE DATABASE voidvanguard
+DEFAULT CHARACTER SET utf8
+COLLATE utf8_hungarian_ci;
+
+CREATE TABLE users(
+    id CHAR(36) PRIMARY KEY,
+    username VARCHAR(20) UNIQUE NOT NULL,
+    roles VARCHAR(50) NOT NULL DEFAULT "user",
+    email VARCHAR(255) UNIQUE NOT NULL,
+    gender TINYINT UNSIGNED NOT NULL,
+    password_hash CHAR(60) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

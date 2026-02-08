@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const database = require("../sql/database.js");
 const fs = require("fs/promises");
+const users = require("./users.js");
+const sessions = require("./sessions.js");
+const tokens = require("./tokens.js");
 
 //!Multer
 const multer = require("multer"); //?npm install multer
@@ -29,16 +32,23 @@ router.get("/test", (request, response) => {
 //?GET /api/testsql
 router.get("/testsql", async (request, response) => {
   try {
-    const selectall = await database.selectall();
+    const selectall = await database.Test.selectAll();
     response.status(200).json({
+      success: true,
       message: "Ez a végpont működik.",
-      results: selectall,
+      result: selectall,
     });
   } catch (error) {
     response.status(500).json({
+      success: false,
+      result: null,
       message: "Ez a végpont nem működik.",
     });
   }
 });
+
+router.use("/users", users);
+router.use("/sessions", sessions);
+router.use("/tokens", tokens);
 
 module.exports = router;
