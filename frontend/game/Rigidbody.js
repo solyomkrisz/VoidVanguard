@@ -245,6 +245,6 @@ export default class Rigidbody extends Collidable {
 
   // prettier-ignore
   resolvePenetration(other, collision, epsilon, direction) {
-    vec2.add(this.position, this.position, collision.normal, this.getDefaultPenetrationCorrection(other, collision, epsilon) * direction);
+    vec2.addScaled(this.position, this.position, collision.normal, this.getDefaultPenetrationCorrection(other, collision, epsilon) * direction);
   }
 }

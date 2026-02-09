@@ -243,5 +243,4 @@ export default class Player extends Spaceship {
 
     vec2.addScaled(this.position, this.position, collision.normal, this.getDefaultPenetrationCorrection(other, collision, epsilon) * direction);
   }
-
 }
