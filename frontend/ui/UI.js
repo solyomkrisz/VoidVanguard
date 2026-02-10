@@ -17,3 +17,5 @@ export function element(name, ...children) {
 export function text(text) {
   return document.createTextNode(text);
 }
+
+export const dir = "./ui/style/"; //Default style directory

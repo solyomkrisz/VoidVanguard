@@ -99,6 +99,8 @@ const Token = {
 module.exports = {
   createResponse,
   clearRefreshTokenCookie,
+  authenticate,
+  authorize,
   Password,
   Token,
 };

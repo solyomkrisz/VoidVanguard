@@ -34,9 +34,9 @@ const POST = {
       errorMessage: "Password must be at least 8 characters",
     },
     matches: {
-      options: [/^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[!@#$%^&])/],
+      options: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/],
       errorMessage:
-        "Password must include at least one of all the following: uppercase, lowercase letter, number, special character (!@#$%^&)",
+        "Password must include at least one of all the following: uppercase, lowercase letter, number, special character (!@#$%^&*)",
     },
   },
   passwordConfirm: {
