@@ -73,34 +73,9 @@ function authorize(
   };
 }
 
-const Password = {
-  hash: async function (password) {
-    return bcrypt.hash(password, await bcrypt.genSalt(10));
-  },
-  compare: async function (plain, hashed) {
-    return bcrypt.compare(plain, hashed);
-  },
-};
-
-const Token = {
-  get: function (
-    payload,
-    secret = process.env.ACCESS_TOKEN_SECRET,
-    options = { expiresIn: "15m" },
-  ) {
-    payload.iat = Math.floor(Date.now() / 1000);
-    return jwt.sign(payload, secret, options);
-  },
-  verify: function (token, secret) {
-    return jwt.verify(token, secret);
-  },
-};
-
 module.exports = {
   createResponse,
   clearRefreshTokenCookie,
   authenticate,
   authorize,
-  Password,
-  Token,
 };

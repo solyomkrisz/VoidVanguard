@@ -1,7 +1,6 @@
 require("dotenv").config();
 //!Module-ok importálása
 const express = require("express"); //?npm install express
-const session = require("express-session"); //?npm install express-session
 const cookerParser = require("cookie-parser"); //?npm install cookie-parser
 const path = require("path");
 
@@ -16,15 +15,6 @@ app.use(express.json()); //?Middleware JSON
 app.use(express.urlencoded({ extended: true })); //?Middleware URL-encoded adatok
 app.use(cookerParser()); //?Middleware Cookie-k
 app.set("trust proxy", 1); //?Middleware Proxy
-
-//!Session beállítása:
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-  }),
-);
 
 //!Routing
 //?Főoldal:

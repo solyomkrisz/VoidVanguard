@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { User } = require("../sql/database.js");
+const { User, Token } = require("../sql/database.js");
 const {
   createResponse,
   authenticate,
   clearRefreshTokenCookie,
-  Token,
 } = require("../common/common.js");
 const { checkSchema, validationResult } = require("express-validator");
 const validator = require("../validator/session.js");
@@ -43,13 +42,31 @@ router.post(
     }
     if (payload) {
       const accessToken = Token.get(payload);
+
+      const iat = Math.floor(Date.now() / 1000);
+      const exp = iat + 7 * 24 * 60 * 60;
+
       const refreshToken = Token.get(
         payload,
+        iat,
+        exp,
         process.env.REFRESH_TOKEN_SECRET,
-        {
-          expiresIn: "7d",
-        },
       );
+      try {
+        await Token.revokeAll(payload.sub);
+        await Token.save(payload.sub, refreshToken, exp, iat);
+      } catch (error) {
+        console.log(error);
+        return response
+          .status(500)
+          .json(
+            createResponse(
+              false,
+              null,
+              "Unexpected error occurred during login",
+            ),
+          );
+      }
       response.cookie("refresh_token", refreshToken, {
         httpOnly: true,
         sameSite: "Strict",

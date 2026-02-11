@@ -13,10 +13,10 @@ CREATE TABLE users(
 );
 
 CREATE TABLE refresh_tokens(
-    user_id VARCHAR(36) NOT NULL, 
-    token_hash CHAR(64) PRIMARY KEY,
-    expires_at TIMESTAMP NOT NULL,
-    issued_at TIMESTAMP NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    token_hash CHAR(60) PRIMARY KEY,
+    expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     revoked BOOLEAN DEFAULT FALSE,
 
     FOREIGN KEY (user_id) REFERENCES users(id)

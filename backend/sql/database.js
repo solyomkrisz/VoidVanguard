@@ -1,5 +1,6 @@
 const mysql = require("mysql2/promise");
-const { Password } = require("../common/common.js");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -10,6 +11,8 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
+
+const usersTableFields = ["username", "email", "gender", "password"];
 
 //!SQL Queries
 const Test = {
@@ -35,6 +38,34 @@ const User = {
       username: userdata.username,
       roles: userdata.roles.split(","),
     };
+    return result;
+  },
+  update: async function (request, fieldsToUpdate) {
+    if (!fieldsToUpdate.length) {
+      throw new Error("No valid fields to update");
+    }
+    let query = "UPDATE users SET ";
+    const values = [];
+    for (const field of fieldsToUpdate) {
+      if (!usersTableFields.includes(field)) {
+        continue;
+      }
+      if (field === "password") {
+        query += "password_hash = ?, ";
+        values.push(await Password.hash(request.body[field]));
+      } else {
+        query += `${field} = ?, `;
+        values.push(request.body[field]);
+      }
+    }
+    if (!values.length) {
+      throw new Error("No valid fields to update");
+    }
+
+    query = query.slice(0, -2);
+    query += " WHERE id = ?";
+    values.push(request.user.sub);
+    const [result] = await pool.execute(query, values);
 
     return result;
   },
@@ -80,8 +111,73 @@ const User = {
   },
 };
 
+const Password = {
+  hash: async function (password) {
+    return bcrypt.hash(password, await bcrypt.genSalt(10));
+  },
+  compare: async function (plain, hashed) {
+    return bcrypt.compare(plain, hashed);
+  },
+};
+
+const Token = {
+  get: function (
+    payload,
+    iat = Math.floor(Date.now() / 1000),
+    exp = Math.floor(Date.now() / 1000) + 15 * 60,
+    secret = process.env.ACCESS_TOKEN_SECRET,
+    options = {},
+  ) {
+    payload.iat = iat;
+    payload.exp = exp;
+    return jwt.sign(payload, secret, options);
+  },
+  verify: function (token, secret) {
+    return jwt.verify(token, secret);
+  },
+  save: async function (sub, token, exp, iat) {
+    const query =
+      "INSERT INTO refresh_tokens (user_id, token_hash, expires_at, issued_at) VALUES (?, ?, ?, ?)";
+    const token_hash = await bcrypt.hash(token, 10);
+    const [result] = await pool.execute(query, [
+      sub,
+      token_hash,
+      new Date(exp * 1000),
+      new Date(iat * 1000),
+    ]);
+    return result;
+  },
+  revokeAll: async function (sub) {
+    const query =
+      "UPDATE refresh_tokens SET revoked = TRUE WHERE user_id = ? AND revoked = FALSE";
+    const [result] = await pool.execute(query, [sub]);
+    return result;
+  },
+  deleteAll: async function (sub) {
+    const query = "DELETE FROM refresh_tokens WHERE user_id = ?";
+    const [result] = await pool.execute(query, [sub]);
+    return result;
+  },
+  find: async function (sub, token) {
+    const query =
+      "SELECT token_hash FROM refresh_tokens WHERE user_id = ? AND revoked = FALSE";
+    const [rows] = await pool.execute(query, [sub]);
+    if (!rows.length) {
+      return null;
+    }
+    const token_hash = rows[0].token_hash;
+    if (await bcrypt.compare(token, token_hash)) {
+      return rows[0];
+    } else {
+      return null;
+    }
+  },
+};
+
 //!Export
 module.exports = {
   Test,
   User,
+  Password,
+  Token,
 };

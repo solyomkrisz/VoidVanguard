@@ -1,10 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { User } = require("../sql/database.js");
+const { User, Token } = require("../sql/database.js");
 const {
   createResponse,
   clearRefreshTokenCookie,
-  Token,
 } = require("../common/common.js");
 
 // prettier-ignore
@@ -15,7 +14,7 @@ router.get("/", async (request, response) => {
     return response
       .status(400)
       .json(
-        createResponse(false, null, "Unauthorized access, no token provided"),
+        createResponse(false, { access_token: "" }, "Unauthorized access, no token provided"),
       );
   }
 
@@ -31,6 +30,16 @@ router.get("/", async (request, response) => {
   if (!payload.sub) {
     clearRefreshTokenCookie(response);
     return response.status(401).json(createResponse(false, { access_token: "" }, "Invalid refresh token payload"));
+  }
+
+  try {
+    const result = await Token.find(payload.sub, token);
+    if(!result){
+      throw new Error("Token has not been found");
+    }
+  } catch (error) {
+    console.log(error);
+    return response.status(400).json(createResponse(false, { access_token: "" }, "Unauthorized access, invalid refresh token"));
   }
 
   let user = null;
