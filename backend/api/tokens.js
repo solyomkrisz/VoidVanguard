@@ -4,6 +4,7 @@ const { User, Token } = require("../sql/database.js");
 const {
   createResponse,
   clearRefreshTokenCookie,
+  authenticate,
 } = require("../common/common.js");
 
 // prettier-ignore
