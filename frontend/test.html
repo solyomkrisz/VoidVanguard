@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoidVanguard</title>
+    <style>
+      body {
+        margin: 0;
+        background: #00f;
+        overflow: hidden;
+      }
+
+      .container {
+        min-width: 100vh;
+        display: flex;
+      }
+
+      .container > * {
+        width: 100%;
+      }
+
+      form {
+        background: #000;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+
+      #regFormError {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <account-quick-manager></account-quick-manager>
+    <account-quick-manager></account-quick-manager>
+
+    <div class="container">
+      <div>
+        <form id="regForm">
+          <label for="username">Felhasználónév</label>
+          <input autocomplete="off" name="username" id="username" type="text" />
+          <label for="email">Email</label>
+          <input autocomplete="off" name="email" id="email" type="email" />
+          <label for="password">Jelszó</label>
+          <input
+            autocomplete="off"
+            name="password"
+            id="password"
+            type="password"
+          />
+          <label for="passwordConfirm">Jelszó megerősítése</label>
+          <input
+            autocomplete="off"
+            name="passwordConfirm"
+            id="passwordConfirm"
+            type="password"
+          />
+          <div style="display: flex">
+            <div>
+              <label for="male">Férfi</label>
+              <input name="gender" type="radio" id="male" value="0" />
+            </div>
+            <div>
+              <label for="female">Nő</label>
+              <input name="gender" type="radio" id="female" value="1" />
+            </div>
+          </div>
+          <button>Regisztráció</button>
+          <div id="regFormMsg"></div>
+        </form>
+      </div>
+
+      <div>
+        <form id="logForm">
+          <label for="username">Felhasználónév</label>
+          <input autocomplete="off" name="username" id="username" type="text" />
+          <label for="password">Jelszó</label>
+          <input
+            autocomplete="off"
+            name="password"
+            id="password"
+            type="password"
+          />
+          <button>Bejelentkezés</button>
+          <div id="logFormMsg"></div>
+        </form>
+      </div>
+
+      <logout-button></logout-button>
+    </div>
+
+    <form id="reqDataForm">
+      <button>Request protected resource</button>
+    </form>
+
+    <script type="module" src="./ui/initcomponents.js"></script>
+    <script type="module">
+      import * as net from "./common/network.js";
+      import * as jwt from "./common/jwt.js";
+      import { extractForm, onDOMContentLoaded } from "./common/common.js";
+      import * as UI from "./ui/UI.js";
+      document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+
+      setTimeout(() => {
+        document.body.appendChild(UI.element("account-quick-manager"));
+      }, 1000);
+
+      console.log(
+        jwt.isExpired(
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZWVlMTY4YS1hZjFkLTQxMzYtYTBmNi00ZGE1M2QxODlmMmQiLCJ1c2VybmFtZSI6ImFhYSIsInJvbGVzIjpbbnVsbF0sImlhdCI6MTc3MDUxMjEwNCwiZXhwIjoxNzcwNTEzMDA0fQ.AF9V4axelZ0FTR-zP3wmgsORWEYdqQytrHIFj7n6agg",
+        ),
+      );
+
+      document
+        .querySelector("#regForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const result = await net.send("/api/users", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(extractForm(e.srcElement)),
+          });
+
+          if (result.message) {
+            const regFormMsg = document.querySelector("#regFormMsg");
+            if (!result.success) {
+              regFormMsg.style.color = "red";
+            } else regFormMsg.style.color = "green";
+            regFormMsg.textContent = result.message;
+          }
+        });
+
+      document
+        .querySelector("#logForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const result = await net.send("/api/sessions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            },
+            body: JSON.stringify(extractForm(e.srcElement)),
+          });
+
+          if (result.message) {
+            const regFormMsg = document.querySelector("#logFormMsg");
+            if (!result.success) {
+              regFormMsg.style.color = "red";
+            } else {
+              regFormMsg.style.color = "green";
+              if (result.result?.access_token) {
+                sessionStorage.setItem(
+                  "access_token",
+                  result.result.access_token,
+                );
+
+                sessionStorage.setItem(
+                  "access_token_decoded",
+                  JSON.stringify(jwt.decode(result?.result?.access_token)),
+                );
+
+                console.log(
+                  "Access token set: ",
+                  sessionStorage.getItem("access_token"),
+                );
+
+                document.dispatchEvent(new CustomEvent("login"));
+              }
+            }
+            regFormMsg.textContent = result.message;
+          }
+        });
+    </script>
+  </body>
+</html>

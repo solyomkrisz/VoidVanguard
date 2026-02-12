@@ -22,6 +22,11 @@ router.get("/", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
+// Teszt oldal
+router.get("/test", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/test.html"));
+});
+
 //!API endpoints
 app.use("/", router);
 const endpoints = require("./api/api.js");
