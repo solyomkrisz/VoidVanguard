@@ -1,3 +1,5 @@
+import * as NET from "./network.js";
+
 export const DATA_STRUCTURE =
   typeof Float32Array !== "undefined" ? Float32Array : Array;
 
@@ -66,4 +68,35 @@ export function clamp(n, min = 0, max = 1) {
 
 export function inCircle(x, y, u, v, r) {
   return (x - u) * (x - u) + (y - v) * (y - v) <= r * r;
+}
+
+export function extractForm(form, includeEmpty = false) {
+  if (!(form instanceof HTMLFormElement)) {
+    return console.error("Received a non-form element");
+  }
+  const result = {};
+  for (const [key, value] of new FormData(form)) {
+    if (!includeEmpty && value.length === 0) continue;
+    result[key] = value;
+  }
+  return result;
+}
+
+export const path = Object.freeze({
+  join: function (a, b) {
+    return a + b;
+  },
+});
+
+export async function onDOMContentLoaded() {
+  try {
+    await NET.refreshAccessToken();
+    document.dispatchEvent(
+      new CustomEvent("login", {
+        bubbles: false,
+      }),
+    );
+  } catch (error) {
+    console.error(error);
+  }
 }
