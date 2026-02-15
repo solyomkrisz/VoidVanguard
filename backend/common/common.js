@@ -43,6 +43,7 @@ function authenticate(
     try {
       const payload = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
       request.user = payload;
+      request.targetUser = payload;
       opitons.onValidAccessToken(request, response, next);
     } catch (error) {
       opitons.onInvalidAccessToken(request, response, next);
@@ -73,9 +74,26 @@ function authorize(
   };
 }
 
+function modifyTargetUser(requiredRole = "admin") {
+  return function (request, response, next) {
+    if (!request.user.roles.includes(requiredRole)) {
+      return next();
+    }
+    const targetUserId = request?.body?.targetUserId;
+    if (!targetUserId) {
+      return next();
+    }
+    request.targetUser = {
+      sub: targetUserId,
+    };
+    next();
+  };
+}
+
 module.exports = {
   createResponse,
   clearRefreshTokenCookie,
   authenticate,
   authorize,
+  modifyTargetUser,
 };

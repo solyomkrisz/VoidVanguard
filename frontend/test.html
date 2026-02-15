@@ -121,7 +121,7 @@
           e.preventDefault();
 
           const result = await net.send("/api/users", {
-            method: "PUT",
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(extractForm(e.srcElement)),
           });

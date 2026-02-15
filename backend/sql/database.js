@@ -46,14 +46,23 @@ const User = {
     }
     let query = "UPDATE users SET ";
     const values = [];
+    const currentUser = await User._select(request.targetUser.sub);
     for (const field of fieldsToUpdate) {
       if (!usersTableFields.includes(field)) {
         continue;
       }
       if (field === "password") {
+        if (
+          await Password.compare(request.body[field], currentUser.password_hash)
+        ) {
+          continue;
+        }
         query += "password_hash = ?, ";
         values.push(await Password.hash(request.body[field]));
       } else {
+        if (request.body[field] === currentUser[field]) {
+          continue;
+        }
         query += `${field} = ?, `;
         values.push(request.body[field]);
       }
@@ -64,14 +73,15 @@ const User = {
 
     query = query.slice(0, -2);
     query += " WHERE id = ?";
-    values.push(request.user.sub);
+    values.push(request.targetUser.sub);
     const [result] = await pool.execute(query, values);
 
     return result;
   },
 
-  select: async function (id) {
-    const query = "SELECT username FROM users WHERE id = ?";
+  _select: async function (id) {
+    const query =
+      "SELECT username, email, gender, password_hash FROM users WHERE id = ?";
     const [rows] = await pool.execute(query, [id]);
 
     return rows.length ? rows[0] : null;
@@ -108,6 +118,12 @@ const User = {
       username: userdata.username,
       roles: userdata.roles.split(","),
     };
+  },
+
+  delete: async function (id) {
+    const query = "DELETE FROM users WHERE id = ?";
+    const [result] = await pool.execute(query, [id]);
+    return result;
   },
 };
 

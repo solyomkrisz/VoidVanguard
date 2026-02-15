@@ -2,6 +2,8 @@ CREATE DATABASE voidvanguard
 DEFAULT CHARACTER SET utf8
 COLLATE utf8_hungarian_ci;
 
+USE voidvanguard;
+
 CREATE TABLE users(
     id CHAR(36) PRIMARY KEY,
     username VARCHAR(20) UNIQUE NOT NULL,
@@ -13,7 +15,7 @@ CREATE TABLE users(
 );
 
 CREATE TABLE refresh_tokens(
-    user_id VARCHAR(36) NOT NULL,
+    user_id CHAR(36) NOT NULL,
     token_hash CHAR(60) PRIMARY KEY,
     expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
