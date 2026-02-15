@@ -25,3 +25,33 @@ CREATE TABLE refresh_tokens(
         ON DELETE CASCADE
         ON UPDATE RESTRICT
 );
+
+CREATE TABLE profiles(
+    user_id CHAR(36) PRIMARY KEY,
+    avatar VARCHAR(60) DEFAULT NULL,
+    display_name VARCHAR(60) NOT NULL,
+    description TEXT DEFAULT NULL,
+    visibility VARCHAR(30) NOT NULL DEFAULT 'public',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);
+
+CREATE TABLE friends(
+    user_a_id CHAR(36),
+    user_b_id CHAR(36),
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (user_a_id, user_b_id),
+    FOREIGN KEY (user_a_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (user_b_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);

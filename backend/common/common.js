@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { validate, version } = require("uuid");
+const { Friendship } = require("../sql/database.js");
 function createResponse(success, result, message = null) {
   return {
     success,
@@ -90,10 +92,27 @@ function modifyTargetUser(requiredRole = "admin") {
   };
 }
 
+function isValidUUIDv4(id) {
+  return validate(id) && version(id) === 4;
+}
+
+async function isFriend(request) {
+  const user_a_id = request?.user?.sub;
+  const user_b_id = request?.params?.id;
+
+  if (!user_a_id || !user_b_id) {
+    return false;
+  }
+
+  return Friendship.exists(user_a_id, user_b_id);
+}
+
 module.exports = {
   createResponse,
   clearRefreshTokenCookie,
   authenticate,
   authorize,
   modifyTargetUser,
+  isValidUUIDv4,
+  isFriend,
 };

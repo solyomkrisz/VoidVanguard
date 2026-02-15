@@ -13,6 +13,12 @@ const pool = mysql.createPool({
 });
 
 const usersTableFields = ["username", "email", "gender", "password"];
+const profileTableFields = [
+  "avatar",
+  "display_name",
+  "description",
+  "visibility",
+];
 
 //!SQL Queries
 const Test = {
@@ -127,6 +133,147 @@ const User = {
   },
 };
 
+const Profile = {
+  _select: async function (id) {
+    const query =
+      "SELECT avatar, display_name, description, visibility FROM profiles WHERE user_id = ?";
+    const [rows] = await pool.execute(query, [id]);
+
+    return rows.length ? rows[0] : null;
+  },
+  select: async function (request, isFriend) {
+    const id = request.params.id;
+
+    let query = "SELECT visibility FROM profiles WHERE user_id = ?";
+    let [rows] = await pool.execute(query, [id]);
+
+    if (!rows.length) {
+      throw new Error("Profile not found");
+    }
+
+    const visibility = rows[0].visibility;
+
+    if (visibility === "friends-only" && isFriend) {
+      query =
+        "SELECT avatar, display_name, description FROM profiles WHERE user_id = ?";
+      [rows] = await pool.execute(query, [id]);
+      return rows[0];
+    }
+
+    if (visibility === "public" || request?.user?.roles.includes("admin")) {
+      query =
+        "SELECT avatar, display_name, description FROM profiles WHERE user_id = ?";
+      [rows] = await pool.execute(query, [id]);
+      return rows[0];
+    }
+
+    query = "SELECT avatar, display_name FROM profiles WHERE user_id = ?";
+    [rows] = await pool.execute(query, [id]);
+    return rows[0];
+  },
+
+  create: async function (request) {
+    const fields = Object.keys(request.body);
+
+    let query = "INSERT INTO profiles (user_id, ";
+    let placeholders = "?, ";
+    const values = [request.targetUser.sub];
+
+    for (const field of fields) {
+      if (!profileTableFields.includes(field)) {
+        continue;
+      }
+      query += `${field}, `;
+
+      const value = request.body[field];
+
+      placeholders += "?, ";
+      values.push(value);
+    }
+
+    query = query.slice(0, -2);
+    placeholders = placeholders.slice(0, -2);
+    query += `) VALUES (${placeholders})`;
+
+    const [result] = await pool.execute(query, values);
+    return result;
+  },
+
+  update: async function (request) {
+    const fields = Object.keys(request.body).filter((field) =>
+      profileTableFields.includes(field),
+    );
+
+    if (!fields.length) {
+      throw new Error("No valid fields to update");
+    }
+    const currentProfile = await Profile._select(request.targetUser.sub);
+
+    let query = "UPDATE profiles SET ";
+    const values = [];
+    for (const field of fields) {
+      if (request.body[field] === currentProfile[field]) {
+        continue;
+      }
+      query += `${field} = ?, `;
+      values.push(request.body[field]);
+    }
+    if (!values.length) {
+      throw new Error("All fields are up to date");
+    }
+    query = query.slice(0, -2);
+    query += " WHERE user_id = ?";
+    values.push(request.targetUser.sub);
+    const [result] = await pool.execute(query, values);
+    return result;
+  },
+};
+
+const Friendship = {
+  exists: async function (user_a_id, user_b_id) {
+    const query =
+      "SELECT 1 FROM friends WHERE ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?)) AND status = 'accepted'";
+    const [rows] = await pool.execute(query, [
+      user_a_id,
+      user_b_id,
+      user_b_id,
+      user_a_id,
+    ]);
+    return rows.length > 0;
+  },
+
+  initiate: async function (request) {
+    const query = "INSERT INTO friends (user_a_id, user_b_id) VALUES (?, ?)";
+    const [result] = await pool.execute(query, [
+      request.targetUser.sub,
+      request.body.user_id,
+    ]);
+    return result;
+  },
+  accept: async function (request) {
+    // user_a_id mindig a kezdeményező, elfogadni pedig csak olyan kérést lehet, amit nem mi kezdeményeztünk, tehát user_a_id mindig a kezdeményező lesz, user_b_id pedig mindig az elfogadó lesz
+    const query =
+      "UPDATE friends SET status = 'accepted' WHERE status = 'pending' AND user_a_id = ? AND user_b_id = ?";
+    const [result] = await pool.execute(query, [
+      request.body.user_id,
+      request.targetUser.sub,
+    ]);
+    return result;
+  },
+
+  delete: async function (request) {
+    const query =
+      "DELETE FROM friends WHERE ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?))";
+    const [result] = await pool.execute(query, [
+      request.targetUser.sub,
+      request.body.user_id,
+      request.body.user_id,
+      request.targetUser.sub,
+    ]);
+    return result;
+  },
+};
+
 const Password = {
   hash: async function (password) {
     return bcrypt.hash(password, await bcrypt.genSalt(10));
@@ -196,4 +343,6 @@ module.exports = {
   User,
   Password,
   Token,
+  Profile,
+  Friendship,
 };

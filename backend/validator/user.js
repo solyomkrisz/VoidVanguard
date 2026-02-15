@@ -1,9 +1,8 @@
-const { validate, version } = require("uuid");
-const { query, body } = require("express-validator");
+const { isValidUUIDv4 } = require("../common/common.js");
 
 const GET = function (request, response, next) {
   const id = request.params.id;
-  request.valid = validate(id) && version(id) === 4;
+  request.valid = isValidUUIDv4(id);
   next();
 };
 

@@ -5,6 +5,8 @@ const fs = require("fs/promises");
 const users = require("./users.js");
 const sessions = require("./sessions.js");
 const tokens = require("./tokens.js");
+const profiles = require("./profiles.js");
+const friends = require("./friends.js");
 
 //!Multer
 const multer = require("multer"); //?npm install multer
@@ -50,5 +52,7 @@ router.get("/testsql", async (request, response) => {
 router.use("/users", users);
 router.use("/sessions", sessions);
 router.use("/tokens", tokens);
+router.use("/profiles", profiles);
+router.use("/friends", friends);
 
 module.exports = router;
