@@ -41,17 +41,63 @@ CREATE TABLE profiles(
 );
 
 CREATE TABLE friends(
-    user_a_id CHAR(36),
-    user_b_id CHAR(36),
+    id CHAR(32) PRIMARY KEY,
+    initiator_id CHAR(36) NOT NULL,
+    recipient_id CHAR(36) NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (user_a_id, user_b_id),
-    FOREIGN KEY (user_a_id) REFERENCES users(id)
+    FOREIGN KEY (initiator_id) REFERENCES users(id)
         ON DELETE CASCADE
         ON UPDATE RESTRICT,
-    FOREIGN KEY (user_b_id) REFERENCES users(id)
+    FOREIGN KEY (recipient_id) REFERENCES users(id)
         ON DELETE CASCADE
         ON UPDATE RESTRICT
 );
+
+DELIMITER // 
+CREATE TRIGGER friends_before_insert
+BEFORE INSERT ON friends
+FOR EACH ROW
+BEGIN
+    DECLARE a CHAR(36);
+    DECLARE b CHAR(36);
+
+    IF NEW.initiator_id = NEW.recipient_id THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User cannot befriend themselves';
+    END IF;
+
+    SET a = LEAST(NEW.initiator_id, NEW.recipient_id);
+    SET b = GREATEST(NEW.initiator_id, NEW.recipient_id);
+
+    SET NEW.id = MD5(CONCAT(a, b));
+END //
+DELIMITER ;
+
+CREATE TABLE blocks(
+    blocker_id CHAR(36),
+    blocked_id CHAR(36),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (blocker_id, blocked_id),
+
+    FOREIGN KEY (blocker_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+
+    FOREIGN KEY (blocked_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);
+
+DELIMITER //
+CREATE TRIGGER blocks_before_insert
+BEFORE INSERT ON blocks
+FOR EACH ROW
+BEGIN
+    IF NEW.blocker_id = NEW.blocked_id THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User cannot block themselves';
+    END IF;
+END //
+DELIMITER ;

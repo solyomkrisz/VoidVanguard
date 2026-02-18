@@ -7,6 +7,7 @@ const sessions = require("./sessions.js");
 const tokens = require("./tokens.js");
 const profiles = require("./profiles.js");
 const friends = require("./friends.js");
+const blocks = require("./blocks.js");
 
 //!Multer
 const multer = require("multer"); //?npm install multer
@@ -54,5 +55,6 @@ router.use("/sessions", sessions);
 router.use("/tokens", tokens);
 router.use("/profiles", profiles);
 router.use("/friends", friends);
+router.use("/blocks", blocks);
 
 module.exports = router;

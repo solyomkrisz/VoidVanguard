@@ -227,12 +227,18 @@ const Profile = {
     const [result] = await pool.execute(query, values);
     return result;
   },
+
+  delete: async function (id) {
+    const query = "DELETE FROM profiles WHERE user_id = ?";
+    const [result] = await pool.execute(query, [id]);
+    return result;
+  },
 };
 
 const Friendship = {
   exists: async function (user_a_id, user_b_id) {
     const query =
-      "SELECT 1 FROM friends WHERE ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?)) AND status = 'accepted'";
+      "SELECT 1 FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?)) AND status = 'accepted'";
     const [rows] = await pool.execute(query, [
       user_a_id,
       user_b_id,
@@ -243,7 +249,8 @@ const Friendship = {
   },
 
   initiate: async function (request) {
-    const query = "INSERT INTO friends (user_a_id, user_b_id) VALUES (?, ?)";
+    const query =
+      "INSERT INTO friends (initiator_id, recipient_id) VALUES (?, ?)";
     const [result] = await pool.execute(query, [
       request.targetUser.sub,
       request.body.user_id,
@@ -251,26 +258,94 @@ const Friendship = {
     return result;
   },
   accept: async function (request) {
-    // user_a_id mindig a kezdeményező, elfogadni pedig csak olyan kérést lehet, amit nem mi kezdeményeztünk, tehát user_a_id mindig a kezdeményező lesz, user_b_id pedig mindig az elfogadó lesz
+    const initiator_id = request.body.user_id;
+    const recipient_id = request.targetUser.sub;
+
     const query =
-      "UPDATE friends SET status = 'accepted' WHERE status = 'pending' AND user_a_id = ? AND user_b_id = ?";
+      "UPDATE friends SET status = 'accepted' WHERE status = 'pending' AND initiator_id = ? AND recipient_id = ?";
+    const [result] = await pool.execute(query, [initiator_id, recipient_id]);
+    return result;
+  },
+
+  delete: async function (request) {
+    const query =
+      "DELETE FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?))";
     const [result] = await pool.execute(query, [
+      request.targetUser.sub,
+      request.body.user_id,
       request.body.user_id,
       request.targetUser.sub,
     ]);
     return result;
   },
 
-  delete: async function (request) {
+  getAllIncoming: async function (id) {
     const query =
-      "DELETE FROM friends WHERE ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?))";
+      "SELECT initiator_id FROM friends WHERE recipient_id = ? AND status = 'pending'";
+    const [rows] = await pool.execute(query, [id]);
+    return rows.length ? rows : null;
+  },
+
+  getAllPending: async function (id) {
+    const query =
+      "SELECT recipient_id FROM friends WHERE initiator_id = ? AND status = 'pending'";
+    const [rows] = await pool.execute(query, [id]);
+    return rows.length ? rows : null;
+  },
+
+  getAll: async function (id) {
+    const query = `
+      SELECT initiator_id FROM friends WHERE recipient_id = ? AND status = 'accepted'
+      UNION
+      SELECT recipient_id FROM friends WHERE initiator_id = ? AND status = 'accepted'
+    `;
+    const [rows] = await pool.execute(query, [id, id]);
+    return rows.length ? rows : null;
+  },
+};
+
+const Block = {
+  exists: async function (request) {
+    const user_a_id = request?.targetUser.sub;
+    const user_b_id = request?.body?.user_id || request?.params?.id;
+
+    if (!user_a_id || !user_b_id) {
+      return 0;
+    }
+    let query = "SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?";
+    let [rows] = await pool.execute(query, [user_a_id, user_b_id]);
+    if (rows.length) {
+      return 1;
+    }
+    query = "SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?";
+    [rows] = await pool.execute(query, [user_b_id, user_a_id]);
+    if (rows.length) {
+      return 2;
+    }
+    return 0;
+  },
+
+  create: async function (request) {
+    const query = "INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)";
     const [result] = await pool.execute(query, [
       request.targetUser.sub,
       request.body.user_id,
-      request.body.user_id,
-      request.targetUser.sub,
     ]);
     return result;
+  },
+
+  delete: async function (request) {
+    const query = "DELETE FROM blocks WHERE blocker_id = ? AND blocked_id = ?";
+    const [result] = await pool.execute(query, [
+      request.targetUser.sub,
+      request.body.user_id,
+    ]);
+    return result;
+  },
+  getAllBlocked: async function (request) {
+    const query = "SELECT blocked_id FROM blocks WHERE blocker_id = ?";
+    const [rows] = await pool.execute(query, [request.targetUser.sub]);
+    return rows.length ? rows : null;
   },
 };
 
@@ -345,4 +420,5 @@ module.exports = {
   Token,
   Profile,
   Friendship,
+  Block,
 };

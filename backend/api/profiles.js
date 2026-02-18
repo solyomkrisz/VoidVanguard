@@ -51,15 +51,15 @@ router.post(
     }
 
     try {
-      const result = await Profile.update(request);
+      const result = await Profile.create(request);
 
       if (!result) {
-        throw new Error("Profile update failed");
+        throw new Error("Profile creation failed");
       }
 
       response
         .status(200)
-        .json(createResponse(true, result, "Profile updated successfully"));
+        .json(createResponse(true, null, "Profile created successfully"));
     } catch (error) {
       console.log(error);
 
@@ -80,7 +80,7 @@ router.post(
 
       response
         .status(500)
-        .json(createResponse(false, null, "Error updating user profile"));
+        .json(createResponse(false, null, "Error creating user profile"));
     }
   },
 );
@@ -127,6 +127,35 @@ router.patch(
       }
 
       response.status(500).json(createResponse(false, null, message));
+    }
+  },
+);
+
+router.delete(
+  "/",
+  authenticate(),
+  modifyTargetUser(),
+  async (request, response) => {
+    try {
+      const result = await Profile.delete(request.targetUser.sub);
+      if (!result) {
+        throw new Error();
+      }
+      if (result.affectedRows === 0) {
+        return response
+          .status(404)
+          .json(createResponse(false, null, "Profile not found"));
+      }
+
+      response
+        .status(200)
+        .json(createResponse(true, null, "Profile deleted successfully"));
+    } catch (error) {
+      console.log(error);
+
+      response
+        .status(500)
+        .json(createResponse(false, null, "Error deleting user profile"));
     }
   },
 );

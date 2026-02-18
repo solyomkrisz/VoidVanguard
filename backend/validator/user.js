@@ -1,7 +1,7 @@
 const { isValidUUIDv4 } = require("../common/common.js");
 
 const GET = function (request, response, next) {
-  const id = request.params.id;
+  const id = request?.params?.id;
   request.valid = isValidUUIDv4(id);
   next();
 };

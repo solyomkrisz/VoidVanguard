@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validate, version } = require("uuid");
 const { Friendship } = require("../sql/database.js");
+const CustomError = require("./CustomError.js");
+
 function createResponse(success, result, message = null) {
   return {
     success,
@@ -107,6 +109,10 @@ async function isFriend(request) {
   return Friendship.exists(user_a_id, user_b_id);
 }
 
+function isCustomError(error) {
+  return error instanceof CustomError;
+}
+
 module.exports = {
   createResponse,
   clearRefreshTokenCookie,
@@ -115,4 +121,5 @@ module.exports = {
   modifyTargetUser,
   isValidUUIDv4,
   isFriend,
+  isCustomError,
 };
