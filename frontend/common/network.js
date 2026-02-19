@@ -11,13 +11,20 @@ const getReqKey = ({ method }, url) => `${method}:${url}`;
 // prettier-ignore
 export async function refreshAccessToken () {
     if (!isExpired(sessionStorage.getItem("access_token"))){
-        return Promise.resolve();
+        return;
     }
+
     tokenRefresh.isPending = true;
     console.log("Refreshing access token...");
 
     tokenRefresh.promise = fetch("/api/tokens")
-        .then(async response => await response.json())
+        .then(async response => {
+          if (!response.ok) {
+            return;
+          }
+
+          return response.json();
+        })
         .catch(error => console.error(error))
         .finally(() => {
             tokenRefresh.isPending = false;
@@ -26,14 +33,20 @@ export async function refreshAccessToken () {
 
     const result = await tokenRefresh.promise;
 
-    !result && console.error("Failed to refresh access token");
-    !result?.success && console.error(result.message);
-    console.log(`New access token: ${result?.result?.access_token}`);
-    sessionStorage.setItem("access_token", result?.result?.access_token || "");
-    sessionStorage.setItem("access_token_decoded", JSON.stringify(decode(result?.result?.access_token || "")));
+    if (!result) {
+      console.error("Failed to refresh access token");
+      return;
+    }
 
-    return Promise.resolve();
+    if (!result?.success) {
+      result?.message && console.error(result.message);
+    }
 
+    const token = result?.result?.access_token || "";
+
+    console.log(`New access token: ${token}`);
+    sessionStorage.setItem("access_token", token);
+    sessionStorage.setItem("access_token_decoded", JSON.stringify(decode(token)));
 }
 
 export async function send(
@@ -61,8 +74,22 @@ export async function send(
   } else {
     console.log(`No pending request for ${key}, starting a new one`);
     const promise = fetch(url, options)
-      .then(async (response) => await response.json())
-      .catch((error) => console.error(error))
+      .then(async (response) => {
+        try {
+          return await response.json();
+        } catch (error) {
+          return {
+            success: false,
+            result: null,
+            message: "Server returned an invalid response",
+          };
+        }
+      })
+      .catch((_) => ({
+        success: false,
+        result: null,
+        message: "Network error",
+      }))
       .finally(() => pendingRequests.delete(key));
     pendingRequests.set(key, promise);
     return promise;
