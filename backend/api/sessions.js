@@ -1,10 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const { User, Token } = require("../sql/database.js");
+const Token = require("../common/Token.js");
+const RefreshTokens = require("../sql/table/RefreshTokens.js");
+const Users = require("../sql/table/Users.js");
 const {
   createResponse,
   authenticate,
   clearRefreshTokenCookie,
+  handleExpressValidatorErrors,
+  handleCaughtError,
 } = require("../common/common.js");
 const { checkSchema, validationResult } = require("express-validator");
 const validator = require("../validator/session.js");
@@ -22,70 +26,42 @@ router.post(
   checkSchema(validator.POST),
   async (request, response) => {
     const errors = validationResult(request);
-    if (!errors.isEmpty()) {
-      return response
-        .status(400)
-        .json(createResponse(false, null, errors.array()[0].msg));
-    }
-    const { username, password } = request.body;
+
+    if (!errors.isEmpty())
+      return handleExpressValidatorErrors(response, errors);
 
     let payload = null;
+
     try {
-      payload = await User.login(username, password);
+      payload = await Users.login(request);
     } catch (error) {
-      console.log(error);
-      return response
-        .status(500)
-        .json(
-          createResponse(false, null, "Unexpected error occurred during login"),
-        );
+      return handleCaughtError(response, error);
     }
-    if (payload) {
-      const accessToken = Token.get(payload);
+    const access_token = Token.get(payload);
 
-      const iat = Math.floor(Date.now() / 1000);
-      const exp = iat + 7 * 24 * 60 * 60;
+    const iat = Math.floor(Date.now() / 1000);
+    const exp = iat + 7 * 24 * 60 * 60;
 
-      const refreshToken = Token.get(
-        payload,
-        iat,
-        exp,
-        process.env.REFRESH_TOKEN_SECRET,
-      );
-      try {
-        await Token.revokeAll(payload.sub);
-        await Token.save(payload.sub, refreshToken, exp, iat);
-      } catch (error) {
-        console.log(error);
-        return response
-          .status(500)
-          .json(
-            createResponse(
-              false,
-              null,
-              "Unexpected error occurred during login",
-            ),
-          );
-      }
-      response.cookie("refresh_token", refreshToken, {
-        httpOnly: true,
-        sameSite: "Strict",
-        path: "/api/tokens",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      return response
-        .status(200)
-        .json(
-          createResponse(
-            true,
-            { access_token: accessToken },
-            "Login successful",
-          ),
-        );
+    //prettier-ignore
+    const refresh_token = Token.get(payload, iat, exp, process.env.REFRESH_TOKEN_SECRET);
+
+    try {
+      await RefreshTokens.revokeAll(payload.sub);
+      await RefreshTokens.save(payload.sub, refresh_token, exp, iat);
+    } catch (error) {
+      return handleCaughtError(response, error);
     }
+
+    response.cookie("refresh_token", refresh_token, {
+      httpOnly: true,
+      sameSite: "Strict",
+      path: "/api/tokens",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     response
-      .status(401)
-      .json(createResponse(false, null, "Invalid username or password"));
+      .status(200)
+      .json(createResponse(true, { access_token }, "Login successful"));
   },
 );
 

@@ -1,7 +1,7 @@
 const { isValidUUIDv4 } = require("../common/common.js");
 
 const POST = {
-  user_id: {
+  userId: {
     in: ["body"],
     custom: {
       options: (value) => {

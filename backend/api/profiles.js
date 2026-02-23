@@ -1,38 +1,30 @@
 const express = require("express");
 const router = express.Router();
-const { User, Profile } = require("../sql/database.js");
+const Profiles = require("../sql//table/Profiles.js");
 const { checkSchema, validationResult } = require("express-validator");
 const validator = require("../validator/profile.js");
+const CustomError = require("../common/CustomError.js");
 const {
   createResponse,
   authenticate,
   modifyTargetUser,
-  isFriend,
+  handleCaughtError,
+  handleExpressValidatorErrors,
+  isSequelizeUniqueConstraintError,
+  handleSequelizeUniqueConstraintError,
 } = require("../common/common.js");
 
 router.get("/:id", validator.GET, async (request, response) => {
-  if (!request.valid) {
-    return response
-      .status(400)
-      .json(createResponse(false, null, "Invalid user ID"));
-  }
-
   try {
-    const result = await Profile.select(request, await isFriend(request));
+    if (!request.valid) throw CustomError.INVALID_REQUEST;
 
-    if (!result) {
-      throw new Error("Profile not found");
-    }
+    const result = await Profiles.select(request);
 
     response
       .status(200)
       .json(createResponse(true, result, "Profile fetched successfully"));
   } catch (error) {
-    console.log(error);
-
-    response
-      .status(500)
-      .json(createResponse(false, null, "Error fetching user profile"));
+    handleCaughtError(response, error);
   }
 });
 
@@ -44,43 +36,23 @@ router.post(
   async (request, response) => {
     const errors = validationResult(request);
 
-    if (!errors.isEmpty()) {
-      return response
-        .status(400)
-        .json(createResponse(false, null, errors.array()[0].msg));
-    }
+    if (!errors.isEmpty())
+      return handleExpressValidatorErrors(response, errors);
 
     try {
-      const result = await Profile.create(request);
-
-      if (!result) {
-        throw new Error("Profile creation failed");
-      }
+      await Profiles.create(request);
 
       response
         .status(200)
         .json(createResponse(true, null, "Profile created successfully"));
     } catch (error) {
-      console.log(error);
-
-      if (
-        error.name === "SequelizeUniqueConstraintError" ||
-        error.code === "ER_DUP_ENTRY"
-      ) {
-        return response
-          .status(400)
-          .json(
-            createResponse(
-              false,
-              null,
-              "This user already has an existing profile",
-            ),
-          );
+      if (isSequelizeUniqueConstraintError(error)) {
+        return handleSequelizeUniqueConstraintError(
+          response,
+          "Profile for this user already exists",
+        );
       }
-
-      response
-        .status(500)
-        .json(createResponse(false, null, "Error creating user profile"));
+      handleCaughtError(response, error);
     }
   },
 );
@@ -91,42 +63,22 @@ router.patch(
   modifyTargetUser(),
   checkSchema(validator.PATCH),
   async (request, response) => {
-    if (!request.body) {
-      return response
-        .status(400)
-        .json(createResponse(false, null, "No data provided for update"));
-    }
-
     const errors = validationResult(request);
 
-    if (!errors.isEmpty()) {
-      return response
-        .status(400)
-        .json(createResponse(false, null, errors.array()[0].msg));
-    }
+    if (!errors.isEmpty())
+      return handleExpressValidatorErrors(response, errors);
 
     try {
-      const result = await Profile.update(request);
+      if (!request.body) throw CustomError.INVALID_REQUEST;
 
-      if (result.affectedRows > 0) {
-        return response
-          .status(200)
-          .json(createResponse(true, null, "Profile updated successfully"));
-      }
+      if ((await Profiles.update(request)).affectedRows === 0)
+        throw CustomError.PROFILE_NOT_FOUND;
 
       response
-        .status(404)
-        .json(createResponse(false, null, "Profile not found"));
+        .status(200)
+        .json(createResponse(true, null, "Profile updated successfully"));
     } catch (error) {
-      console.log(error);
-
-      let message = "Error updating user profile";
-
-      if (error.message === "All fields are up to date") {
-        message = error.message;
-      }
-
-      response.status(500).json(createResponse(false, null, message));
+      handleCaughtError(response, error);
     }
   },
 );
@@ -137,25 +89,14 @@ router.delete(
   modifyTargetUser(),
   async (request, response) => {
     try {
-      const result = await Profile.delete(request.targetUser.sub);
-      if (!result) {
-        throw new Error();
-      }
-      if (result.affectedRows === 0) {
-        return response
-          .status(404)
-          .json(createResponse(false, null, "Profile not found"));
-      }
+      if ((await Profiles.delete(request)).affectedRows === 0)
+        throw CustomError.PROFILE_NOT_FOUND;
 
       response
         .status(200)
         .json(createResponse(true, null, "Profile deleted successfully"));
     } catch (error) {
-      console.log(error);
-
-      response
-        .status(500)
-        .json(createResponse(false, null, "Error deleting user profile"));
+      handleCaughtError(response, error);
     }
   },
 );

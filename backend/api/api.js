@@ -1,7 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const database = require("../sql/database.js");
-const fs = require("fs/promises");
 const users = require("./users.js");
 const sessions = require("./sessions.js");
 const tokens = require("./tokens.js");
@@ -30,24 +28,6 @@ router.get("/test", (request, response) => {
   response.status(200).json({
     message: "Ez a végpont működik.",
   });
-});
-
-//?GET /api/testsql
-router.get("/testsql", async (request, response) => {
-  try {
-    const selectall = await database.Test.selectAll();
-    response.status(200).json({
-      success: true,
-      message: "Ez a végpont működik.",
-      result: selectall,
-    });
-  } catch (error) {
-    response.status(500).json({
-      success: false,
-      result: null,
-      message: "Ez a végpont nem működik.",
-    });
-  }
 });
 
 router.use("/users", users);

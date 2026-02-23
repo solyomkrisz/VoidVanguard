@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { User, Token } = require("../sql/database.js");
+const Token = require("../common/Token.js");
+const RefreshTokens = require("../sql/table/RefreshTokens.js");
+const Users = require("../sql/table/Users.js");
 const {
   createResponse,
   clearRefreshTokenCookie,
-  authenticate,
 } = require("../common/common.js");
 
 // prettier-ignore
@@ -34,10 +35,7 @@ router.get("/", async (request, response) => {
   }
 
   try {
-    const result = await Token.find(payload.sub, token);
-    if(!result){
-      throw new Error("Token has not been found");
-    }
+    await RefreshTokens.find(payload.sub, token);
   } catch (error) {
     console.log(error);
     return response.status(400).json(createResponse(false, { access_token: "" }, "Unauthorized access, invalid refresh token"));
@@ -45,19 +43,19 @@ router.get("/", async (request, response) => {
 
   let user = null;
 
-    try { 
-        user = await User.exists(payload.sub);
-    } 
-    catch (error) {
-        return response.status(500).json(createResponse(false, { access_token: "" }, "Unexpected error occurred during token verification"));
-    }
+  try { 
+    user = await Users.payload(payload.sub);
+  } 
+  catch (error) {
+    return response.status(500).json(createResponse(false, { access_token: "" }, "Unexpected error occurred during token verification"));
+  }
 
-    if (!user) {
-        return response.status(401).json(createResponse(false, { access_token: "" }, "User associated with token no longer exists"));
-    }
-    payload = user;
-    const accessToken = Token.get(payload);
-    response.status(200).json(createResponse(true, { access_token: accessToken }, "Access token refreshed successfully"));
+  if (!user) {
+    return response.status(401).json(createResponse(false, { access_token: "" }, "User associated with token no longer exists"));
+  }
+  payload = user;
+  const accessToken = Token.get(payload);
+  response.status(200).json(createResponse(true, { access_token: accessToken }, "Access token refreshed successfully"));
 });
 
 module.exports = router;

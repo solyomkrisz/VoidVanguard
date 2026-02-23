@@ -1,8 +1,8 @@
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validate, version } = require("uuid");
-const { Friendship } = require("../sql/database.js");
 const CustomError = require("./CustomError.js");
+const Role = require("./Role.js");
+const Friends = require("../sql/table/Friends.js");
 
 function createResponse(success, result, message = null) {
   return {
@@ -27,7 +27,13 @@ function authenticate(
       next();
     },
     onInvalidAccessToken: (_, response, _1) => {
-      response.status(401).json(createResponse(false, null, "Unauthorized"));
+      const error = CustomError.UNAUTHORIZED;
+
+      response
+        .status(error.statusCode)
+        .json(
+          createResponse(false, error.definition, error.definition.message),
+        );
     },
   },
 ) {
@@ -70,17 +76,17 @@ function authorize(
     if (!request?.user) {
       return options.onMismatch(request, response, next);
     }
-    const roles = request.user?.roles;
-    if (!roles || !roles.includes(requiredRole)) {
+    const role = request.user?.role;
+    if (!role || role < requiredRole) {
       return options.onMismatch(request, response, next);
     }
     options.onMatch(request, response, next);
   };
 }
 
-function modifyTargetUser(requiredRole = "admin") {
+function modifyTargetUser(requiredRole = Role.ADMIN) {
   return function (request, response, next) {
-    if (!request.user.roles.includes(requiredRole)) {
+    if (request.user.role < requiredRole) {
       return next();
     }
     const targetUserId = request?.body?.targetUserId;
@@ -99,18 +105,45 @@ function isValidUUIDv4(id) {
 }
 
 async function isFriend(request) {
-  const user_a_id = request?.user?.sub;
-  const user_b_id = request?.params?.id;
+  const a_id = request?.user?.sub;
+  const b_id = request?.params?.id;
 
-  if (!user_a_id || !user_b_id) {
+  if (!a_id || !b_id) {
     return false;
   }
 
-  return Friendship.exists(user_a_id, user_b_id);
+  return Friends.exists(a_id, b_id);
 }
 
-function isCustomError(error) {
-  return error instanceof CustomError;
+function handleCaughtError(response, error) {
+  console.log(error);
+
+  if (CustomError.isCustomError(error)) {
+    return response
+      .status(error.statusCode)
+      .json(createResponse(false, error.definition, error.definition.message));
+  }
+
+  return response
+    .status(500)
+    .json(createResponse(false, null, "An unexpected error occurred"));
+}
+
+function handleExpressValidatorErrors(response, errors) {
+  return response
+    .status(400)
+    .json(createResponse(false, null, errors.array()[0].msg));
+}
+
+function isSequelizeUniqueConstraintError(error) {
+  return (
+    error.name === "SequelizeUniqueConstraintError" ||
+    error.code === "ER_DUP_ENTRY"
+  );
+}
+
+function handleSequelizeUniqueConstraintError(response, message) {
+  return response.status(400).json(createResponse(false, null, message));
 }
 
 module.exports = {
@@ -121,5 +154,8 @@ module.exports = {
   modifyTargetUser,
   isValidUUIDv4,
   isFriend,
-  isCustomError,
+  handleCaughtError,
+  handleExpressValidatorErrors,
+  isSequelizeUniqueConstraintError,
+  handleSequelizeUniqueConstraintError,
 };

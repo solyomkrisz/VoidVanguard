@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Block } = require("../sql/database.js");
+const Blocks = require("../sql/table/Blocks.js");
 const { checkSchema, validationResult } = require("express-validator");
 const validator = require("../validator/block.js");
 const {
@@ -22,7 +22,7 @@ router.get(
     }
 
     try {
-      const result = await Block.getAllBlocked(request);
+      const result = await Blocks.getAllBlocked(request);
       if (!result) {
         return response
           .status(404)
@@ -55,12 +55,7 @@ router.post(
     }
 
     try {
-      const result = await Block.create(request);
-
-      if (!result) {
-        throw new Error();
-      }
-
+      await Blocks.create(request);
       response
         .status(200)
         .json(createResponse(true, null, "User blocked successfully"));
@@ -92,11 +87,7 @@ router.delete(
     }
 
     try {
-      const result = await Block.delete(request);
-
-      if (!result) {
-        throw new Error();
-      }
+      const result = await Blocks.delete(request);
       if (result.affectedRows === 0) {
         return response
           .status(404)
