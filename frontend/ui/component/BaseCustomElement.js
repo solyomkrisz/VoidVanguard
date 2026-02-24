@@ -1,3 +1,5 @@
+import { element } from "../UI.js";
+
 export default class BaseCustomElement extends HTMLElement {
   static STYLE_CACHE = new Map();
   static PENDING_FETCHES = new Map();
@@ -47,5 +49,9 @@ export default class BaseCustomElement extends HTMLElement {
         BaseCustomElement.PENDING_FETCHES.set(path, promise);
       }
     }
+  }
+
+  add(name, ...children) {
+    return this.shadowRoot.appendChild(element(name, ...children));
   }
 }

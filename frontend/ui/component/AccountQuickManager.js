@@ -1,47 +1,34 @@
-import * as UI from "../UI.js";
+import { dir, element, text } from "../UI.js";
 import { path } from "../../common/common.js";
 import BaseCustomElement from "./BaseCustomElement.js";
 import _ from "./LogoutButton.js";
+import userState from "../../state/user.js";
 
 export default class AccountQuickManager extends BaseCustomElement {
   constructor() {
     super([
-      path.join(UI.dir, "global.css"),
-      path.join(UI.dir, "accountQuickManager.css"),
+      path.join(dir, "global.css"),
+      path.join(dir, "accountQuickManager.css"),
     ]);
+
     this.elements = {};
+
     this.build();
-    this.update = this.update.bind(this);
-    this.update();
-  }
-
-  connectedCallback() {
-    document.addEventListener("login", this.update);
-    document.addEventListener("logout", this.update);
-  }
-
-  disconnectedCallback() {
-    document.removeEventListener("login", this.update);
-    document.removeEventListener("logout", this.update);
   }
 
   build() {
-    this.elements.username = this.shadowRoot.appendChild(
-      UI.element("span", UI.text("Logged out")),
-    );
-    this.elements.logout = this.shadowRoot.appendChild(
-      UI.element("logout-button"),
-    );
-  }
+    const username = this.add("span", text("Logged out"));
+    const logoutButton = this.add("logout-button").styl("display", "none");
 
-  update() {
-    console.log(
-      "AccountQuickManager-update: Updating account quick manager...",
-    );
+    // prettier-ignore
+    {
+      userState.sub("username", (_, value) => {
+        username.textContent = value || "Logged out";
 
-    const userdata = JSON.parse(sessionStorage.getItem("access_token_decoded"));
-
-    this.elements.username.textContent = userdata?.username ?? "Logged out";
+        if (value) logoutButton.styl("display", "block");
+        else logoutButton.styl("display", "none");
+      });
+    }
   }
 }
 

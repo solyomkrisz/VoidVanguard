@@ -37,6 +37,7 @@
   <body>
     <account-quick-manager></account-quick-manager>
     <account-quick-manager></account-quick-manager>
+    <profile-header></profile-header>
 
     <div class="container">
       <div>
@@ -103,6 +104,7 @@
       import * as jwt from "./common/jwt.js";
       import { extractForm, onDOMContentLoaded } from "./common/common.js";
       import * as UI from "./ui/UI.js";
+      import userState from "./state/user.js";
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
 
       setTimeout(() => {
@@ -161,17 +163,15 @@
                   result.result.access_token,
                 );
 
-                sessionStorage.setItem(
-                  "access_token_decoded",
-                  JSON.stringify(jwt.decode(result?.result?.access_token)),
-                );
+                const decoded = jwt.decode(result?.result?.access_token);
 
                 console.log(
                   "Access token set: ",
                   sessionStorage.getItem("access_token"),
                 );
 
-                document.dispatchEvent(new CustomEvent("login"));
+                // document.dispatchEvent(new CustomEvent("login"));
+                userState.from(decoded);
               }
             }
             regFormMsg.textContent = result.message;

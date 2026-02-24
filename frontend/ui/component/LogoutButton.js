@@ -1,5 +1,6 @@
 import * as UI from "../UI.js";
 import BaseCustomElement from "./BaseCustomElement.js";
+import userState from "../../state/user.js";
 
 export default class LogoutButton extends BaseCustomElement {
   constructor() {
@@ -7,15 +8,12 @@ export default class LogoutButton extends BaseCustomElement {
     this.build();
   }
   build() {
-    const button = this.shadowRoot.appendChild(
-      UI.element("button", UI.text("Kijelentkezés")),
-    );
+    const button = this.add("button", UI.text("Kijelentkezés"));
 
     button.addEventListener("click", async () => {
       if (!sessionStorage.getItem("access_token")) return;
 
       sessionStorage.removeItem("access_token");
-      sessionStorage.removeItem("access_token_decoded");
 
       try {
         const response = await fetch("/api/sessions", {
@@ -31,11 +29,7 @@ export default class LogoutButton extends BaseCustomElement {
         console.error("Logout error:", error);
       }
 
-      document.dispatchEvent(
-        new CustomEvent("logout", {
-          bubbles: false,
-        }),
-      );
+      userState.reset();
     });
   }
 }

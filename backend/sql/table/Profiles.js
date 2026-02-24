@@ -39,6 +39,7 @@ class Profiles extends Table {
     return rows[0];
   }
 
+  // prettier-ignore
   async select(request) {
     const { id } = request.params;
 
@@ -51,7 +52,7 @@ class Profiles extends Table {
       throw CustomError.PROFILE_NOT_FOUND;
     }
 
-    const { avatar, display_name, description, visibility } = rows[0];
+    const { avatar, displayName: display_name, description, visibility } = rows[0];
 
     const _isFriend = await isFriend(request);
 
@@ -60,10 +61,10 @@ class Profiles extends Table {
       visibility === "public" ||
       request?.user.role >= Role.ADMIN
     ) {
-      return { avatar, display_name, description };
+      return { avatar, displayName: display_name, description };
     }
 
-    return { avatar, display_name };
+    return { avatar, displayName: display_name, description: "" };
   }
 
   async create({ targetUser: { sub: id, role }, body }) {
