@@ -16,10 +16,10 @@ const validator = require("../validator/session.js");
 router.post(
   "/",
   authenticate({
-    onValidAccessToken: (_, response, _1) => {
+    onValidAccessToken: (request, response, _1) => {
       response
         .status(200)
-        .json(createResponse(true, null, "Already logged in"));
+        .json(createResponse(true, request.user, "Already logged in"));
     },
     onInvalidAccessToken: (_, _1, next) => next(),
   }),

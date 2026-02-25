@@ -10,7 +10,7 @@ const getReqKey = ({ method }, url) => `${method}:${url}`;
 
 // prettier-ignore
 export async function refreshAccessToken () {
-    if (!isExpired(sessionStorage.getItem("access_token"))){
+    if (!isExpired(localStorage.getItem("access_token"))){
         return;
     }
 
@@ -45,8 +45,7 @@ export async function refreshAccessToken () {
     const token = result?.result?.access_token || "";
 
     console.log(`New access token: ${token}`);
-    sessionStorage.setItem("access_token", token);
-    sessionStorage.setItem("access_token_decoded", JSON.stringify(decode(token)));
+    localStorage.setItem("access_token", token);
 }
 
 export async function send(
@@ -63,7 +62,7 @@ export async function send(
     }
     options.headers = options.headers || {};
     options.headers["Authorization"] =
-      `Bearer ${sessionStorage.getItem("access_token")}`;
+      `Bearer ${localStorage.getItem("access_token")}`;
   }
   const key = getReqKey(options, url);
   if (pendingRequests.has(key)) {

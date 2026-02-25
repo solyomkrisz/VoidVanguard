@@ -22,6 +22,11 @@ router.get("/", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
+// Profil oldal
+router.get("/profile/:id", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/profile.html"));
+});
+
 // Teszt oldal
 router.get("/test", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/test.html"));

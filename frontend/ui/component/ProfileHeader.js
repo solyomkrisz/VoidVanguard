@@ -1,31 +1,39 @@
-import BaseCustomElement from "./BaseCustomElement.js";
-import _ from "./FriendshipControlButton.js";
-import { dir, element, text } from "../UI.js";
-import { path } from "../../common/common.js";
-import * as net from "../../common/network.js";
-import userState from "../../state/user.js";
+import BaseCustomElement from "/ui/component/BaseCustomElement.js";
+import _ from "/ui/component/FriendshipControlButton.js";
+import { dir, element, text } from "/ui/UI.js";
+import { path } from "/common/common.js";
+import * as net from "/common/network.js";
+import userState from "/state/user.js";
+import State from "/state/State.js";
 
 export default class ProfileHeader extends BaseCustomElement {
   constructor() {
     super([path.join(dir, "global.css"), path.join(dir, "profileHeader.css")]);
 
     this.elements = {};
-    this.source = null;
 
     this.build();
   }
 
-  async load(id) {
-    const result = await net.send("/api/profiles/" + id);
-    if (result.success) this.source = result;
+  connectedCallback() {
+    window.queueMicrotask(() => {
+      const state = this.closest("profile-container").state;
+      const { avatar, displayName, description } = this.elements;
+
+      state.sub("avatar", (_, value) => (avatar.src = value));
+      state.sub("displayName", (_, value) => (displayName.textContent = value));
+      state.sub("description", (_, value) => (description.textContent = value));
+    });
   }
 
   // prettier-ignore
   build() {
-    this.elements.avatar = this.add("img");
-    this.elements.displayName = element("div", text("Display Name"));
-    this.elements.description = element("div", text(""));
-    this.add("div", this.elements.displayName, this.elements.description);
+    const e = this.elements;
+
+    e.avatar = this.add("img");
+    e.displayName = element("div", text("Display Name"));
+    e.description = element("div", text(""));
+    this.add("div", e.displayName, e.description);
 
     const friendButton = this.add("friendship-control-button").styl("display", "none");
 

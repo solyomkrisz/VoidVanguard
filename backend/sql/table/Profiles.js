@@ -52,19 +52,19 @@ class Profiles extends Table {
       throw CustomError.PROFILE_NOT_FOUND;
     }
 
-    const { avatar, displayName: display_name, description, visibility } = rows[0];
+    const { avatar, display_name: displayName, description, visibility } = rows[0];
 
     const _isFriend = await isFriend(request);
 
     if (
       (visibility === "friends-only" && _isFriend) ||
       visibility === "public" ||
-      request?.user.role >= Role.ADMIN
+      request?.user?.role >= Role.ADMIN
     ) {
-      return { avatar, displayName: display_name, description };
+      return { avatar, displayName, description };
     }
 
-    return { avatar, displayName: display_name, description: "" };
+    return { avatar, displayName, description: "" };
   }
 
   async create({ targetUser: { sub: id, role }, body }) {

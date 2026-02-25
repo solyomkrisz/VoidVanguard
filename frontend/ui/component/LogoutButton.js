@@ -11,9 +11,9 @@ export default class LogoutButton extends BaseCustomElement {
     const button = this.add("button", UI.text("Kijelentkezés"));
 
     button.addEventListener("click", async () => {
-      if (!sessionStorage.getItem("access_token")) return;
+      if (!localStorage.getItem("access_token")) return;
 
-      sessionStorage.removeItem("access_token");
+      localStorage.removeItem("access_token");
 
       try {
         const response = await fetch("/api/sessions", {

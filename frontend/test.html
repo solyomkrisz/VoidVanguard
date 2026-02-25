@@ -37,7 +37,6 @@
   <body>
     <account-quick-manager></account-quick-manager>
     <account-quick-manager></account-quick-manager>
-    <profile-header></profile-header>
 
     <div class="container">
       <div>
@@ -146,7 +145,7 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
             },
             body: JSON.stringify(extractForm(e.srcElement)),
           });
@@ -158,7 +157,7 @@
             } else {
               regFormMsg.style.color = "green";
               if (result.result?.access_token) {
-                sessionStorage.setItem(
+                localStorage.setItem(
                   "access_token",
                   result.result.access_token,
                 );
@@ -167,7 +166,7 @@
 
                 console.log(
                   "Access token set: ",
-                  sessionStorage.getItem("access_token"),
+                  localStorage.getItem("access_token"),
                 );
 
                 // document.dispatchEvent(new CustomEvent("login"));
