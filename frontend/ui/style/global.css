@@ -1,6 +1,11 @@
 * {
   box-sizing: border-box;
 }
+
+:host([hidden]) {
+  display: none !important;
+}
+
 :host {
   display: block;
 }

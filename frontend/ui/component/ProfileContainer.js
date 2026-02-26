@@ -36,7 +36,7 @@ export default class ProfileContainer extends BaseCustomElement {
 
   build() {
     // this.add("profile-header");
-    this.add("slot");
+    this.add(element("slot"));
   }
 }
 

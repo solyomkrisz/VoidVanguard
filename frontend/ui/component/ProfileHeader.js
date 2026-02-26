@@ -30,12 +30,12 @@ export default class ProfileHeader extends BaseCustomElement {
   build() {
     const e = this.elements;
 
-    e.avatar = this.add("img");
+    e.avatar = this.add(element("img"));
     e.displayName = element("div", text("Display Name"));
     e.description = element("div", text(""));
-    this.add("div", e.displayName, e.description);
+    this.add(element("div", e.displayName, e.description));
 
-    const friendButton = this.add("friendship-control-button").styl("display", "none");
+    const friendButton = this.add(element("friendship-control-button").styl("display", "none"));
 
     userState.sub("username", (_, value) => {
       if (value) friendButton.styl("display", "block");

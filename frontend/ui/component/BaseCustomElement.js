@@ -9,6 +9,8 @@ export default class BaseCustomElement extends HTMLElement {
 
     this.attachShadow({ mode: "open" });
 
+    this._initialized = false;
+
     for (const path of paths) {
       if (BaseCustomElement.STYLE_CACHE.has(path)) {
         console.log(`BASECUSTOMELEMENT-constructor: Found in cache: ${path}`);
@@ -51,7 +53,7 @@ export default class BaseCustomElement extends HTMLElement {
     }
   }
 
-  add(name, ...children) {
-    return this.shadowRoot.appendChild(element(name, ...children));
+  add(e) {
+    return this.shadowRoot.appendChild(e);
   }
 }

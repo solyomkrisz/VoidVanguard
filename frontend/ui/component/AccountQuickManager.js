@@ -17,8 +17,10 @@ export default class AccountQuickManager extends BaseCustomElement {
   }
 
   build() {
-    const username = this.add("span", text("Logged out"));
-    const logoutButton = this.add("logout-button").styl("display", "none");
+    const username = this.add(element("span", text("Logged out")));
+    const logoutButton = this.add(
+      element("logout-button").styl("display", "none"),
+    );
 
     // prettier-ignore
     {

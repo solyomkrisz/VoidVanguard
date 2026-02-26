@@ -8,7 +8,7 @@ export default class LogoutButton extends BaseCustomElement {
     this.build();
   }
   build() {
-    const button = this.add("button", UI.text("Kijelentkezés"));
+    const button = this.add(element("button", UI.text("Kijelentkezés")));
 
     button.addEventListener("click", async () => {
       if (!localStorage.getItem("access_token")) return;
