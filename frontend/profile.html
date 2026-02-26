@@ -17,13 +17,21 @@
 
     <profile-form action="update"></profile-form>
 
-    <smart-form url="/api/profiles" method="PATCH">
-      <input-group
-        input-type="text"
-        input-placeholder="Profilnév"
-        label="Profilnév"
-      ></input-group>
-    </smart-form>
+    <smart-form-wrapper
+      url="/api/profiles"
+      method="PATCH"
+      target="profile-form"
+    >
+      <form>
+        <input-group
+          input-type="text"
+          input-placeholder="Profilnév"
+          label="Profilnév"
+          name="displayName"
+        ></input-group>
+        <button type="submit">Módosítások mentése</button>
+      </form>
+    </smart-form-wrapper>
 
     <script type="module" src="/ui/initcomponents.js"></script>
     <script type="module">

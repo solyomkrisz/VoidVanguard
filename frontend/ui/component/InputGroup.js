@@ -7,8 +7,10 @@ import userState from "/state/user.js";
 import State from "/state/State.js";
 
 export default class InputGroup extends BaseCustomElement {
+  static formAssociated = true;
+
   static get observedAttributes() {
-    return ["input-type", "label", "input-placeholder", "options"];
+    return ["input-type", "label", "input-placeholder", "name", "options"];
   }
 
   get inputType() {
@@ -43,8 +45,17 @@ export default class InputGroup extends BaseCustomElement {
     this.setAttribute("options", value);
   }
 
+  get name() {
+    return this.getAttribute("name");
+  }
+
+  set name(value) {
+    this.setAttribute("name", value);
+  }
+
   constructor() {
     super([path.join(dir, "global.css"), path.join(dir, "inputGroup.css")]);
+    this.internals = this.attachInternals();
   }
 
   connectedCallback() {
@@ -66,6 +77,11 @@ export default class InputGroup extends BaseCustomElement {
     }
 
     input.attr("id", id);
+    input.attr("name", this.name);
+
+    input.addEventListener("input", () => {
+      this.internals.setFormValue(input.value);
+    });
 
     this.inputPlaceholder &&
       input.setAttribute("placeholder", this.inputPlaceholder);

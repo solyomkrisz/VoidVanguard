@@ -1,9 +1,15 @@
 import BaseCustomElement from "/ui/component/BaseCustomElement.js";
-import _ from "/ui/component/InputGroup.js";
+import _ from "/ui/component/SmartFormWrapper.js";
+import _1 from "/ui/component/InputGroup.js";
 import { dir, element, text } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import * as net from "/common/network.js";
 import State from "/state/State.js";
+
+const method = {
+  update: "PATCH",
+  create: "POST",
+};
 
 export default class ProfileForm extends BaseCustomElement {
   static get observedAttributes() {
@@ -45,9 +51,17 @@ export default class ProfileForm extends BaseCustomElement {
         .attr("input-placeholder", "Ez a profilom..."),
     );
 
-    this.add(form);
+    form.appendChild(element("button", text("Módosítások mentése")));
 
-    form.addEventListener("submit", () => {});
+    this.add(
+      element("smart-form-wrapper", form)
+        .attr("url", "/api/profiles")
+        .attr("method", method[this.action]),
+    );
+  }
+
+  onResponse(response) {
+    console.log(response);
   }
 }
 
