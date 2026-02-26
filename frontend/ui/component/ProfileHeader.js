@@ -1,5 +1,6 @@
 import BaseCustomElement from "/ui/component/BaseCustomElement.js";
 import _ from "/ui/component/FriendshipControlButton.js";
+import _1 from "/ui/component/ProfileFormToggle.js";
 import { dir, element, text } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import * as net from "/common/network.js";
@@ -36,10 +37,16 @@ export default class ProfileHeader extends BaseCustomElement {
     this.add(element("div", e.displayName, e.description));
 
     const friendButton = this.add(element("friendship-control-button").styl("display", "none"));
+    const toggleButton = this.add(element("profile-form-toggle").styl("display", "none"));
+
+    this.add(element("div", friendButton, toggleButton));
 
     userState.sub("username", (_, value) => {
       if (value) friendButton.styl("display", "block");
       else friendButton.styl("display", "none");
+
+      if (value) toggleButton.styl("display", "block");
+      else toggleButton.styl("display", "none");
     });
   }
 }

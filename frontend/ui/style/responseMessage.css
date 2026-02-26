@@ -1,0 +1,7 @@
+:host {
+  color: green;
+}
+
+:host(.error) {
+  color: red;
+}

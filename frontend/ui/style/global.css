@@ -9,3 +9,7 @@
 :host {
   display: block;
 }
+
+:host > button {
+  width: 100%;
+}

@@ -1,14 +1,20 @@
-import * as UI from "../UI.js";
+import { dir, element, text } from "../UI.js";
 import BaseCustomElement from "./BaseCustomElement.js";
 import userState from "../../state/user.js";
 
 export default class LogoutButton extends BaseCustomElement {
   constructor() {
     super();
-    this.build();
   }
+
+  connectedCallback() {
+    if (this._initialized) return;
+    this.build();
+    this._initialized = true;
+  }
+
   build() {
-    const button = this.add(element("button", UI.text("Kijelentkezés")));
+    const button = this.add(element("button", text("Kijelentkezés")));
 
     button.addEventListener("click", async () => {
       if (!localStorage.getItem("access_token")) return;

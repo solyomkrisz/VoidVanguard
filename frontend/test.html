@@ -122,7 +122,7 @@
           e.preventDefault();
 
           const result = await net.send("/api/users", {
-            method: "PATCH",
+            method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(extractForm(e.srcElement)),
           });

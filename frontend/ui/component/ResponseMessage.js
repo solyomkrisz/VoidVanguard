@@ -5,9 +5,12 @@ import { path } from "/common/common.js";
 import * as net from "/common/network.js";
 import State from "/state/State.js";
 
-export default class ErrorMessage extends BaseCustomElement {
+export default class ResponseMessage extends BaseCustomElement {
   constructor() {
-    super([path.join(dir, "global.css"), path.join(dir, "errorMessage.css")]);
+    super([
+      path.join(dir, "global.css"),
+      path.join(dir, "responseMessage.css"),
+    ]);
     this.elements = {};
   }
 
@@ -21,11 +24,20 @@ export default class ErrorMessage extends BaseCustomElement {
     this.elements.message = this.add(element("p", text("Error Message!")));
   }
 
-  set(error) {
-    const { message, code } = error;
-
+  setMessage(message) {
     this.elements.message.textContent = message;
+  }
+
+  from(response) {
+    this.hidden = false;
+
+    if (!response || (response && !response.success)) {
+      this.setAttribute("class", "error");
+      this.setMessage(response.result.message);
+    } else {
+      this.setMessage(response.message);
+    }
   }
 }
 
-window.customElements.define("error-message", ErrorMessage);
+window.customElements.define("response-message", ResponseMessage);

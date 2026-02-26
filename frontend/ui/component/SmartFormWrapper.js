@@ -1,6 +1,6 @@
 import BaseCustomElement from "/ui/component/BaseCustomElement.js";
 import _ from "/ui/component/InputGroup.js";
-import _2 from "/ui/component/ErrorMessage.js";
+import _2 from "/ui/component/ResponseMessage.js";
 import { dir, element, text } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import * as net from "/common/network.js";
@@ -43,7 +43,9 @@ export default class SmartFormWrapper extends BaseCustomElement {
     if (this._initialized) return;
 
     this.add(element("slot"));
-    const error = this.add(element("error-message"));
+    const responseMessage = this.add(
+      element("response-message").attr("hidden", ""),
+    );
 
     this.querySelector("form").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -55,7 +57,7 @@ export default class SmartFormWrapper extends BaseCustomElement {
         body: formData,
       });
 
-      response && !response.success && error.set(response.result);
+      responseMessage.from(response);
 
       try {
         document.querySelector(this.target).onResponse(response);

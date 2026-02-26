@@ -6,6 +6,12 @@
   background-color: gray;
 }
 
+:host > div {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
 img {
   width: 128px;
   height: 128px;
