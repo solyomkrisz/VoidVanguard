@@ -63,6 +63,8 @@ class Profiles extends Table {
     } catch (_) {
       is_blocked = true;
     }
+
+    const all_friends = await Friends.getAll(request);
     
     if (
       id === request?.user?.id ||
@@ -70,10 +72,10 @@ class Profiles extends Table {
       visibility === "public" ||
       request?.user?.role >= Role.ADMIN
     ) {
-      return { user_id, avatar, display_name, description, friendship_status, is_blocked };
+      return { user_id, avatar, display_name, description, friendship_status, is_blocked, all_friends: [{ avatar: "png.png", name: "hello123"}] };
     }
 
-    return { user_id, avatar, display_name, description: "", friendship_status, is_blocked };
+    return { user_id, avatar, display_name, description: "", friendship_status, is_blocked, all_friends: [{ avatar: "png.png", name: "hello123" }] };
   }
 
   async create({ targetUser: { id, role }, body }) {

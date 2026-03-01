@@ -1,9 +1,10 @@
-import ContextConsumerElement from "/ui/component/core/ContextConsumerElement.js";
+import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import _ from "/ui/component/form/InputGroup.js";
 import _1 from "/ui/component/form/SmartFormWrapper.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import State from "/state/State.js";
+import userState from "/state/user.js";
 
 function getButtonText(status) {
   switch (status) {
@@ -16,26 +17,25 @@ function getButtonText(status) {
   }
 }
 
-export default class FriendshipControlButton extends ContextConsumerElement {
+export default class FriendshipToggle extends BaseCustomElement {
   constructor() {
-    super([path.join(dir, "global.css")]);
+    super([path.join(dir, "global.css"), path.join(dir, "profile.css")]);
   }
 
   connectedCallback() {
     if (this._initialized) return;
 
     this.build();
-    this.connect();
 
     this._initialized = true;
   }
 
   build() {
     this.setShadowInnerHTML(`
-      <smart-form-wrapper url="/api/friends/" target="remote-state-provider">
+      <smart-form-wrapper url="/api/friends/" refresh-target="remote-state-provider" response-target="toast-manager">
         <form>
           <input type="hidden" name="userId" />
-          <button>Barát hozzáadása</button>
+          <button></button>
         </form>
       </smart-form-wrapper>
     `);
@@ -47,12 +47,21 @@ export default class FriendshipControlButton extends ContextConsumerElement {
           input            = this.queryShadowSelector("input"),
           button           = this.queryShadowSelector("button");
 
-    state.sub("user_id", (_, value) => input.value = value);
+    state.sub("user_id", (_, value) => {
+      value && (input.value = value);
+    });
+
+    State.multiSubscribe(
+      [(a) => userState.sub("id", a), (a) => state.sub("user_id", a), (a) => state.sub("is_blocked", a)],
+      (uid, pid, isBlocked) => {
+        this.hidden = !((uid && uid !== pid) && !isBlocked);
+      }
+    );
 
     State.multiSubscribe(
       [(a) => state.sub("friendship_status", a), (a) => state.sub("is_blocked", a)],
       (friendshipStatus, isBlocked) => {
-        if (isBlocked) return; // ProfileHeader hides it so no point in updating it
+        if (this.hidden || isBlocked) return;
 
         if (friendshipStatus !== "not-friends") {
           smartFormWrapper.method = "DELETE";
@@ -67,7 +76,4 @@ export default class FriendshipControlButton extends ContextConsumerElement {
   }
 }
 
-window.customElements.define(
-  "friendship-control-button",
-  FriendshipControlButton,
-);
+window.customElements.define("friendship-toggle", FriendshipToggle);

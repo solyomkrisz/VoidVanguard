@@ -38,6 +38,7 @@ export default class ProfileForm extends BaseCustomElement {
         url="/api/profiles"
         method="${method[this.action]}"
         target="remote-state-provider"
+        show-response-message
       >
         <form>
           <input-group

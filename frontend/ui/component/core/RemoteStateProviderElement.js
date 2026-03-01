@@ -1,8 +1,5 @@
 import BaseCustomElement from "./BaseCustomElement.js";
-import _1 from "/ui/component/profile/ProfileHeader.js";
-import _ from "/ui/component/profile/FriendshipControlButton.js";
 import * as net from "/common/network.js";
-import userState from "/state/user.js";
 import State from "/state/State.js";
 
 export default class RemoteStateProviderElement extends BaseCustomElement {
@@ -49,6 +46,10 @@ export default class RemoteStateProviderElement extends BaseCustomElement {
   onResponse(response) {
     if (!response || !response?.success) return;
 
+    this.load();
+  }
+
+  refresh() {
     this.load();
   }
 }

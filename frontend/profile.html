@@ -3,17 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/global.css" />
+    <link rel="stylesheet" href="/ui/style/profile.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
     <title>Profil</title>
-    <style>
-      body {
-        background: #333;
-      }
-    </style>
   </head>
   <body>
-    <remote-state-provider>
-      <profile-header state-provider="remote-state-provider"></profile-header>
+    <remote-state-provider id="profile">
+      <div class="profileHeader">
+        <state-link class="profileError">
+          <div subscribe-to="user_id" hide="parent" reversed-behaviour>
+            <h2>Profile not found!</h2>
+          </div>
+        </state-link>
+
+        <state-link id="profileContent">
+          <img
+            class="avatar"
+            subscribe-to="avatar"
+            subscribe-with="src"
+            hide="#profileContent"
+          />
+
+          <div>
+            <span
+              subscribe-to="display_name"
+              subscribe-with="textContent"
+              hide="#profileContent"
+            ></span>
+
+            <span
+              subscribe-to="description"
+              subscribe-with="textContent"
+              hide="#profileContent"
+            ></span>
+          </div>
+        </state-link>
+
+        <state-link>
+          <span subscribe-to="user_id" hide="parent"></span>
+          <friendship-toggle></friendship-toggle>
+          <user-block-toggle></user-block-toggle>
+          <profile-form-toggle></profile-form-toggle>
+        </state-link>
+      </div>
+
+      <div class="profileBody">
+        <div></div>
+        <div>
+          <div class="friendListTitle">Barátlista</div>
+
+          <state-link>
+            <collection-view items-source="all_friends" class="friendList">
+              <template>
+                <div class="item">
+                  <img data-bind="avatar" bind-target="src" />
+                  <span data-bind="name"></span>
+                </div>
+              </template>
+            </collection-view>
+          </state-link>
+        </div>
+      </div>
     </remote-state-provider>
+
+    <toast-manager></toast-manager>
 
     <fullscreen-overlay hidden>
       <profile-form action="update"></profile-form>
@@ -26,6 +80,21 @@
       document.querySelector("remote-state-provider").src =
         "/api/profiles/" +
         window.location.pathname.split("/").filter(Boolean)[1];
+
+      const div = document.createElement("div");
+      div.setAttribute("subscribe-to", "user_id");
+      div.setAttribute("subscribe-with", "textContent");
+
+      // setTimeout(() => {
+      //   const parent = document.querySelectorAll("state-link")[2];
+      //   console.log(parent);
+      //   parent.appendChild(div);
+      // }, 1000);
+
+      // const toastManager = document.querySelector("toast-manager");
+      // console.log(toastManager);
+      // toastManager.schedule("This is a test toast!");
+      // toastManager.schedule("This is a test toast! 222", 1500);
     </script>
   </body>
 </html>

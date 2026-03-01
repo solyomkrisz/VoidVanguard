@@ -7,7 +7,13 @@ import * as net from "/common/network.js";
 
 export default class SmartFormWrapper extends BaseCustomElement {
   static get observedAttributes() {
-    return ["url", "method", "target"];
+    return [
+      "url",
+      "method",
+      "refresh-target",
+      "response-target",
+      "show-response-message",
+    ];
   }
 
   get url() {
@@ -26,12 +32,28 @@ export default class SmartFormWrapper extends BaseCustomElement {
     this.setAttribute("method", value);
   }
 
-  get target() {
-    return this.getAttribute("target");
+  get refreshTarget() {
+    return this.getAttribute("refresh-target");
   }
 
-  set target(value) {
-    this.setAttribute("target", value);
+  set refreshTarget(value) {
+    this.setAttribute("refresh-target", value);
+  }
+
+  get responseTarget() {
+    return this.getAttribute("response-target");
+  }
+
+  set responseTarget(value) {
+    this.setAttribute("response-target", value);
+  }
+
+  get showResponseMessage() {
+    return this.hasAttribute("show-response-message");
+  }
+
+  set showResponseMessage(value) {
+    this.setAttribute("show-response-message", value);
   }
 
   constructor() {
@@ -60,12 +82,20 @@ export default class SmartFormWrapper extends BaseCustomElement {
         body: formData,
       });
 
-      responseMessage.from(response);
+      if (this.showResponseMessage) {
+        responseMessage.from(response);
+      }
 
       try {
-        document.querySelector(this.target).onResponse(response);
+        document.querySelector(this.responseTarget).onResponse(response);
       } catch (error) {
         console.error("Unable to send response to target.");
+      }
+
+      try {
+        document.querySelector(this.refreshTarget).refresh();
+      } catch (error) {
+        console.error("Unable to refresh target.");
       }
     });
 

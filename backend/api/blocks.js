@@ -4,6 +4,7 @@ const Blocks = require("../sql/table/Blocks.js");
 const { checkSchema, validationResult } = require("express-validator");
 const validator = require("../validator/block.js");
 const {
+  upload,
   createResponse,
   authenticate,
   modifyTargetUser,
@@ -46,6 +47,7 @@ router.post(
   "/",
   authenticate(),
   modifyTargetUser(),
+  upload.none(),
   validator.POST,
   async (request, response) => {
     if (!request.valid) {
@@ -78,6 +80,7 @@ router.delete(
   "/",
   authenticate(),
   modifyTargetUser(),
+  upload.none(),
   validator.POST,
   async (request, response) => {
     if (!request.valid) {

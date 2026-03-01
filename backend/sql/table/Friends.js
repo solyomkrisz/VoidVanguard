@@ -92,15 +92,19 @@ class Friends extends Table {
     return rows;
   }
 
-  async getAll({ targetUser: { id } }) {
+  async getAll(request) {
+    const _id =
+      request?.params?.id || request?.body?.userId || request?.targetUser.id;
+
     const [rows] = await execute(
       `
         SELECT initiator_id FROM friends WHERE recipient_id = ? AND status = 'accepted'
         UNION
         SELECT recipient_id FROM friends WHERE initiator_id = ? AND status = 'accepted'
       `,
-      [id, id],
+      [_id, _id],
     );
+
     return rows;
   }
 }

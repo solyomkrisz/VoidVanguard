@@ -6,9 +6,7 @@ export default class State {
       initializer((_, value) => {
         values[index] = value;
 
-        if (values.every((value) => value !== undefined)) {
-          combinedListener(...values);
-        }
+        combinedListener(...values);
       });
     });
   }
@@ -59,9 +57,11 @@ export default class State {
 
     listeners.add(listener);
 
-    if (value !== undefined) {
-      listener(key, value);
-    }
+    // if (value !== undefined) {
+    //   listener(key, value);
+    // }
+
+    listener(key, value);
 
     return () => listeners.delete(listener);
   }
