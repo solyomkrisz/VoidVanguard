@@ -2,9 +2,10 @@ const Table = require("../Table.js");
 const Column = require("../Column.js");
 const CustomError = require("../../common/CustomError.js");
 const { execute } = require("../database.js");
-const { isFriend } = require("../../common/common.js");
 const Role = require("../../common/Role.js");
 const Permission = require("../../common/Permission.js");
+const Blocks = require("./Blocks.js");
+const Friends = require("./Friends.js");
 
 class Profiles extends Table {
   constructor() {
@@ -44,7 +45,7 @@ class Profiles extends Table {
     const { id } = request.params;
 
     const [rows] = await execute(
-      "SELECT avatar, display_name, description, visibility FROM profiles WHERE user_id = ?",
+      "SELECT user_id, avatar, display_name, description, visibility FROM profiles WHERE user_id = ?",
       [id],
     );
 
@@ -52,22 +53,30 @@ class Profiles extends Table {
       throw CustomError.PROFILE_NOT_FOUND;
     }
 
-    const { avatar, display_name: displayName, description, visibility } = rows[0];
+    const { user_id, avatar, display_name, description, visibility } = rows[0];
 
-    const _isFriend = await isFriend(request);
+    const friendship_status = await Friends.status(request);
+    let is_blocked = false;
 
+    try {
+      await Blocks.exists(request);
+    } catch (_) {
+      is_blocked = true;
+    }
+    
     if (
-      (visibility === "friends-only" && _isFriend) ||
+      id === request?.user?.id ||
+      (visibility === "friends-only" && friendship_status === "accepted") ||
       visibility === "public" ||
       request?.user?.role >= Role.ADMIN
     ) {
-      return { avatar, displayName, description };
+      return { user_id, avatar, display_name, description, friendship_status, is_blocked };
     }
 
-    return { avatar, displayName, description: "" };
+    return { user_id, avatar, display_name, description: "", friendship_status, is_blocked };
   }
 
-  async create({ targetUser: { sub: id, role }, body }) {
+  async create({ targetUser: { id, role }, body }) {
     let query = "INSERT INTO profiles (user_id, ";
     let placeholders = "?, ";
     const values = [id];
@@ -88,7 +97,7 @@ class Profiles extends Table {
     return result;
   }
 
-  async update({ targetUser: { sub: id, role }, body }) {
+  async update({ targetUser: { id, role }, body }) {
     const data = await this._select(id);
 
     let query = "UPDATE profiles SET ";
@@ -118,7 +127,7 @@ class Profiles extends Table {
     return result;
   }
 
-  async delete({ targetUser: { sub: id } }) {
+  async delete({ targetUser: { id } }) {
     const [result] = await execute("DELETE FROM profiles WHERE user_id = ?", [
       id,
     ]);

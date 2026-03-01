@@ -1,9 +1,7 @@
-import BaseCustomElement from "/ui/component/BaseCustomElement.js";
-import _ from "/ui/component/InputGroup.js";
+import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import _ from "/ui/component/form/InputGroup.js";
 import { dir, element, text } from "/ui/UI.js";
 import { path } from "/common/common.js";
-import * as net from "/common/network.js";
-import State from "/state/State.js";
 
 export default class ResponseMessage extends BaseCustomElement {
   constructor() {
@@ -21,7 +19,7 @@ export default class ResponseMessage extends BaseCustomElement {
   }
 
   build() {
-    this.elements.message = this.add(element("p", text("Error Message!")));
+    this.elements.message = this.appendShadowChild(element("p"));
   }
 
   setMessage(message) {
@@ -33,10 +31,11 @@ export default class ResponseMessage extends BaseCustomElement {
 
     if (!response || (response && !response.success)) {
       this.setAttribute("class", "error");
-      this.setMessage(response.result.message);
     } else {
-      this.setMessage(response.message);
+      this.setAttribute("class", "");
     }
+
+    this.setMessage(response.message);
   }
 }
 

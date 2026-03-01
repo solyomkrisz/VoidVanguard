@@ -5,6 +5,7 @@ const { checkSchema, validationResult } = require("express-validator");
 const validator = require("../validator/profile.js");
 const CustomError = require("../common/CustomError.js");
 const {
+  upload,
   createResponse,
   authenticate,
   modifyTargetUser,
@@ -14,24 +15,33 @@ const {
   handleSequelizeUniqueConstraintError,
 } = require("../common/common.js");
 
-router.get("/:id", validator.GET, async (request, response) => {
-  try {
-    if (!request.valid) throw CustomError.INVALID_REQUEST;
+router.get(
+  "/:id",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  validator.GET,
+  async (request, response) => {
+    try {
+      if (!request.valid) throw CustomError.INVALID_REQUEST;
 
-    const result = await Profiles.select(request);
+      const result = await Profiles.select(request);
 
-    response
-      .status(200)
-      .json(createResponse(true, result, "Profile fetched successfully"));
-  } catch (error) {
-    handleCaughtError(response, error);
-  }
-});
+      response
+        .status(200)
+        .json(createResponse(true, result, "Profile fetched successfully"));
+    } catch (error) {
+      handleCaughtError(response, error);
+    }
+  },
+);
 
 router.post(
   "/",
   authenticate(),
   modifyTargetUser(),
+  upload.none(),
   checkSchema(validator.POST),
   async (request, response) => {
     const errors = validationResult(request);
@@ -61,6 +71,7 @@ router.patch(
   "/",
   authenticate(),
   modifyTargetUser(),
+  upload.none(),
   checkSchema(validator.PATCH),
   async (request, response) => {
     const errors = validationResult(request);

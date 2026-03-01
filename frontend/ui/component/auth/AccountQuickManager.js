@@ -1,8 +1,8 @@
-import { dir, element, text } from "../UI.js";
-import { path } from "../../common/common.js";
-import BaseCustomElement from "./BaseCustomElement.js";
-import _ from "./LogoutButton.js";
-import userState from "../../state/user.js";
+import { dir, element, text } from "../../UI.js";
+import { path } from "../../../common/common.js";
+import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import _ from "/ui/component/auth/LogoutButton.js";
+import userState from "../../../state/user.js";
 
 export default class AccountQuickManager extends BaseCustomElement {
   constructor() {
@@ -17,8 +17,10 @@ export default class AccountQuickManager extends BaseCustomElement {
   }
 
   build() {
-    const username = this.add(element("span", text("Logged out")));
-    const logoutButton = this.add(
+    const username = this.appendShadowChild(
+      element("span", text("Logged out")),
+    );
+    const logoutButton = this.appendShadowChild(
       element("logout-button").styl("display", "none"),
     );
 

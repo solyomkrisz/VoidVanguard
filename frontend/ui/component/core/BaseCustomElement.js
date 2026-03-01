@@ -1,5 +1,3 @@
-import { element } from "../UI.js";
-
 export default class BaseCustomElement extends HTMLElement {
   static STYLE_CACHE = new Map();
   static PENDING_FETCHES = new Map();
@@ -53,7 +51,15 @@ export default class BaseCustomElement extends HTMLElement {
     }
   }
 
-  add(e) {
-    return this.shadowRoot.appendChild(e);
+  setShadowInnerHTML(string) {
+    this.shadowRoot.innerHTML = string;
+  }
+
+  queryShadowSelector(selector) {
+    return this.shadowRoot.querySelector(selector);
+  }
+
+  appendShadowChild(child) {
+    return this.shadowRoot.appendChild(child);
   }
 }

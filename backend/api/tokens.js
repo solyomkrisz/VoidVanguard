@@ -29,13 +29,13 @@ router.get("/", async (request, response) => {
     return response.status(401).json(createResponse(false, { access_token: "" }, "Invalid or expired refresh token"));
   }
 
-  if (!payload.sub) {
+  if (!payload.id) {
     clearRefreshTokenCookie(response);
     return response.status(401).json(createResponse(false, { access_token: "" }, "Invalid refresh token payload"));
   }
 
   try {
-    await RefreshTokens.find(payload.sub, token);
+    await RefreshTokens.find(payload.id, token);
   } catch (error) {
     console.log(error);
     return response.status(400).json(createResponse(false, { access_token: "" }, "Unauthorized access, invalid refresh token"));
@@ -44,7 +44,7 @@ router.get("/", async (request, response) => {
   let user = null;
 
   try { 
-    user = await Users.payload(payload.sub);
+    user = await Users.payload(payload.id);
   } 
   catch (error) {
     return response.status(500).json(createResponse(false, { access_token: "" }, "Unexpected error occurred during token verification"));

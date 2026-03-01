@@ -15,7 +15,7 @@ class Blocks extends Table {
   }
 
   async exists(request) {
-    const a_id = request?.targetUser.sub;
+    const a_id = request?.targetUser.id;
     const b_id = request?.body?.userId || request?.params?.id;
 
     if (!a_id || !b_id) return false;
@@ -39,7 +39,7 @@ class Blocks extends Table {
     return false;
   }
 
-  async create({ targetUser: { sub: id }, body: { userId } }) {
+  async create({ targetUser: { id }, body: { userId } }) {
     const [result] = await execute(
       "INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)",
       [id, userId],
@@ -47,7 +47,7 @@ class Blocks extends Table {
     return result;
   }
 
-  async delete({ targetUser: { sub: id }, body: { userId } }) {
+  async delete({ targetUser: { id }, body: { userId } }) {
     const [result] = await execute(
       "DELETE FROM blocks WHERE blocker_id = ? AND blocked_id = ?",
       [id, userId],
@@ -55,7 +55,7 @@ class Blocks extends Table {
     return result;
   }
 
-  async getAllBlocked({ targetUser: { sub: id } }) {
+  async getAllBlocked({ targetUser: { id } }) {
     const [rows] = await execute(
       "SELECT blocked_id FROM blocks WHERE blocker_id = ?",
       [id],

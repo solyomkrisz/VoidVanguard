@@ -5,6 +5,7 @@ const Blocks = require("../sql/table/Blocks.js");
 const { checkSchema, validationResult } = require("express-validator");
 const validator = require("../validator/friend.js");
 const {
+  upload,
   createResponse,
   authenticate,
   modifyTargetUser,
@@ -18,6 +19,7 @@ router.post(
   "/",
   authenticate(),
   modifyTargetUser(),
+  upload.none(),
   checkSchema(validator.POST),
   async (request, response) => {
     const errors = validationResult(request);
@@ -52,6 +54,7 @@ router.patch(
   "/",
   authenticate(),
   modifyTargetUser(),
+  checkSchema(validator.POST),
   async (request, response) => {
     try {
       if ((await Friends.accept(request)).affectedRows === 0) {
@@ -75,6 +78,7 @@ router.delete(
   "/",
   authenticate(),
   modifyTargetUser(),
+  upload.none(),
   async (request, response) => {
     try {
       if ((await Friends.delete(request)).affectedRows === 0) {

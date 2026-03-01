@@ -46,8 +46,8 @@ router.post(
     const refresh_token = Token.get(payload, iat, exp, process.env.REFRESH_TOKEN_SECRET);
 
     try {
-      await RefreshTokens.revokeAll(payload.sub);
-      await RefreshTokens.save(payload.sub, refresh_token, exp, iat);
+      await RefreshTokens.revokeAll(payload.id);
+      await RefreshTokens.save(payload.id, refresh_token, exp, iat);
     } catch (error) {
       return handleCaughtError(response, error);
     }

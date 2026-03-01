@@ -11,32 +11,21 @@
     </style>
   </head>
   <body>
-    <profile-container>
-      <profile-header></profile-header>
-    </profile-container>
+    <remote-state-provider>
+      <profile-header state-provider="remote-state-provider"></profile-header>
+    </remote-state-provider>
 
-    <profile-form action="update"></profile-form>
-
-    <smart-form-wrapper
-      url="/api/profiles"
-      method="PATCH"
-      target="profile-form"
-    >
-      <form>
-        <input-group
-          input-type="text"
-          input-placeholder="Profilnév"
-          label="Profilnév"
-          name="displayName"
-        ></input-group>
-        <button type="submit">Módosítások mentése</button>
-      </form>
-    </smart-form-wrapper>
+    <fullscreen-overlay hidden>
+      <profile-form action="update"></profile-form>
+    </fullscreen-overlay>
 
     <script type="module" src="/ui/initcomponents.js"></script>
     <script type="module">
       import { onDOMContentLoaded } from "/common/common.js";
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+      document.querySelector("remote-state-provider").src =
+        "/api/profiles/" +
+        window.location.pathname.split("/").filter(Boolean)[1];
     </script>
   </body>
 </html>

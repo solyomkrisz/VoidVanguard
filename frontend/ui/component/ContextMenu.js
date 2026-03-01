@@ -81,7 +81,7 @@ export default class ContextMenu extends HTMLElement {
       new CustomEvent("context-menu-active", {
         bubbles: true,
         composed: true,
-      })
+      }),
     );
   }
 
@@ -95,7 +95,7 @@ export default class ContextMenu extends HTMLElement {
       new CustomEvent("context-menu-inactive", {
         bubbles: true,
         composed: true,
-      })
+      }),
     );
 
     this.source = null;

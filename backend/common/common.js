@@ -4,6 +4,20 @@ const CustomError = require("./CustomError.js");
 const Role = require("./Role.js");
 const Friends = require("../sql/table/Friends.js");
 
+const multer = require("multer");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: (request, file, callback) => {
+    callback(null, path.join(__dirname, "../uploads"));
+  },
+  filename: (request, file, callback) => {
+    callback(null, Date.now() + "-" + file.originalname); // egyedi név: dátum - file eredeti neve
+  },
+});
+
+const upload = multer({ storage });
+
 function createResponse(success, result, message = null) {
   return {
     success,
@@ -94,7 +108,7 @@ function modifyTargetUser(requiredRole = Role.ADMIN) {
       return next();
     }
     request.targetUser = {
-      sub: targetUserId,
+      id: targetUserId,
     };
     next();
   };
@@ -102,17 +116,6 @@ function modifyTargetUser(requiredRole = Role.ADMIN) {
 
 function isValidUUIDv4(id) {
   return validate(id) && version(id) === 4;
-}
-
-async function isFriend(request) {
-  const a_id = request?.user?.sub;
-  const b_id = request?.params?.id;
-
-  if (!a_id || !b_id) {
-    return false;
-  }
-
-  return Friends.exists(a_id, b_id);
 }
 
 function handleCaughtError(response, error) {
@@ -147,13 +150,13 @@ function handleSequelizeUniqueConstraintError(response, message) {
 }
 
 module.exports = {
+  upload,
   createResponse,
   clearRefreshTokenCookie,
   authenticate,
   authorize,
   modifyTargetUser,
   isValidUUIDv4,
-  isFriend,
   handleCaughtError,
   handleExpressValidatorErrors,
   isSequelizeUniqueConstraintError,

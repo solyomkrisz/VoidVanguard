@@ -1,10 +1,34 @@
-import BaseCustomElement from "/ui/component/BaseCustomElement.js";
-import _ from "/ui/component/FriendshipControlButton.js";
+import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { dir, element, text } from "/ui/UI.js";
 import { path } from "/common/common.js";
-import * as net from "/common/network.js";
-import userState from "/state/user.js";
-import State from "/state/State.js";
+
+function getInputElement(type) {
+  switch (type) {
+    case "textarea":
+      return type;
+    case "select":
+      return type;
+    default:
+      return "input";
+  }
+}
+
+function isRegularInput(inputElement) {
+  return inputElement === "input";
+}
+
+function createSelectInner(options) {
+  let result = "";
+
+  for (const [content, value] of options
+    .substring(1, options.length - 1)
+    .split("','")
+    .map((e) => e.split("'-'"))) {
+    result += `<option value="${value}">${content}</option>`;
+  }
+
+  return result;
+}
 
 export default class InputGroup extends BaseCustomElement {
   static formAssociated = true;
@@ -66,25 +90,24 @@ export default class InputGroup extends BaseCustomElement {
 
   build() {
     const id = "input-" + crypto.randomUUID();
+    const inputElement = getInputElement(this.inputType);
 
-    this.label && this.add(element("label", text(this.label)).attr("for", id));
-    let input;
+    this.setShadowInnerHTML(`
+      ${this.label ? `<label for="${id}">${this.label}</label>` : ""}
+      <${inputElement}
+        ${isRegularInput(inputElement) ? `type="${this.inputType}"` : ""}
+        name="${this.name}"
+        autocomplete="off"
+        id="${id}"
+        ${this.inputPlaceholder ? `placeholder="${this.inputPlaceholder}"` : ""}
+      >
+        ${inputElement === "select" ? createSelectInner(this.options) : ""}
+      </${inputElement}>
+    `);
 
-    if (this.inputType === "textarea") {
-      input = this.add(element("textarea"));
-    } else {
-      input = this.add(element("input").attr("type", this.inputType));
-    }
-
-    input.attr("id", id);
-    input.attr("name", this.name);
-
-    input.addEventListener("input", () => {
-      this.internals.setFormValue(input.value);
+    this.queryShadowSelector(inputElement).addEventListener("input", (e) => {
+      this.internals.setFormValue(e.currentTarget.value);
     });
-
-    this.inputPlaceholder &&
-      input.setAttribute("placeholder", this.inputPlaceholder);
   }
 }
 

@@ -46,7 +46,7 @@ class Users extends Table {
     return result;
   }
 
-  async delete({ targetUser: { sub: id } }) {
+  async delete({ targetUser: { id } }) {
     const [result] = await execute("DELETE FROM users WHERE id = ?", [id]);
     return result;
   }
@@ -67,7 +67,7 @@ class Users extends Table {
 
     const data = rows[0];
 
-    return { sub: data.id, username: data.username, role: data.role };
+    return { id: data.id, username: data.username, role: data.role };
   }
 
   async _select(id) {
@@ -78,7 +78,7 @@ class Users extends Table {
     return rows[0];
   }
 
-  async update({ targetUser: { sub: id, role }, body }) {
+  async update({ targetUser: { id, role }, body }) {
     const data = await this._select(id);
 
     let query = "UPDATE users SET ";

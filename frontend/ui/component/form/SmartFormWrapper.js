@@ -1,10 +1,9 @@
-import BaseCustomElement from "/ui/component/BaseCustomElement.js";
-import _ from "/ui/component/InputGroup.js";
-import _2 from "/ui/component/ResponseMessage.js";
+import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import _ from "./InputGroup.js";
+import _2 from "/ui/component/feedback/ResponseMessage.js";
 import { dir, element, text } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import * as net from "/common/network.js";
-import State from "/state/State.js";
 
 export default class SmartFormWrapper extends BaseCustomElement {
   static get observedAttributes() {
@@ -42,13 +41,17 @@ export default class SmartFormWrapper extends BaseCustomElement {
   connectedCallback() {
     if (this._initialized) return;
 
-    this.add(element("slot"));
-    const responseMessage = this.add(
-      element("response-message").attr("hidden", ""),
-    );
+    this.setShadowInnerHTML(`
+      <slot></slot>
+      <response-message hidden></response-message>  
+    `);
+
+    const responseMessage = this.queryShadowSelector("response-message");
 
     this.querySelector("form").addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      if (!this.method) return;
 
       const formData = new FormData(e.currentTarget);
 

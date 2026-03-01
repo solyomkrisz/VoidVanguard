@@ -1,4 +1,18 @@
 export default class State {
+  static multiSubscribe(listenerInitializers, combinedListener) {
+    const values = new Array(listenerInitializers.length);
+
+    listenerInitializers.forEach((initializer, index) => {
+      initializer((_, value) => {
+        values[index] = value;
+
+        if (values.every((value) => value !== undefined)) {
+          combinedListener(...values);
+        }
+      });
+    });
+  }
+
   constructor(initial = {}) {
     this.store = new Map();
 
@@ -9,6 +23,10 @@ export default class State {
 
   get(key) {
     return this.store.get(key);
+  }
+
+  valueOf(key) {
+    return this.store.get(key).value;
   }
 
   from(obj) {
@@ -41,7 +59,9 @@ export default class State {
 
     listeners.add(listener);
 
-    value && listener(key, value);
+    if (value !== undefined) {
+      listener(key, value);
+    }
 
     return () => listeners.delete(listener);
   }
