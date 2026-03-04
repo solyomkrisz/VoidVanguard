@@ -33,9 +33,7 @@ export default class SearchBar extends HTMLElement {
   build() {
     this.innerHTML += `
         <input type="text" autocomplete="off" placeholder="Írjon ide a kereséshez" />
-        <remote-state-provider>
-            <state-link></state-link>
-        </remote-state-provider>
+        <remote-state-provider></remote-state-provider>
     `;
 
     const template = this.querySelector("template");
@@ -46,7 +44,7 @@ export default class SearchBar extends HTMLElement {
     const collection = fragment.querySelector("collection-view");
     const stateProvider = this.querySelector("remote-state-provider");
 
-    this.querySelector("state-link").appendChild(fragment);
+    stateProvider.appendChild(fragment);
 
     const handleInput = debounce(({ target }) => {
       const value = target.value;

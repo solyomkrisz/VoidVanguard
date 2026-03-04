@@ -31,13 +31,13 @@
 
     <remote-state-provider id="profile">
       <div class="profileHeader">
-        <state-link class="profileError">
+        <div class="profileError">
           <div subscribe-to="user_id" hide="parent" reversed-behaviour>
             <h2>Profile not found!</h2>
           </div>
-        </state-link>
+        </div>
 
-        <state-link id="profileContent">
+        <div id="profileContent">
           <img
             class="avatar"
             subscribe-to="avatar"
@@ -46,32 +46,32 @@
           />
 
           <div>
-            <span
+            <div
               subscribe-to="display_name"
               subscribe-with="textContent"
               hide="#profileContent"
-            ></span>
+            ></div>
 
-            <span
+            <div
               subscribe-to="description"
               subscribe-with="textContent"
               hide="#profileContent"
-            ></span>
+            ></div>
           </div>
-        </state-link>
+        </div>
 
-        <state-link>
+        <div>
           <span subscribe-to="user_id" hide="parent"></span>
           <friendship-toggle
             refresh-target="#profile"
-            response-target="toast-manager"
+            response-target="toast-manager" subscribe
           ></friendship-toggle>
           <user-block-toggle
             refresh-target="#profile"
-            response-target="toast-manager"
+            response-target="toast-manager" subscribe
           ></user-block-toggle>
           <profile-form-toggle></profile-form-toggle>
-        </state-link>
+        </div>
       </div>
 
       <div class="profileBody">
@@ -79,8 +79,8 @@
         <div>
           <div class="friendListTitle">Barátlista</div>
 
-          <state-link>
-            <collection-view items-source="all_friends" class="friendList">
+          <div>
+            <collection-view subscribe items-source="all_friends" class="friendList">
               <template>
                 <div class="item">
                   <img data-bind="avatar" bind-target="src" />
@@ -88,7 +88,7 @@
                 </div>
               </template>
             </collection-view>
-          </state-link>
+          </div>
         </div>
       </div>
     </remote-state-provider>
