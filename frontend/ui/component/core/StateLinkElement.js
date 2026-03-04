@@ -1,7 +1,3 @@
-import BaseCustomElement from "./BaseCustomElement.js";
-import { dir } from "/ui/UI.js";
-import { path } from "/common/common.js";
-
 function getElementToHide(element) {
   const value = element.getAttribute("hide");
 
@@ -34,7 +30,7 @@ function findProvider(element, selector) {
   return null;
 }
 
-export default class StateLinkElement extends BaseCustomElement {
+export default class StateLinkElement extends HTMLElement {
   static get observedAttributes() {
     return ["state-provider"];
   }
@@ -47,8 +43,8 @@ export default class StateLinkElement extends BaseCustomElement {
     this.setAttribute("state-provider", value);
   }
 
-  constructor(paths = [path.join(dir, "global.css")]) {
-    super(paths);
+  constructor() {
+    super();
 
     this.provider = null;
     this.unsubscribers = new Map();
@@ -91,7 +87,6 @@ export default class StateLinkElement extends BaseCustomElement {
   connectedCallback() {
     if (this._initialized) return;
 
-    this.build();
     this.connect();
     this.observer.observe(this, { childList: true, subtree: true });
 
@@ -104,10 +99,6 @@ export default class StateLinkElement extends BaseCustomElement {
       this.unsubscribers.forEach((unsubscribe) => unsubscribe());
       this.unsubscribers.clear();
     }
-  }
-
-  build() {
-    this.setShadowInnerHTML("<slot></slot>");
   }
 
   connect() {

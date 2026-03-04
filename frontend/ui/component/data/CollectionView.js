@@ -20,9 +20,7 @@ export default class CollectionView extends HTMLElement {
 
   connectedCallback() {
     if (this._initialized) return;
-
     this.build();
-
     this._initialized = true;
   }
 
@@ -47,6 +45,15 @@ export default class CollectionView extends HTMLElement {
       });
       this.container.appendChild(fragment);
     }
+  }
+
+  hasItems() {
+    return !!this.container.children.length;
+  }
+
+  clear() {
+    if (!this.container) return;
+    this.container.textContent = "";
   }
 
   subscribe(state) {

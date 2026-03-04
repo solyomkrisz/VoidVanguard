@@ -20,6 +20,7 @@ export default class ProfileForm extends BaseCustomElement {
 
   set action(value) {
     this.setAttribute("action", value);
+    this.queryShadowSelector("smart-form-wrapper").method = method[this.action];
   }
 
   constructor() {

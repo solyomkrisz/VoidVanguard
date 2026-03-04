@@ -37,6 +37,40 @@ router.get(
   },
 );
 
+// for searching
+router.get(
+  "/",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  function (request, _, next) {
+    request.valid = !!(request?.query?.search && request.query.search.trim());
+    next();
+  },
+  async (request, response) => {
+    try {
+      if (!request.valid) throw CustomError.INVALID_REQUEST;
+
+      request.query.search = decodeURIComponent(request.query.search);
+
+      const result = await Profiles.like(request);
+
+      response
+        .status(200)
+        .json(
+          createResponse(
+            true,
+            { profiles: result },
+            "Search successfully completed",
+          ),
+        );
+    } catch (error) {
+      handleCaughtError(response, error);
+    }
+  },
+);
+
 router.post(
   "/",
   authenticate(),

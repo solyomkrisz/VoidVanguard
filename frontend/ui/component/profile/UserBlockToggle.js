@@ -1,4 +1,3 @@
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import _ from "/ui/component/form/InputGroup.js";
 import _1 from "/ui/component/form/SmartFormWrapper.js";
 import { dir } from "/ui/UI.js";
@@ -6,35 +5,37 @@ import { path } from "/common/common.js";
 import State from "/state/State.js";
 import userState from "/state/user.js";
 
-export default class UserBlockToggle extends BaseCustomElement {
+export default class UserBlockToggle extends HTMLElement {
   constructor() {
-    super([path.join(dir, "global.css"), path.join(dir, "profile.css")]);
+    super();
   }
 
   connectedCallback() {
     if (this._initialized) return;
-
     this.build();
-
     this._initialized = true;
   }
 
   build() {
-    this.setShadowInnerHTML(`
-      <smart-form-wrapper url="/api/blocks/" refresh-target="remote-state-provider" response-target="toast-manager">
+    this.innerHTML = `
+      <smart-form-wrapper
+        url="/api/blocks/"
+        refresh-target="${this.getAttribute("refresh-target")}"
+        response-target="${this.getAttribute("response-target")}"
+      >
         <form>
           <input type="hidden" name="userId" />
           <button></button>
         </form>
       </smart-form-wrapper>
-    `);
+    `;
   }
 
   // prettier-ignore
   subscribe(state) {
-    const smartFormWrapper = this.queryShadowSelector("smart-form-wrapper"),
-          input            = this.queryShadowSelector("input"),
-          button           = this.queryShadowSelector("button");
+    const smartFormWrapper = this.querySelector("smart-form-wrapper"),
+          input            = this.querySelector("input"),
+          button           = this.querySelector("button");
 
     state.sub("user_id", (_, value) => input.value = value);
 

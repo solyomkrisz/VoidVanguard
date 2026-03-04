@@ -1,11 +1,10 @@
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import _ from "./InputGroup.js";
 import _2 from "/ui/component/feedback/ResponseMessage.js";
 import { dir, element, text } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import * as net from "/common/network.js";
 
-export default class SmartFormWrapper extends BaseCustomElement {
+export default class SmartFormWrapper extends HTMLElement {
   static get observedAttributes() {
     return [
       "url",
@@ -57,18 +56,15 @@ export default class SmartFormWrapper extends BaseCustomElement {
   }
 
   constructor() {
-    super([path.join(dir, "global.css")]);
+    super();
   }
 
   connectedCallback() {
     if (this._initialized) return;
 
-    this.setShadowInnerHTML(`
-      <slot></slot>
-      <response-message hidden></response-message>  
-    `);
-
-    const responseMessage = this.queryShadowSelector("response-message");
+    const responseMessage = this.appendChild(
+      element("response-message").attr("hidden", ""),
+    );
 
     this.querySelector("form").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -78,7 +74,7 @@ export default class SmartFormWrapper extends BaseCustomElement {
       const formData = new FormData(e.currentTarget);
 
       const response = await net.send(this.url, {
-        method: this.method,
+        method: this.method || "GET",
         body: formData,
       });
 

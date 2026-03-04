@@ -4,6 +4,7 @@ import _2 from "./component/core/RemoteStateProviderElement.js";
 import _4 from "./component/profile/ProfileForm.js";
 import _6 from "./component/form/InputGroup.js";
 import _7 from "./component/form/SmartFormWrapper.js";
+import _20 from "./component/form/SearchBar.js";
 import _8 from "./component/feedback/ResponseMessage.js";
 import _9 from "./component/layout/FullscreenOverlay.js";
 import _10 from "./component/core/StateLinkElement.js";

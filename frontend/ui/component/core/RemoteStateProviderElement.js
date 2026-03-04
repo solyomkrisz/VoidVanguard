@@ -1,8 +1,7 @@
-import BaseCustomElement from "./BaseCustomElement.js";
 import * as net from "/common/network.js";
 import State from "/state/State.js";
 
-export default class RemoteStateProviderElement extends BaseCustomElement {
+export default class RemoteStateProviderElement extends HTMLElement {
   static get observedAttributes() {
     return ["src"];
   }
@@ -37,9 +36,6 @@ export default class RemoteStateProviderElement extends BaseCustomElement {
 
   connectedCallback() {
     if (this._initialized) return;
-
-    this.setShadowInnerHTML("<slot></slot>");
-
     this._initialized = true;
   }
 

@@ -9,6 +9,26 @@
     <title>Profil</title>
   </head>
   <body>
+    <div style="max-width: 600px; width: 100%">
+      <search-bar base-url="/api/profiles?search={value}">
+        <template>
+          <collection-view items-source="profiles">
+            <template>
+              <div class="item" onclick="searchClick(event)">
+                <div
+                  class="forClick"
+                  data-bind="user_id"
+                  bind-target="target"
+                ></div>
+                <img data-bind="avatar" bind-target="src" />
+                <div data-bind="display_name"></div>
+              </div>
+            </template>
+          </collection-view>
+        </template>
+      </search-bar>
+    </div>
+
     <remote-state-provider id="profile">
       <div class="profileHeader">
         <state-link class="profileError">
@@ -42,8 +62,14 @@
 
         <state-link>
           <span subscribe-to="user_id" hide="parent"></span>
-          <friendship-toggle></friendship-toggle>
-          <user-block-toggle></user-block-toggle>
+          <friendship-toggle
+            refresh-target="#profile"
+            response-target="toast-manager"
+          ></friendship-toggle>
+          <user-block-toggle
+            refresh-target="#profile"
+            response-target="toast-manager"
+          ></user-block-toggle>
           <profile-form-toggle></profile-form-toggle>
         </state-link>
       </div>
@@ -73,11 +99,18 @@
       <profile-form action="update"></profile-form>
     </fullscreen-overlay>
 
+    <script>
+      function searchClick(e) {
+        document.querySelector("#profile").src =
+          `/api/profiles/${e.target.target}`;
+      }
+    </script>
+
     <script type="module" src="/ui/initcomponents.js"></script>
     <script type="module">
       import { onDOMContentLoaded } from "/common/common.js";
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
-      document.querySelector("remote-state-provider").src =
+      document.querySelector("#profile").src =
         "/api/profiles/" +
         window.location.pathname.split("/").filter(Boolean)[1];
 

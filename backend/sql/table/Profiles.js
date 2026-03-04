@@ -22,6 +22,14 @@ class Profiles extends Table {
     });
   }
 
+  async like(request) {
+    const [rows] = await execute(
+      "SELECT user_id, avatar, display_name FROM profiles WHERE display_name LIKE ?",
+      [`${request.query.search}%`],
+    );
+    return rows;
+  }
+
   async exists(id) {
     const [rows] = await execute("SELECT 1 FROM profiles WHERE user_id = ?", [
       id,
