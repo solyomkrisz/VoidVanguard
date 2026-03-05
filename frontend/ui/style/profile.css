@@ -79,6 +79,10 @@ search-bar img {
   height: 128px;
 }
 
+.profileErrorContainer {
+  width: 100%;
+}
+
 .profileError {
   width: 100%;
   height: 100%;

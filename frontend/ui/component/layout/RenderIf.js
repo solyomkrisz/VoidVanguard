@@ -18,8 +18,7 @@ export default class RenderIf extends HTMLElement {
 
     this._initialized = false;
     this.evaluateCondition = null;
-    this.unsubscribe = null;
-    this.state = null;
+    this.merged = {};
     this.states = new Map();
     this.unsubscribes = new Map();
   }
@@ -35,9 +34,8 @@ export default class RenderIf extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this.unsubscribe) {
-      this.unsubscribe();
-      this.unsubscribe = null;
+    for (const [_, unsubscribe] of this.unsubscribes) {
+      unsubscribe();
     }
   }
 
@@ -65,18 +63,10 @@ export default class RenderIf extends HTMLElement {
   evaluate() {
     if (!this.evaluateCondition) return;
 
-    const merged = {};
-
-    for (const [key, state] of this.states) {
-      merged[key] = state.simpleStore;
-    }
-
-    console.log(merged);
-
     let shouldRender = false;
 
     try {
-      shouldRender = !!this.evaluateCondition(merged);
+      shouldRender = !!this.evaluateCondition(this.merged);
     } catch (_) {
       shouldRender = false;
     }
@@ -104,9 +94,11 @@ export default class RenderIf extends HTMLElement {
   }
 
   subscribeMulti(states) {
-    this.states = states;
+    this.states.set("user", userState);
 
     for (const [id, state] of states) {
+      this.states.set(id, state);
+
       this.unsubscribes.set(
         id,
         state.subscribeForAny((simpleState) => {
@@ -121,6 +113,10 @@ export default class RenderIf extends HTMLElement {
       this.subscribeMulti(state);
     } else {
       this.subscribeSingle(state);
+    }
+
+    for (const [key, state] of this.states) {
+      this.merged[key] = state.simpleStore;
     }
   }
 }

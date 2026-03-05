@@ -39,37 +39,33 @@
       </render-if>
 
       <div class="profileHeader">
-        <div class="profileError">
-          <div subscribe-to="user_id" hide="parent" reversed-behaviour>
-            <h2>Profile not found!</h2>
+        <render-if when="!local.user_id" class="profileErrorContainer">
+          <div class="profileError">
+            <div subscribe-to="user_id">
+              <h2>Profile not found!</h2>
+            </div>
           </div>
-        </div>
+        </render-if>
 
-        <div id="profileContent">
-          <img
-            class="avatar"
-            subscribe-to="avatar"
-            subscribe-with="src"
-            hide="#profileContent"
-          />
+        <render-if when="local.user_id">
+          <div id="profileContent">
+            <img class="avatar" subscribe-to="avatar" subscribe-with="src" />
 
-          <div>
-            <div
-              subscribe-to="display_name"
-              subscribe-with="textContent"
-              hide="#profileContent"
-            ></div>
-
-            <div
-              subscribe-to="description"
-              subscribe-with="textContent"
-              hide="#profileContent"
-            ></div>
+            <div>
+              <div
+                subscribe-to="display_name"
+                subscribe-with="textContent"
+              ></div>
+              <div
+                subscribe-to="description"
+                subscribe-with="textContent"
+              ></div>
+            </div>
           </div>
-        </div>
+        </render-if>
 
-        <div>
-          <span subscribe-to="user_id" hide="parent"></span>
+        <render-if when="local.user_id">
+          <span subscribe-to="user_id"></span>
           <friendship-toggle
             refresh-target="#profile"
             response-target="toast-manager"
@@ -81,7 +77,7 @@
             subscribe
           ></user-block-toggle>
           <profile-form-toggle subscribe></profile-form-toggle>
-        </div>
+        </render-if>
       </div>
 
       <div class="profileBody">
@@ -106,10 +102,23 @@
         </div>
       </div>
 
-      <fullscreen-overlay>
-        <div subscribe-to="user_id" hide="parent" reversed-behaviour></div>
-        <profile-form action="create"></profile-form>
-      </fullscreen-overlay>
+      <render-if
+        id="createProfile"
+        when="window.location.pathname.split('/').filter(Boolean)[1] === 'create'"
+      >
+        <fullscreen-overlay target="#createProfile">
+          <profile-form action="create"></profile-form>
+        </fullscreen-overlay>
+      </render-if>
+
+      <render-if
+        id="modifyProfile"
+        when="window.location.pathname.split('/').filter(Boolean)[1] === 'update'"
+      >
+        <fullscreen-overlay target="#modifyProfile">
+          <profile-form action="update"></profile-form>
+        </fullscreen-overlay>
+      </render-if>
     </remote-state-provider>
 
     <toast-manager></toast-manager>

@@ -20,6 +20,9 @@ export default class AccountQuickManager extends BaseCustomElement {
     const username = this.appendShadowChild(
       element("span", text("Logged out")),
     );
+    const profileLink = this.appendShadowChild(
+      element("a", text("Profil megtekintése")),
+    );
     const logoutButton = this.appendShadowChild(
       element("logout-button").styl("display", "none"),
     );
@@ -31,6 +34,13 @@ export default class AccountQuickManager extends BaseCustomElement {
 
         if (value) logoutButton.styl("display", "block");
         else logoutButton.styl("display", "none");
+      });
+
+      userState.sub("id", (_, value) => {
+        profileLink.setAttribute("href", "/profile/" + value);
+
+        if (value) profileLink.styl("display", "block");
+        else profileLink.styl("display", "none");
       });
     }
   }

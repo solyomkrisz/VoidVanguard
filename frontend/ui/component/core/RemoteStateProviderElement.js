@@ -1,19 +1,6 @@
 import * as net from "/common/network.js";
 import State from "/state/State.js";
 
-function getElementToHide(element) {
-  const value = element.getAttribute("hide");
-
-  if (!value) return element;
-
-  switch (value) {
-    case "parent":
-      return element.parentElement;
-    default:
-      return document.querySelector(element.getAttribute("hide"));
-  }
-}
-
 export default class RemoteStateProviderElement extends HTMLElement {
   // with as you can name the remote state so inside a multistateprovider the elements can reference it
   static get observedAttributes() {
@@ -98,19 +85,10 @@ export default class RemoteStateProviderElement extends HTMLElement {
       return;
     }
 
-    const toHide = getElementToHide(child);
-
     const unsubscribe = this.state.sub(
       child.getAttribute("subscribe-to"),
       (_, value) => {
         const targetProperty = child.getAttribute("subscribe-with");
-        const reversedBehaviour = child.hasAttribute("reversed-behaviour");
-
-        if (value !== undefined) toHide.hidden = reversedBehaviour;
-        else {
-          toHide.hidden = !reversedBehaviour;
-          return;
-        }
 
         if (targetProperty) {
           try {

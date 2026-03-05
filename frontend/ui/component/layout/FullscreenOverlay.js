@@ -4,6 +4,18 @@ import { dir, element, text } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
 export default class FullscreenOverlay extends BaseCustomElement {
+  static get observedAttributes() {
+    return ["target"];
+  }
+
+  get target() {
+    return this.getAttribute("target");
+  }
+
+  set target(value) {
+    this.setAttribute("target", value);
+  }
+
   constructor() {
     super([
       path.join(dir, "global.css"),
@@ -15,7 +27,7 @@ export default class FullscreenOverlay extends BaseCustomElement {
     if (this._initialized) return;
 
     this.setShadowInnerHTML(`
-      <toggle-button target="fullscreen-overlay">
+      <toggle-button target="${this.target}">
         <span>Bezár</span>
       </toggle-button>
       <slot></slot>
