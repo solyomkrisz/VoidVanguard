@@ -52,6 +52,8 @@ export default class RenderIf extends HTMLElement {
         `with (state) { return ${this.when} }`,
       );
 
+      this.removeAttribute("when");
+
       if (this.state) {
         this.evaluate(this.state);
       }

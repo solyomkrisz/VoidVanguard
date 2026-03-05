@@ -4,7 +4,7 @@ import State from "/state/State.js";
 export default class RemoteStateProviderElement extends HTMLElement {
   // with as you can name the remote state so inside a multistateprovider the elements can reference it
   static get observedAttributes() {
-    return ["src", "as"];
+    return ["src", "as", "method"];
   }
 
   get src() {
@@ -13,6 +13,23 @@ export default class RemoteStateProviderElement extends HTMLElement {
 
   set src(value) {
     this.setAttribute("src", value);
+    this.load();
+  }
+
+  get as() {
+    return this.getAttribute("as");
+  }
+
+  set as(value) {
+    this.setAttribute("as", value);
+  }
+
+  get method() {
+    return this.getAttribute("method");
+  }
+
+  set method(value) {
+    this.setAttribute("method", value);
     this.load();
   }
 
@@ -117,7 +134,9 @@ export default class RemoteStateProviderElement extends HTMLElement {
     if (!this.src) return;
 
     try {
-      const response = await net.send(this.src);
+      const response = await net.send(this.src, {
+        method: this.method || "GET",
+      });
 
       if (response?.success) {
         this.state.from(response.result);

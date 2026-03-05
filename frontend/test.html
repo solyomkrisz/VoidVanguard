@@ -35,6 +35,17 @@
     </style>
   </head>
   <body>
+    <multi-state-provider>
+      <remote-state-provider as="user" method="POST"></remote-state-provider>
+      <remote-state-provider as="profile"></remote-state-provider>
+      <div state="user" subscribe-to="id" subscribe-with="textContent"></div>
+      <div
+        state="profile"
+        subscribe-to="display_name"
+        subscribe-with="textContent"
+      ></div>
+    </multi-state-provider>
+
     <account-quick-manager></account-quick-manager>
     <account-quick-manager></account-quick-manager>
 
@@ -104,6 +115,19 @@
       import { extractForm, onDOMContentLoaded } from "./common/common.js";
       import * as UI from "./ui/UI.js";
       import userState from "./state/user.js";
+
+      //
+      const rsp = document.querySelector("remote-state-provider[as='user']");
+      console.log(rsp);
+      rsp.src = "/api/sessions";
+
+      const rsp2 = document.querySelector(
+        "remote-state-provider[as='profile']",
+      );
+      console.log(rsp2);
+      rsp2.src = "/api/profiles/1ac13e29-01d7-437a-93bd-d633304b482a";
+      //
+
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
 
       setTimeout(() => {
@@ -176,6 +200,12 @@
             regFormMsg.textContent = result.message;
           }
         });
+    </script>
+
+    <script>
+      // const rsp = document.querySelector("remote-state-provider");
+      // console.log(rsp);
+      // rsp.src = "/api/sessions";
     </script>
   </body>
 </html>
