@@ -15,8 +15,9 @@ function getElementToHide(element) {
 }
 
 export default class RemoteStateProviderElement extends HTMLElement {
+  // with as you can name the remote state so inside a multistateprovider the elements can reference it
   static get observedAttributes() {
-    return ["src"];
+    return ["src", "as"];
   }
 
   get src() {
@@ -48,19 +49,11 @@ export default class RemoteStateProviderElement extends HTMLElement {
         for (const node of mutation.addedNodes) {
           if (!(node instanceof HTMLElement)) continue;
           requestAnimationFrame(() => {
-            if (node.matches?.("[subscribe-to]")) {
-              this.subscribeChild(node, this.state);
-            } else if (node.matches?.("[subscribe]")) {
-              node.subscribe?.(this.state);
-            }
-
-            node.querySelectorAll("[subscribe-to]").forEach((child) => {
-              this.subscribeChild(child, this.state);
-            });
-
-            node.querySelectorAll("[subscribe]").forEach((child) => {
-              child.subscribe?.(this.state);
-            });
+            this.subscribeChild(node);
+            [
+              ...Array.from(node.querySelectorAll("[subscribe-to]")),
+              ...Array.from(node.querySelectorAll("[subscribe]")),
+            ].forEach((child) => this.subscribeChild(child));
           });
         }
       }
@@ -85,14 +78,27 @@ export default class RemoteStateProviderElement extends HTMLElement {
     }
   }
 
-  subscribeChild(element) {
-    const toHide = getElementToHide(element);
+  subscribeChild(child) {
+    if (this.unsubscribers.has(child)) {
+      return;
+    }
+
+    if (child.matches?.("[subscribe]")) {
+      queueMicrotask(() => child.subscribe?.(this.state));
+      return;
+    }
+
+    if (!child.matches?.("[subscribe-to]")) {
+      return;
+    }
+
+    const toHide = getElementToHide(child);
 
     const unsubscribe = this.state.sub(
-      element.getAttribute("subscribe-to"),
+      child.getAttribute("subscribe-to"),
       (_, value) => {
-        const targetProperty = element.getAttribute("subscribe-with");
-        const reversedBehaviour = element.hasAttribute("reversed-behaviour");
+        const targetProperty = child.getAttribute("subscribe-with");
+        const reversedBehaviour = child.hasAttribute("reversed-behaviour");
 
         if (value !== undefined) toHide.hidden = reversedBehaviour;
         else {
@@ -102,7 +108,7 @@ export default class RemoteStateProviderElement extends HTMLElement {
 
         if (targetProperty) {
           try {
-            element[targetProperty] = value;
+            child[targetProperty] = value;
           } catch (_) {
             return;
           }
@@ -110,24 +116,15 @@ export default class RemoteStateProviderElement extends HTMLElement {
       },
     );
 
-    this.unsubscribers.set(element, unsubscribe);
+    this.unsubscribers.set(child, unsubscribe);
   }
 
   subscribeChildren() {
-    for (const child of Array.from(this.querySelectorAll("[subscribe-to]"))) {
-      if (this.unsubscribers.has(child)) {
-        continue;
-      }
-
+    for (const child of [
+      ...Array.from(this.querySelectorAll("[subscribe-to]")),
+      ...Array.from(this.querySelectorAll("[subscribe]")),
+    ]) {
       this.subscribeChild(child);
-    }
-
-    for (const child of Array.from(this.querySelectorAll("[subscribe]"))) {
-      if (this.unsubscribers.has(child)) {
-        continue;
-      }
-
-      queueMicrotask(() => child.subscribe?.(this.state));
     }
   }
 

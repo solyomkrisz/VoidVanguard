@@ -14,7 +14,7 @@
         <template>
           <collection-view items-source="profiles">
             <template>
-              <div class="item" onclick="searchClick(event)">
+              <div class="item" onclick="searchResultClickHandler(event)">
                 <div
                   class="forClick"
                   data-bind="user_id"
@@ -64,13 +64,15 @@
           <span subscribe-to="user_id" hide="parent"></span>
           <friendship-toggle
             refresh-target="#profile"
-            response-target="toast-manager" subscribe
+            response-target="toast-manager"
+            subscribe
           ></friendship-toggle>
           <user-block-toggle
             refresh-target="#profile"
-            response-target="toast-manager" subscribe
+            response-target="toast-manager"
+            subscribe
           ></user-block-toggle>
-          <profile-form-toggle></profile-form-toggle>
+          <profile-form-toggle subscribe></profile-form-toggle>
         </div>
       </div>
 
@@ -80,7 +82,11 @@
           <div class="friendListTitle">Barátlista</div>
 
           <div>
-            <collection-view subscribe items-source="all_friends" class="friendList">
+            <collection-view
+              subscribe
+              items-source="all_friends"
+              class="friendList"
+            >
               <template>
                 <div class="item">
                   <img data-bind="avatar" bind-target="src" />
@@ -91,18 +97,21 @@
           </div>
         </div>
       </div>
+
+      <fullscreen-overlay>
+        <div subscribe-to="user_id" hide="parent" reversed-behaviour></div>
+        <profile-form></profile-form>
+      </fullscreen-overlay>
     </remote-state-provider>
 
     <toast-manager></toast-manager>
 
-    <fullscreen-overlay hidden>
-      <profile-form action="update"></profile-form>
-    </fullscreen-overlay>
-
     <script>
-      function searchClick(e) {
+      function searchResultClickHandler(e) {
+        document.querySelector("search-bar collection-view").hidden = true;
         document.querySelector("#profile").src =
           `/api/profiles/${e.target.target}`;
+        history.replaceState({}, "", "/profile/" + e.target.target);
       }
     </script>
 
@@ -113,21 +122,6 @@
       document.querySelector("#profile").src =
         "/api/profiles/" +
         window.location.pathname.split("/").filter(Boolean)[1];
-
-      const div = document.createElement("div");
-      div.setAttribute("subscribe-to", "user_id");
-      div.setAttribute("subscribe-with", "textContent");
-
-      // setTimeout(() => {
-      //   const parent = document.querySelectorAll("state-link")[2];
-      //   console.log(parent);
-      //   parent.appendChild(div);
-      // }, 1000);
-
-      // const toastManager = document.querySelector("toast-manager");
-      // console.log(toastManager);
-      // toastManager.schedule("This is a test toast!");
-      // toastManager.schedule("This is a test toast! 222", 1500);
     </script>
   </body>
 </html>

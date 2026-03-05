@@ -38,7 +38,8 @@ export default class ProfileForm extends BaseCustomElement {
       <smart-form-wrapper
         url="/api/profiles"
         method="${method[this.action]}"
-        target="remote-state-provider"
+        refresh-target="#profile"
+        response-target="toast-manager"
         show-response-message
       >
         <form>

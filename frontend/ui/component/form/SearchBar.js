@@ -1,11 +1,8 @@
 import _ from "/ui/component/data/CollectionView.js";
 import _1 from "/ui/component/core/RemoteStateProviderElement.js";
-import _2 from "/ui/component/core/StateLinkElement.js";
 import { debounce } from "../../../common/common.js";
 
 export default class SearchBar extends HTMLElement {
-  static formAssociated = true;
-
   static get observedAttributes() {
     return ["base-url"];
   }
@@ -21,7 +18,6 @@ export default class SearchBar extends HTMLElement {
 
   constructor() {
     super();
-    this.internals = this.attachInternals();
   }
 
   connectedCallback() {
@@ -42,6 +38,7 @@ export default class SearchBar extends HTMLElement {
 
     const fragment = template.content.cloneNode(true);
     const collection = fragment.querySelector("collection-view");
+    collection.setAttribute("subscribe", "");
     const stateProvider = this.querySelector("remote-state-provider");
 
     stateProvider.appendChild(fragment);
@@ -64,8 +61,7 @@ export default class SearchBar extends HTMLElement {
 
     input.addEventListener("input", handleInput);
     input.addEventListener("focus", () => (collection.hidden = false));
-    // input.addEventListener("blur", () => (collection.hidden = true));
-    document.addEventListener("click", ({ target }) => {
+    document.addEventListener("pointerdown", ({ target }) => {
       if (!this.contains(target)) {
         collection.hidden = true;
       }
