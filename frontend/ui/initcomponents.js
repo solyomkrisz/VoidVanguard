@@ -13,3 +13,4 @@ import _16 from "./component/profile/FriendshipToggle.js";
 import _17 from "./component/profile/UserBlockToggle.js";
 import _18 from "./component/data/CollectionView.js";
 import _19 from "./component/feedback/ToastManager.js";
+import _21 from "./component/layout/RenderIf.js";

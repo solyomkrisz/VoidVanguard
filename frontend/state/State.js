@@ -13,6 +13,8 @@ export default class State {
 
   constructor(initial = {}) {
     this.store = new Map();
+    this.simpleStore = {};
+    this.globalListeners = new Set();
 
     for (const key of Object.keys(initial)) {
       this.store.set(key, { value: initial[key], listeners: new Set() });
@@ -36,15 +38,22 @@ export default class State {
   set(key, value) {
     if (!this.store.has(key)) {
       this.store.set(key, { value, listeners: new Set() });
+      this.simpleStore[key] = value;
+
       return;
     }
 
     const _value = this.store.get(key);
 
     _value.value = value;
+    this.simpleStore[key] = value;
 
     for (const listener of _value.listeners) {
       listener(key, value);
+    }
+
+    for (const listener of this.globalListeners) {
+      listener(this.simpleStore);
     }
   }
 
@@ -64,6 +73,15 @@ export default class State {
     listener(key, value);
 
     return () => listeners.delete(listener);
+  }
+
+  subscribeForAny(listener) {
+    if (!this.globalListeners.has(listener)) {
+      this.globalListeners.add(listener);
+      listener(this.simpleStore);
+    }
+
+    return () => this.globalListeners.delete(listener);
   }
 
   reset() {

@@ -53,6 +53,7 @@ export default class RemoteStateProviderElement extends HTMLElement {
             [
               ...Array.from(node.querySelectorAll("[subscribe-to]")),
               ...Array.from(node.querySelectorAll("[subscribe]")),
+              ...Array.from(node.querySelectorAll("render-if")),
             ].forEach((child) => this.subscribeChild(child));
           });
         }
@@ -85,6 +86,11 @@ export default class RemoteStateProviderElement extends HTMLElement {
 
     if (child.matches?.("[subscribe]")) {
       queueMicrotask(() => child.subscribe?.(this.state));
+      return;
+    }
+
+    if (child.matches?.("render-if")) {
+      queueMicrotask(() => child.subscribeSingle?.(this.state));
       return;
     }
 
@@ -123,6 +129,7 @@ export default class RemoteStateProviderElement extends HTMLElement {
     for (const child of [
       ...Array.from(this.querySelectorAll("[subscribe-to]")),
       ...Array.from(this.querySelectorAll("[subscribe]")),
+      ...Array.from(this.querySelectorAll("render-if")),
     ]) {
       this.subscribeChild(child);
     }

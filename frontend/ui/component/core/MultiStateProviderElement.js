@@ -45,10 +45,11 @@ export default class MultiStateProviderElement extends HTMLElement {
     });
   }
 
-  connectedCallback() {
+  async connectedCallback() {
     if (this._initialized) return;
 
-    this.collectStateProviders();
+    await this.collectStateProviders();
+    this.subscribeChildren();
 
     this._initialized = true;
   }
@@ -57,7 +58,11 @@ export default class MultiStateProviderElement extends HTMLElement {
     if (this.observer) this.observer.disconnect();
   }
 
-  collectStateProviders() {
+  async collectStateProviders() {
+    if (!customElements.get("remote-state-provider")) {
+      await customElements.whenDefined("remote-state-provider");
+    }
+
     for (const provider of Array.from(
       this.querySelectorAll("remote-state-provider"),
     )) {
