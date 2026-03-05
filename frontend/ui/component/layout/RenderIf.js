@@ -1,3 +1,5 @@
+import userState from "/state/user.js";
+
 export default class RenderIf extends HTMLElement {
   static get observedAttributes() {
     return ["when"];
@@ -18,6 +20,8 @@ export default class RenderIf extends HTMLElement {
     this.evaluateCondition = null;
     this.unsubscribe = null;
     this.state = null;
+    this.states = new Map();
+    this.unsubscribes = new Map();
   }
 
   connectedCallback() {
@@ -58,13 +62,21 @@ export default class RenderIf extends HTMLElement {
     }
   }
 
-  evaluate(state) {
-    if (!this.evaluateCondition || !state) return;
+  evaluate() {
+    if (!this.evaluateCondition) return;
+
+    const merged = {};
+
+    for (const [key, state] of this.states) {
+      merged[key] = state.simpleStore;
+    }
+
+    console.log(merged);
 
     let shouldRender = false;
 
     try {
-      shouldRender = !!this.evaluateCondition(state);
+      shouldRender = !!this.evaluateCondition(merged);
     } catch (_) {
       shouldRender = false;
     }
@@ -73,11 +85,43 @@ export default class RenderIf extends HTMLElement {
   }
 
   subscribeSingle(state) {
-    this.state = state;
+    this.states.set("local", state);
+    this.states.set("user", userState);
 
-    this.unsubscribe = state.subscribeForAny((simpleState) => {
-      this.evaluate(simpleState);
-    });
+    this.unsubscribes.set(
+      "local",
+      state.subscribeForAny((_) => {
+        this.evaluate();
+      }),
+    );
+
+    this.unsubscribes.set(
+      "user",
+      userState.subscribeForAny((_) => {
+        this.evaluate();
+      }),
+    );
+  }
+
+  subscribeMulti(states) {
+    this.states = states;
+
+    for (const [id, state] of states) {
+      this.unsubscribes.set(
+        id,
+        state.subscribeForAny((simpleState) => {
+          this.evaluate();
+        }),
+      );
+    }
+  }
+
+  subscribe(state) {
+    if (state instanceof Map) {
+      this.subscribeMulti(state);
+    } else {
+      this.subscribeSingle(state);
+    }
   }
 }
 

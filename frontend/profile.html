@@ -30,7 +30,11 @@
     </div>
 
     <remote-state-provider id="profile">
-      <render-if when="state.user_id">
+      <render-if when="user.id === local.user_id">
+        <h1>PROFIL</h1>
+      </render-if>
+
+      <render-if when="user.id === local.user_id" multistatesubscribe>
         <h1>PROFIL</h1>
       </render-if>
 
@@ -104,7 +108,7 @@
 
       <fullscreen-overlay>
         <div subscribe-to="user_id" hide="parent" reversed-behaviour></div>
-        <profile-form></profile-form>
+        <profile-form action="create"></profile-form>
       </fullscreen-overlay>
     </remote-state-provider>
 

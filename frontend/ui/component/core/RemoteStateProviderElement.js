@@ -90,7 +90,7 @@ export default class RemoteStateProviderElement extends HTMLElement {
     }
 
     if (child.matches?.("render-if")) {
-      queueMicrotask(() => child.subscribeSingle?.(this.state));
+      queueMicrotask(() => child.subscribe?.(this.state));
       return;
     }
 
