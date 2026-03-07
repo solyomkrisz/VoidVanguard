@@ -59,12 +59,12 @@ export default class MultiStateProviderElement extends HTMLElement {
   }
 
   async collectStateProviders() {
-    if (!customElements.get("remote-state-provider")) {
-      await customElements.whenDefined("remote-state-provider");
+    if (!customElements.get("state-provider")) {
+      await customElements.whenDefined("state-provider");
     }
 
     for (const provider of Array.from(
-      this.querySelectorAll("remote-state-provider"),
+      this.querySelectorAll("state-provider"),
     )) {
       if (!provider.as) {
         continue;

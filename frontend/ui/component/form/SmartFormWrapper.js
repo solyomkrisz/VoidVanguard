@@ -1,7 +1,6 @@
 import _ from "./InputGroup.js";
 import _2 from "/ui/component/feedback/ResponseMessage.js";
-import { dir, element, text } from "/ui/UI.js";
-import { path } from "/common/common.js";
+import { element } from "/ui/UI.js";
 import * as net from "/common/network.js";
 
 export default class SmartFormWrapper extends HTMLElement {
@@ -71,7 +70,8 @@ export default class SmartFormWrapper extends HTMLElement {
 
       if (!this.method) return;
 
-      const formData = new FormData(e.currentTarget);
+      const form = e.currentTarget;
+      const formData = new FormData(form);
 
       const response = await net.send(this.url, {
         method: this.method || "GET",
@@ -88,10 +88,14 @@ export default class SmartFormWrapper extends HTMLElement {
         console.error("Unable to send response to target.");
       }
 
-      try {
-        document.querySelector(this.refreshTarget).refresh();
-      } catch (error) {
-        console.error("Unable to refresh target.");
+      if (response.success) {
+        form.reset();
+
+        try {
+          document.querySelector(this.refreshTarget).refresh();
+        } catch (error) {
+          console.error("Unable to refresh target.");
+        }
       }
     });
 

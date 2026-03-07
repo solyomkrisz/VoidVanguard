@@ -1,7 +1,6 @@
 import _ from "./component/auth/LogoutButton.js";
 import _1 from "./component/auth/AccountQuickManager.js";
-import _2 from "./component/core/RemoteStateProviderElement.js";
-import _3 from "./component/core/MultiStateProviderElement.js";
+import _2 from "./component/core/StateProviderElement.js";
 import _4 from "./component/profile/ProfileForm.js";
 import _6 from "./component/form/InputGroup.js";
 import _7 from "./component/form/SmartFormWrapper.js";
@@ -12,5 +11,6 @@ import _14 from "./component/profile/ProfileFormToggle.js";
 import _16 from "./component/profile/FriendshipToggle.js";
 import _17 from "./component/profile/UserBlockToggle.js";
 import _18 from "./component/data/CollectionView.js";
+import _22 from "./component/data/LazyList.js";
 import _19 from "./component/feedback/ToastManager.js";
 import _21 from "./component/layout/RenderIf.js";

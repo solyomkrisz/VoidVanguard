@@ -29,7 +29,7 @@
       </search-bar>
     </div>
 
-    <remote-state-provider id="profile">
+    <state-provider id="profile">
       <render-if when="user.id !== local.user_id">
         <h1>PROFIL</h1>
       </render-if>
@@ -119,7 +119,69 @@
           <profile-form action="update"></profile-form>
         </fullscreen-overlay>
       </render-if>
-    </remote-state-provider>
+
+      <div class="footer">
+        <div class="comments">
+          <render-if when="user.id">
+            <smart-form-wrapper
+              url="/api/comments"
+              method="POST"
+              response-target="toast-manager"
+              refresh-target="lazy-list"
+            >
+              <form>
+                <input type="hidden" name="targetType" value="profile" />
+                <input type="hidden" name="targetId" />
+                <input-group
+                  input-name="content"
+                  label="Komment"
+                  input-type="textarea"
+                  input-placeholder="Komment..."
+                ></input-group>
+                <button>Közzététel</button>
+              </form>
+            </smart-form-wrapper>
+          </render-if>
+
+          <render-if when="local.user_id">
+            <lazy-list page-size="1" mode="scroll" items-source="comments">
+              <template>
+                <div class="comment">
+                  <state-provider>
+                    <div class="header">
+                      <div>
+                        <img />
+                        <span data-bind="author"></span>
+                      </div>
+                      <span data-bind="created_at"></span>
+                    </div>
+                    <div class="body">
+                      <div data-bind="content"></div>
+                    </div>
+
+                    <div class="footer">
+                      <render-if when="user.id === local.author_id">
+                        <toggle-button target="#commentEditor">
+                          <span>Szerkesztés</span>
+                        </toggle-button>
+                      </render-if>
+                    </div>
+                  </state-provider>
+                </div>
+              </template>
+            </lazy-list>
+          </render-if>
+        </div>
+
+        <div></div>
+      </div>
+
+      <fullscreen-overlay id="commentEditor" target="#commentEditor" hidden>
+        <smart-form-wrapper>
+          <form></form>
+        </smart-form-wrapper>
+      </fullscreen-overlay>
+    </state-provider>
 
     <toast-manager></toast-manager>
 
@@ -128,6 +190,8 @@
         document.querySelector("search-bar collection-view").hidden = true;
         document.querySelector("#profile").src =
           `/api/profiles/${e.target.target}`;
+        document.querySelector("lazy-list").src =
+          `/api/comments?targetId=${e.target.target}`;
         history.replaceState({}, "", "/profile/" + e.target.target);
       }
     </script>
@@ -136,9 +200,10 @@
     <script type="module">
       import { onDOMContentLoaded } from "/common/common.js";
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
-      document.querySelector("#profile").src =
-        "/api/profiles/" +
-        window.location.pathname.split("/").filter(Boolean)[1];
+      const profileId = window.location.pathname.split("/").filter(Boolean)[1];
+      document.querySelector("#profile").src = "/api/profiles/" + profileId;
+      document.querySelector("lazy-list").src =
+        "/api/comments?targetId=" + profileId;
     </script>
   </body>
 </html>

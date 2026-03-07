@@ -1,5 +1,5 @@
 import _ from "/ui/component/data/CollectionView.js";
-import _1 from "/ui/component/core/RemoteStateProviderElement.js";
+import _1 from "/ui/component/core/StateProviderElement.js";
 import { debounce } from "../../../common/common.js";
 
 export default class SearchBar extends HTMLElement {
@@ -29,7 +29,7 @@ export default class SearchBar extends HTMLElement {
   build() {
     this.innerHTML += `
         <input type="text" autocomplete="off" placeholder="Írjon ide a kereséshez" />
-        <remote-state-provider></remote-state-provider>
+        <state-provider></state-provider>
     `;
 
     const template = this.querySelector("template");
@@ -39,7 +39,7 @@ export default class SearchBar extends HTMLElement {
     const fragment = template.content.cloneNode(true);
     const collection = fragment.querySelector("collection-view");
     collection.setAttribute("subscribe", "");
-    const stateProvider = this.querySelector("remote-state-provider");
+    const stateProvider = this.querySelector("state-provider");
 
     stateProvider.appendChild(fragment);
 

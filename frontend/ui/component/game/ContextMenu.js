@@ -1,5 +1,5 @@
 import _ from "./ContextMenuItem.js";
-import * as UI from "../UI.js";
+import * as UI from "../../UI.js";
 
 export default class ContextMenu extends HTMLElement {
   constructor() {

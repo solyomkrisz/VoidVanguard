@@ -35,16 +35,19 @@
     </style>
   </head>
   <body>
-    <multi-state-provider>
-      <remote-state-provider as="user" method="POST"></remote-state-provider>
-      <remote-state-provider as="profile"></remote-state-provider>
+    <state-provider>
+      <state-provider as="user" method="POST"></state-provider>
+      <state-provider as="profile"></state-provider>
       <div state="user" subscribe-to="id" subscribe-with="textContent"></div>
       <div
         state="profile"
         subscribe-to="display_name"
         subscribe-with="textContent"
       ></div>
-    </multi-state-provider>
+      <render-if multistatesubscribe when="!user.id">
+        <h2>HELLO!</h2>
+      </render-if>
+    </state-provider>
 
     <account-quick-manager></account-quick-manager>
     <account-quick-manager></account-quick-manager>
@@ -117,13 +120,11 @@
       import userState from "./state/user.js";
 
       //
-      const rsp = document.querySelector("remote-state-provider[as='user']");
+      const rsp = document.querySelector("state-provider[as='user']");
       console.log(rsp);
       rsp.src = "/api/sessions";
 
-      const rsp2 = document.querySelector(
-        "remote-state-provider[as='profile']",
-      );
+      const rsp2 = document.querySelector("state-provider[as='profile']");
       console.log(rsp2);
       rsp2.src = "/api/profiles/1ac13e29-01d7-437a-93bd-d633304b482a";
       //
@@ -203,7 +204,7 @@
     </script>
 
     <script>
-      // const rsp = document.querySelector("remote-state-provider");
+      // const rsp = document.querySelector("state-provider");
       // console.log(rsp);
       // rsp.src = "/api/sessions";
     </script>

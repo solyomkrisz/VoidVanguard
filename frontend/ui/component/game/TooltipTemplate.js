@@ -1,4 +1,4 @@
-import * as UI from "../UI.js";
+import * as UI from "../../UI.js";
 import DynamicTooltip from "./DynamicTooltip.js";
 
 export default class TooltipTemplate extends HTMLElement {
@@ -82,7 +82,7 @@ export default class TooltipTemplate extends HTMLElement {
 
   addTitle(title) {
     this.shadowDOM.appendChild(
-      UI.element("p", UI.element("strong", UI.text(title)))
+      UI.element("p", UI.element("strong", UI.text(title))),
     );
     this.shadowDOM.appendChild(UI.element("hr"));
 

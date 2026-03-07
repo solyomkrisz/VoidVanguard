@@ -146,3 +146,71 @@ button {
   width: 48px;
   height: 48px;
 }
+
+/**/
+
+#profile > .footer {
+  width: 100%;
+  display: flex;
+  margin-top: 50px;
+}
+
+#profile > .footer > div {
+  width: 100%;
+}
+
+.comments {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.comments form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background-color: darkgray;
+}
+
+.comment:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.comment {
+  background-color: darkgray;
+}
+
+.comment .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  padding-right: 5px;
+}
+
+.comment .header {
+  background-color: gray;
+}
+
+.comment .header > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.comment img {
+  width: 32px;
+  height: 32px;
+}
+
+.comment .body {
+  padding-inline: 5px;
+  padding-block: 10px;
+  border: 1px solid gray;
+}
+
+.comment .footer {
+  display: flex;
+  justify-content: flex-end;
+}

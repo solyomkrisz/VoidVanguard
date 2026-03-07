@@ -1,4 +1,4 @@
-import * as UI from "../UI.js";
+import * as UI from "../../UI.js";
 import _ from "./TooltipTemplate.js";
 
 export default class DynamicTooltip extends HTMLElement {

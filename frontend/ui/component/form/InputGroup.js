@@ -1,7 +1,3 @@
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
-import { dir, element, text } from "/ui/UI.js";
-import { path } from "/common/common.js";
-
 function getInputElement(type) {
   switch (type) {
     case "textarea":
@@ -30,11 +26,17 @@ function createSelectInner(options) {
   return result;
 }
 
-export default class InputGroup extends BaseCustomElement {
+export default class InputGroup extends HTMLElement {
   static formAssociated = true;
 
   static get observedAttributes() {
-    return ["input-type", "label", "input-placeholder", "name", "options"];
+    return [
+      "input-type",
+      "label",
+      "input-placeholder",
+      "input-name",
+      "options",
+    ];
   }
 
   get inputType() {
@@ -69,16 +71,16 @@ export default class InputGroup extends BaseCustomElement {
     this.setAttribute("options", value);
   }
 
-  get name() {
-    return this.getAttribute("name");
+  get inputName() {
+    return this.getAttribute("input-name");
   }
 
-  set name(value) {
-    this.setAttribute("name", value);
+  set inputName(value) {
+    this.setAttribute("input-name", value);
   }
 
   constructor() {
-    super([path.join(dir, "global.css"), path.join(dir, "inputGroup.css")]);
+    super();
     this.internals = this.attachInternals();
   }
 
@@ -92,20 +94,18 @@ export default class InputGroup extends BaseCustomElement {
     const id = "input-" + crypto.randomUUID();
     const inputElement = getInputElement(this.inputType);
 
-    this.setShadowInnerHTML(`
+    this.innerHTML = `
       ${this.label ? `<label for="${id}">${this.label}</label>` : ""}
       <${inputElement}
         ${isRegularInput(inputElement) ? `type="${this.inputType}"` : ""}
-        name="${this.name}"
+        name="${this.inputName}"
         autocomplete="off"
         id="${id}"
         ${this.inputPlaceholder ? `placeholder="${this.inputPlaceholder}"` : ""}
-      >
-        ${inputElement === "select" ? createSelectInner(this.options) : ""}
-      </${inputElement}>
-    `);
+      >${inputElement === "select" ? createSelectInner(this.options) : ""}</${inputElement}>
+    `;
 
-    this.queryShadowSelector(inputElement).addEventListener("input", (e) => {
+    this.querySelector(inputElement).addEventListener("input", (e) => {
       this.internals.setFormValue(e.currentTarget.value);
     });
   }

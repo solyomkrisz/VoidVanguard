@@ -1,5 +1,5 @@
-import Thruster from "../../game/Thruster.js";
-import * as UI from "../UI.js";
+import Thruster from "../../../game/Thruster.js";
+import * as UI from "../../UI.js";
 
 export default class ThrusterController extends HTMLElement {
   constructor() {

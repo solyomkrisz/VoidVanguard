@@ -1,5 +1,5 @@
 import _ from "./ContextMenuItem.js";
-import * as UI from "../UI.js";
+import * as UI from "../../UI.js";
 
 export default class ContextMenuTemplate extends HTMLElement {
   constructor() {
@@ -22,7 +22,7 @@ export default class ContextMenuTemplate extends HTMLElement {
 
   connectedCallback() {
     this.addEventListener("select", (e) =>
-      this.actionHandlers[e.detail.action](this.source)
+      this.actionHandlers[e.detail.action](this.source),
     );
   }
 

@@ -14,3 +14,16 @@
 :host > button {
   width: 100%;
 }
+
+input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+input-group textarea {
+  resize: vertical;
+}
+
+input-group label {
+  color: white;
+}

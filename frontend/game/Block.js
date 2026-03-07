@@ -2,7 +2,7 @@ import * as vec2 from "../common/vec2.js";
 import WebGL from "./WebGL.js";
 import * as MATRIX from "../common/common.js";
 import * as vec from "../common/vec.js";
-import DynamicTooltip from "../ui/component/DynamicTooltip.js";
+import DynamicTooltip from "../ui/component/game/DynamicTooltip.js";
 
 export default class Block {
   // prettier-ignore

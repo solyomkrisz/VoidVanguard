@@ -53,10 +53,6 @@ export default class RenderIf extends HTMLElement {
       );
 
       this.removeAttribute("when");
-
-      if (this.state) {
-        this.evaluate(this.state);
-      }
     } catch (_) {
       this.evaluateCondition = null;
     }
@@ -64,6 +60,10 @@ export default class RenderIf extends HTMLElement {
 
   evaluate() {
     if (!this.evaluateCondition) return;
+
+    if (!Object.keys(this.merged).length) {
+      return;
+    }
 
     let shouldRender = false;
 
@@ -103,9 +103,7 @@ export default class RenderIf extends HTMLElement {
 
       this.unsubscribes.set(
         id,
-        state.subscribeForAny((simpleState) => {
-          this.evaluate();
-        }),
+        state.subscribeForAny((_) => this.evaluate()),
       );
     }
   }
@@ -120,6 +118,10 @@ export default class RenderIf extends HTMLElement {
     for (const [key, state] of this.states) {
       this.merged[key] = state.simpleStore;
     }
+
+    console.log(this.merged);
+
+    this.evaluate(); // When we subscribe the listener fires (which calles this.evaluate). At this point this.merged is empty so evaluating fails. After the subscription happened we populate this.merged, however the listeners doesnt fire any more in case of no server connection, so the elements stay hidden (from the first faliure, catch sets them to hidden)
   }
 }
 
