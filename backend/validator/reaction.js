@@ -18,11 +18,7 @@ const POST = {
       options: [["0", 0, "1", 1]],
       errorMessage: "Invalid reaction type",
     },
-    customSanitizer: {
-      options: (value) => {
-        return parseInt(value);
-      },
-    },
+    toInt: true,
   },
 };
 

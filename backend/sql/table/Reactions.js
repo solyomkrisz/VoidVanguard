@@ -17,7 +17,7 @@ class Reactions extends Table {
   }
 
   async create({
-    targetUser: { sub: id },
+    targetUser: { id },
     body: { targetType, targetId, reactionType },
   }) {
     const [result] = await execute(
@@ -27,7 +27,7 @@ class Reactions extends Table {
     return result;
   }
 
-  async delete({ targetUser: { sub: id }, body: { targetId, reactionType } }) {
+  async delete({ targetUser: { id }, body: { targetId, reactionType } }) {
     const [result] = await execute(
       "DELETE FROM reactions WHERE user_id = ? AND target_id = ? AND type = ?",
       [id, targetId, reactionType],
@@ -36,7 +36,7 @@ class Reactions extends Table {
   }
 
   async upsert({
-    targetUser: { sub: id },
+    targetUser: { id },
     body: { targetType, targetId, reactionType },
   }) {
     const [result] = await execute(
