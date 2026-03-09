@@ -3,6 +3,21 @@ import _2 from "/ui/component/feedback/ResponseMessage.js";
 import { element } from "/ui/UI.js";
 import * as net from "/common/network.js";
 
+function getTarget(element, value) {
+  if (!value) return null;
+
+  const splitted = value.split(":");
+
+  if (splitted.length === 1) {
+    return document.querySelector(splitted[0]);
+  }
+
+  switch (splitted[0]) {
+    case "closest":
+      return element.closest(splitted[1]);
+  }
+}
+
 export default class SmartFormWrapper extends HTMLElement {
   static get observedAttributes() {
     return [
@@ -92,8 +107,9 @@ export default class SmartFormWrapper extends HTMLElement {
         form.reset();
 
         try {
-          document.querySelector(this.refreshTarget).refresh();
+          getTarget(this, this.refreshTarget).refresh?.();
         } catch (error) {
+          console.error(error);
           console.error("Unable to refresh target.");
         }
       }

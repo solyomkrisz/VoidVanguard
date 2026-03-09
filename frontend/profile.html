@@ -65,7 +65,6 @@
         </render-if>
 
         <render-if when="local.user_id">
-          <span subscribe-to="user_id"></span>
           <friendship-toggle
             refresh-target="#profile"
             response-target="toast-manager"
@@ -92,10 +91,10 @@
               class="friendList"
             >
               <template>
-                <div class="item">
+                <a class="item">
                   <img data-bind="avatar" bind-target="src" />
                   <span data-bind="name"></span>
-                </div>
+                </a>
               </template>
             </collection-view>
           </div>
@@ -131,7 +130,12 @@
             >
               <form>
                 <input type="hidden" name="targetType" value="profile" />
-                <input type="hidden" name="targetId" />
+                <input
+                  type="hidden"
+                  subscribe-to="user_id"
+                  subscribe-with="value"
+                  name="targetId"
+                />
                 <input-group
                   input-name="content"
                   label="Komment"
@@ -144,26 +148,79 @@
           </render-if>
 
           <render-if when="local.user_id">
-            <lazy-list page-size="1" mode="scroll" items-source="comments">
+            <lazy-list
+              page-size="1"
+              mode="scroll"
+              items-source="comments"
+              provide-state
+            >
               <template>
                 <div class="comment">
-                  <state-provider>
+                  <state-provider
+                    data-bind="id"
+                    bind-target="src"
+                    src-prefix="/api/comments/"
+                    disable-auto-update
+                  >
                     <div class="header">
                       <div>
                         <img />
-                        <span data-bind="author"></span>
+                        <span subscribe-to="author"></span>
                       </div>
-                      <span data-bind="created_at"></span>
+                      <span>
+                        <span subscribe-to="created_at"></span>
+                        <br />
+                        <render-if when="local.updated_at">
+                          <span subscribe-to="updated_at"></span>
+                        </render-if>
+                      </span>
                     </div>
                     <div class="body">
-                      <div data-bind="content"></div>
-                    </div>
-
-                    <div class="footer">
+                      <div subscribe-to="content"></div>
                       <render-if when="user.id === local.author_id">
-                        <toggle-button target="#commentEditor">
-                          <span>Szerkesztés</span>
-                        </toggle-button>
+                        <div>
+                          <smart-form-wrapper
+                            url="/api/comments"
+                            method="DELETE"
+                            response-target="toast-manager"
+                            refresh-target="closest:lazy-list"
+                          >
+                            <form>
+                              <input
+                                name="commentId"
+                                type="hidden"
+                                subscribe-to="id"
+                                subscribe-with="value"
+                              />
+                              <button>Törlés</button>
+                            </form>
+                          </smart-form-wrapper>
+                        </div>
+                        <dropdown-container hide-toggle-when-active>
+                          <button toggle original-toggle>Szerkesztés</button>
+                          <smart-form-wrapper
+                            url="/api/comments"
+                            method="PATCH"
+                            response-target="toast-manager"
+                            refresh-target="closest:state-provider"
+                            dropdown
+                            hidden
+                          >
+                            <form>
+                              <input
+                                name="commentId"
+                                type="hidden"
+                                subscribe-to="id"
+                                subscribe-with="value"
+                              />
+                              <textarea
+                                name="content"
+                                subscribe-to="content"
+                              ></textarea>
+                              <button toggle>Mentés</button>
+                            </form>
+                          </smart-form-wrapper>
+                        </dropdown-container>
                       </render-if>
                     </div>
                   </state-provider>

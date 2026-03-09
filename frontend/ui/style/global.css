@@ -27,3 +27,7 @@ input-group textarea {
 input-group label {
   color: white;
 }
+
+a {
+  color: #333;
+}

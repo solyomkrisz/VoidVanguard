@@ -41,7 +41,11 @@ class Comments extends Table {
 
     const [rows] = await execute(
       `
-        SELECT comments.*, DATE_FORMAT(comments.created_at, '%Y-%m-%d %H:%i:%s') AS created_at, username AS author
+        SELECT
+          comments.*,
+          DATE_FORMAT(comments.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
+          DATE_FORMAT(comments.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
+          username AS author
         FROM comments
         INNER JOIN users ON users.id = comments.author_id
         WHERE target_id = ? ORDER BY created_at DESC, comments.id DESC LIMIT ? OFFSET ?
@@ -63,11 +67,26 @@ class Comments extends Table {
     };
   }
 
-  async select({ body: { targetId } }) {
-    const [rows] = await execute("SELECT * FROM comments WHERE target_id = ?", [
-      targetId,
-    ]);
-    return rows;
+  async select({ params }) {
+    const id = params.id;
+
+    const [rows] = await execute(
+      `
+        SELECT
+          comments.*,
+          DATE_FORMAT(comments.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
+          DATE_FORMAT(comments.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
+          username AS author
+        FROM comments
+        INNER JOIN users ON users.id = comments.author_id
+        WHERE comments.id = ?
+      `,
+      [id],
+    );
+
+    if (!rows.length) throw CustomError.TEST;
+
+    return rows[0];
   }
 
   async create({
@@ -85,7 +104,7 @@ class Comments extends Table {
     return result;
   }
 
-  async update({ targetUser: { sub: id }, body: { commentId, content } }) {
+  async update({ targetUser: { id }, body: { commentId, content } }) {
     const [rows] = await execute(
       "SELECT author_id FROM comments WHERE id = ?",
       [commentId],
@@ -103,7 +122,7 @@ class Comments extends Table {
     return result;
   }
 
-  async delete({ targetUser: { sub: id }, body: { commentId } }) {
+  async delete({ targetUser: { id }, body: { commentId } }) {
     const [result] = await execute(
       "DELETE FROM comments WHERE id = ? AND author_id = ?",
       [commentId, id],

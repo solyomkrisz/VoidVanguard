@@ -31,11 +31,15 @@ export default class State {
 
   from(obj) {
     for (const key of Object.keys(obj)) {
-      this.set(key, obj[key]);
+      this.set(key, obj[key], false);
+    }
+
+    for (const listener of this.globalListeners) {
+      listener(this.simpleStore);
     }
   }
 
-  set(key, value) {
+  set(key, value, notifyGlobals = true) {
     if (!this.store.has(key)) {
       this.store.set(key, { value, listeners: new Set() });
       this.simpleStore[key] = value;
@@ -52,8 +56,10 @@ export default class State {
       listener(key, value);
     }
 
-    for (const listener of this.globalListeners) {
-      listener(this.simpleStore);
+    if (notifyGlobals) {
+      for (const listener of this.globalListeners) {
+        listener(this.simpleStore);
+      }
     }
   }
 
@@ -75,10 +81,13 @@ export default class State {
     return () => listeners.delete(listener);
   }
 
-  subscribeForAny(listener) {
+  subscribeForAny(listener, notify = true) {
     if (!this.globalListeners.has(listener)) {
       this.globalListeners.add(listener);
-      listener(this.simpleStore);
+
+      if (notify) {
+        listener(this.simpleStore);
+      }
     }
 
     return () => this.globalListeners.delete(listener);

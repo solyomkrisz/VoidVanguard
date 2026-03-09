@@ -3,17 +3,6 @@ import _1 from "/ui/component/form/SmartFormWrapper.js";
 import State from "/state/State.js";
 import userState from "/state/user.js";
 
-function getButtonText(status) {
-  switch (status) {
-    case "pending":
-      return "Barátkérelem visszavonása";
-    case "accepted":
-      return "Barát eltávolítása";
-    default:
-      return "";
-  }
-}
-
 export default class FriendshipToggle extends HTMLElement {
   constructor() {
     super();
@@ -62,14 +51,23 @@ export default class FriendshipToggle extends HTMLElement {
       (friendshipStatus, isBlocked) => {
         if (this.hidden || isBlocked) return;
 
-        if (friendshipStatus !== "not-friends") {
-          smartFormWrapper.method = "DELETE";
-          button.textContent = getButtonText(friendshipStatus);
-          return;
+        switch (friendshipStatus) {
+          case "sent":
+            smartFormWrapper.method = "DELETE";
+            button.textContent = "Barátkérelem visszavonása";
+            break;
+          case "received":
+            smartFormWrapper.method = "PATCH";
+            button.textContent = "Barátkérelem elfogadása";
+            break;
+          case "accepted":
+            smartFormWrapper.method = "DELETE";
+            button.textContent = "Barát eltávolítása";
+            break;
+          default:
+            smartFormWrapper.method = "POST";
+            button.textContent = "Barát hozzáadása";
         }
-
-        smartFormWrapper.method = "POST";
-        button.textContent = "Barát hozzáadása";
       }
     );
   }

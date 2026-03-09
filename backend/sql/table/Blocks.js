@@ -2,6 +2,7 @@ const Table = require("../Table.js");
 const Column = require("../Column.js");
 const CustomError = require("../../common/CustomError.js");
 const { execute } = require("../database.js");
+const Friends = require("./Friends.js");
 
 class Blocks extends Table {
   constructor() {
@@ -39,19 +40,29 @@ class Blocks extends Table {
     return false;
   }
 
-  async create({ targetUser: { id }, body: { userId } }) {
+  async create(request) {
+    const id = request.targetUser.id;
+    const userId = request.body.userId;
+
+    await Friends.delete(request);
+
     const [result] = await execute(
       "INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)",
       [id, userId],
     );
+
     return result;
   }
 
-  async delete({ targetUser: { id }, body: { userId } }) {
+  async delete(request) {
+    const id = request.targetUser.id;
+    const userId = request.body.userId;
+
     const [result] = await execute(
       "DELETE FROM blocks WHERE blocker_id = ? AND blocked_id = ?",
       [id, userId],
     );
+
     return result;
   }
 

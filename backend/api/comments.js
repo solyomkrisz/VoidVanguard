@@ -29,6 +29,18 @@ router.get("/", checkSchema(validator.GET), async (request, response) => {
   }
 });
 
+router.get("/:id", async (request, response) => {
+  try {
+    const result = await Comments.select(request);
+
+    response
+      .status(200)
+      .json(createResponse(true, result, "Comment fetched successfully"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+});
+
 router.post(
   "/",
   authenticate(),

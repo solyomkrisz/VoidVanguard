@@ -11,22 +11,22 @@ export default class BaseCustomElement extends HTMLElement {
 
     for (const path of paths) {
       if (BaseCustomElement.STYLE_CACHE.has(path)) {
-        console.log(`BASECUSTOMELEMENT-constructor: Found in cache: ${path}`);
+        // console.log(`BASECUSTOMELEMENT-constructor: Found in cache: ${path}`);
         this.shadowRoot.adoptedStyleSheets.push(
           BaseCustomElement.STYLE_CACHE.get(path),
         );
       } else if (BaseCustomElement.PENDING_FETCHES.has(path)) {
-        console.log(
-          `BASECUSTOMELEMENT-constructor: Found a pending fetch for: ${path}`,
-        );
+        // console.log(
+        //   `BASECUSTOMELEMENT-constructor: Found a pending fetch for: ${path}`,
+        // );
 
         BaseCustomElement.PENDING_FETCHES.get(path).then((sheet) => {
           this.shadowRoot.adoptedStyleSheets.push(sheet);
         });
       } else {
-        console.log(
-          `BASECUSTOMELEMENT-constructor: No ongoing fetch, starting a new one for: ${path}`,
-        );
+        // console.log(
+        //   `BASECUSTOMELEMENT-constructor: No ongoing fetch, starting a new one for: ${path}`,
+        // );
 
         const promise = fetch(path)
           .then((response) => response.text())

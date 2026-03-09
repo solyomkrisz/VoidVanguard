@@ -15,12 +15,15 @@ export default class CollectionView extends HTMLElement {
 
   constructor() {
     super();
+
     this.container = null;
   }
 
   connectedCallback() {
     if (this._initialized) return;
+
     this.build();
+
     this._initialized = true;
   }
 

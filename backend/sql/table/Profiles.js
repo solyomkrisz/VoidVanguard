@@ -80,10 +80,10 @@ class Profiles extends Table {
       visibility === "public" ||
       request?.user?.role >= Role.ADMIN
     ) {
-      return { user_id, avatar, display_name, description, friendship_status, is_blocked, all_friends: [{ avatar: "png.png", name: "hello123"}] };
+      return { user_id, avatar, display_name, description, friendship_status, is_blocked, all_friends };
     }
 
-    return { user_id, avatar, display_name, description: "", friendship_status, is_blocked, all_friends: [{ avatar: "png.png", name: "hello123" }] };
+    return { user_id, avatar, display_name, description: "", friendship_status, is_blocked, all_friends };
   }
 
   async create({ targetUser: { id, role }, body }) {

@@ -54,6 +54,7 @@ router.patch(
   "/",
   authenticate(),
   modifyTargetUser(),
+  upload.none(),
   checkSchema(validator.POST),
   async (request, response) => {
     try {

@@ -4,7 +4,7 @@ import _ from "/ui/component/core/StateProviderElement.js";
 
 export default class LazyList extends HTMLElement {
   static get observedAttributes() {
-    return ["src", "page-size", "mode", "items-source"];
+    return ["src", "page-size", "mode", "items-source", "provide-state"];
   }
 
   get src() {
@@ -42,6 +42,10 @@ export default class LazyList extends HTMLElement {
 
   set itemsSource(value) {
     this.setAttribute("items-source", value);
+  }
+
+  get provideState() {
+    return this.hasAttribute("provide-state");
   }
 
   constructor() {
@@ -124,7 +128,7 @@ export default class LazyList extends HTMLElement {
     }
   }
 
-  async renderContent(value) {
+  renderContent(value) {
     const template = this.querySelector("template");
 
     if (!value || !Array.isArray(value) || !template) return;
@@ -137,9 +141,12 @@ export default class LazyList extends HTMLElement {
       this.container.appendChild(fragment);
       const listItem = this.container.lastElementChild;
 
-      const stateProvider = listItem.querySelector("state-provider");
-      if (stateProvider) {
-        stateProvider.set(item);
+      if (this.provideState) {
+        const stateProvider = listItem.querySelector("state-provider");
+
+        if (stateProvider) {
+          stateProvider.from(item);
+        }
       }
 
       listItem.querySelectorAll("[data-bind]").forEach((element) => {
@@ -151,13 +158,16 @@ export default class LazyList extends HTMLElement {
     }
   }
 
-  refresh() {
+  reset() {
     this.page = 1;
     this.loading = false;
     this.hasNext = true;
 
     this.container.textContent = "";
+  }
 
+  refresh() {
+    this.reset();
     this.loadNextPage();
   }
 }

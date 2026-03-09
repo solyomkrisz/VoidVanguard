@@ -25,12 +25,22 @@ class Friends extends Table {
     }
 
     const [rows] = await execute(
-      "SELECT status FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?))",
+      "SELECT status, initiator_id FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?))",
       [a_id, b_id, b_id, a_id],
     );
 
     if (!rows.length) {
       return "not-friends";
+    }
+
+    const { status, initiator_id } = rows[0];
+
+    if (status === "pending") {
+      if (initiator_id === a_id) {
+        return "sent";
+      } else {
+        return "received";
+      }
     }
 
     return rows[0].status;
@@ -98,9 +108,19 @@ class Friends extends Table {
 
     const [rows] = await execute(
       `
-        SELECT initiator_id FROM friends WHERE recipient_id = ? AND status = 'accepted'
+        SELECT friends.initiator_id, COALESCE(profiles.display_name, users.username) AS name
+        FROM friends
+        INNER JOIN users ON users.id = friends.initiator_id
+        LEFT JOIN profiles ON profiles.user_id = users.id
+        WHERE recipient_id = ? AND status = 'accepted'
+
         UNION
-        SELECT recipient_id FROM friends WHERE initiator_id = ? AND status = 'accepted'
+
+        SELECT friends.recipient_id, COALESCE(profiles.display_name, users.username) AS name
+        FROM friends
+        INNER JOIN users ON users.id = friends.recipient_id
+        LEFT JOIN profiles ON profiles.user_id = users.id
+        WHERE initiator_id = ? AND status = 'accepted'
       `,
       [_id, _id],
     );

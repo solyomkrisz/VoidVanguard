@@ -102,3 +102,26 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+CREATE TABLE comments(
+    id CHAR(36) PRIMARY KEY,
+    author_id CHAR(36) NOT NULL,
+    target_type ENUM("post", "profile") NOT NULL,
+    target_id CHAR(36) NOT NULL,
+    parent_id CHAR(36) DEFAULT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (author_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (parent_id) REFERENCES comments(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+
+    INDEX idx_target (target_type, target_id),
+    INDEX idx_parent_id (parent_id),
+    INDEX idx_author_id (author_id),
+    INDEX idx_created_at (created_at)
+);

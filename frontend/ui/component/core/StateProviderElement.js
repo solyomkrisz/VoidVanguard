@@ -4,7 +4,14 @@ import State from "/state/State.js";
 export default class StateProviderElement extends HTMLElement {
   // with as you can name the remote state so inside a multistateprovider the elements can reference it
   static get observedAttributes() {
-    return ["src", "as", "method", "inherit"];
+    return [
+      "src",
+      "as",
+      "method",
+      "src-prefix",
+      "inherit",
+      "disable-auto-update",
+    ];
   }
 
   get src() {
@@ -12,8 +19,15 @@ export default class StateProviderElement extends HTMLElement {
   }
 
   set src(value) {
+    if (this.srcPrefix) {
+      value = this.srcPrefix + value;
+    }
+
     this.setAttribute("src", value);
-    this.load();
+
+    if (!this.disableAutoUpdate) {
+      this.load();
+    }
   }
 
   get as() {
@@ -33,10 +47,25 @@ export default class StateProviderElement extends HTMLElement {
     this.load();
   }
 
+  get srcPrefix() {
+    return this.getAttribute("src-prefix");
+  }
+
+  set srcPrefix(value) {
+    this.setAttribute("src-prefix", value);
+    this.load();
+  }
+
+  get disableAutoUpdate() {
+    return this.hasAttribute("disable-auto-update");
+  }
+
   constructor() {
     super();
 
     this.states = new Map([["local", new State()]]);
+    this.stateProviders = new Map();
+    this.processed = new Set();
     this.unsubscribers = new Map();
 
     this.observer = new MutationObserver((mutations) => {
@@ -67,11 +96,18 @@ export default class StateProviderElement extends HTMLElement {
     });
   }
 
-  connectedCallback() {
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue && !this.disableAutoUpdate) {
+      this.load();
+    }
+  }
+
+  async connectedCallback() {
     if (this._initialized) return;
 
-    this.collectSubstateProviders();
+    await this.collectSubstateProviders();
     this.subscribeChildren();
+    this.processed.clear();
     this.observer.observe(this, { childList: true, subtree: true });
 
     this._initialized = true;
@@ -86,7 +122,9 @@ export default class StateProviderElement extends HTMLElement {
     }
   }
 
-  collectSubstateProviders() {
+  async collectSubstateProviders() {
+    await customElements.whenDefined("state-provider");
+
     for (const provider of Array.from(
       this.querySelectorAll("state-provider[as]"),
     )) {
@@ -96,10 +134,11 @@ export default class StateProviderElement extends HTMLElement {
 
       // Ez akkor van használva ha a <state-provider> elem state-hubként viselkedik. Ez esetben azonban a gyerekek leiratkozási függvényének muszáj itt elmentve lennie, tehát a teljes provider-re semmi szükség, csak a state-jére
       this.states.set(provider.as, provider.states.get("local"));
+      this.stateProviders.set(provider.as, provider);
     }
   }
 
-  trySubscribe(child, param) {
+  complexSubscribe(child, param) {
     if (!child?.subscribe) {
       queueMicrotask(() => child.subscribe?.(param));
     } else {
@@ -107,41 +146,7 @@ export default class StateProviderElement extends HTMLElement {
     }
   }
 
-  subscribeChild(child, saveUnsubscribeFunction = true) {
-    if (child.closest("state-provider") !== this) {
-      return;
-    }
-
-    if (this.unsubscribers.has(child)) {
-      return;
-    }
-
-    // Itt ez a <state-provider> state-hub-ként viselkedik tehát a gyerek aki a state attribútuma beállításával egy konkrét state-re iratkozik fel, nem gyereke annak a state elementnek tehát ennek a state-nek kell kezelnie a leiratkozási függvényeit, nem annak a state-nek amire feliratkozik. Ez azért kell mert a state-hubként viselkedő <state-provider> MutationObserver-e fogja detektálni a gyere eltávolítódását és a leiratkoztatása csak akkor lehetséges ha ide van elmentve a függvény
-    if (child.matches?.("[state]")) {
-      // Az hogy itt a child-on subscribe-to vagy subscribe (custom elem komplexebb feliratkozási mechanizmussal) az adott state subscribeChild metódusa eldönti
-      const requestedState = child.getAttribute("state");
-
-      if (!requestedState) {
-        return;
-      }
-
-      const unsubscribe = this.states.get(requestedState).subscribeChild(child);
-      this.unsubscribers.set(child, unsubscribe);
-
-      return;
-    }
-
-    // Nem kell elmenteni az összes leiratkozási függvényt, hisz multistatesubscribe-ot csak custom elem használhat, és ő majd leiratkozik magának a disconnectedCallback függvényében
-    if (child.matches?.("[multistatesubscribe]")) {
-      this.trySubscribe(child, this.states);
-      return;
-    }
-
-    if (child.matches?.("[subscribe]") || child.matches?.("render-if")) {
-      this.trySubscribe(child, this.states.get("local"));
-      return;
-    }
-
+  regularSubscribe(child, saveUnsubscribeFunction = true) {
     if (!child.matches?.("[subscribe-to]")) {
       return;
     }
@@ -149,7 +154,10 @@ export default class StateProviderElement extends HTMLElement {
     const unsubscribe = this.states
       .get("local")
       .sub(child.getAttribute("subscribe-to"), (_, value) => {
-        const targetProperty = child.getAttribute("subscribe-with");
+        const targetProperty =
+          child.getAttribute("subscribe-with") || "textContent";
+
+        if (!value) return;
 
         if (targetProperty) {
           try {
@@ -167,7 +175,63 @@ export default class StateProviderElement extends HTMLElement {
     }
   }
 
+  subscribeChild(child) {
+    if (child.parentElement?.closest("state-provider") !== this) {
+      return;
+    }
+
+    if (this.unsubscribers.has(child)) {
+      return;
+    }
+
+    if (this.processed.has(child)) {
+      return;
+    }
+
+    this.processed.add(child);
+
+    // Nem kell elmenteni az összes leiratkozási függvényt, hisz multistatesubscribe-ot csak custom elem használhat, és ő majd leiratkozik magának a disconnectedCallback függvényében
+    if (child.matches?.("[multistatesubscribe]")) {
+      this.complexSubscribe(child, this.states);
+      return;
+    }
+
+    if (child.matches?.("[subscribe]") || child.matches?.("render-if")) {
+      const requestedState = child.getAttribute("state");
+
+      if (!requestedState) {
+        this.complexSubscribe(child, this.states.get("local"));
+      } else {
+        this.complexSubscribe(child, this.states.get(requestedState));
+      }
+
+      return;
+    }
+
+    // Itt ez a <state-provider> state-hub-ként viselkedik tehát a gyerek aki a state attribútuma beállításával egy konkrét state-re iratkozik fel, nem gyereke annak a state elementnek tehát ennek a state-nek kell kezelnie a leiratkozási függvényeit, nem annak a state-nek amire feliratkozik. Ez azért kell mert a state-hubként viselkedő <state-provider> MutationObserver-e fogja detektálni a gyere eltávolítódását és a leiratkoztatása csak akkor lehetséges ha ide van elmentve a függvény
+
+    // Egy nem custom elem gyerek feliratkozik egy adott state-re! Fontos hogy ennek az elemnek nincs subscribe függvénye így nem olvasztható egybe ez az if a fenti kettővel
+    if (child.matches?.("[state]")) {
+      // Az hogy itt a child-on subscribe-to vagy subscribe (custom elem komplexebb feliratkozási mechanizmussal) az adott state subscribeChild metódusa eldönti
+      const requestedState = child.getAttribute("state");
+
+      if (!requestedState) {
+        return;
+      }
+
+      const unsubscribe = this.stateProviders
+        .get(requestedState)
+        .regularSubscribe(child, false);
+      this.unsubscribers.set(child, unsubscribe);
+
+      return;
+    }
+
+    this.regularSubscribe(child);
+  }
+
   subscribeChildren() {
+    // Megeshet hogy egy elem többször van kiválasztva, erre van a this.processed Set()
     for (const child of [
       ...Array.from(this.querySelectorAll("[multistatesubscribe]")),
       ...Array.from(this.querySelectorAll("[subscribe-to]")),
@@ -179,7 +243,7 @@ export default class StateProviderElement extends HTMLElement {
     }
   }
 
-  set(data) {
+  from(data) {
     this.states.get("local").from(data);
   }
 
@@ -194,7 +258,7 @@ export default class StateProviderElement extends HTMLElement {
       if (response?.success) {
         this.states.get("local").from(response.result);
       }
-    } catch {
+    } catch (_) {
       return;
     }
   }
