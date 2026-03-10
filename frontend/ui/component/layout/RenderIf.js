@@ -120,7 +120,7 @@ export default class RenderIf extends HTMLElement {
     }
 
     for (const [key, state] of this.states) {
-      this.merged[key] = state.simpleStore;
+      this.merged[key] = state.store;
     }
 
     // console.log(this.merged);

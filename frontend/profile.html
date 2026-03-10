@@ -30,6 +30,7 @@
     </div>
 
     <state-provider id="profile">
+      <span subscribe-to="test.belso.message2"></span>
       <render-if when="user.id !== local.user_id">
         <h1>PROFIL</h1>
       </render-if>
@@ -177,6 +178,25 @@
                     </div>
                     <div class="body">
                       <div subscribe-to="content"></div>
+                      <render-if when="user.id">
+                        <smart-form-wrapper url="/api/reactions" method="POST">
+                          <form>
+                            <input type="hidden" name="reactionType" />
+                            <input
+                              type="hidden"
+                              name="targetType"
+                              value="comment"
+                            />
+                            <input
+                              type="hidden"
+                              name="targetId"
+                              subscribe-to="id"
+                              subscribe-with="value"
+                            />
+                            <button>Reagálás</button>
+                          </form>
+                        </smart-form-wrapper>
+                      </render-if>
                       <render-if when="user.id === local.author_id">
                         <div>
                           <smart-form-wrapper

@@ -5,95 +5,114 @@ export default class State {
     listenerInitializers.forEach((initializer, index) => {
       initializer((_, value) => {
         values[index] = value;
-
         combinedListener(...values);
       });
     });
   }
 
   constructor(initial = {}) {
-    this.store = new Map();
-    this.simpleStore = {};
-    this.globalListeners = new Set();
-
-    for (const key of Object.keys(initial)) {
-      this.store.set(key, { value: initial[key], listeners: new Set() });
-    }
+    this.store = initial;
+    this.listeners = new Map([["*", new Set()]]);
   }
 
-  get(key) {
-    return this.store.get(key);
+  lookup(obj, path) {
+    if (!path) return obj;
+
+    let current = obj;
+
+    for (const part of path.split(".")) {
+      if (current == null) {
+        return undefined;
+      }
+
+      current = current[part];
+    }
+
+    return current;
   }
 
-  valueOf(key) {
-    return this.store.get(key).value;
-  }
+  notify(path) {
+    for (const [_path, _listeners] of this.listeners.entries()) {
+      if (
+        path === _path ||
+        _path.startsWith(path + ".") ||
+        path.startsWith(_path + ".")
+      ) {
+        const value = this.lookup(this.store, _path);
 
-  from(obj) {
-    for (const key of Object.keys(obj)) {
-      this.set(key, obj[key], false);
-    }
-
-    for (const listener of this.globalListeners) {
-      listener(this.simpleStore);
-    }
-  }
-
-  set(key, value, notifyGlobals = true) {
-    if (!this.store.has(key)) {
-      this.store.set(key, { value, listeners: new Set() });
-      this.simpleStore[key] = value;
-
-      return;
-    }
-
-    const _value = this.store.get(key);
-
-    _value.value = value;
-    this.simpleStore[key] = value;
-
-    for (const listener of _value.listeners) {
-      listener(key, value);
-    }
-
-    if (notifyGlobals) {
-      for (const listener of this.globalListeners) {
-        listener(this.simpleStore);
+        for (const listener of _listeners) {
+          listener(path, value);
+        }
       }
     }
   }
 
-  sub(key, listener) {
-    if (!this.store.has(key)) {
-      this.set(key, undefined);
+  valueOf(path) {
+    return this.lookup(this.store, path);
+  }
+
+  set(path, value, notifyGlobals = true) {
+    const parts = path.split(".");
+    let last = this.store;
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+
+      if (!last[part]) {
+        last[part] = {};
+      }
+
+      last = last[part];
     }
 
-    const { value, listeners } = this.store.get(key);
+    last[parts[parts.length - 1]] = value;
+
+    this.notify(path);
+
+    if (notifyGlobals) {
+      for (const listener of this.listeners.get("*")) {
+        listener(this.store);
+      }
+    }
+  }
+
+  from(obj) {
+    for (const key in obj) {
+      this.set(key, obj[key], false);
+    }
+
+    for (const listener of this.listeners.get("*")) {
+      listener(this.store);
+    }
+  }
+
+  sub(path, listener, notify = true) {
+    if (!this.listeners.has(path)) {
+      this.listeners.set(path, new Set([listener]));
+    }
+
+    const listeners = this.listeners.get(path);
 
     listeners.add(listener);
 
-    // if (value !== undefined) {
-    //   listener(key, value);
-    // }
-
-    listener(key, value);
+    if (notify) {
+      listener(path, this.lookup(this.store, path));
+    }
 
     return () => listeners.delete(listener);
   }
 
   subscribeForAny(listener, notify = true) {
-    if (!this.globalListeners.has(listener)) {
-      this.globalListeners.add(listener);
+    const listeners = this.listeners.get("*");
+
+    if (!listeners.has(listener)) {
+      listeners.add(listener);
 
       if (notify) {
-        listener(this.simpleStore);
+        listener(this.store);
       }
     }
 
-    return () => this.globalListeners.delete(listener);
-  }
-
-  reset() {
-    for (const key of this.store.keys()) this.set(key, undefined);
+    return () => listeners.delete(listener);
   }
 }

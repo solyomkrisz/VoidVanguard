@@ -125,3 +125,15 @@ CREATE TABLE comments(
     INDEX idx_author_id (author_id),
     INDEX idx_created_at (created_at)
 );
+
+CREATE TABLE reactions(
+    user_id CHAR(36),
+    target_type ENUM("post", "comment"),
+    target_id CHAR(36),
+    type TINYINT NOT NULL,
+
+    PRIMARY KEY (user_id, target_id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);
