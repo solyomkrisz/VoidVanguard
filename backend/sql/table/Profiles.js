@@ -138,9 +138,7 @@ class Profiles extends Table {
   }
 
   async delete({ targetUser: { id } }) {
-    const [result] = await execute("DELETE FROM profiles WHERE user_id = ?", [
-      id,
-    ]);
+    const [result] = await execute("DELETE FROM entities WHERE id = ?", [id]);
     return result;
   }
 }

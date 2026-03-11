@@ -25,9 +25,9 @@ export default class StateProviderElement extends HTMLElement {
 
     this.setAttribute("src", value);
 
-    if (!this.disableAutoUpdate) {
-      this.load();
-    }
+    // if (!this.disableAutoUpdate) {
+    //   this.load();
+    // }
   }
 
   get as() {
@@ -97,7 +97,8 @@ export default class StateProviderElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "src" && oldValue !== newValue && !this.disableAutoUpdate) {
+    // name === "src" && oldValue !== newValue && !this.disableAutoUpdate -> középső kiszedve, hogy a like dislike button frissülhessen
+    if (name === "src" && !this.disableAutoUpdate) {
       this.load();
     }
   }
@@ -157,7 +158,7 @@ export default class StateProviderElement extends HTMLElement {
         const targetProperty =
           child.getAttribute("subscribe-with") || "textContent";
 
-        if (!value) return;
+        // if (!value) return;
 
         if (targetProperty) {
           try {
@@ -216,6 +217,10 @@ export default class StateProviderElement extends HTMLElement {
       const requestedState = child.getAttribute("state");
 
       if (!requestedState) {
+        return;
+      }
+
+      if (!this.stateProviders.has(requestedState)) {
         return;
       }
 

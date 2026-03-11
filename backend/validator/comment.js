@@ -43,17 +43,6 @@ const POST = {
   //     },
   //   },
   // },
-  targetType: {
-    in: ["body"],
-    custom: {
-      options: (value) => {
-        if (!["profile", "post"].includes(value)) {
-          throw new Error("Invalid target type");
-        }
-        return true;
-      },
-    },
-  },
   targetId: {
     in: ["body"],
     custom: {

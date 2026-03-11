@@ -28,13 +28,6 @@ router.get(
 
       const result = await Profiles.select(request);
 
-      result.test = {
-        message: "Szia",
-        belso: {
-          message2: ["Hello", "ASD"],
-        },
-      };
-
       response
         .status(200)
         .json(createResponse(true, result, "Profile fetched successfully"));

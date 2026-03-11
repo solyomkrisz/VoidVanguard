@@ -61,6 +61,10 @@ export default class RenderIf extends HTMLElement {
   evaluate() {
     if (!this.evaluateCondition) return;
 
+    for (const [key, state] of this.states) {
+      this.merged[key] = state.store;
+    }
+
     if (!Object.keys(this.merged).length) {
       return;
     }

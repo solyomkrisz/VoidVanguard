@@ -165,7 +165,7 @@ button {
   gap: 30px;
 }
 
-.comments form {
+.comments .post-comment-form {
   display: flex;
   flex-direction: column;
   gap: 10px;

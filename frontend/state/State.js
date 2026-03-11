@@ -77,6 +77,8 @@ export default class State {
   }
 
   from(obj) {
+    this.store = {};
+
     for (const key in obj) {
       this.set(key, obj[key], false);
     }
@@ -114,5 +116,15 @@ export default class State {
     }
 
     return () => listeners.delete(listener);
+  }
+
+  reset() {
+    this.store = {};
+
+    for (const [path, listeners] of this.listeners) {
+      for (const listener of listeners) {
+        listener(path, undefined);
+      }
+    }
   }
 }

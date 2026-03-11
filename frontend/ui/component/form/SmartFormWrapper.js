@@ -9,12 +9,12 @@ function getTarget(element, value) {
   const splitted = value.split(":");
 
   if (splitted.length === 1) {
-    return document.querySelector(splitted[0]);
+    return Array.from(document.querySelectorAll(splitted[0]));
   }
 
   switch (splitted[0]) {
     case "closest":
-      return element.closest(splitted[1]);
+      return [element.closest(splitted[1])];
   }
 }
 
@@ -107,7 +107,9 @@ export default class SmartFormWrapper extends HTMLElement {
         form.reset();
 
         try {
-          getTarget(this, this.refreshTarget).refresh?.();
+          for (const element of getTarget(this, this.refreshTarget)) {
+            element.refresh?.();
+          }
         } catch (error) {
           console.error(error);
           console.error("Unable to refresh target.");

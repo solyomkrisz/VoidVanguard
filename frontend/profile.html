@@ -30,7 +30,6 @@
     </div>
 
     <state-provider id="profile">
-      <span subscribe-to="test.belso.message2"></span>
       <render-if when="user.id !== local.user_id">
         <h1>PROFIL</h1>
       </render-if>
@@ -129,8 +128,7 @@
               response-target="toast-manager"
               refresh-target="lazy-list"
             >
-              <form>
-                <input type="hidden" name="targetType" value="profile" />
+              <form class="post-comment-form">
                 <input
                   type="hidden"
                   subscribe-to="user_id"
@@ -162,6 +160,7 @@
                     bind-target="src"
                     src-prefix="/api/comments/"
                     disable-auto-update
+                    class="comment-state"
                   >
                     <div class="header">
                       <div>
@@ -178,24 +177,84 @@
                     </div>
                     <div class="body">
                       <div subscribe-to="content"></div>
+                      <span>Likeok: <span subscribe-to="likes"></span></span>
+                      <span
+                        >Dislikeok: <span subscribe-to="dislikes"></span
+                      ></span>
                       <render-if when="user.id">
-                        <smart-form-wrapper url="/api/reactions" method="POST">
-                          <form>
-                            <input type="hidden" name="reactionType" />
-                            <input
-                              type="hidden"
-                              name="targetType"
-                              value="comment"
-                            />
-                            <input
-                              type="hidden"
-                              name="targetId"
-                              subscribe-to="id"
-                              subscribe-with="value"
-                            />
-                            <button>Reagálás</button>
-                          </form>
-                        </smart-form-wrapper>
+                        <div style="display: flex">
+                          <state-provider
+                            subscribe-to="id"
+                            subscribe-with="src"
+                            src-prefix="/api/reactions/"
+                            class="reactionState"
+                          >
+                            <smart-form-wrapper
+                              url="/api/reactions"
+                              method="POST"
+                              refresh-target="closest:.comment-state"
+                              response-target="toast-manager"
+                            >
+                              <form>
+                                <input type="hidden" name="type" value="like" />
+                                <input
+                                  type="hidden"
+                                  name="targetId"
+                                  subscribe-to="target_id"
+                                  subscribe-with="value"
+                                />
+                                <render-if when="local.type != 'like'">
+                                  <button>Like</button>
+                                </render-if>
+                                <render-if when="local.type == 'like'">
+                                  <button
+                                    style="background: blue; color: white"
+                                  >
+                                    Like
+                                  </button>
+                                </render-if>
+                              </form>
+                            </smart-form-wrapper>
+                          </state-provider>
+
+                          <state-provider
+                            subscribe-to="id"
+                            subscribe-with="src"
+                            src-prefix="/api/reactions/"
+                            class="reactionState"
+                          >
+                            <smart-form-wrapper
+                              url="/api/reactions"
+                              method="POST"
+                              refresh-target="closest:.comment-state"
+                              response-target="toast-manager"
+                            >
+                              <form>
+                                <input
+                                  type="hidden"
+                                  name="type"
+                                  value="dislike"
+                                />
+                                <input
+                                  type="hidden"
+                                  name="targetId"
+                                  subscribe-to="target_id"
+                                  subscribe-with="value"
+                                />
+                                <render-if when="local.type != 'dislike'">
+                                  <button>Dislike</button>
+                                </render-if>
+                                <render-if when="local.type == 'dislike'">
+                                  <button
+                                    style="background: blue; color: white"
+                                  >
+                                    Dislike
+                                  </button>
+                                </render-if>
+                              </form>
+                            </smart-form-wrapper>
+                          </state-provider>
+                        </div>
                       </render-if>
                       <render-if when="user.id === local.author_id">
                         <div>

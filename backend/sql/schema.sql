@@ -4,6 +4,10 @@ COLLATE utf8_hungarian_ci;
 
 USE voidvanguard;
 
+CREATE TABLE entities(
+    id CHAR(36) PRIMARY KEY
+);
+
 CREATE TABLE users(
     id CHAR(36) PRIMARY KEY,
     username VARCHAR(20) UNIQUE NOT NULL,
@@ -38,8 +42,20 @@ CREATE TABLE profiles(
 
     FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (user_id) REFERENCES entities(id)
+        ON DELETE CASCADE
         ON UPDATE RESTRICT
 );
+
+DELIMITER //
+CREATE TRIGGER profiles_before_insert
+BEFORE INSERT ON profiles
+FOR EACH ROW
+BEGIN
+    INSERT INTO entities(id) VALUES(NEW.user_id);
+END //
+DELIMITER ;
 
 CREATE TABLE friends(
     id CHAR(32) PRIMARY KEY,
@@ -106,33 +122,46 @@ DELIMITER ;
 CREATE TABLE comments(
     id CHAR(36) PRIMARY KEY,
     author_id CHAR(36) NOT NULL,
-    target_type ENUM("post", "profile") NOT NULL,
     target_id CHAR(36) NOT NULL,
     parent_id CHAR(36) DEFAULT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (id) REFERENCES entities(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
     FOREIGN KEY (author_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (target_id) REFERENCES entities(id)
         ON DELETE CASCADE
         ON UPDATE RESTRICT,
     FOREIGN KEY (parent_id) REFERENCES comments(id)
         ON DELETE CASCADE
-        ON UPDATE RESTRICT,
-
-    INDEX idx_target (target_type, target_id),
-    INDEX idx_parent_id (parent_id),
-    INDEX idx_author_id (author_id),
-    INDEX idx_created_at (created_at)
+        ON UPDATE RESTRICT
 );
+
+DELIMITER //
+CREATE TRIGGER comments_before_insert
+BEFORE INSERT ON comments
+FOR EACH ROW
+BEGIN
+    INSERT INTO entities(id) VALUES(NEW.id);
+END //
+DELIMITER ;
 
 CREATE TABLE reactions(
     user_id CHAR(36),
-    target_type ENUM("post", "comment"),
     target_id CHAR(36),
-    type TINYINT NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (user_id, target_id),
+    FOREIGN KEY (target_id) REFERENCES entities(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
     FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
         ON UPDATE RESTRICT
