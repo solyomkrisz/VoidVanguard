@@ -1,8 +1,8 @@
-const Table = require("../Table.js");
-const Column = require("../Column.js");
-const CustomError = require("../../common/CustomError.js");
-const { execute } = require("../database.js");
-const Friends = require("./Friends.js");
+import Table from "../Table.js";
+import Column from "../Column.js";
+import * as CustomError from "../../common/CustomError.js";
+import { execute } from "../database.js";
+import Friends from "./Friends.js";
 
 class Blocks extends Table {
   constructor() {
@@ -25,14 +25,14 @@ class Blocks extends Table {
 
     [rows] = await execute(
       "SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?",
-      [a_id, b_id],
+      [a_id, b_id]
     );
 
     if (rows.length) throw CustomError.INI_BLOCKED_REC;
 
     [rows] = await execute(
       "SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?",
-      [b_id, a_id],
+      [b_id, a_id]
     );
 
     if (rows.length) throw CustomError.REC_BLOCKED_INI;
@@ -48,7 +48,7 @@ class Blocks extends Table {
 
     const [result] = await execute(
       "INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)",
-      [id, userId],
+      [id, userId]
     );
 
     return result;
@@ -60,7 +60,7 @@ class Blocks extends Table {
 
     const [result] = await execute(
       "DELETE FROM blocks WHERE blocker_id = ? AND blocked_id = ?",
-      [id, userId],
+      [id, userId]
     );
 
     return result;
@@ -69,10 +69,10 @@ class Blocks extends Table {
   async getAllBlocked({ targetUser: { id } }) {
     const [rows] = await execute(
       "SELECT blocked_id FROM blocks WHERE blocker_id = ?",
-      [id],
+      [id]
     );
     return rows;
   }
 }
 
-module.exports = new Blocks();
+export default new Blocks();

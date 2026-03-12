@@ -21,7 +21,7 @@ export default class ProfileFormToggle extends BaseCustomElement {
   build() {
     this.setShadowInnerHTML(`
         <toggle-button target="#modifyProfile" hidden>
-            <span>Profil szerkesztése</span>
+            <button>Profil szerkesztése</button>
         </toggle-button>
     `);
   }

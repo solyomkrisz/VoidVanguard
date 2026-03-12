@@ -1,11 +1,11 @@
-const Table = require("../Table.js");
-const Role = require("../../common/Role.js");
-const Permission = require("../../common/Permission.js");
-const Column = require("../Column.js");
-const { execute } = require("../database.js");
-const CustomError = require("../../common/CustomError.js");
-const Password = require("../../common/Password.js");
-const { v4: uuidv4 } = require("uuid");
+import Table from "../Table.js";
+import Role from "../../common/Role.js";
+import Permission from "../../common/Permission.js";
+import Column from "../Column.js";
+import { execute } from "../database.js";
+import * as CustomError from "../../common/CustomError.js";
+import Password from "../../common/Password.js";
+import { v4 as uuidv4 } from "uuid";
 
 class Users extends Table {
   constructor() {
@@ -30,7 +30,7 @@ class Users extends Table {
   async payload(id) {
     const [rows] = await execute(
       "SELECT id, username, role FROM users WHERE id = ?",
-      [id],
+      [id]
     );
     return rows.length ? rows[0] : null;
   }
@@ -40,7 +40,7 @@ class Users extends Table {
 
     const [result] = await execute(
       "INSERT INTO users (id, username, email, gender, password_hash) VALUES (?, ?, ?, ?, ?)",
-      [uuidv4(), username, email, gender, passwordHash],
+      [uuidv4(), username, email, gender, passwordHash]
     );
 
     return result;
@@ -54,7 +54,7 @@ class Users extends Table {
   async login({ body: { username, password } }) {
     const [rows] = await execute(
       "SELECT id, username, role, password_hash FROM users WHERE username = ?",
-      [username],
+      [username]
     );
 
     if (!rows.length) {
@@ -120,4 +120,4 @@ class Users extends Table {
   }
 }
 
-module.exports = new Users();
+export default new Users();

@@ -1,4 +1,4 @@
-const POST = {
+export const POST = {
   username: {
     in: ["body"],
     isLength: {
@@ -18,5 +18,3 @@ const POST = {
     },
   },
 };
-
-module.exports = { POST };

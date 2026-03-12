@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hu">
   <head>
     <meta charset="UTF-8" />
@@ -41,9 +41,7 @@
       <div class="profileHeader">
         <render-if when="!local.user_id" class="profileErrorContainer">
           <div class="profileError">
-            <div subscribe-to="user_id">
-              <h2>Profile not found!</h2>
-            </div>
+            <h2>Profile not found!</h2>
           </div>
         </render-if>
 
@@ -121,7 +119,7 @@
 
       <div class="footer">
         <div class="comments">
-          <render-if when="user.id">
+          <render-if when="user.id && local.user_id">
             <smart-form-wrapper
               url="/api/comments"
               method="POST"
@@ -176,7 +174,34 @@
                       </span>
                     </div>
                     <div class="body">
-                      <div subscribe-to="content"></div>
+                      <div subscribe-to="content" class="to-toggle"></div>
+
+                      <smart-form-wrapper
+                        class="to-toggle"
+                        url="/api/comments"
+                        method="PATCH"
+                        response-target="toast-manager"
+                        refresh-target="closest:state-provider"
+                        dropdown
+                        hidden
+                      >
+                        <form>
+                          <input
+                            name="commentId"
+                            type="hidden"
+                            subscribe-to="id"
+                            subscribe-with="value"
+                          />
+                          <textarea
+                            name="content"
+                            subscribe-to="content"
+                          ></textarea>
+                          <toggle-button target=".to-toggle">
+                            <button>Mentés</button>
+                          </toggle-button>
+                        </form>
+                      </smart-form-wrapper>
+
                       <span>Likeok: <span subscribe-to="likes"></span></span>
                       <span
                         >Dislikeok: <span subscribe-to="dislikes"></span
@@ -257,7 +282,7 @@
                         </div>
                       </render-if>
                       <render-if when="user.id === local.author_id">
-                        <div>
+                        <div style="display: flex">
                           <smart-form-wrapper
                             url="/api/comments"
                             method="DELETE"
@@ -274,8 +299,13 @@
                               <button>Törlés</button>
                             </form>
                           </smart-form-wrapper>
+
+                          <toggle-button target=".to-toggle" class="to-toggle">
+                            <button>Szerkesztés</button>
+                          </toggle-button>
                         </div>
-                        <dropdown-container hide-toggle-when-active>
+
+                        <!-- <dropdown-container hide-toggle-when-active>
                           <button toggle original-toggle>Szerkesztés</button>
                           <smart-form-wrapper
                             url="/api/comments"
@@ -299,7 +329,7 @@
                               <button toggle>Mentés</button>
                             </form>
                           </smart-form-wrapper>
-                        </dropdown-container>
+                        </dropdown-container> -->
                       </render-if>
                     </div>
                   </state-provider>
@@ -324,10 +354,12 @@
     <script>
       function searchResultClickHandler(e) {
         document.querySelector("search-bar collection-view").hidden = true;
-        document.querySelector("#profile").src =
-          `/api/profiles/${e.target.target}`;
-        document.querySelector("lazy-list").src =
-          `/api/comments?targetId=${e.target.target}`;
+        document.querySelector(
+          "#profile"
+        ).src = `/api/profiles/${e.target.target}`;
+        document.querySelector(
+          "lazy-list"
+        ).src = `/api/comments?targetId=${e.target.target}`;
         history.replaceState({}, "", "/profile/" + e.target.target);
       }
     </script>

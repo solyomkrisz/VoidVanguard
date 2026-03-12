@@ -1,13 +1,14 @@
-const express = require("express");
+import express from "express";
+import users from "./users.js";
+import sessions from "./sessions.js";
+import tokens from "./tokens.js";
+import profiles from "./profiles.js";
+import friends from "./friends.js";
+import blocks from "./blocks.js";
+import comments from "./comments.js";
+import reactions from "./reactions.js";
+
 const router = express.Router();
-const users = require("./users.js");
-const sessions = require("./sessions.js");
-const tokens = require("./tokens.js");
-const profiles = require("./profiles.js");
-const friends = require("./friends.js");
-const blocks = require("./blocks.js");
-const comments = require("./comments.js");
-const reactions = require("./reactions.js");
 
 router.get("/test", (request, response) => {
   response.status(200).json({
@@ -24,4 +25,4 @@ router.use("/blocks", blocks);
 router.use("/comments", comments);
 router.use("/reactions", reactions);
 
-module.exports = router;
+export default router;

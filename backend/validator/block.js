@@ -1,9 +1,7 @@
-const { isValidUUIDv4 } = require("../common/common.js");
+import { isValidUUIDv4 } from "../common/common.js";
 
-const POST = function (request, response, next) {
+export const POST = function (request, response, next) {
   const id = request?.body?.userId;
   request.valid = isValidUUIDv4(id);
   next();
 };
-
-module.exports = { POST };

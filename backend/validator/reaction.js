@@ -1,6 +1,6 @@
-const { isValidUUIDv4 } = require("../common/common.js");
+import { isValidUUIDv4 } from "../common/common.js";
 
-const GET = {
+export const GET = {
   targetId: {
     in: ["params"],
     custom: {
@@ -14,7 +14,7 @@ const GET = {
   },
 };
 
-const POST = {
+export const POST = {
   targetId: {
     in: ["body"],
     custom: {
@@ -34,5 +34,3 @@ const POST = {
     },
   },
 };
-
-module.exports = { GET, POST };

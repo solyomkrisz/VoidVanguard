@@ -1,14 +1,15 @@
-const express = require("express");
-const router = express.Router();
-const Blocks = require("../sql/table/Blocks.js");
-const { checkSchema, validationResult } = require("express-validator");
-const validator = require("../validator/block.js");
-const {
+import express from "express";
+import Blocks from "../sql/table/Blocks.js";
+import { checkSchema, validationResult } from "express-validator";
+import * as validator from "../validator/block.js";
+import {
   upload,
   createResponse,
   authenticate,
   modifyTargetUser,
-} = require("../common/common.js");
+} from "../common/common.js";
+
+const router = express.Router();
 
 router.get(
   "/",
@@ -32,7 +33,7 @@ router.get(
       response
         .status(200)
         .json(
-          createResponse(true, result, "Blocked users retrieved successfully"),
+          createResponse(true, result, "Blocked users retrieved successfully")
         );
     } catch (error) {
       console.log(error);
@@ -40,7 +41,7 @@ router.get(
         .status(500)
         .json(createResponse(false, null, "Error fetching blocked users"));
     }
-  },
+  }
 );
 
 router.post(
@@ -74,7 +75,7 @@ router.post(
         .status(500)
         .json(createResponse(false, null, "Failed to block user"));
     }
-  },
+  }
 );
 
 router.delete(
@@ -107,7 +108,7 @@ router.delete(
         .status(500)
         .json(createResponse(false, null, "Failed to unblock user"));
     }
-  },
+  }
 );
 
-module.exports = router;
+export default router;

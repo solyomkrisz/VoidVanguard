@@ -1,12 +1,12 @@
-const { isValidUUIDv4 } = require("../common/common.js");
+import { isValidUUIDv4 } from "../common/common.js";
 
-const GET = function (request, response, next) {
+export const GET = function (request, response, next) {
   const id = request?.params?.id;
   request.valid = isValidUUIDv4(id);
   next();
 };
 
-const POST = {
+export const POST = {
   avatar: {
     in: ["body"],
     optional: { options: { nullable: true } },
@@ -44,7 +44,7 @@ const POST = {
   },
 };
 
-const PATCH = {
+export const PATCH = {
   avatar: {
     in: ["body"],
     optional: { options: { nullable: true } },
@@ -81,5 +81,3 @@ const PATCH = {
     },
   },
 };
-
-module.exports = { GET, POST, PATCH };

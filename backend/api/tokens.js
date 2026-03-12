@@ -1,12 +1,10 @@
-const express = require("express");
+import express from "express";
+import Token from "../common/Token.js";
+import RefreshTokens from "../sql/table/RefreshTokens.js";
+import Users from "../sql/table/Users.js";
+import { createResponse, clearRefreshTokenCookie } from "../common/common.js";
+
 const router = express.Router();
-const Token = require("../common/Token.js");
-const RefreshTokens = require("../sql/table/RefreshTokens.js");
-const Users = require("../sql/table/Users.js");
-const {
-  createResponse,
-  clearRefreshTokenCookie,
-} = require("../common/common.js");
 
 // prettier-ignore
 router.get("/", async (request, response) => {
@@ -58,4 +56,4 @@ router.get("/", async (request, response) => {
   response.status(200).json(createResponse(true, { access_token: accessToken }, "Access token refreshed successfully"));
 });
 
-module.exports = router;
+export default router;

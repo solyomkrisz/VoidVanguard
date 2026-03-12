@@ -1,6 +1,6 @@
-const Table = require("../Table.js");
-const Column = require("../Column.js");
-const { execute } = require("../database.js");
+import Table from "../Table.js";
+import Column from "../Column.js";
+import { execute } from "../database.js";
 
 class Friends extends Table {
   constructor() {
@@ -26,7 +26,7 @@ class Friends extends Table {
 
     const [rows] = await execute(
       "SELECT status, initiator_id FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?))",
-      [a_id, b_id, b_id, a_id],
+      [a_id, b_id, b_id, a_id]
     );
 
     if (!rows.length) {
@@ -56,7 +56,7 @@ class Friends extends Table {
 
     const [rows] = await execute(
       "SELECT 1 FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?)) AND status = 'accepted'",
-      [a_id, b_id, b_id, a_id],
+      [a_id, b_id, b_id, a_id]
     );
 
     return !!rows.length;
@@ -65,7 +65,7 @@ class Friends extends Table {
   async initiate({ targetUser, body }) {
     const [result] = await execute(
       "INSERT INTO friends (initiator_id, recipient_id) VALUES (?, ?)",
-      [targetUser.id, body.userId],
+      [targetUser.id, body.userId]
     );
     return result;
   }
@@ -73,7 +73,7 @@ class Friends extends Table {
   async accept({ targetUser, body }) {
     const [result] = await execute(
       "UPDATE friends SET status = 'accepted' WHERE status = 'pending' AND initiator_id = ? AND recipient_id = ?",
-      [body.userId, targetUser.id],
+      [body.userId, targetUser.id]
     );
     return result;
   }
@@ -81,7 +81,7 @@ class Friends extends Table {
   async delete({ targetUser: { id: a_id }, body: { userId: b_id } }) {
     const [result] = await execute(
       "DELETE FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?))",
-      [a_id, b_id, b_id, a_id],
+      [a_id, b_id, b_id, a_id]
     );
     return result;
   }
@@ -89,7 +89,7 @@ class Friends extends Table {
   async getAllIncoming({ targetUser: { id } }) {
     const [rows] = await execute(
       "SELECT initiator_id FROM friends WHERE recipient_id = ? AND status = 'pending'",
-      [id],
+      [id]
     );
     return rows;
   }
@@ -97,7 +97,7 @@ class Friends extends Table {
   async getAllPending({ targetUser: { id } }) {
     const [rows] = await execute(
       "SELECT recipient_id FROM friends WHERE initiator_id = ? AND status = 'pending'",
-      [id],
+      [id]
     );
     return rows;
   }
@@ -122,11 +122,11 @@ class Friends extends Table {
         LEFT JOIN profiles ON profiles.user_id = users.id
         WHERE initiator_id = ? AND status = 'accepted'
       `,
-      [_id, _id],
+      [_id, _id]
     );
 
     return rows;
   }
 }
 
-module.exports = new Friends();
+export default new Friends();

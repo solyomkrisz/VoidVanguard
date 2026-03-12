@@ -1,6 +1,6 @@
-const { isValidUUIDv4 } = require("../common/common.js");
+import { isValidUUIDv4 } from "../common/common.js";
 
-const GET = {
+export const GET = {
   targetId: {
     in: ["query"],
   },
@@ -31,7 +31,7 @@ const GET = {
   },
 };
 
-const POST = {
+export const POST = {
   // authorId: {
   //   in: ["body"],
   //   custom: {
@@ -78,7 +78,7 @@ const POST = {
   },
 };
 
-const PATCH = {
+export const PATCH = {
   commentId: {
     in: ["body"],
     custom: {
@@ -101,7 +101,7 @@ const PATCH = {
   },
 };
 
-const DELETE = {
+export const DELETE = {
   commentId: {
     in: ["body"],
     custom: {
@@ -114,5 +114,3 @@ const DELETE = {
     },
   },
 };
-
-module.exports = { GET, POST, PATCH, DELETE };

@@ -1,9 +1,6 @@
-const Table = require("../Table.js");
-const Column = require("../Column.js");
-const CustomError = require("../../common/CustomError.js");
-const { execute } = require("../database.js");
-const Role = require("../../common/Role.js");
-const Permission = require("../../common/Permission.js");
+import Table from "../Table.js";
+import Column from "../Column.js";
+import { execute } from "../database.js";
 
 class Reactions extends Table {
   constructor() {
@@ -19,7 +16,7 @@ class Reactions extends Table {
   async select({ targetUser: { id }, params: { targetId } }) {
     const [rows] = await execute(
       "SELECT * FROM reactions WHERE user_id = ? AND target_id = ?",
-      [id, targetId],
+      [id, targetId]
     );
 
     if (!rows.length) {
@@ -34,7 +31,7 @@ class Reactions extends Table {
   async create({ targetUser: { id }, body: { targetId, type } }) {
     const [result] = await execute(
       "INSERT INTO reactions (user_id, target_id, type) VALUES (?, ?, ?)",
-      [id, targetId, type],
+      [id, targetId, type]
     );
     return result;
   }
@@ -42,7 +39,7 @@ class Reactions extends Table {
   async delete({ targetUser: { id }, body: { targetId, type } }) {
     const [result] = await execute(
       "DELETE FROM reactions WHERE user_id = ? AND target_id = ? AND type = ?",
-      [id, targetId, type],
+      [id, targetId, type]
     );
     return result;
   }
@@ -50,10 +47,10 @@ class Reactions extends Table {
   async upsert({ targetUser: { id }, body: { targetId, type } }) {
     const [result] = await execute(
       "INSERT INTO reactions (user_id, target_id, type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE type = VALUES(type)",
-      [id, targetId, type],
+      [id, targetId, type]
     );
     return result;
   }
 }
 
-module.exports = new Reactions();
+export default new Reactions();

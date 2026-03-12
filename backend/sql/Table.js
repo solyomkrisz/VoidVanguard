@@ -1,4 +1,4 @@
-const Columns = require("./Columns.js");
+import Columns from "./Columns.js";
 
 class Table {
   constructor({ columns = [] } = {}) {
@@ -10,4 +10,4 @@ class Table {
   }
 }
 
-module.exports = Table;
+export default Table;

@@ -1,17 +1,18 @@
-const express = require("express");
-const router = express.Router();
-const Comments = require("../sql/table/Comments.js");
-const {
+import express from "express";
+import Comments from "../sql/table/Comments.js";
+import {
   createResponse,
   authenticate,
   handleExpressValidatorErrors,
   handleCaughtError,
   modifyTargetUser,
   upload,
-} = require("../common/common.js");
-const { checkSchema, validationResult } = require("express-validator");
-const validator = require("../validator/comment.js");
-const CustomError = require("../common/CustomError.js");
+} from "../common/common.js";
+import { checkSchema, validationResult } from "express-validator";
+import * as validator from "../validator/comment.js";
+import * as CustomError from "../common/CustomError.js";
+
+const router = express.Router();
 
 router.get("/", checkSchema(validator.GET), async (request, response) => {
   const errors = validationResult(request);
@@ -64,7 +65,7 @@ router.post(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.patch(
@@ -89,7 +90,7 @@ router.patch(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.delete(
@@ -114,7 +115,7 @@ router.delete(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
-module.exports = router;
+export default router;

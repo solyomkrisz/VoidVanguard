@@ -1,11 +1,11 @@
-const Table = require("../Table.js");
-const Column = require("../Column.js");
-const CustomError = require("../../common/CustomError.js");
-const { execute } = require("../database.js");
-const Role = require("../../common/Role.js");
-const Permission = require("../../common/Permission.js");
-const Blocks = require("./Blocks.js");
-const Friends = require("./Friends.js");
+import Table from "../Table.js";
+import Column from "../Column.js";
+import * as CustomError from "../../common/CustomError.js";
+import { execute } from "../database.js";
+import Role from "../../common/Role.js";
+import Permission from "../../common/Permission.js";
+import Blocks from "./Blocks.js";
+import Friends from "./Friends.js";
 
 class Profiles extends Table {
   constructor() {
@@ -25,7 +25,7 @@ class Profiles extends Table {
   async like(request) {
     const [rows] = await execute(
       "SELECT user_id, avatar, display_name FROM profiles WHERE display_name LIKE ?",
-      [`${request.query.search}%`],
+      [`${request.query.search}%`]
     );
     return rows;
   }
@@ -40,7 +40,7 @@ class Profiles extends Table {
   async _select(id) {
     const [rows] = await execute(
       "SELECT avatar, display_name, description, visibility FROM profiles WHERE user_id = ?",
-      [id],
+      [id]
     );
     if (!rows.length) {
       throw CustomError.PROFILE_NOT_FOUND;
@@ -143,4 +143,4 @@ class Profiles extends Table {
   }
 }
 
-module.exports = new Profiles();
+export default new Profiles();

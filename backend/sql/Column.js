@@ -1,4 +1,4 @@
-const Role = require("../common/Role.js");
+import Role from "../common/Role.js";
 
 class Column {
   constructor(name, permissions = new Map()) {
@@ -35,4 +35,4 @@ class Column {
   }
 }
 
-module.exports = Column;
+export default Column;

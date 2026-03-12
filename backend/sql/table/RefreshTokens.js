@@ -1,8 +1,8 @@
-const bcrypt = require("bcrypt");
-const Table = require("../Table.js");
-const Column = require("../Column.js");
-const CustomError = require("../../common/CustomError.js");
-const { execute } = require("../database.js");
+import bcrypt from "bcrypt";
+import Table from "../Table.js";
+import Column from "../Column.js";
+import * as CustomError from "../../common/CustomError.js";
+import { execute } from "../database.js";
 
 class RefreshTokens extends Table {
   constructor() {
@@ -21,7 +21,7 @@ class RefreshTokens extends Table {
     const tokenHash = await bcrypt.hash(token, 10);
     const [result] = await execute(
       "INSERT INTO refresh_tokens (user_id, token_hash, expires_at, issued_at) VALUES (?, ?, ?, ?)",
-      [id, tokenHash, new Date(exp * 1000), new Date(iat * 1000)],
+      [id, tokenHash, new Date(exp * 1000), new Date(iat * 1000)]
     );
     return result;
   }
@@ -29,7 +29,7 @@ class RefreshTokens extends Table {
   async revokeAll(id) {
     const [result] = await execute(
       "UPDATE refresh_tokens SET revoked = TRUE WHERE user_id = ? AND revoked = FALSE",
-      [id],
+      [id]
     );
     return result;
   }
@@ -37,7 +37,7 @@ class RefreshTokens extends Table {
   async deleteAll(id) {
     const [result] = await execute(
       "DELETE FROM refresh_tokens WHERE user_id = ?",
-      [id],
+      [id]
     );
     return result;
   }
@@ -45,7 +45,7 @@ class RefreshTokens extends Table {
   async find(id, token) {
     const [rows] = await execute(
       "SELECT token_hash FROM refresh_tokens WHERE user_id = ? AND revoked = FALSE AND expires_at > NOW()",
-      [id],
+      [id]
     );
 
     if (!rows.length) {
@@ -60,4 +60,4 @@ class RefreshTokens extends Table {
   }
 }
 
-module.exports = new RefreshTokens();
+export default new RefreshTokens();

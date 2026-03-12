@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 class Token {
   static get(
@@ -6,7 +6,7 @@ class Token {
     iat = Math.floor(Date.now() / 1000),
     exp = Math.floor(Date.now() / 1000) + 15 * 60,
     secret = process.env.ACCESS_TOKEN_SECRET,
-    options = {},
+    options = {}
   ) {
     payload.iat = iat;
     payload.exp = exp;
@@ -19,4 +19,4 @@ class Token {
   }
 }
 
-module.exports = Token;
+export default Token;

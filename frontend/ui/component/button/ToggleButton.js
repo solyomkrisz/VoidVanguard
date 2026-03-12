@@ -1,8 +1,6 @@
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
-import { dir, element, text } from "/ui/UI.js";
-import { path } from "/common/common.js";
+import { element, text } from "/ui/UI.js";
 
-export default class ToggleButton extends BaseCustomElement {
+export default class ToggleButton extends HTMLElement {
   static get observedAttributes() {
     return ["target"];
   }
@@ -16,7 +14,7 @@ export default class ToggleButton extends BaseCustomElement {
   }
 
   constructor() {
-    super([path.join(dir, "global.css")]);
+    super();
   }
 
   connectedCallback() {
@@ -28,14 +26,22 @@ export default class ToggleButton extends BaseCustomElement {
   }
 
   build() {
-    this.appendShadowChild(element("button", element("slot"))).addEventListener(
-      "click",
-      () => {
-        const target = document.querySelector(this.target);
-        if (!target) return;
+    let button = this.querySelector("button");
+
+    if (!button) {
+      button = element("button", text("toggle-button"));
+      this.appendChild(button);
+    }
+
+    button.addEventListener("click", () => {
+      const targets = Array.from(document.querySelectorAll(this.target));
+
+      if (!targets.length) return;
+
+      for (const target of targets) {
         target.hidden = !target.hidden;
-      },
-    );
+      }
+    });
   }
 }
 

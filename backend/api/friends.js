@@ -1,10 +1,9 @@
-const express = require("express");
-const router = express.Router();
-const Friends = require("../sql/table/Friends.js");
-const Blocks = require("../sql/table/Blocks.js");
-const { checkSchema, validationResult } = require("express-validator");
-const validator = require("../validator/friend.js");
-const {
+import express from "express";
+import Friends from "../sql/table/Friends.js";
+import Blocks from "../sql/table/Blocks.js";
+import { checkSchema, validationResult } from "express-validator";
+import * as validator from "../validator/friend.js";
+import {
   upload,
   createResponse,
   authenticate,
@@ -13,7 +12,9 @@ const {
   handleCaughtError,
   isSequelizeUniqueConstraintError,
   handleSequelizeUniqueConstraintError,
-} = require("../common/common.js");
+} from "../common/common.js";
+
+const router = express.Router();
 
 router.post(
   "/",
@@ -42,12 +43,12 @@ router.post(
       if (isSequelizeUniqueConstraintError(error)) {
         return handleSequelizeUniqueConstraintError(
           response,
-          "A friend request already exists or you are already friends with this user.",
+          "A friend request already exists or you are already friends with this user."
         );
       }
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.patch(
@@ -67,12 +68,12 @@ router.patch(
       response
         .status(200)
         .json(
-          createResponse(true, null, "Friend request accepted successfully"),
+          createResponse(true, null, "Friend request accepted successfully")
         );
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.delete(
@@ -94,7 +95,7 @@ router.delete(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
-module.exports = router;
+export default router;

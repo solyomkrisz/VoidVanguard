@@ -1,6 +1,6 @@
-const { isValidUUIDv4 } = require("../common/common.js");
+import { isValidUUIDv4 } from "../common/common.js";
 
-const POST = {
+export const POST = {
   userId: {
     in: ["body"],
     custom: {
@@ -13,5 +13,3 @@ const POST = {
     },
   },
 };
-
-module.exports = { POST };

@@ -1,17 +1,18 @@
-const express = require("express");
-const router = express.Router();
-const Token = require("../common/Token.js");
-const RefreshTokens = require("../sql/table/RefreshTokens.js");
-const Users = require("../sql/table/Users.js");
-const {
+import express from "express";
+import Token from "../common/Token.js";
+import RefreshTokens from "../sql/table/RefreshTokens.js";
+import Users from "../sql/table/Users.js";
+import {
   createResponse,
   authenticate,
   clearRefreshTokenCookie,
   handleExpressValidatorErrors,
   handleCaughtError,
-} = require("../common/common.js");
-const { checkSchema, validationResult } = require("express-validator");
-const validator = require("../validator/session.js");
+} from "../common/common.js";
+import { checkSchema, validationResult } from "express-validator";
+import * as validator from "../validator/session.js";
+
+const router = express.Router();
 
 router.post(
   "/",
@@ -62,7 +63,7 @@ router.post(
     response
       .status(200)
       .json(createResponse(true, { access_token }, "Login successful"));
-  },
+  }
 );
 
 router.delete("/", (request, response) => {
@@ -72,4 +73,4 @@ router.delete("/", (request, response) => {
     .json(createResponse(true, { access_token: "" }, "Logout successful"));
 });
 
-module.exports = router;
+export default router;

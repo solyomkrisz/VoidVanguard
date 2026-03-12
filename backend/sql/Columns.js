@@ -13,4 +13,4 @@ class Columns {
   }
 }
 
-module.exports = Columns;
+export default Columns;

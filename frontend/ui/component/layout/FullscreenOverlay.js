@@ -28,7 +28,7 @@ export default class FullscreenOverlay extends BaseCustomElement {
 
     this.setShadowInnerHTML(`
       <toggle-button target="${this.target}">
-        <span>Bezár</span>
+        <button>Bezár</button>
       </toggle-button>
       <slot></slot>
     `);

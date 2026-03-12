@@ -1,9 +1,8 @@
-const express = require("express");
-const router = express.Router();
-const Users = require("../sql/table/Users.js");
-const { checkSchema, validationResult } = require("express-validator");
-const validator = require("../validator/user.js");
-const {
+import express from "express";
+import Users from "../sql/table/Users.js";
+import { checkSchema, validationResult } from "express-validator";
+import * as validator from "../validator/user.js";
+import {
   createResponse,
   authenticate,
   modifyTargetUser,
@@ -11,8 +10,10 @@ const {
   handleExpressValidatorErrors,
   isSequelizeUniqueConstraintError,
   handleSequelizeUniqueConstraintError,
-} = require("../common/common.js");
-const CustomError = require("../common/CustomError.js");
+} from "../common/common.js";
+import * as CustomError from "../common/CustomError.js";
+
+const router = express.Router();
 
 router.post(
   "/",
@@ -24,8 +25,8 @@ router.post(
           createResponse(
             true,
             null,
-            "Registration is not available for logged-in users",
-          ),
+            "Registration is not available for logged-in users"
+          )
         );
     },
     onInvalidAccessToken: (_, _1, next) => next(),
@@ -47,13 +48,13 @@ router.post(
       if (isSequelizeUniqueConstraintError(error)) {
         return handleSequelizeUniqueConstraintError(
           response,
-          "Username or email already taken",
+          "Username or email already taken"
         );
       }
 
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.patch(
@@ -79,12 +80,12 @@ router.patch(
       if (isSequelizeUniqueConstraintError(error)) {
         return handleSequelizeUniqueConstraintError(
           response,
-          "Username or email already taken",
+          "Username or email already taken"
         );
       }
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.delete(
@@ -102,7 +103,7 @@ router.delete(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
-module.exports = router;
+export default router;

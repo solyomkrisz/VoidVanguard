@@ -1,6 +1,4 @@
-const mysql = require("mysql2/promise");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+import mysql from "mysql2/promise";
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -12,11 +10,6 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-function execute(query, values = []) {
+export function execute(query, values = []) {
   return pool.execute(query, values);
 }
-
-//!Export
-module.exports = {
-  execute,
-};

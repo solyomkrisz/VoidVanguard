@@ -9,7 +9,7 @@ class CustomError {
   }
 }
 
-const TEST = new CustomError({
+export const TEST = new CustomError({
   statusCode: 500,
   definition: {
     name: "TestError",
@@ -18,7 +18,7 @@ const TEST = new CustomError({
   },
 });
 
-const USER_NOT_FOUND = new CustomError({
+export const USER_NOT_FOUND = new CustomError({
   statusCode: 404,
   definition: {
     name: "UserNotFoundError",
@@ -27,7 +27,7 @@ const USER_NOT_FOUND = new CustomError({
   },
 });
 
-const INVALID_CREDENTIALS = new CustomError({
+export const INVALID_CREDENTIALS = new CustomError({
   statusCode: 400,
   definition: {
     name: "InvalidCredentialsError",
@@ -36,7 +36,7 @@ const INVALID_CREDENTIALS = new CustomError({
   },
 });
 
-const NO_DATA_PROVIDED = new CustomError({
+export const NO_DATA_PROVIDED = new CustomError({
   statusCode: 400,
   definition: {
     name: "NoDataProvidedError",
@@ -45,7 +45,7 @@ const NO_DATA_PROVIDED = new CustomError({
   },
 });
 
-const NO_DATA_CHANGE = new CustomError({
+export const NO_DATA_CHANGE = new CustomError({
   statusCode: 500,
   definition: {
     name: "NoDataChangeError",
@@ -54,7 +54,7 @@ const NO_DATA_CHANGE = new CustomError({
   },
 });
 
-const INVALID_REQUEST = new CustomError({
+export const INVALID_REQUEST = new CustomError({
   statusCode: 400,
   definition: {
     name: "InvalidRequestError",
@@ -63,7 +63,7 @@ const INVALID_REQUEST = new CustomError({
   },
 });
 
-const INVALID_TOKEN = new CustomError({
+export const INVALID_TOKEN = new CustomError({
   statusCode: 400,
   definition: {
     name: "InvalidTokenError",
@@ -72,7 +72,7 @@ const INVALID_TOKEN = new CustomError({
   },
 });
 
-const PROFILE_NOT_FOUND = new CustomError({
+export const PROFILE_NOT_FOUND = new CustomError({
   statusCode: 404,
   definition: {
     name: "ProfileNotFoundError",
@@ -81,7 +81,7 @@ const PROFILE_NOT_FOUND = new CustomError({
   },
 });
 
-const INI_BLOCKED_REC = new CustomError({
+export const INI_BLOCKED_REC = new CustomError({
   statusCode: 403,
   definition: {
     name: "InitiatorBlockedRecipientError",
@@ -90,7 +90,7 @@ const INI_BLOCKED_REC = new CustomError({
   },
 });
 
-const REC_BLOCKED_INI = new CustomError({
+export const REC_BLOCKED_INI = new CustomError({
   statusCode: 500,
   definition: {
     name: "RecipientBlockedInitiatorError",
@@ -99,7 +99,7 @@ const REC_BLOCKED_INI = new CustomError({
   },
 });
 
-const UNAUTHORIZED = new CustomError({
+export const UNAUTHORIZED = new CustomError({
   statusCode: 401,
   definition: {
     name: "UnauthorizedError",
@@ -108,21 +108,6 @@ const UNAUTHORIZED = new CustomError({
   },
 });
 
-function isCustomError(error) {
+export function isCustomError(error) {
   return error instanceof CustomError;
 }
-
-module.exports = {
-  isCustomError,
-  TEST,
-  USER_NOT_FOUND,
-  INVALID_CREDENTIALS,
-  NO_DATA_PROVIDED,
-  NO_DATA_CHANGE,
-  INVALID_REQUEST,
-  INVALID_TOKEN,
-  PROFILE_NOT_FOUND,
-  INI_BLOCKED_REC,
-  REC_BLOCKED_INI,
-  UNAUTHORIZED,
-};

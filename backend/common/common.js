@@ -1,11 +1,11 @@
-const jwt = require("jsonwebtoken");
-const { validate, version } = require("uuid");
-const CustomError = require("./CustomError.js");
-const Role = require("./Role.js");
-const Friends = require("../sql/table/Friends.js");
+import jwt from "jsonwebtoken";
+import { validate, version } from "uuid";
+import * as CustomError from "./CustomError.js";
+import Role from "./Role.js";
+import Friends from "../sql/table/Friends.js";
 
-const multer = require("multer");
-const path = require("path");
+import multer from "multer";
+import path from "path";
 
 const storage = multer.diskStorage({
   destination: (request, file, callback) => {
@@ -16,9 +16,9 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+export const upload = multer({ storage });
 
-function createResponse(success, result, message = null) {
+export function createResponse(success, result, message = null) {
   return {
     success,
     result,
@@ -26,7 +26,7 @@ function createResponse(success, result, message = null) {
   };
 }
 
-function clearRefreshTokenCookie(response) {
+export function clearRefreshTokenCookie(response) {
   response.cookie("refresh_token", "", {
     httpOnly: true,
     maxAge: 0,
@@ -35,7 +35,7 @@ function clearRefreshTokenCookie(response) {
   });
 }
 
-function authenticate(
+export function authenticate(
   opitons = {
     onValidAccessToken: (_, _1, next) => {
       next();
@@ -46,10 +46,10 @@ function authenticate(
       response
         .status(error.statusCode)
         .json(
-          createResponse(false, error.definition, error.definition.message),
+          createResponse(false, error.definition, error.definition.message)
         );
     },
-  },
+  }
 ) {
   return function (request, response, next) {
     const authorization = request?.headers?.authorization;
@@ -75,7 +75,7 @@ function authenticate(
   };
 }
 
-function authorize(
+export function authorize(
   requiredRole,
   options = {
     onMatch: (_, _1, next) => {
@@ -84,7 +84,7 @@ function authorize(
     onMismatch: (_, response, _1) => {
       response.status(403).json(createResponse(false, null, "Forbidden"));
     },
-  },
+  }
 ) {
   return function (request, response, next) {
     if (!request?.user) {
@@ -98,7 +98,7 @@ function authorize(
   };
 }
 
-function modifyTargetUser(requiredRole = Role.ADMIN) {
+export function modifyTargetUser(requiredRole = Role.ADMIN) {
   return function (request, response, next) {
     if (request.user.role < requiredRole) {
       return next();
@@ -114,11 +114,11 @@ function modifyTargetUser(requiredRole = Role.ADMIN) {
   };
 }
 
-function isValidUUIDv4(id) {
+export function isValidUUIDv4(id) {
   return validate(id) && version(id) === 4;
 }
 
-function handleCaughtError(response, error) {
+export function handleCaughtError(response, error) {
   console.log(error);
 
   if (CustomError.isCustomError(error)) {
@@ -132,33 +132,19 @@ function handleCaughtError(response, error) {
     .json(createResponse(false, null, "An unexpected error occurred"));
 }
 
-function handleExpressValidatorErrors(response, errors) {
+export function handleExpressValidatorErrors(response, errors) {
   return response
     .status(400)
     .json(createResponse(false, null, errors.array()[0].msg));
 }
 
-function isSequelizeUniqueConstraintError(error) {
+export function isSequelizeUniqueConstraintError(error) {
   return (
     error.name === "SequelizeUniqueConstraintError" ||
     error.code === "ER_DUP_ENTRY"
   );
 }
 
-function handleSequelizeUniqueConstraintError(response, message) {
+export function handleSequelizeUniqueConstraintError(response, message) {
   return response.status(400).json(createResponse(false, null, message));
 }
-
-module.exports = {
-  upload,
-  createResponse,
-  clearRefreshTokenCookie,
-  authenticate,
-  authorize,
-  modifyTargetUser,
-  isValidUUIDv4,
-  handleCaughtError,
-  handleExpressValidatorErrors,
-  isSequelizeUniqueConstraintError,
-  handleSequelizeUniqueConstraintError,
-};

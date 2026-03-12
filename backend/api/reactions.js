@@ -1,16 +1,17 @@
-const express = require("express");
-const router = express.Router();
-const Reactions = require("../sql/table/Reactions.js");
-const {
+import express from "express";
+import Reactions from "../sql/table/Reactions.js";
+import {
   upload,
   createResponse,
   authenticate,
   handleExpressValidatorErrors,
   handleCaughtError,
   modifyTargetUser,
-} = require("../common/common.js");
-const { checkSchema, validationResult } = require("express-validator");
-const validator = require("../validator/reaction.js");
+} from "../common/common.js";
+import { checkSchema, validationResult } from "express-validator";
+import * as validator from "../validator/reaction.js";
+
+const router = express.Router();
 
 router.get(
   "/:targetId",
@@ -32,7 +33,7 @@ router.get(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 // prettier-ignore
@@ -68,4 +69,4 @@ router.post(
   },
 );
 
-module.exports = router;
+export default router;

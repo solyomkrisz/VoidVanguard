@@ -1,10 +1,9 @@
-const express = require("express");
-const router = express.Router();
-const Profiles = require("../sql//table/Profiles.js");
-const { checkSchema, validationResult } = require("express-validator");
-const validator = require("../validator/profile.js");
-const CustomError = require("../common/CustomError.js");
-const {
+import express from "express";
+import Profiles from "../sql//table/Profiles.js";
+import { checkSchema, validationResult } from "express-validator";
+import * as validator from "../validator/profile.js";
+import * as CustomError from "../common/CustomError.js";
+import {
   upload,
   createResponse,
   authenticate,
@@ -13,7 +12,9 @@ const {
   handleExpressValidatorErrors,
   isSequelizeUniqueConstraintError,
   handleSequelizeUniqueConstraintError,
-} = require("../common/common.js");
+} from "../common/common.js";
+
+const router = express.Router();
 
 router.get(
   "/:id",
@@ -34,7 +35,7 @@ router.get(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 // for searching
@@ -62,13 +63,13 @@ router.get(
           createResponse(
             true,
             { profiles: result },
-            "Search successfully completed",
-          ),
+            "Search successfully completed"
+          )
         );
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.post(
@@ -93,12 +94,12 @@ router.post(
       if (isSequelizeUniqueConstraintError(error)) {
         return handleSequelizeUniqueConstraintError(
           response,
-          "Profile for this user already exists",
+          "Profile for this user already exists"
         );
       }
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.patch(
@@ -125,7 +126,7 @@ router.patch(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
 router.delete(
@@ -143,7 +144,7 @@ router.delete(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  },
+  }
 );
 
-module.exports = router;
+export default router;

@@ -1,11 +1,11 @@
-const Table = require("../Table.js");
-const Column = require("../Column.js");
-const CustomError = require("../../common/CustomError.js");
-const { execute } = require("../database.js");
-const Role = require("../../common/Role.js");
-const Permission = require("../../common/Permission.js");
-const { v4: uuidv4 } = require("uuid");
-const Profiles = require("./Profiles.js");
+import Table from "../Table.js";
+import Column from "../Column.js";
+import * as CustomError from "../../common/CustomError.js";
+import { execute } from "../database.js";
+import Role from "../../common/Role.js";
+import Permission from "../../common/Permission.js";
+import { v4 as uuidv4 } from "uuid";
+import Profiles from "./Profiles.js";
 
 class Comments extends Table {
   constructor() {
@@ -61,12 +61,12 @@ class Comments extends Table {
         ORDER BY created_at DESC, comments.id
         DESC LIMIT ? OFFSET ?
       `,
-      [query.targetId, limit, offset],
+      [query.targetId, limit, offset]
     );
 
     const [[{ total }]] = await execute(
       "SELECT COUNT(*) AS total FROM comments WHERE target_id = ?",
-      [query.targetId],
+      [query.targetId]
     );
 
     return {
@@ -105,7 +105,7 @@ class Comments extends Table {
 
         WHERE comments.id = ?
       `,
-      [id],
+      [id]
     );
 
     if (!rows.length) throw CustomError.TEST;
@@ -118,7 +118,7 @@ class Comments extends Table {
 
     const [result] = await execute(
       `INSERT INTO comments(id, author_id, target_id, parent_id, content) VALUES (?, ?, ?, ?, ?)`,
-      [uuidv4(), authorId, targetId, parentId || null, content],
+      [uuidv4(), authorId, targetId, parentId || null, content]
     );
 
     return result;
@@ -127,7 +127,7 @@ class Comments extends Table {
   async update({ targetUser: { id }, body: { commentId, content } }) {
     const [rows] = await execute(
       "SELECT author_id FROM comments WHERE id = ?",
-      [commentId],
+      [commentId]
     );
 
     if (!rows.length) throw CustomError.TEST;
@@ -136,7 +136,7 @@ class Comments extends Table {
 
     const [result] = await execute(
       "UPDATE comments SET content = ? WHERE id = ? AND author_id = ?",
-      [content, commentId, id],
+      [content, commentId, id]
     );
 
     return result;
@@ -145,10 +145,10 @@ class Comments extends Table {
   async delete({ targetUser: { id }, body: { commentId } }) {
     const [result] = await execute(
       "DELETE entities FROM entities INNER JOIN comments ON comments.id = entities.id WHERE comments.id = ? AND comments.author_id = ?",
-      [commentId, id],
+      [commentId, id]
     );
     return result;
   }
 }
 
-module.exports = new Comments();
+export default new Comments();
