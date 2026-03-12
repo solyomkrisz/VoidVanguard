@@ -2,7 +2,7 @@ import { element } from "/ui/UI.js";
 
 export default class CollectionView extends HTMLElement {
   static get observedAttributes() {
-    return ["items-source"];
+    return ["items-source", "provide-state"];
   }
 
   get itemsSource() {
@@ -11,6 +11,10 @@ export default class CollectionView extends HTMLElement {
 
   set itemsSource(value) {
     this.setAttribute("items-source", value);
+  }
+
+  get provideState() {
+    return this.hasAttribute("provide-state");
   }
 
   constructor() {
@@ -40,13 +44,28 @@ export default class CollectionView extends HTMLElement {
 
     for (const item of value) {
       const fragment = template.content.cloneNode(true);
-      fragment.querySelectorAll("[data-bind]").forEach((element) => {
+
+      this.container.appendChild(fragment);
+      const listItem = this.container.lastElementChild;
+
+      if (this.provideState) {
+        const stateProvider = listItem.querySelector("state-provider");
+
+        if (stateProvider) {
+          stateProvider.from(item);
+        }
+      }
+
+      listItem.querySelectorAll("[data-bind]").forEach((element) => {
         const key = element.dataset.bind;
+
         const targetProperty =
           element.getAttribute("bind-target") || "textContent";
-        if (key in item) element[targetProperty] = item[key];
+
+        if (key in item) {
+          element[targetProperty] = item[key];
+        }
       });
-      this.container.appendChild(fragment);
     }
   }
 
@@ -57,6 +76,10 @@ export default class CollectionView extends HTMLElement {
   clear() {
     if (!this.container) return;
     this.container.textContent = "";
+  }
+
+  reset() {
+    this.clear();
   }
 
   subscribe(state) {

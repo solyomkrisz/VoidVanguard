@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hu">
   <head>
     <meta charset="UTF-8" />
@@ -30,14 +30,6 @@
     </div>
 
     <state-provider id="profile">
-      <render-if when="user.id !== local.user_id">
-        <h1>PROFIL</h1>
-      </render-if>
-
-      <render-if when="user.id === local.user_id" multistatesubscribe>
-        <h1>PROFIL</h1>
-      </render-if>
-
       <div class="profileHeader">
         <render-if when="!local.user_id" class="profileErrorContainer">
           <div class="profileError">
@@ -354,12 +346,10 @@
     <script>
       function searchResultClickHandler(e) {
         document.querySelector("search-bar collection-view").hidden = true;
-        document.querySelector(
-          "#profile"
-        ).src = `/api/profiles/${e.target.target}`;
-        document.querySelector(
-          "lazy-list"
-        ).src = `/api/comments?targetId=${e.target.target}`;
+        document.querySelector("#profile").src =
+          `/api/profiles/${e.target.target}`;
+        document.querySelector("lazy-list").src =
+          `/api/comments?targetId=${e.target.target}`;
         history.replaceState({}, "", "/profile/" + e.target.target);
       }
     </script>
