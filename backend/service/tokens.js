@@ -13,7 +13,7 @@ export async function refresh(refreshToken) {
   let payload;
 
   try {
-    payload = Token.verify(refreshToken);
+    payload = Token.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch {
     throw CustomError.INVALID_TOKEN;
   }

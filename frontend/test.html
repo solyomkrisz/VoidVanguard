@@ -40,7 +40,7 @@
   </head>
   <body>
     <state-provider>
-      <state-provider
+      <!-- <state-provider
         as="user"
         src="/api/sessions"
         method="POST"
@@ -59,14 +59,14 @@
         subscribe-with="href"
         href="/profile/create"
         >Profil</a
-      >
+      > -->
 
       <!-- <render-if multistatesubscribe when="!user.id">
         <h2>HELLO!</h2>
       </render-if> -->
 
       <!-- account quick manager -->
-      <div>
+      <!-- <div>
         <span state="user" subscribe-to="username">Logged out</span>
         <render-if state="user" when="local.id">
           <render-if state="profile" when="console.log(local.user_id)">
@@ -78,7 +78,7 @@
             <a href="/profile/create">Profil létrehozása</a>
           </render-if>
         </render-if>
-      </div>
+      </div> -->
     </state-provider>
 
     <account-quick-manager></account-quick-manager>
