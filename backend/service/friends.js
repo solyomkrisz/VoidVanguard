@@ -22,6 +22,10 @@ export async function getSummary(userId, include = []) {
 }
 
 export async function getFriendshipStatus({ aId, bId }) {
+  if (!aId || !bId) {
+    return "not-friends";
+  }
+
   const row = await Friends.get(aId, bId);
 
   if (!row) return "not-friends";
@@ -33,6 +37,11 @@ export async function getFriendshipStatus({ aId, bId }) {
   }
 
   return status;
+}
+
+export async function getAllFriends({ userId }) {
+  const rows = await Friends.getAll(userId);
+  return rows;
 }
 
 export async function checkFriendExists({ aId, bId }) {

@@ -138,3 +138,8 @@ export function isSequelizeUniqueConstraintError(error) {
 export function handleSequelizeUniqueConstraintError(response, message) {
   return response.status(400).json(createResponse(false, null, message));
 }
+
+export function handleValidation(request, response, next) {
+  const errors = validationResult(request);
+  if (!errors.isEmpty()) return handleExpressValidatorErrors(response, errors);
+}

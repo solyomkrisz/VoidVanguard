@@ -54,10 +54,10 @@ export async function updateUser({ userId, role, body }) {
     throw CustomError.NO_DATA_CHANGE;
   }
 
-  const result = await Users.update();
+  const result = await Users.update(userId, updates);
 
   // update failed
-  if (result) {
+  if (!result) {
     throw CustomError.TEST;
   }
 

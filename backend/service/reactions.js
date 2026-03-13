@@ -17,13 +17,13 @@ export async function createUserReaction({ userId, targetId, reactionType }) {
     (await Reactions.delete(userId, targetId, reactionType)).affectedRows > 0
   ) {
     return {
-      reaction_type: reactionType,
+      type: reactionType,
     };
   }
 
   await Reactions.upsert(userId, targetId, reactionType);
 
   return {
-    reaction_type: reactionType,
+    type: reactionType,
   };
 }

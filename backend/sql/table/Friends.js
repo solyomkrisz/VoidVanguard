@@ -72,10 +72,10 @@ class Friends extends Table {
     return count;
   }
 
-  async getAllIncoming({ targetUser: { id } }) {
+  async getAllIncoming(userId) {
     const [rows] = await execute(
       "SELECT initiator_id FROM friends WHERE recipient_id = ? AND status = 'pending'",
-      [id],
+      [userId],
     );
     return rows;
   }
@@ -88,10 +88,10 @@ class Friends extends Table {
     return count;
   }
 
-  async getAllPending({ targetUser: { id } }) {
+  async getAllPending(userId) {
     const [rows] = await execute(
       "SELECT recipient_id FROM friends WHERE initiator_id = ? AND status = 'pending'",
-      [id],
+      [userId],
     );
     return rows;
   }
@@ -104,10 +104,7 @@ class Friends extends Table {
     return count;
   }
 
-  async getAll(request) {
-    const id =
-      request?.params?.id || request?.body?.userId || request?.targetUser.id;
-
+  async getAll(userId) {
     const [rows] = await execute(
       `
         SELECT friends.initiator_id, COALESCE(profiles.display_name, users.username) AS name
@@ -124,7 +121,7 @@ class Friends extends Table {
         LEFT JOIN profiles ON profiles.user_id = users.id
         WHERE initiator_id = ? AND status = 'accepted'
       `,
-      [id, id],
+      [userId, userId],
     );
 
     return rows;

@@ -1,5 +1,5 @@
 import express from "express";
-import Profiles from "../sql//table/Profiles.js";
+import * as service from "../service/profiles.js";
 import { checkSchema, validationResult } from "express-validator";
 import * as validator from "../validator/profile.js";
 import * as CustomError from "../common/CustomError.js";
@@ -27,7 +27,11 @@ router.get(
     try {
       if (!request.valid) throw CustomError.INVALID_REQUEST;
 
-      const result = await Profiles.select(request);
+      const result = await service.getProfile({
+        userId: request.params.id,
+        requesterId: request?.user?.id || null,
+        role: request?.user?.role || -1,
+      });
 
       response
         .status(200)
@@ -35,7 +39,7 @@ router.get(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 // for searching
@@ -53,9 +57,9 @@ router.get(
     try {
       if (!request.valid) throw CustomError.INVALID_REQUEST;
 
-      request.query.search = decodeURIComponent(request.query.search);
-
-      const result = await Profiles.like(request);
+      const result = await service.searchFor({
+        query: decodeURIComponent(request.query.search),
+      });
 
       response
         .status(200)
@@ -63,13 +67,13 @@ router.get(
           createResponse(
             true,
             { profiles: result },
-            "Search successfully completed"
-          )
+            "Search successfully completed",
+          ),
         );
     } catch (error) {
       handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 router.post(
@@ -85,7 +89,11 @@ router.post(
       return handleExpressValidatorErrors(response, errors);
 
     try {
-      await Profiles.create(request);
+      await service.createProfile({
+        userId: request.targetUser.id,
+        role: request.targetUser.role,
+        body: request.body,
+      });
 
       response
         .status(200)
@@ -94,12 +102,12 @@ router.post(
       if (isSequelizeUniqueConstraintError(error)) {
         return handleSequelizeUniqueConstraintError(
           response,
-          "Profile for this user already exists"
+          "Profile for this user already exists",
         );
       }
       handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 router.patch(
@@ -117,8 +125,11 @@ router.patch(
     try {
       if (!request.body) throw CustomError.INVALID_REQUEST;
 
-      if ((await Profiles.update(request)).affectedRows === 0)
-        throw CustomError.PROFILE_NOT_FOUND;
+      await service.updateProfile({
+        userId: request.targetUser.id,
+        role: request.targetUser.role,
+        body: request.body,
+      });
 
       response
         .status(200)
@@ -126,7 +137,7 @@ router.patch(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 router.delete(
@@ -135,8 +146,7 @@ router.delete(
   modifyTargetUser(),
   async (request, response) => {
     try {
-      if ((await Profiles.delete(request)).affectedRows === 0)
-        throw CustomError.PROFILE_NOT_FOUND;
+      await service.deleteProfile({ userId: request.targetUser.id });
 
       response
         .status(200)
@@ -144,7 +154,7 @@ router.delete(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 export default router;

@@ -3,6 +3,10 @@ import Blocks from "../sql/table/Blocks.js";
 import Friends from "../sql/table/Friends.js";
 
 export async function checkBlockStatus({ initiatorId, recipientId }) {
+  if (!initiatorId || !recipientId) {
+    return false;
+  }
+
   const iniBlockedRec = await Blocks.isBlocked(initiatorId, recipientId);
 
   if (iniBlockedRec) {

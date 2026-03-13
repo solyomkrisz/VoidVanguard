@@ -27,7 +27,7 @@ router.get(
     try {
       const result = await service.getUserReaction({
         userId: request.targetUser.id,
-        targetId: request.body.targetId,
+        targetId: request.params.targetId,
       });
 
       response
@@ -56,7 +56,7 @@ router.post(
       const result = await service.createUserReaction({
         userId: request.targetUser.id,
         targetId: request.body.targetId,
-        reactionType: request.body.reactionType
+        reactionType: request.body.type
       });
 
       response

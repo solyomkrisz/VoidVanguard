@@ -1,11 +1,8 @@
 import Table from "../Table.js";
 import Column from "../Column.js";
-import * as CustomError from "../../common/CustomError.js";
 import { execute } from "../database.js";
 import Role from "../../common/Role.js";
 import Permission from "../../common/Permission.js";
-import Blocks from "./Blocks.js";
-import Friends from "./Friends.js";
 
 class Profiles extends Table {
   constructor() {
@@ -22,10 +19,10 @@ class Profiles extends Table {
     });
   }
 
-  async like(request) {
+  async like(query) {
     const [rows] = await execute(
       "SELECT user_id, avatar, display_name FROM profiles WHERE display_name LIKE ?",
-      [`${request.query.search}%`],
+      [`${query}%`],
     );
     return rows;
   }
@@ -42,104 +39,46 @@ class Profiles extends Table {
       "SELECT avatar, display_name, description, visibility FROM profiles WHERE user_id = ?",
       [id],
     );
-    if (!rows.length) {
-      throw CustomError.PROFILE_NOT_FOUND;
-    }
-    return rows[0];
+    return rows.length ? rows[0] : null;
   }
 
-  // prettier-ignore
-  async select(request) {
-    const { id } = request.params;
+  async create(userId, data) {
+    const columns = Object.keys(data);
 
-    const [rows] = await execute(
-      "SELECT user_id, avatar, display_name, description, visibility FROM profiles WHERE user_id = ?",
-      [id],
+    if (!columns.length) return false;
+
+    const query = `
+      INSERT INTO profiles (user_id, ${columns.join(",")})
+      VALUES (?, ${columns.map(() => "?").join(",")})
+    `;
+
+    const [result] = await execute(query, [userId, ...Object.values(data)]);
+
+    return result.affectedRows > 0;
+  }
+
+  async update(userId, updates) {
+    const columns = Object.keys(updates);
+
+    if (!columns.length) return false;
+
+    const set = columns.map((i) => `${i} = ?`).join(",");
+    const values = [...Object.values(updates), userId];
+
+    const [result] = await execute(
+      `UPDATE profiles SET ${set} WHERE user_id = ?`,
+      values,
     );
 
-    if (!rows.length) {
-      throw CustomError.PROFILE_NOT_FOUND;
-    }
-
-    const { user_id, avatar, display_name, description, visibility } = rows[0];
-
-    const friendship_status = await Friends.status(request);
-    let is_blocked = false;
-
-    try {
-      await Blocks.exists(request);
-    } catch (_) {
-      is_blocked = true;
-    }
-
-    const all_friends = await Friends.getAll(request);
-    
-    if (
-      id === request?.user?.id ||
-      (visibility === "friends-only" && friendship_status === "accepted") ||
-      visibility === "public" ||
-      request?.user?.role >= Role.ADMIN
-    ) {
-      return { user_id, avatar, display_name, description, friendship_status, is_blocked, all_friends };
-    }
-
-    return { user_id, avatar, display_name, description: "", friendship_status, is_blocked, all_friends };
+    return result.affectedRows > 0;
   }
 
-  async create({ targetUser: { id, role }, body }) {
-    let query = "INSERT INTO profiles (user_id, ";
-    let placeholders = "?, ";
-    const values = [id];
+  async delete(userId) {
+    const [result] = await execute("DELETE FROM entities WHERE id = ?", [
+      userId,
+    ]);
 
-    for (const column of Object.keys(body)) {
-      if (!this.hasPermission(column, role, Permission.W)) {
-        continue;
-      }
-
-      query += `${column}, `;
-      placeholders += "?, ";
-      values.push(body[column]);
-    }
-
-    query = query.slice(0, -2) + ") VALUES (" + placeholders.slice(0, -2) + ")";
-
-    const [result] = await execute(query, values);
-    return result;
-  }
-
-  async update({ targetUser: { id, role }, body }) {
-    const data = await this._select(id);
-
-    let query = "UPDATE profiles SET ";
-    const values = [];
-
-    for (const column of Object.keys(body)) {
-      if (!this.hasPermission(column, role, Permission.W)) {
-        continue;
-      }
-
-      if (body[column] === data[column]) {
-        continue;
-      }
-
-      query += `${column} = ?, `;
-      values.push(body[column]);
-    }
-
-    if (!values.length) {
-      throw CustomError.NO_DATA_CHANGE;
-    }
-
-    query = query.slice(0, -2) + " WHERE user_id = ?";
-    values.push(id);
-
-    const [result] = await execute(query, values);
-    return result;
-  }
-
-  async delete({ targetUser: { id } }) {
-    const [result] = await execute("DELETE FROM entities WHERE id = ?", [id]);
-    return result;
+    return result.affectedRows > 0;
   }
 }
 

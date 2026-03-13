@@ -35,7 +35,7 @@ router.get("/", checkSchema(validator.GET), async (request, response) => {
 
 router.get("/:id", async (request, response) => {
   try {
-    const result = await service.select(request.params.id);
+    const result = await service.select({ commentId: request.params.id });
 
     response
       .status(200)

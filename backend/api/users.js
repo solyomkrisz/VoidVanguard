@@ -1,18 +1,13 @@
 import express from "express";
-import Users from "../sql/table/Users.js";
-import * as service from "../service/users.js";
+import * as controller from "../controller/users.js";
 import { checkSchema, validationResult } from "express-validator";
 import * as validator from "../validator/user.js";
 import {
   createResponse,
   authenticate,
   modifyTargetUser,
-  handleCaughtError,
-  handleExpressValidatorErrors,
-  isSequelizeUniqueConstraintError,
-  handleSequelizeUniqueConstraintError,
+  handleValidation,
 } from "../common/common.js";
-import * as CustomError from "../common/CustomError.js";
 
 const router = express.Router();
 
@@ -33,36 +28,8 @@ router.post(
     onInvalidAccessToken: (_, _1, next) => next(),
   }),
   checkSchema(validator.POST),
-  async (request, response) => {
-    const errors = validationResult(request);
-
-    if (!errors.isEmpty())
-      return handleExpressValidatorErrors(response, errors);
-
-    const { username, email, gender, password } = request.body;
-
-    try {
-      await service.createUser({
-        username,
-        email,
-        gender,
-        password,
-      });
-
-      response
-        .status(201)
-        .json(createResponse(true, null, "User created successfully"));
-    } catch (error) {
-      if (isSequelizeUniqueConstraintError(error)) {
-        return handleSequelizeUniqueConstraintError(
-          response,
-          "Username or email already taken",
-        );
-      }
-
-      handleCaughtError(response, error);
-    }
-  },
+  handleValidation,
+  controller.register,
 );
 
 router.patch(
@@ -70,43 +37,10 @@ router.patch(
   authenticate(),
   modifyTargetUser(),
   checkSchema(validator.PATCH),
-  async (request, response) => {
-    try {
-      if (!request.body) throw CustomError.INVALID_REQUEST;
-
-      const errors = validationResult(request);
-
-      if (!errors.isEmpty())
-        return handleExpressValidatorErrors(response, errors);
-
-      await service.updateUser({
-        userId: request.targetUser.id,
-        role: request.targetUser.role,
-        body: request.body,
-      });
-    } catch (error) {
-      if (isSequelizeUniqueConstraintError(error)) {
-        return handleSequelizeUniqueConstraintError(
-          response,
-          "Username or email already taken",
-        );
-      }
-      handleCaughtError(response, error);
-    }
-  },
+  handleValidation,
+  controller.update,
 );
 
-router.delete(
-  "/",
-  authenticate(),
-  modifyTargetUser(),
-  async (request, response) => {
-    try {
-      await service.deleteUser({ id: request.targetUser.id });
-    } catch (error) {
-      handleCaughtError(response, error);
-    }
-  },
-);
+router.delete("/", authenticate(), modifyTargetUser(), controller.remove);
 
 export default router;
