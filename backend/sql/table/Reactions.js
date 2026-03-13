@@ -13,41 +13,34 @@ class Reactions extends Table {
     });
   }
 
-  async select({ targetUser: { id }, params: { targetId } }) {
+  async select(userId, targetId) {
     const [rows] = await execute(
       "SELECT * FROM reactions WHERE user_id = ? AND target_id = ?",
-      [id, targetId]
+      [userId, targetId],
     );
-
-    if (!rows.length) {
-      return {
-        target_id: targetId,
-      };
-    }
-
-    return rows[0];
+    return rows[0] ?? null;
   }
 
-  async create({ targetUser: { id }, body: { targetId, type } }) {
+  async create(userId, targetId, reactionType) {
     const [result] = await execute(
       "INSERT INTO reactions (user_id, target_id, type) VALUES (?, ?, ?)",
-      [id, targetId, type]
+      [userId, targetId, reactionType],
     );
     return result;
   }
 
-  async delete({ targetUser: { id }, body: { targetId, type } }) {
+  async delete(userId, targetId, reactionType) {
     const [result] = await execute(
       "DELETE FROM reactions WHERE user_id = ? AND target_id = ? AND type = ?",
-      [id, targetId, type]
+      [userId, targetId, reactionType],
     );
     return result;
   }
 
-  async upsert({ targetUser: { id }, body: { targetId, type } }) {
+  async upsert(userId, targetId, reactionType) {
     const [result] = await execute(
       "INSERT INTO reactions (user_id, target_id, type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE type = VALUES(type)",
-      [id, targetId, type]
+      [userId, targetId, reactionType],
     );
     return result;
   }

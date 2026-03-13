@@ -1,5 +1,5 @@
 import express from "express";
-import Reactions from "../sql/table/Reactions.js";
+import * as service from "../service/reactions.js";
 import {
   upload,
   createResponse,
@@ -25,7 +25,10 @@ router.get(
       return handleExpressValidatorErrors(response, errors);
 
     try {
-      const result = await Reactions.select(request);
+      const result = await service.getUserReaction({
+        userId: request.targetUser.id,
+        targetId: request.body.targetId,
+      });
 
       response
         .status(200)
@@ -33,7 +36,7 @@ router.get(
     } catch (error) {
       handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 // prettier-ignore
@@ -50,19 +53,15 @@ router.post(
       return handleExpressValidatorErrors(response, errors);
 
     try {
-      const reaction_type = request.body.reactionType;
-
-      if ((await Reactions.delete(request)).affectedRows > 0) {
-        return response
-          .status(200)
-          .json(createResponse(true, { reaction_type }, "Reaction successfully deleted"));
-      }
-
-      await Reactions.upsert(request);
+      const result = await service.createUserReaction({
+        userId: request.targetUser.id,
+        targetId: request.body.targetId,
+        reactionType: request.body.reactionType
+      });
 
       response
         .status(200)
-        .json(createResponse(true, { reaction_type }, "Reaction added or updated"));
+        .json(createResponse(true, result, "Reaction added or updated"));
     } catch (error) {
       handleCaughtError(response, error);
     }

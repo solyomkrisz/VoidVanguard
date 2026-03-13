@@ -17,11 +17,10 @@ class RefreshTokens extends Table {
     });
   }
 
-  async save(id, token, exp, iat) {
-    const tokenHash = await bcrypt.hash(token, 10);
+  async save({ userId, tokenHash, exp, iat }) {
     const [result] = await execute(
       "INSERT INTO refresh_tokens (user_id, token_hash, expires_at, issued_at) VALUES (?, ?, ?, ?)",
-      [id, tokenHash, new Date(exp * 1000), new Date(iat * 1000)]
+      [userId, tokenHash, exp, iat],
     );
     return result;
   }
@@ -29,7 +28,7 @@ class RefreshTokens extends Table {
   async revokeAll(id) {
     const [result] = await execute(
       "UPDATE refresh_tokens SET revoked = TRUE WHERE user_id = ? AND revoked = FALSE",
-      [id]
+      [id],
     );
     return result;
   }
@@ -37,26 +36,17 @@ class RefreshTokens extends Table {
   async deleteAll(id) {
     const [result] = await execute(
       "DELETE FROM refresh_tokens WHERE user_id = ?",
-      [id]
+      [id],
     );
     return result;
   }
 
-  async find(id, token) {
+  async findForUser(userId) {
     const [rows] = await execute(
       "SELECT token_hash FROM refresh_tokens WHERE user_id = ? AND revoked = FALSE AND expires_at > NOW()",
-      [id]
+      [userId],
     );
-
-    if (!rows.length) {
-      throw CustomError.INVALID_TOKEN;
-    }
-
-    if (await bcrypt.compare(token, rows[0].token_hash)) {
-      return rows[0];
-    }
-
-    throw CustomError.INVALID_TOKEN;
+    return rows.length ? rows[0] : null;
   }
 }
 

@@ -1,11 +1,8 @@
 import Table from "../Table.js";
 import Column from "../Column.js";
-import * as CustomError from "../../common/CustomError.js";
 import { execute } from "../database.js";
 import Role from "../../common/Role.js";
 import Permission from "../../common/Permission.js";
-import { v4 as uuidv4 } from "uuid";
-import Profiles from "./Profiles.js";
 
 class Comments extends Table {
   constructor() {
@@ -28,11 +25,7 @@ class Comments extends Table {
     return !!rows.length;
   }
 
-  async lazySelectByTarget({ query }) {
-    const page = parseInt(query.page) || 1;
-    const limit = parseInt(query.limit) || 20;
-    const offset = (page - 1) * limit;
-
+  async lazySelectByTarget(targetId, limit, offset) {
     const [rows] = await execute(
       `
         SELECT
@@ -61,26 +54,21 @@ class Comments extends Table {
         ORDER BY created_at DESC, comments.id
         DESC LIMIT ? OFFSET ?
       `,
-      [query.targetId, limit, offset]
+      [targetId, limit, offset],
     );
 
-    const [[{ total }]] = await execute(
-      "SELECT COUNT(*) AS total FROM comments WHERE target_id = ?",
-      [query.targetId]
-    );
-
-    return {
-      comments: rows,
-      page,
-      limit,
-      total,
-      hasNext: offset + rows.length < total,
-    };
+    return rows;
   }
 
-  async select({ params }) {
-    const id = params.id;
+  async getTotalCommentsForTarget(targetId) {
+    const [[{ total }]] = await execute(
+      "SELECT COUNT(*) AS total FROM comments WHERE target_id = ?",
+      [targetId],
+    );
+    return total;
+  }
 
+  async select(id) {
     const [rows] = await execute(
       `
         SELECT
@@ -105,47 +93,32 @@ class Comments extends Table {
 
         WHERE comments.id = ?
       `,
-      [id]
+      [id],
     );
 
-    if (!rows.length) throw CustomError.TEST;
-
-    return rows[0];
+    return rows.length ? rows[0] : null;
   }
 
-  async create({ body: { authorId, targetId, parentId, content } }) {
-    if (parentId && (await this.exists(parentId))) throw CustomError.TEST;
-
+  async create(id, authorId, targetId, content, parentId = null) {
     const [result] = await execute(
       `INSERT INTO comments(id, author_id, target_id, parent_id, content) VALUES (?, ?, ?, ?, ?)`,
-      [uuidv4(), authorId, targetId, parentId || null, content]
+      [id, authorId, targetId, parentId, content],
     );
-
     return result;
   }
 
-  async update({ targetUser: { id }, body: { commentId, content } }) {
-    const [rows] = await execute(
-      "SELECT author_id FROM comments WHERE id = ?",
-      [commentId]
-    );
-
-    if (!rows.length) throw CustomError.TEST;
-
-    if (rows[0].author_id !== id) throw CustomError.UNAUTHORIZED;
-
+  async update(userId, commentId, content) {
     const [result] = await execute(
       "UPDATE comments SET content = ? WHERE id = ? AND author_id = ?",
-      [content, commentId, id]
+      [content, commentId, userId],
     );
-
-    return result;
+    return result.affectedRows > 0;
   }
 
-  async delete({ targetUser: { id }, body: { commentId } }) {
+  async delete(userId, commentId) {
     const [result] = await execute(
       "DELETE entities FROM entities INNER JOIN comments ON comments.id = entities.id WHERE comments.id = ? AND comments.author_id = ?",
-      [commentId, id]
+      [commentId, userId],
     );
     return result;
   }

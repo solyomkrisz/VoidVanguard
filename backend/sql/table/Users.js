@@ -5,7 +5,6 @@ import Column from "../Column.js";
 import { execute } from "../database.js";
 import * as CustomError from "../../common/CustomError.js";
 import Password from "../../common/Password.js";
-import { v4 as uuidv4 } from "uuid";
 
 class Users extends Table {
   constructor() {
@@ -30,23 +29,20 @@ class Users extends Table {
   async payload(id) {
     const [rows] = await execute(
       "SELECT id, username, role FROM users WHERE id = ?",
-      [id]
+      [id],
     );
     return rows.length ? rows[0] : null;
   }
 
-  async create({ body: { username, email, gender, password } }) {
-    const passwordHash = await Password.hash(password);
-
+  async create({ id, username, email, gender, passwordHash }) {
     const [result] = await execute(
       "INSERT INTO users (id, username, email, gender, password_hash) VALUES (?, ?, ?, ?, ?)",
-      [uuidv4(), username, email, gender, passwordHash]
+      [id, username, email, gender, passwordHash],
     );
-
     return result;
   }
 
-  async delete({ targetUser: { id } }) {
+  async delete(id) {
     const [result] = await execute("DELETE FROM users WHERE id = ?", [id]);
     return result;
   }
@@ -54,7 +50,7 @@ class Users extends Table {
   async login({ body: { username, password } }) {
     const [rows] = await execute(
       "SELECT id, username, role, password_hash FROM users WHERE username = ?",
-      [username]
+      [username],
     );
 
     if (!rows.length) {
@@ -70,53 +66,29 @@ class Users extends Table {
     return { id: data.id, username: data.username, role: data.role };
   }
 
-  async _select(id) {
-    const [rows] = await execute("SELECT * FROM users WHERE id = ?", [id]);
-    if (!rows.length) {
-      throw CustomError.USER_NOT_FOUND;
-    }
-    return rows[0];
+  async _selectByUsername(username) {
+    const [rows] = await execute("SELECT * FROM users WHERE username = ?", [
+      username,
+    ]);
+    return rows.length ? rows[0] : null;
   }
 
-  async update({ targetUser: { id, role }, body }) {
-    const data = await this._select(id);
+  async _select(id) {
+    const [rows] = await execute("SELECT * FROM users WHERE id = ?", [id]);
+    return rows.length ? rows[0] : null;
+  }
 
-    let query = "UPDATE users SET ";
-    const values = [];
+  async update(id, updates) {
+    const columns = Object.keys(updates);
 
-    for (const column of Object.keys(body)) {
-      if (!this.hasPermission(column, role, Permission.W)) {
-        continue;
-      }
+    if (!columns.length) return false;
 
-      if (column === "password") {
-        if (await Password.compare(body[column], data.password_hash)) {
-          continue;
-        }
+    const set = columns.map((i) => `${i} = ?`).join(",");
+    const values = [...Object.values(updates), id];
 
-        query += "password_hash = ?, ";
-        values.push(await Password.hash(body[column]));
+    const [result] = await execute(`UPDATE SET ${set} WHERE id = ?`, values);
 
-        continue;
-      }
-
-      if (body[column] === data[column]) {
-        continue;
-      }
-
-      query += `${column} = ?, `;
-      values.push(body[column]);
-    }
-
-    if (!values.length) {
-      throw CustomError.NO_DATA_CHANGE;
-    }
-
-    query = query.slice(0, -2) + " WHERE id = ?";
-    values.push(id);
-
-    const [result] = await execute(query, values);
-    return result;
+    return result.affectedRows > 0;
   }
 }
 

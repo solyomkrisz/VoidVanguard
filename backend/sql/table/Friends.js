@@ -16,94 +16,96 @@ class Friends extends Table {
     });
   }
 
-  async status(request) {
-    const a_id = request?.user?.id;
-    const b_id = request?.params?.id;
-
-    if (!a_id || !b_id) {
-      return "not-friends";
-    }
-
+  async get(aId, bId) {
     const [rows] = await execute(
-      "SELECT status, initiator_id FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?))",
-      [a_id, b_id, b_id, a_id]
+      `
+        SELECT status, initiator_id
+        FROM friends
+        WHERE (initiator_id = ? AND recipient_id = ?)
+           OR (initiator_id = ? AND recipient_id = ?)
+      `,
+      [aId, bId, bId, aId],
     );
 
-    if (!rows.length) {
-      return "not-friends";
-    }
-
-    const { status, initiator_id } = rows[0];
-
-    if (status === "pending") {
-      if (initiator_id === a_id) {
-        return "sent";
-      } else {
-        return "received";
-      }
-    }
-
-    return rows[0].status;
+    return rows[0] || null;
   }
 
-  async exists(request) {
-    const a_id = request?.user?.id;
-    const b_id = request?.params?.id;
-
-    if (!a_id || !b_id) {
-      return false;
-    }
-
-    const [rows] = await execute(
-      "SELECT 1 FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?)) AND status = 'accepted'",
-      [a_id, b_id, b_id, a_id]
-    );
-
-    return !!rows.length;
+  async exists(aId, bId) {
+    const row = await this.get(aId, bId);
+    return row?.status === "accepted";
   }
 
-  async initiate({ targetUser, body }) {
+  async initiate(initiatorId, recipientId) {
     const [result] = await execute(
       "INSERT INTO friends (initiator_id, recipient_id) VALUES (?, ?)",
-      [targetUser.id, body.userId]
+      [initiatorId, recipientId],
     );
     return result;
   }
 
-  async accept({ targetUser, body }) {
+  async accept(initiatorId, recipientId) {
     const [result] = await execute(
       "UPDATE friends SET status = 'accepted' WHERE status = 'pending' AND initiator_id = ? AND recipient_id = ?",
-      [body.userId, targetUser.id]
+      [initiatorId, recipientId],
     );
     return result;
   }
 
-  async delete({ targetUser: { id: a_id }, body: { userId: b_id } }) {
+  async delete(aId, bId) {
     const [result] = await execute(
-      "DELETE FROM friends WHERE ((initiator_id = ? AND recipient_id = ?) OR (initiator_id = ? AND recipient_id = ?))",
-      [a_id, b_id, b_id, a_id]
+      `
+        DELETE FROM friends
+        WHERE (initiator_id = ? AND recipient_id = ?)
+           OR (initiator_id = ? AND recipient_id = ?)
+      `,
+      [aId, bId, bId, aId],
     );
     return result;
+  }
+
+  async countAll(userId) {
+    const [[{ count }]] = await execute(
+      "SELECT COUNT(*) as count FROM friends WHERE (initiator_id = ? OR recipient_id = ?) AND status = 'accepted'",
+      [userId, userId],
+    );
+
+    return count;
   }
 
   async getAllIncoming({ targetUser: { id } }) {
     const [rows] = await execute(
       "SELECT initiator_id FROM friends WHERE recipient_id = ? AND status = 'pending'",
-      [id]
+      [id],
     );
     return rows;
+  }
+
+  async countAllIncoming(userId) {
+    const [[{ count }]] = await execute(
+      "SELECT COUNT(*) as count FROM friends WHERE recipient_id = ? AND status = 'pending'",
+      [userId],
+    );
+    return count;
   }
 
   async getAllPending({ targetUser: { id } }) {
     const [rows] = await execute(
       "SELECT recipient_id FROM friends WHERE initiator_id = ? AND status = 'pending'",
-      [id]
+      [id],
     );
     return rows;
   }
 
+  async countAllPending(userId) {
+    const [[{ count }]] = await execute(
+      "SELECT COUNT(*) AS count FROM friends WHERE initiator_id = ? AND status = 'pending'",
+      [userId],
+    );
+    return count;
+  }
+
   async getAll(request) {
-    const _id =
+    const id =
       request?.params?.id || request?.body?.userId || request?.targetUser.id;
 
     const [rows] = await execute(
@@ -122,7 +124,7 @@ class Friends extends Table {
         LEFT JOIN profiles ON profiles.user_id = users.id
         WHERE initiator_id = ? AND status = 'accepted'
       `,
-      [_id, _id]
+      [id, id],
     );
 
     return rows;

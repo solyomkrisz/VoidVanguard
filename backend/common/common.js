@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import { validate, version } from "uuid";
 import * as CustomError from "./CustomError.js";
 import Role from "./Role.js";
-import Friends from "../sql/table/Friends.js";
 
 import multer from "multer";
 import path from "path";
@@ -26,15 +25,6 @@ export function createResponse(success, result, message = null) {
   };
 }
 
-export function clearRefreshTokenCookie(response) {
-  response.cookie("refresh_token", "", {
-    httpOnly: true,
-    maxAge: 0,
-    expires: new Date(0),
-    path: "/api/tokens",
-  });
-}
-
 export function authenticate(
   opitons = {
     onValidAccessToken: (_, _1, next) => {
@@ -46,10 +36,10 @@ export function authenticate(
       response
         .status(error.statusCode)
         .json(
-          createResponse(false, error.definition, error.definition.message)
+          createResponse(false, error.definition, error.definition.message),
         );
     },
-  }
+  },
 ) {
   return function (request, response, next) {
     const authorization = request?.headers?.authorization;
@@ -84,7 +74,7 @@ export function authorize(
     onMismatch: (_, response, _1) => {
       response.status(403).json(createResponse(false, null, "Forbidden"));
     },
-  }
+  },
 ) {
   return function (request, response, next) {
     if (!request?.user) {

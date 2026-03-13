@@ -1,12 +1,14 @@
 import express from "express";
-import Blocks from "../sql/table/Blocks.js";
-import { checkSchema, validationResult } from "express-validator";
+import * as service from "../service/blocks.js";
 import * as validator from "../validator/block.js";
 import {
   upload,
   createResponse,
   authenticate,
   modifyTargetUser,
+  handleCaughtError,
+  handleSequelizeUniqueConstraintError,
+  isSequelizeUniqueConstraintError,
 } from "../common/common.js";
 
 const router = express.Router();
@@ -24,24 +26,19 @@ router.get(
     }
 
     try {
-      const result = await Blocks.getAllBlocked(request);
-      if (!result) {
-        return response
-          .status(404)
-          .json(createResponse(false, null, "No blocked users found"));
-      }
+      const result = await service.getBlockedUsers({
+        blockerId: request.targetUser.id,
+      });
+
       response
         .status(200)
         .json(
-          createResponse(true, result, "Blocked users retrieved successfully")
+          createResponse(true, result, "Blocked users retrieved successfully"),
         );
     } catch (error) {
-      console.log(error);
-      return response
-        .status(500)
-        .json(createResponse(false, null, "Error fetching blocked users"));
+      handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 router.post(
@@ -58,24 +55,24 @@ router.post(
     }
 
     try {
-      await Blocks.create(request);
+      await service.blockUser({
+        blockerId: request.targetUser.id,
+        blockedId: request.body.userId,
+      });
+
       response
-        .status(200)
+        .status(201)
         .json(createResponse(true, null, "User blocked successfully"));
     } catch (error) {
-      console.log(error);
-
-      if (error.code === "ER_DUP_ENTRY") {
-        return response
-          .status(500)
-          .json(createResponse(false, null, "User is already blocked"));
+      if (isSequelizeUniqueConstraintError(error)) {
+        return handleSequelizeUniqueConstraintError(
+          response,
+          "This user has already been blocked",
+        );
       }
-
-      response
-        .status(500)
-        .json(createResponse(false, null, "Failed to block user"));
+      handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 router.delete(
@@ -92,23 +89,18 @@ router.delete(
     }
 
     try {
-      const result = await Blocks.delete(request);
-      if (result.affectedRows === 0) {
-        return response
-          .status(404)
-          .json(createResponse(false, null, "User is not blocked"));
-      }
+      await service.unblockUser({
+        blockerId: request.targetUser.id,
+        blockedId: request.body.userId,
+      });
 
       response
         .status(200)
         .json(createResponse(true, null, "User unblocked successfully"));
     } catch (error) {
-      console.log(error);
-      response
-        .status(500)
-        .json(createResponse(false, null, "Failed to unblock user"));
+      handleCaughtError(response, error);
     }
-  }
+  },
 );
 
 export default router;

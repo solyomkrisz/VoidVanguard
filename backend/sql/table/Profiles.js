@@ -25,7 +25,7 @@ class Profiles extends Table {
   async like(request) {
     const [rows] = await execute(
       "SELECT user_id, avatar, display_name FROM profiles WHERE display_name LIKE ?",
-      [`${request.query.search}%`]
+      [`${request.query.search}%`],
     );
     return rows;
   }
@@ -40,7 +40,7 @@ class Profiles extends Table {
   async _select(id) {
     const [rows] = await execute(
       "SELECT avatar, display_name, description, visibility FROM profiles WHERE user_id = ?",
-      [id]
+      [id],
     );
     if (!rows.length) {
       throw CustomError.PROFILE_NOT_FOUND;
