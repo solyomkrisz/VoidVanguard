@@ -18,6 +18,10 @@ function getTarget(element, value) {
   }
 }
 
+function isBodyAllowed(method) {
+  return !["GET", "HEAD"].includes(method.toUpperCase());
+}
+
 export default class SmartFormWrapper extends HTMLElement {
   static get observedAttributes() {
     return [
@@ -83,15 +87,23 @@ export default class SmartFormWrapper extends HTMLElement {
     this.querySelector("form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      if (!this.method) return;
-
       const form = e.currentTarget;
-      const formData = new FormData(form);
 
-      const response = await net.send(this.url, {
+      const config = {
         method: this.method || "GET",
-        body: formData,
-      });
+      };
+
+      if (isBodyAllowed(this.method)) {
+        config.body = new FormData(form);
+      }
+
+      const response = await net.send(this.url, config);
+
+      this.dispatchEvent(
+        new CustomEvent("response", {
+          detail: { response },
+        }),
+      );
 
       if (this.showResponseMessage) {
         responseMessage.from(response);
