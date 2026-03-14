@@ -21,19 +21,19 @@ export async function getSummary(userId, include = []) {
   return result;
 }
 
-export async function getFriendshipStatus({ aId, bId }) {
-  if (!aId || !bId) {
+export async function getFriendshipStatus({ initiatorId, recipientId }) {
+  if (!initiatorId || !recipientId) {
     return "not-friends";
   }
 
-  const row = await Friends.get(aId, bId);
+  const row = await Friends.get(initiatorId, recipientId);
 
   if (!row) return "not-friends";
 
   const { status, initiator_id } = row;
 
   if (status === "pending") {
-    return initiator_id === aId ? "sent" : "received";
+    return initiator_id === initiatorId ? "sent" : "received";
   }
 
   return status;
@@ -75,7 +75,7 @@ export async function sendFriendRequest({ initiatorId, recipientId }) {
 }
 
 export async function acceptFriendRequest({ initiatorId, recipientId }) {
-  const result = await Friends.accept({ initiatorId, recipientId });
+  const result = await Friends.accept(initiatorId, recipientId);
 
   if (result.affectedRows === 0) {
     throw CustomError.TEST;

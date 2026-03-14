@@ -51,6 +51,8 @@ export default class FriendshipToggle extends HTMLElement {
       (friendshipStatus, isBlocked) => {
         if (this.hidden || isBlocked) return;
 
+        console.log(friendshipStatus)
+
         switch (friendshipStatus) {
           case "sent":
             smartFormWrapper.method = "DELETE";

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { validate, version } from "uuid";
+import { validationResult } from "express-validator";
 import * as CustomError from "./CustomError.js";
 import Role from "./Role.js";
 
@@ -142,4 +143,5 @@ export function handleSequelizeUniqueConstraintError(response, message) {
 export function handleValidation(request, response, next) {
   const errors = validationResult(request);
   if (!errors.isEmpty()) return handleExpressValidatorErrors(response, errors);
+  next();
 }

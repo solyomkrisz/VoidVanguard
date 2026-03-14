@@ -1,17 +1,12 @@
 import express from "express";
-import * as service from "../service/profiles.js";
-import { checkSchema, validationResult } from "express-validator";
+import * as controller from "../controller/profiles.js";
+import { checkSchema } from "express-validator";
 import * as validator from "../validator/profile.js";
-import * as CustomError from "../common/CustomError.js";
 import {
   upload,
-  createResponse,
   authenticate,
   modifyTargetUser,
-  handleCaughtError,
-  handleExpressValidatorErrors,
-  isSequelizeUniqueConstraintError,
-  handleSequelizeUniqueConstraintError,
+  handleValidation,
 } from "../common/common.js";
 
 const router = express.Router();
@@ -23,23 +18,7 @@ router.get(
     onInvalidAccessToken: (_, _1, next) => next(),
   }),
   validator.GET,
-  async (request, response) => {
-    try {
-      if (!request.valid) throw CustomError.INVALID_REQUEST;
-
-      const result = await service.getProfile({
-        userId: request.params.id,
-        requesterId: request?.user?.id || null,
-        role: request?.user?.role || -1,
-      });
-
-      response
-        .status(200)
-        .json(createResponse(true, result, "Profile fetched successfully"));
-    } catch (error) {
-      handleCaughtError(response, error);
-    }
-  },
+  controller.get,
 );
 
 // for searching
@@ -53,27 +32,7 @@ router.get(
     request.valid = !!(request?.query?.search && request.query.search.trim());
     next();
   },
-  async (request, response) => {
-    try {
-      if (!request.valid) throw CustomError.INVALID_REQUEST;
-
-      const result = await service.searchFor({
-        query: decodeURIComponent(request.query.search),
-      });
-
-      response
-        .status(200)
-        .json(
-          createResponse(
-            true,
-            { profiles: result },
-            "Search successfully completed",
-          ),
-        );
-    } catch (error) {
-      handleCaughtError(response, error);
-    }
-  },
+  controller.search,
 );
 
 router.post(
@@ -82,32 +41,8 @@ router.post(
   modifyTargetUser(),
   upload.none(),
   checkSchema(validator.POST),
-  async (request, response) => {
-    const errors = validationResult(request);
-
-    if (!errors.isEmpty())
-      return handleExpressValidatorErrors(response, errors);
-
-    try {
-      await service.createProfile({
-        userId: request.targetUser.id,
-        role: request.targetUser.role,
-        body: request.body,
-      });
-
-      response
-        .status(200)
-        .json(createResponse(true, null, "Profile created successfully"));
-    } catch (error) {
-      if (isSequelizeUniqueConstraintError(error)) {
-        return handleSequelizeUniqueConstraintError(
-          response,
-          "Profile for this user already exists",
-        );
-      }
-      handleCaughtError(response, error);
-    }
-  },
+  handleValidation,
+  controller.create,
 );
 
 router.patch(
@@ -116,45 +51,10 @@ router.patch(
   modifyTargetUser(),
   upload.none(),
   checkSchema(validator.PATCH),
-  async (request, response) => {
-    const errors = validationResult(request);
-
-    if (!errors.isEmpty())
-      return handleExpressValidatorErrors(response, errors);
-
-    try {
-      if (!request.body) throw CustomError.INVALID_REQUEST;
-
-      await service.updateProfile({
-        userId: request.targetUser.id,
-        role: request.targetUser.role,
-        body: request.body,
-      });
-
-      response
-        .status(200)
-        .json(createResponse(true, null, "Profile updated successfully"));
-    } catch (error) {
-      handleCaughtError(response, error);
-    }
-  },
+  handleValidation,
+  controller.update,
 );
 
-router.delete(
-  "/",
-  authenticate(),
-  modifyTargetUser(),
-  async (request, response) => {
-    try {
-      await service.deleteProfile({ userId: request.targetUser.id });
-
-      response
-        .status(200)
-        .json(createResponse(true, null, "Profile deleted successfully"));
-    } catch (error) {
-      handleCaughtError(response, error);
-    }
-  },
-);
+router.delete("/", authenticate(), modifyTargetUser(), controller.remove);
 
 export default router;

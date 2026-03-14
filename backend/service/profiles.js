@@ -91,8 +91,8 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
   const { avatar, display_name, description, visibility } = profile;
 
   const friendshipStatus = await friend.getFriendshipStatus({
-    aId: userId,
-    bId: requesterId,
+    initiatorId: requesterId,
+    recipientId: userId,
   });
 
   let blockStatus = false;

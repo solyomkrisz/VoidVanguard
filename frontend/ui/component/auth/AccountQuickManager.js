@@ -1,46 +1,59 @@
-import { dir, element, text } from "../../UI.js";
-import { path } from "../../../common/common.js";
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import _ from "/ui/component/auth/LogoutButton.js";
+import _1 from "/ui/component/core/StateProviderElement.js";
 import userState from "../../../state/user.js";
 
-export default class AccountQuickManager extends BaseCustomElement {
+export default class AccountQuickManager extends HTMLElement {
   constructor() {
-    super([
-      path.join(dir, "global.css"),
-      path.join(dir, "accountQuickManager.css"),
-    ]);
+    super();
+  }
 
-    this.elements = {};
+  connectedCallback() {
+    if (this._initialized) return;
 
     this.build();
+
+    this._initialized = true;
   }
 
   build() {
-    const username = this.appendShadowChild(
-      element("span", text("Logged out")),
-    );
-    const profileLink = this.appendShadowChild(
-      element("a", text("Profil megtekintése")),
-    );
-    const logoutButton = this.appendShadowChild(
-      element("logout-button").styl("display", "none"),
-    );
+    this.innerHTML = `
+      <div>
+        <span>Logged out</span>
+        <a>Profile megtekintése</a>
+        <state-provider>
+          <span>Beérkező barátkérelmek: <span subscribe-to="incomingCount"></span></span>
+        </state-provider>
+        <logout-button></logout-button>
+      </div>
+    `;
+
+    const username = this.querySelector("span");
+    const profileLink = this.querySelector("a");
+    const stateProvider = this.querySelector("state-provider");
+    const logoutButton = this.querySelector("logout-button");
 
     // prettier-ignore
     {
       userState.sub("username", (_, value) => {
         username.textContent = value || "Logged out";
 
-        if (value) logoutButton.styl("display", "block");
-        else logoutButton.styl("display", "none");
+        if (value) logoutButton.hidden = false;
+        else logoutButton.hidden = true;
       });
 
       userState.sub("id", (_, value) => {
-        profileLink.setAttribute("href", "/profile/" + value);
+        if (value) {
+          profileLink.hidden = false;
+          stateProvider.hidden = false;
 
-        if (value) profileLink.styl("display", "block");
-        else profileLink.styl("display", "none");
+          profileLink.setAttribute("href", "/profile/" + value);
+          stateProvider.src = "/api/friends?include=incomingCount";
+
+          return;
+        }
+
+        profileLink.hidden = true;
+        stateProvider.hidden = true;
       });
     }
   }

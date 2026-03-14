@@ -1,0 +1,78 @@
+import * as service from "../service/comments.js";
+import { createResponse, handleCaughtError } from "../common/common.js";
+
+export async function lazySelectComments(request, response) {
+  try {
+    const result = await service.lazySelectByTarget({
+      targetId: request.query.targetId,
+      page: request.query.page,
+      limit: request.query.limit,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, result, "Comments fetched successfully"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function getComment(request, response) {
+  try {
+    const result = await service.select({ commentId: request.params.id });
+
+    response
+      .status(200)
+      .json(createResponse(true, result, "Comment fetched successfully"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function createComment(request, response) {
+  try {
+    await service.createComment({
+      authorId: request.targetUser.id,
+      targetId: request.body.targetId,
+      parentId: request.body.parentId,
+      content: request.body.content,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, null, "Comment posted successfully"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function updateComment(request, response) {
+  try {
+    await service.updateComment({
+      userId: request.targetUser.id,
+      commentId: request.body.commentId,
+      content: request.body.content,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, null, "Comment successfully updated"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function deleteComment(request, response) {
+  try {
+    await service.deleteComment({
+      userId: request.targetUser.id,
+      commentId: request.body.commentId,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, null, "Comment successfully deleted"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
