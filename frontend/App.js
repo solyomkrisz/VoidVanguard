@@ -16,7 +16,7 @@ import BuildingBlock from "./game/BuildingBlock.js";
 import Models from "./game/SpaceShipModels.js";
 import Thruster from "./game/Thruster.js";
 import * as UI from "./ui/UI.js";
-import _ from "./ui/component/ContextMenuTemplate.js";
+import _ from "./ui/component/game/ContextMenuTemplate.js";
 import * as jwt from "./common/jwt.js";
 
 // Most itt igy megvarjuk hogy legyen login

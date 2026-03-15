@@ -1,6 +1,33 @@
 * {
   box-sizing: border-box;
 }
+
+:host([hidden]),
+*[hidden] {
+  display: none !important;
+}
+
 :host {
   display: block;
+}
+
+:host > button {
+  width: 100%;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group textarea {
+  resize: vertical;
+}
+
+.input-group label {
+  color: white;
+}
+
+a {
+  color: #333;
 }

@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/global.css" />
+    <link rel="stylesheet" href="/ui/style/profile.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
+    <title>Profil</title>
+  </head>
+  <body>
+    <div style="max-width: 600px; width: 100%">
+      <search-bar base-url="/api/profiles?search={value}">
+        <template>
+          <collection-view items-source="profiles">
+            <template>
+              <div class="item" onclick="searchResultClickHandler(event)">
+                <div
+                  class="forClick"
+                  data-bind="user_id"
+                  bind-target="target"
+                ></div>
+                <img data-bind="avatar" bind-target="src" />
+                <div data-bind="display_name"></div>
+              </div>
+            </template>
+          </collection-view>
+        </template>
+      </search-bar>
+    </div>
+
+    <state-provider id="profile">
+      <div class="profileHeader">
+        <render-if if="!local.user_id" class="profileErrorContainer">
+          <div class="profileError">
+            <h2>Profile not found!</h2>
+          </div>
+        </render-if>
+
+        <render-if if="local.user_id">
+          <div id="profileContent">
+            <img class="avatar" subscribe-to="avatar" subscribe-with="src" />
+
+            <div>
+              <div subscribe-to="display_name"></div>
+              <div subscribe-to="description"></div>
+            </div>
+          </div>
+        </render-if>
+
+        <render-if if="local.user_id">
+          <friendship-toggle
+            refresh-target="#profile"
+            response-target="toast-manager"
+            subscribe
+          ></friendship-toggle>
+          <user-block-toggle
+            refresh-target="#profile"
+            response-target="toast-manager"
+            subscribe
+          ></user-block-toggle>
+          <profile-form-toggle subscribe></profile-form-toggle>
+        </render-if>
+      </div>
+
+      <div class="profileBody">
+        <div></div>
+        <div>
+          <div class="friendListTitle">Barátlista</div>
+
+          <div>
+            <collection-view
+              subscribe
+              items-source="all_friends"
+              class="friendList"
+            >
+              <template>
+                <a class="item">
+                  <img data-bind="avatar" bind-target="src" />
+                  <span data-bind="name"></span>
+                </a>
+              </template>
+            </collection-view>
+          </div>
+        </div>
+      </div>
+
+      <render-if
+        id="createProfile"
+        if="window.location.pathname.split('/').filter(Boolean)[1] === 'create'"
+      >
+        <fullscreen-overlay target="#createProfile">
+          <smart-form-wrapper
+            id="createProfileForm"
+            url="/api/profiles"
+            method="POST"
+            refresh-target="#profile"
+            response-target="toast-manager"
+            show-response-message
+          >
+            <form>
+              <input-group>
+                <label>Profilnév</label>
+                <input type="text" placeholder="Név123" name="display_name" />
+              </input-group>
+
+              <input-group>
+                <label>Leírás</label>
+                <textarea
+                  name="description"
+                  placeholder="Ez a profilom..."
+                ></textarea>
+              </input-group>
+
+              <input-group>
+                <label>Láthatóság</label>
+                <select name="visibility">
+                  <option value="public">Nyilvános</option>
+                  <option value="friends-only">Csak barátok</option>
+                </select>
+              </input-group>
+
+              <button>Profil létrehozása</button>
+            </form>
+          </smart-form-wrapper>
+        </fullscreen-overlay>
+      </render-if>
+
+      <render-if
+        id="modifyProfile"
+        if="window.location.pathname.split('/').filter(Boolean)[1] === 'update'"
+      >
+        <fullscreen-overlay target="#modifyProfile">
+          <profile-form action="update"></profile-form>
+        </fullscreen-overlay>
+      </render-if>
+
+      <div class="footer">
+        <div class="comments">
+          <render-if if="user.id && local.user_id">
+            <smart-form-wrapper
+              url="/api/comments"
+              method="POST"
+              response-target="toast-manager"
+              refresh-target="lazy-list"
+            >
+              <form class="post-comment-form">
+                <input
+                  type="hidden"
+                  subscribe-to="user_id"
+                  subscribe-with="value"
+                  name="targetId"
+                />
+                <input-group class="input-group">
+                  <label id="a">Komment</label>
+                  <textarea name="content" placeholder="Komment..."></textarea>
+                </input-group>
+                <button>Közzététel</button>
+              </form>
+            </smart-form-wrapper>
+          </render-if>
+
+          <render-if if="local.user_id">
+            <lazy-list
+              page-size="1"
+              mode="scroll"
+              items-source="comments"
+              provide-state
+            >
+              <template>
+                <div class="comment">
+                  <state-provider
+                    data-bind="id"
+                    bind-target="src"
+                    src-prefix="/api/comments/"
+                    disable-auto-update
+                    class="comment-state"
+                  >
+                    <div class="header">
+                      <div>
+                        <img />
+                        <span subscribe-to="author"></span>
+                      </div>
+                      <span>
+                        <span subscribe-to="created_at"></span>
+                        <br />
+                        <render-if if="local.updated_at">
+                          <span subscribe-to="updated_at"></span>
+                        </render-if>
+                      </span>
+                    </div>
+                    <div class="body">
+                      <div subscribe-to="content" class="to-toggle"></div>
+
+                      <smart-form-wrapper
+                        class="to-toggle"
+                        url="/api/comments"
+                        method="PATCH"
+                        response-target="toast-manager"
+                        refresh-target="closest:state-provider"
+                        dropdown
+                        hidden
+                      >
+                        <form>
+                          <input
+                            name="commentId"
+                            type="hidden"
+                            subscribe-to="id"
+                            subscribe-with="value"
+                          />
+                          <textarea
+                            name="content"
+                            subscribe-to="content"
+                          ></textarea>
+                          <toggle-button target=".to-toggle">
+                            <button>Mentés</button>
+                          </toggle-button>
+                        </form>
+                      </smart-form-wrapper>
+
+                      <span>Likeok: <span subscribe-to="likes"></span></span>
+                      <span
+                        >Dislikeok: <span subscribe-to="dislikes"></span
+                      ></span>
+                      <render-if if="user.id">
+                        <div style="display: flex">
+                          <state-provider
+                            subscribe-to="id"
+                            subscribe-with="src"
+                            src-prefix="/api/reactions/"
+                            class="reactionState"
+                          >
+                            <smart-form-wrapper
+                              url="/api/reactions"
+                              method="POST"
+                              refresh-target="closest:.comment-state"
+                              response-target="toast-manager"
+                            >
+                              <form>
+                                <input type="hidden" name="type" value="like" />
+                                <input
+                                  type="hidden"
+                                  name="targetId"
+                                  subscribe-to="target_id"
+                                  subscribe-with="value"
+                                />
+                                <render-if if="local.type != 'like'">
+                                  <button>Like</button>
+                                </render-if>
+                                <render-if if="local.type == 'like'">
+                                  <button
+                                    style="background: blue; color: white"
+                                  >
+                                    Like
+                                  </button>
+                                </render-if>
+                              </form>
+                            </smart-form-wrapper>
+                          </state-provider>
+
+                          <state-provider
+                            subscribe-to="id"
+                            subscribe-with="src"
+                            src-prefix="/api/reactions/"
+                            class="reactionState"
+                          >
+                            <smart-form-wrapper
+                              url="/api/reactions"
+                              method="POST"
+                              refresh-target="closest:.comment-state"
+                              response-target="toast-manager"
+                            >
+                              <form>
+                                <input
+                                  type="hidden"
+                                  name="type"
+                                  value="dislike"
+                                />
+                                <input
+                                  type="hidden"
+                                  name="targetId"
+                                  subscribe-to="target_id"
+                                  subscribe-with="value"
+                                />
+                                <render-if if="local.type != 'dislike'">
+                                  <button>Dislike</button>
+                                </render-if>
+                                <render-if if="local.type == 'dislike'">
+                                  <button
+                                    style="background: blue; color: white"
+                                  >
+                                    Dislike
+                                  </button>
+                                </render-if>
+                              </form>
+                            </smart-form-wrapper>
+                          </state-provider>
+                        </div>
+                      </render-if>
+                      <render-if if="user.id === local.author_id">
+                        <div style="display: flex">
+                          <smart-form-wrapper
+                            url="/api/comments"
+                            method="DELETE"
+                            response-target="toast-manager"
+                            refresh-target="closest:lazy-list"
+                          >
+                            <form>
+                              <input
+                                name="commentId"
+                                type="hidden"
+                                subscribe-to="id"
+                                subscribe-with="value"
+                              />
+                              <button>Törlés</button>
+                            </form>
+                          </smart-form-wrapper>
+
+                          <toggle-button target=".to-toggle" class="to-toggle">
+                            <button>Szerkesztés</button>
+                          </toggle-button>
+                        </div>
+
+                        <!-- <dropdown-container hide-toggle-when-active>
+                          <button toggle original-toggle>Szerkesztés</button>
+                          <smart-form-wrapper
+                            url="/api/comments"
+                            method="PATCH"
+                            response-target="toast-manager"
+                            refresh-target="closest:state-provider"
+                            dropdown
+                            hidden
+                          >
+                            <form>
+                              <input
+                                name="commentId"
+                                type="hidden"
+                                subscribe-to="id"
+                                subscribe-with="value"
+                              />
+                              <textarea
+                                name="content"
+                                subscribe-to="content"
+                              ></textarea>
+                              <button toggle>Mentés</button>
+                            </form>
+                          </smart-form-wrapper>
+                        </dropdown-container> -->
+                      </render-if>
+                    </div>
+                  </state-provider>
+                </div>
+              </template>
+            </lazy-list>
+          </render-if>
+        </div>
+
+        <div></div>
+      </div>
+
+      <fullscreen-overlay id="commentEditor" target="#commentEditor" hidden>
+        <smart-form-wrapper>
+          <form></form>
+        </smart-form-wrapper>
+      </fullscreen-overlay>
+    </state-provider>
+
+    <toast-manager></toast-manager>
+
+    <script>
+      function searchResultClickHandler(e) {
+        document.querySelector("search-bar collection-view").hidden = true;
+        document.querySelector("#profile").src =
+          `/api/profiles/${e.target.target}`;
+        document.querySelector("lazy-list").src =
+          `/api/comments?targetId=${e.target.target}`;
+        history.replaceState({}, "", "/profile/" + e.target.target);
+      }
+    </script>
+
+    <script type="module" src="/ui/initcomponents.js"></script>
+    <script type="module">
+      import { onDOMContentLoaded } from "/common/common.js";
+      document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+      const profileId = window.location.pathname.split("/").filter(Boolean)[1];
+      document.querySelector("#profile").src = "/api/profiles/" + profileId;
+      document.querySelector("lazy-list").src =
+        "/api/comments?targetId=" + profileId;
+
+      document
+        .querySelector("#createProfileForm")
+        .addEventListener("response", (e) => {
+          const response = e.detail.response;
+          if (response.success && response.result.id) {
+            window.location.href = "/profile/" + response.result.id;
+          }
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+toast-manager {
+  position: fixed;
+  z-index: 998;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.toast {
+  min-width: 300px;
+  padding: 10px;
+  background: #555;
+  color: #fff;
+  text-align: center;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 0.5s,
+    transform 0.5s;
+}
+
+.toast.hidden {
+  transform: translateX(300px);
+  opacity: 0;
+}

@@ -3,7 +3,7 @@ import * as vec from "../common/vec.js";
 import * as vec2 from "../common/vec2.js";
 import * as Type from "./Type.js";
 import * as UI from "../ui/UI.js";
-import _ from "../ui/component/ThrusterController.js";
+import _ from "../ui/component/game/ThrusterController.js";
 
 export default class Thruster extends Block {
   static g0 = 9.81;

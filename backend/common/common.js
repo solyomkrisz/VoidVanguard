@@ -1,6 +1,24 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-function createResponse(success, result, message = null) {
+import jwt from "jsonwebtoken";
+import { validate, version } from "uuid";
+import { validationResult } from "express-validator";
+import * as CustomError from "./CustomError.js";
+import Role from "./Role.js";
+
+import multer from "multer";
+import path from "path";
+
+const storage = multer.diskStorage({
+  destination: (request, file, callback) => {
+    callback(null, path.join(__dirname, "../uploads"));
+  },
+  filename: (request, file, callback) => {
+    callback(null, Date.now() + "-" + file.originalname); // egyedi név: dátum - file eredeti neve
+  },
+});
+
+export const upload = multer({ storage });
+
+export function createResponse(success, result, message = null) {
   return {
     success,
     result,
@@ -8,22 +26,19 @@ function createResponse(success, result, message = null) {
   };
 }
 
-function clearRefreshTokenCookie(response) {
-  response.cookie("refresh_token", "", {
-    httpOnly: true,
-    maxAge: 0,
-    expires: new Date(0),
-    path: "/api/tokens",
-  });
-}
-
-function authenticate(
+export function authenticate(
   opitons = {
     onValidAccessToken: (_, _1, next) => {
       next();
     },
     onInvalidAccessToken: (_, response, _1) => {
-      response.status(401).json(createResponse(false, null, "Unauthorized"));
+      const error = CustomError.UNAUTHORIZED;
+
+      response
+        .status(error.statusCode)
+        .json(
+          createResponse(false, error.definition, error.definition.message),
+        );
     },
   },
 ) {
@@ -51,7 +66,7 @@ function authenticate(
   };
 }
 
-function authorize(
+export function authorize(
   requiredRole,
   options = {
     onMatch: (_, _1, next) => {
@@ -66,17 +81,17 @@ function authorize(
     if (!request?.user) {
       return options.onMismatch(request, response, next);
     }
-    const roles = request.user?.roles;
-    if (!roles || !roles.includes(requiredRole)) {
+    const role = request.user?.role;
+    if (!role || role < requiredRole) {
       return options.onMismatch(request, response, next);
     }
     options.onMatch(request, response, next);
   };
 }
 
-function modifyTargetUser(requiredRole = "admin") {
+export function modifyTargetUser(requiredRole = Role.ADMIN) {
   return function (request, response, next) {
-    if (!request.user.roles.includes(requiredRole)) {
+    if (request.user.role < requiredRole) {
       return next();
     }
     const targetUserId = request?.body?.targetUserId;
@@ -84,16 +99,49 @@ function modifyTargetUser(requiredRole = "admin") {
       return next();
     }
     request.targetUser = {
-      sub: targetUserId,
+      id: targetUserId,
     };
     next();
   };
 }
 
-module.exports = {
-  createResponse,
-  clearRefreshTokenCookie,
-  authenticate,
-  authorize,
-  modifyTargetUser,
-};
+export function isValidUUIDv4(id) {
+  return validate(id) && version(id) === 4;
+}
+
+export function handleCaughtError(response, error) {
+  console.log(error);
+
+  if (CustomError.isCustomError(error)) {
+    return response
+      .status(error.statusCode)
+      .json(createResponse(false, error.definition, error.definition.message));
+  }
+
+  return response
+    .status(500)
+    .json(createResponse(false, null, "An unexpected error occurred"));
+}
+
+export function handleExpressValidatorErrors(response, errors) {
+  return response
+    .status(400)
+    .json(createResponse(false, null, errors.array()[0].msg));
+}
+
+export function isSequelizeUniqueConstraintError(error) {
+  return (
+    error.name === "SequelizeUniqueConstraintError" ||
+    error.code === "ER_DUP_ENTRY"
+  );
+}
+
+export function handleSequelizeUniqueConstraintError(response, message) {
+  return response.status(400).json(createResponse(false, null, message));
+}
+
+export function handleValidation(request, response, next) {
+  const errors = validationResult(request);
+  if (!errors.isEmpty()) return handleExpressValidatorErrors(response, errors);
+  next();
+}

@@ -1,0 +1,34 @@
+import * as service from "../service/auth.js";
+import { createResponse, handleCaughtError } from "../common/common.js";
+
+export async function login(request, response) {
+  try {
+    const { accessToken, refreshToken, exp } = await service.login({
+      username: request.body.username,
+      password: request.body.password,
+    });
+
+    response.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      sameSite: "Strict",
+      path: "/api/tokens",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    response
+      .status(200)
+      .json(
+        createResponse(true, { access_token: accessToken }, "Login successful"),
+      );
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export function logout(_, response) {
+  service.logout(response);
+
+  response
+    .status(200)
+    .json(createResponse(true, { access_token: "" }, "Logout successful"));
+}

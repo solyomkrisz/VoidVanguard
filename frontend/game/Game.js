@@ -10,7 +10,7 @@ import BlockStyle from "./BlockStyle.js";
 import IDManager from "./IDManager.js";
 import ObjectCollection from "./ObjectCollection.js";
 import * as UI from "../ui/UI.js";
-import _ from "../ui/component/DynamicTooltip.js";
+import _ from "../ui/component/game/DynamicTooltip.js";
 import { ValueNoise, PerlinNoise } from "../common/noise.js";
 import ChunkManager from "./ChunkManager.js";
 import * as vec2 from "../common/vec2.js";
@@ -77,7 +77,6 @@ export default class Game extends WebGLCanvas {
     this.buildingBlocks = new ObjectCollection(this);
     this.projectiles = new ObjectCollection(this);
     this.coreObjects = new ObjectCollection(this);
-
 
     this.debugPanel = null;
     this.debugOverlay = null;
@@ -305,7 +304,7 @@ export default class Game extends WebGLCanvas {
   setBlockStyle(blockStyle) {
     if (!(blockStyle instanceof BlockStyle)) {
       throw new Error(
-        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class."
+        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class.",
       );
     }
 

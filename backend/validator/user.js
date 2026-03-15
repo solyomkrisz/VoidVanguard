@@ -1,13 +1,12 @@
-const { validate, version } = require("uuid");
-const { query, body } = require("express-validator");
+import { isValidUUIDv4 } from "../common/common.js";
 
-const GET = function (request, response, next) {
-  const id = request.params.id;
-  request.valid = validate(id) && version(id) === 4;
+export function GET(request, response, next) {
+  const id = request?.params?.id;
+  request.valid = isValidUUIDv4(id);
   next();
-};
+}
 
-const POST = {
+export const POST = {
   username: {
     in: ["body"],
     isLength: {
@@ -64,7 +63,7 @@ const POST = {
   },
 };
 
-const PATCH = {
+export const PATCH = {
   username: {
     in: ["body"],
     optional: { options: { nullable: true } },
@@ -136,5 +135,3 @@ const PATCH = {
     },
   },
 };
-
-module.exports = { GET, POST, PATCH };

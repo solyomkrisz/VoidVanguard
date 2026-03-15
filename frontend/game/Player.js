@@ -7,8 +7,8 @@ import Projectile from "./Projectile.js";
 import Model from "./Model.js";
 import * as Type from "./Type.js";
 import * as UI from "../ui/UI.js";
-import _ from "../ui/component/ShipPropulsionPanel.js";
-import _1 from "../ui/component/FlightComputer.js";
+import _ from "../ui/component/game/ShipPropulsionPanel.js";
+import _1 from "../ui/component/game/FlightComputer.js";
 import BuildingBlock from "./BuildingBlock.js";
 
 export default class Player extends Spaceship {

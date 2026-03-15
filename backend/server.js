@@ -1,10 +1,13 @@
-require("dotenv").config();
-//!Module-ok importálása
-const express = require("express"); //?npm install express
-const cookerParser = require("cookie-parser"); //?npm install cookie-parser
-const path = require("path");
+import "dotenv/config";
+import express from "express";
+import cookerParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from "url";
+import endpoints from "./api/api.js";
 
-//!Beállítások
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const router = express.Router();
 
@@ -16,10 +19,14 @@ app.use(express.urlencoded({ extended: true })); //?Middleware URL-encoded adato
 app.use(cookerParser()); //?Middleware Cookie-k
 app.set("trust proxy", 1); //?Middleware Proxy
 
-//!Routing
-//?Főoldal:
+// Főoldal
 router.get("/", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
+
+// Profil oldal
+router.get("/profile/:id", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/profile.html"));
 });
 
 // Teszt oldal
@@ -27,12 +34,9 @@ router.get("/test", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/test.html"));
 });
 
-//!API endpoints
 app.use("/", router);
-const endpoints = require("./api/api.js");
 app.use("/api", endpoints);
 
-//!Szerver futtatása
 app.use(express.static(path.join(__dirname, "../frontend"))); //?frontend mappa tartalmának betöltése az oldal működéséhez
 app.listen(port, ip, () => {
   console.log(`Szerver elérhetősége: http://${ip}:${port}`);

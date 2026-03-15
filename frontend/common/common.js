@@ -1,4 +1,5 @@
-import * as NET from "./network.js";
+import * as net from "./network.js";
+import userState from "../state/user.js";
 
 export const DATA_STRUCTURE =
   typeof Float32Array !== "undefined" ? Float32Array : Array;
@@ -90,13 +91,21 @@ export const path = Object.freeze({
 
 export async function onDOMContentLoaded() {
   try {
-    await NET.refreshAccessToken();
-    document.dispatchEvent(
-      new CustomEvent("login", {
-        bubbles: false,
-      }),
-    );
+    const result = await net.send("/api/sessions", { method: "POST" });
+    result.success && userState.from(result.result);
   } catch (error) {
-    console.error(error);
+    return;
   }
+}
+
+export function debounce(fn, delay) {
+  let timerId;
+
+  return function (...args) {
+    clearTimeout(timerId);
+
+    timerId = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
 }
