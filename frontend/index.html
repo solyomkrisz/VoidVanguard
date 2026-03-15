@@ -5,14 +5,527 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VoidVanguard</title>
     <style>
+      @font-face {
+        font-family: 'Jersey';
+        src: url('./font/Jersey10-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      * {
+        box-sizing: border-box;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: -webkit-crisp-edges;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: pixelated;
+        -ms-interpolation-mode: nearest-neighbor;
+      }
+
       body {
         margin: 0;
-        background: #00f;
+        background: #03000c;
+        overflow: hidden;
+        font-family: 'Jersey', 'Courier New', monospace;
+        font-weight: normal;
+        font-smooth: never;
+        -webkit-font-smoothing: none;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      #authContainer {
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #0a0a14 0%, #050508 100%);
+        background-image: 
+          repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(30, 60, 140, 0.05) 4px, rgba(30, 60, 140, 0.05) 8px),
+          repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(30, 60, 140, 0.05) 4px, rgba(30, 60, 140, 0.05) 8px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        padding: 2vh 2vw;
         overflow: hidden;
       }
+
+      #authContainer.hidden {
+        display: none;
+      }
+
+      .title-image {
+        width: min(50vw, 50vh);
+        height: auto;
+        margin-bottom: 0vh;
+        flex-shrink: 0;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: -webkit-crisp-edges;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: pixelated;
+        -ms-interpolation-mode: nearest-neighbor;
+        filter: drop-shadow(0 4px 8px rgba(0, 100, 255, 0.3));
+      }
+
+      .auth-forms {
+        display: flex;
+        gap: 2vw;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: stretch;
+        max-width: 25vw;
+        width: 100%;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      #regForm {
+        display: none;
+      }
+
+      #logForm {
+        max-height: 50vh;
+      }
+
+      form {
+        background: #1a1a28;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.5vh 1.5vw;
+        border: 4px solid #4a90e2;
+        box-shadow: 
+          inset 0 0 0 2px #0d0d15,
+          inset 0 0 0 6px #2a2a3e,
+          0 0 0 2px #0d0d15,
+          0 8px 0 0 #0d0d15,
+          0 8px 20px rgba(0, 0, 0, 0.9);
+        min-width: 20vw;
+        flex: 1 1 20vw;
+        max-width: 40vw;
+        max-height: 65vh;
+        gap: 0.5vh;
+        overflow-y: auto;
+      }
+
+      form h2 {
+        margin: 2vh 0 2vh 0;
+        text-align: center;
+        color: #ffffff;
+        font-size: clamp(1rem, 3vh, 2rem);
+        text-shadow: 
+          1px 1px 0px #000000,
+          -1px -1px 0px #6ab8ff;
+        letter-spacing: 0.01rem;
+        padding: 1.2vh 1vw;
+        background: #4a90e2;
+        border: 0.25rem solid #6ab8ff;
+        box-shadow: 
+          inset 0 0 0 2px #2a5a9e,
+          0 0 0 2px #0d0d15,
+          0 4px 0 0 #2a5a9e,
+          0 0 16px rgba(106, 184, 255, 0.4);
+        flex-shrink: 0;
+      }
+
+      form label {
+        margin-top: 0.5vh;
+        font-size: clamp(0.8rem, 1.3vh, 1rem);
+        color: #6ab8ff;
+        text-transform: uppercase;
+        letter-spacing: 0.01rem;
+        text-shadow: 1px 1px 0px #000000;
+        flex-shrink: 0;
+      }
+
+      form input {
+        padding: 0.8vh 0.5vw;
+        background: #0d0d15;
+        border: 0.2rem solid #2a5a9e;
+        color: #ffffff;
+        font-size: clamp(0.5rem, 1.4vh, 1rem);
+        font-family: 'Jersey', 'Courier New', monospace;
+        box-shadow: 
+          inset 3px 3px 0px rgba(0, 0, 0, 0.8),
+          inset -2px -2px 0px rgba(74, 144, 226, 0.2);
+        font-smooth: never;
+        -webkit-font-smoothing: none;
+        flex-shrink: 0;
+      }
+
+      form input:focus {
+        outline: none;
+        border-color: #6ab8ff;
+        background: #15151f;
+        box-shadow: 
+          inset 3px 3px 0px rgba(0, 0, 0, 0.8),
+          inset -2px -2px 0px rgba(106, 184, 255, 0.3),
+          0 0 0 3px #4a90e2,
+          0 0 16px rgba(106, 184, 255, 0.6);
+      }
+
+      form button {
+        margin-top: 3vh;
+        padding: 1.2vh 1vw;
+        background: #4a90e2;
+        color: #ffffff;
+        border: 4px solid #6ab8ff;
+        box-shadow: 
+          inset 0 0 0 2px #2a5a9e,
+          0 0 0 2px #0d0d15,
+          0 6px 0 0 #2a5a9e,
+          0 6px 16px rgba(0, 0, 0, 0.7);
+        font-size: clamp(0.6875rem, 1.4vh, 0.8125rem);
+        font-family: 'Jersey', 'Courier New', monospace;
+        cursor: pointer;
+        transition: all 0.1s;
+        text-transform: uppercase;
+        letter-spacing: 0.1rem;
+        text-shadow: 1px 1px 0px #000000;
+        font-smooth: never;
+        -webkit-font-smoothing: none;
+        flex-shrink: 0;
+      }
+
+      form button:hover {
+        background: #6ab8ff;
+        transform: translateY(-2px);
+        box-shadow: 
+          inset 0 0 0 2px #4a90e2,
+          0 0 0 2px #0d0d15,
+          0 8px 0 0 #2a5a9e,
+          0 8px 18px rgba(0, 0, 0, 0.7),
+          0 0 20px rgba(106, 184, 255, 0.5);
+      }
+
+      form button:active {
+        transform: translateY(3px);
+        box-shadow: 
+          inset 0 0 0 2px #2a5a9e,
+          0 0 0 2px #0d0d15,
+          0 3px 0 0 #2a5a9e,
+          0 3px 12px rgba(0, 0, 0, 0.7);
+      }
+
+      form a {
+        margin-top: 1vh;
+        text-align: center;
+        color: #6ab8ff;
+        font-size: clamp(1rem, 2vh, 1.5rem);
+        text-shadow: 1px 1px 0px #000000;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      form a:hover {
+        color: #b7d8ff;
+        text-shadow: 
+          1px 1px 0px #000000,
+          0 0 8px rgba(0, 119, 255, 0.986);
+      }
+
+      .form-message {
+        margin-top: 1vh;
+        text-align: center;
+        font-size: clamp(0.5625rem, 1.2vh, 0.6875rem);
+        min-height: 2.5vh;
+        padding: 0.8vh 0.5vw;
+        letter-spacing: 1px;
+        flex-shrink: 0;
+      }
+
+      .form-message.error {
+        color: #ffffff;
+        background: #dc2626;
+        border: 4px solid #ef4444;
+        box-shadow: 
+          inset 0 0 0 2px #7f1d1d,
+          0 0 0 2px #0d0d15,
+          0 4px 0 0 #7f1d1d,
+          0 0 16px rgba(239, 68, 68, 0.5);
+        text-shadow: 1px 1px 0px #000000;
+        animation: shake 0.3s;
+      }
+
+      .form-message.success {
+        color: #ffffff;
+        background: #10b981;
+        border: 4px solid #34d399;
+        box-shadow: 
+          inset 0 0 0 2px #065f46,
+          0 0 0 2px #0d0d15,
+          0 4px 0 0 #065f46,
+          0 0 16px rgba(52, 211, 153, 0.5);
+        text-shadow: 1px 1px 0px #000000;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-0.25rem); }
+        75% { transform: translateX(0.25rem); }
+      }
+
+      #skipAuthBtn {
+        position: fixed;
+        bottom: 2vh;
+        right: 2vw;
+        padding: 1vh 1.5vw;
+        background: #f97316;
+        color: #ffffff;
+        border: 4px solid #fb923c;
+        box-shadow: 
+          inset 0 0 0 2px #c2410c,
+          0 0 0 2px #0d0d15,
+          0 4px 0 0 #c2410c,
+          0 4px 12px rgba(0, 0, 0, 0.7);
+        font-size: clamp(0.5625rem, 1.1vh, 0.6875rem);
+        font-family: 'Jersey', 'Courier New', monospace;
+        cursor: pointer;
+        transition: all 0.1s;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 1px 1px 0px #000000;
+        z-index: 10;
+        font-smooth: never;
+        -webkit-font-smoothing: none;
+      }
+
+      #skipAuthBtn:hover {
+        background: #fb923c;
+        transform: translateY(-2px);
+        box-shadow: 
+          inset 0 0 0 2px #f97316,
+          0 0 0 2px #0d0d15,
+          0 6px 0 0 #c2410c,
+          0 6px 14px rgba(0, 0, 0, 0.7),
+          0 0 16px rgba(251, 146, 60, 0.4);
+      }
+
+      #skipAuthBtn:active {
+        transform: translateY(3px);
+        box-shadow: 
+          inset 0 0 0 2px #c2410c,
+          0 0 0 2px #0d0d15,
+          0 1px 0 0 #c2410c,
+          0 1px 8px rgba(0, 0, 0, 0.7);
+      }
+
+      @media (max-width: 1256px), (max-height: 800px) {
+        #authContainer {
+          padding: 1vh 1vw;
+        }
+
+        .title-image {
+          width: min(60vw, 60vh);
+          margin-bottom: 1vh;
+        }
+
+        .auth-forms {
+          gap: 2vw;
+          flex-direction: column;
+          max-width: 40vw;
+        }
+
+        form {
+          padding: 1vh 5vw;
+          min-width: 100%;
+          max-width: 100%;
+          max-height: 50vh;
+          max-width: 50vw;
+        }
+
+        #skipAuthBtn {
+          padding: 0.8vh 1.2vw;
+        }
+      }
+
+      @media (max-width: 768px){
+        .title-image {
+          width: min(80vw, 80vh);
+          margin-bottom: 1vh;
+        }
+
+        .auth-forms {
+          gap: 3vw;
+          flex-direction: column;
+          max-width: 70vw;
+        }
+
+        form {
+          padding: 1vh 5vw;
+          min-width: 100%;
+          min-width: 100%;
+          max-height: 50vh;
+          max-width: 50vw;
+        }
+
+        #skipAuthBtn {
+          padding: 0.8vh 1.2vw;
+        }
+      }
+
+      @media (max-width: 465px){
+        .title-image {
+          width: min(100vw, 100vh);
+          margin-bottom: 1vh;
+        }
+
+        .auth-forms {
+          gap: 3vw;
+          flex-direction: column;
+          max-width: 70vw;
+        }
+
+        form {
+          padding: 1vh 5vw;
+          min-width: 100%;
+          min-width: 100%;
+          max-height: 50vh;
+          max-width: 50vw;
+        }
+
+        #skipAuthBtn {
+          padding: 0.8vh 1.2vw;
+        }
+      }
+
     </style>
   </head>
   <body>
+    <div id="authContainer">
+      <img src="./image/VoidVanguardTitlePixelart.png" alt="VoidVanguard" class="title-image" />
+      <div class="auth-forms">
+        <form id="regForm">
+          <h2>Regisztráció</h2>
+          <label for="reg-username">Felhasználónév</label>
+          <input autocomplete="off" name="username" id="reg-username" type="text" required />
+          <label for="reg-email">Email</label>
+          <input autocomplete="off" name="email" id="reg-email" type="email" required />
+          <label for="reg-password">Jelszó</label>
+          <input autocomplete="off" name="password" id="reg-password" type="password" required />
+          <label for="reg-passwordConfirm">Jelszó megerősítése</label>
+          <input autocomplete="off" name="passwordConfirm" id="reg-passwordConfirm" type="password" required />
+          <button type="submit">Regisztráció</button>
+          <div id="regFormMsg" class="form-message"></div>
+          <a>Van már fiókod? Jelentkezz be itt!</a>
+        </form>
+
+        <form id="logForm">
+          <h2>Bejelentkezés</h2>
+          <label for="log-username">Felhasználónév</label>
+          <input autocomplete="off" name="username" id="log-username" type="text" required />
+          <label for="log-password">Jelszó</label>
+          <input autocomplete="off" name="password" id="log-password" type="password" required />
+          <button type="submit">Bejelentkezés</button>
+          <div id="logFormMsg" class="form-message"></div>
+          <a>Nincs fiókod? Regisztrálj!</a>
+        </form>
+      </div>
+      <button id="skipAuthBtn">XDD login skip XDD</button>
+    </div>
+
+    <script type="module" src="./ui/initcomponents.js"></script>
+    <script type="module">
+      import * as net from "./common/network.js";
+      import * as jwt from "./common/jwt.js";
+      import { extractForm } from "./common/common.js";
+
+      // Handle registration
+      document.querySelector("#regForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const result = await net.send("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(extractForm(e.target)),
+        }, false);
+
+        if (result.message) {
+          const regFormMsg = document.querySelector("#regFormMsg");
+          regFormMsg.className = "form-message " + (result.success ? "success" : "error");
+          regFormMsg.textContent = result.message;
+        }
+      });
+
+      // Handle login
+      document.querySelector("#logForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const result = await net.send("/api/sessions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(extractForm(e.target)),
+        }, false);
+
+        if (result.message) {
+          const logFormMsg = document.querySelector("#logFormMsg");
+          logFormMsg.className = "form-message " + (result.success ? "success" : "error");
+          logFormMsg.textContent = result.message;
+
+          if (result.success) {
+            // If we got a new access token, store it
+            if (result.result?.access_token) {
+              sessionStorage.setItem("access_token", result.result.access_token);
+              sessionStorage.setItem(
+                "access_token_decoded",
+                JSON.stringify(jwt.decode(result.result.access_token))
+              );
+            }
+            
+            // Success means we're authenticated (either newly logged in or already logged in)
+            document.getElementById("authContainer").classList.add("hidden");
+            document.dispatchEvent(new CustomEvent("login"));
+          }
+        }
+      });
+
+      // Dev bypass button
+      document.getElementById("skipAuthBtn").addEventListener("click", () => {
+        // Set a mock token (optional, for any code that checks sessionStorage)
+        const mockToken = "ideiglenes_token_xd";
+        sessionStorage.setItem("access_token", mockToken);
+        sessionStorage.setItem(
+          "access_token_decoded",
+          JSON.stringify({ username: "dev_user", sub: "dev_id" })
+        );
+
+        // Hide auth container and dispatch login event
+        document.getElementById("authContainer").classList.add("hidden");
+        document.dispatchEvent(new CustomEvent("login"));
+      });
+
+      // This will be checked by App.js after it loads
+
+      // Noww we handle regForm and logForm toggles
+      document.querySelector("#logForm a").addEventListener("click", () => {
+        const regForm = document.getElementById("regForm");
+        const logForm = document.getElementById("logForm");
+
+        if (regForm.style.display === "none" || regForm.style.display === "") {
+          regForm.style.display = "flex";
+          logForm.style.display = "none";
+        } else {
+          regForm.style.display = "none";
+          logForm.style.display = "flex";
+        }
+      });
+      document.querySelector("#regForm a").addEventListener("click", () => {
+        const regForm = document.getElementById("regForm");
+        const logForm = document.getElementById("logForm");
+
+        if (logForm.style.display === "none" || logForm.style.display === "") {
+          logForm.style.display = "flex";
+          regForm.style.display = "none";
+        } else {
+          logForm.style.display = "none";
+          regForm.style.display = "flex";
+        }
+      });
+    </script>
     <script type="module" src="./App.js"></script>
   </body>
 </html>
