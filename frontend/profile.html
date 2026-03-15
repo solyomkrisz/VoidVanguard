@@ -99,26 +99,26 @@
             show-response-message
           >
             <form>
-              <input-group
-                input-type="text"
-                label="Profilnév"
-                input-placeholder="Név123"
-                name="display_name"
-              ></input-group>
+              <input-group>
+                <label>Profilnév</label>
+                <input type="text" placeholder="Név123" name="display_name" />
+              </input-group>
 
-              <input-group
-                input-type="textarea"
-                label="Leírás"
-                input-placeholder="Ez a profilom..."
-                name="description"
-              ></input-group>
+              <input-group>
+                <label>Leírás</label>
+                <textarea
+                  name="description"
+                  placeholder="Ez a profilom..."
+                ></textarea>
+              </input-group>
 
-              <input-group
-                input-type="select"
-                label="Láthatóság"
-                name="visibility"
-                options="'Nyilvános'-'public','Csak barátok'-'friends-only'"
-              ></input-group>
+              <input-group>
+                <label>Láthatóság</label>
+                <select name="visibility">
+                  <option value="public">Nyilvános</option>
+                  <option value="friends-only">Csak barátok</option>
+                </select>
+              </input-group>
 
               <button>Profil létrehozása</button>
             </form>
@@ -151,12 +151,10 @@
                   subscribe-with="value"
                   name="targetId"
                 />
-                <input-group
-                  input-name="content"
-                  label="Komment"
-                  input-type="textarea"
-                  input-placeholder="Komment..."
-                ></input-group>
+                <input-group style="display: flex; flex-direction: column">
+                  <label>Komment</label>
+                  <textarea name="content" placeholder="Komment..."></textarea>
+                </input-group>
                 <button>Közzététel</button>
               </form>
             </smart-form-wrapper>

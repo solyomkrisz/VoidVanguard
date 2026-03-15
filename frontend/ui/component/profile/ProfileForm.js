@@ -43,26 +43,23 @@ export default class ProfileForm extends BaseCustomElement {
         show-response-message
       >
         <form>
-          <input-group
-            input-type="text"
-            label="Profilnév"
-            input-placeholder="Név123"
-            name="display_name"
-          ></input-group>
+          <input-group>
+            <label>Profilnév</label>
+            <input type="text" name="display_name" placeholder="Név123" />
+          </input-group>
 
-          <input-group
-            input-type="textarea"
-            label="Leírás"
-            input-placeholder="Ez a profilom..."
-            name="description"
-          ></input-group>
+          <input-group>
+            <label>Leírás</label>
+            <textarea name="description" placeholder="Ez a profilom..."></textarea>
+          </input-group>
           
-          <input-group
-            input-type="select"
-            label="Láthatóság"
-            name="visibility"
-            options="'Nyilvános'-'public','Csak barátok'-'friends-only'"
-          ></input-group>
+          <input-group>
+            <label>Láthatóság</label>
+            <select name="visibility">
+              <option value="public">Nyilvános</option>
+              <option value="friends-only">Csak barátok</option>
+            </select>
+          </input-group>
 
           <button>Módosítások mentése</button>
         </form>
