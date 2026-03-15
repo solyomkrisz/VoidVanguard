@@ -2,15 +2,15 @@ import userState from "/state/user.js";
 
 export default class RenderIf extends HTMLElement {
   static get observedAttributes() {
-    return ["when"];
+    return ["if"];
   }
 
-  get when() {
-    return this.getAttribute("when");
+  get if() {
+    return this.getAttribute("if");
   }
 
-  set when(value) {
-    this.setAttribute("when", value);
+  set if(value) {
+    this.setAttribute("if", value);
   }
 
   constructor() {
@@ -26,7 +26,7 @@ export default class RenderIf extends HTMLElement {
   connectedCallback() {
     if (this._initialized) return;
 
-    if (this.when && !this.evaluateCondition) {
+    if (this.if && !this.evaluateCondition) {
       this.compile();
     }
 
@@ -40,7 +40,7 @@ export default class RenderIf extends HTMLElement {
   }
 
   // attributeChangedCallback(name, oldValue, newValue) {
-  //   if (name === "when" && oldValue !== newValue) {
+  //   if (name === "if" && oldValue !== newValue) {
   //     this.compile();
   //   }
   // }
@@ -49,10 +49,10 @@ export default class RenderIf extends HTMLElement {
     try {
       this.evaluateCondition = new Function(
         "state",
-        `with (state) { return ${this.when} }`,
+        `with (state) { return ${this.if} }`,
       );
 
-      this.removeAttribute("when");
+      this.removeAttribute("if");
     } catch (_) {
       this.evaluateCondition = null;
     }

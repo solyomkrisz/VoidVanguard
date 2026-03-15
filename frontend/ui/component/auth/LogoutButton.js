@@ -38,6 +38,12 @@ export default class LogoutButton extends BaseCustomElement {
       }
 
       userState.reset();
+
+      for (const state of Array.from(
+        document.querySelectorAll("state-provider[as='user']"),
+      )) {
+        state.reset();
+      }
     });
   }
 }

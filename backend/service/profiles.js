@@ -26,7 +26,9 @@ export async function createProfile({ userId, role, body }) {
     throw CustomError.TEST;
   }
 
-  return result;
+  return {
+    id: userId,
+  };
 }
 
 export async function getFullProfile({ userId }) {

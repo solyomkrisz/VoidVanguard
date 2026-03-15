@@ -153,7 +153,10 @@ export default class LazyList extends HTMLElement {
         const key = element.dataset.bind;
         const targetProperty =
           element.getAttribute("bind-target") || "textContent";
-        if (key in item) element[targetProperty] = item[key];
+        if (key in item) {
+          const prefix = element.getAttribute(`${targetProperty}-prefix`);
+          element[targetProperty] = prefix ? prefix + item[key] : item[key];
+        }
       });
     }
   }

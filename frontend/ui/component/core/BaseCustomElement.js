@@ -20,8 +20,15 @@ export default class BaseCustomElement extends HTMLElement {
         //   `BASECUSTOMELEMENT-constructor: Found a pending fetch for: ${path}`,
         // );
 
-        BaseCustomElement.PENDING_FETCHES.get(path).then((sheet) => {
-          this.shadowRoot.adoptedStyleSheets.push(sheet);
+        BaseCustomElement.PENDING_FETCHES.get(path)?.then((sheet) => {
+          if (!(sheet instanceof CSSStyleSheet)) return;
+
+          if (!this.isConnected) return;
+
+          this.shadowRoot.adoptedStyleSheets = [
+            ...this.shadowRoot.adoptedStyleSheets,
+            sheet,
+          ];
         });
       } else {
         // console.log(

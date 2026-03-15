@@ -2,13 +2,13 @@ import * as net from "/common/network.js";
 import State from "/state/State.js";
 
 export default class StateProviderElement extends HTMLElement {
-  // with as you can name the remote state so inside a multistateprovider the elements can reference it
   static get observedAttributes() {
     return [
       "src",
       "as",
       "method",
       "src-prefix",
+      "src-suffix",
       "inherit",
       "disable-auto-update",
     ];
@@ -19,9 +19,13 @@ export default class StateProviderElement extends HTMLElement {
   }
 
   set src(value) {
-    if (this.srcPrefix) {
-      value = this.srcPrefix + value;
-    }
+    //   if (this.srcPrefix) {
+    //     value = this.srcPrefix + value;
+    //   }
+
+    //   if (this.srcSuffix) {
+    //     value += this.srcSuffix;
+    //   }
 
     this.setAttribute("src", value);
 
@@ -51,8 +55,17 @@ export default class StateProviderElement extends HTMLElement {
     return this.getAttribute("src-prefix");
   }
 
+  get srcSuffix() {
+    return this.getAttribute("src-suffix");
+  }
+
   set srcPrefix(value) {
     this.setAttribute("src-prefix", value);
+    this.load();
+  }
+
+  set srcSuffix(value) {
+    this.setAttribute("src-suffix", value);
     this.load();
   }
 
@@ -140,6 +153,8 @@ export default class StateProviderElement extends HTMLElement {
   }
 
   complexSubscribe(child, param) {
+    if (!param) return;
+
     if (!child?.subscribe) {
       queueMicrotask(() => child.subscribe?.(param));
     } else {
@@ -162,7 +177,8 @@ export default class StateProviderElement extends HTMLElement {
 
         if (targetProperty) {
           try {
-            child[targetProperty] = value;
+            const prefix = child.getAttribute(`${targetProperty}-prefix`);
+            child[targetProperty] = prefix ? prefix + value : value;
           } catch (_) {
             return;
           }
@@ -276,6 +292,10 @@ export default class StateProviderElement extends HTMLElement {
 
   refresh() {
     this.load();
+  }
+
+  reset() {
+    this.states.get("local").reset();
   }
 }
 

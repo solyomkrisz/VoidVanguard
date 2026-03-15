@@ -49,7 +49,7 @@ export async function search(request, response) {
 
 export async function create(request, response) {
   try {
-    await service.createProfile({
+    const result = await service.createProfile({
       userId: request.targetUser.id,
       role: request.targetUser.role,
       body: request.body,
@@ -57,7 +57,7 @@ export async function create(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Profile created successfully"));
+      .json(createResponse(true, result, "Profile created successfully"));
   } catch (error) {
     if (isSequelizeUniqueConstraintError(error)) {
       return handleSequelizeUniqueConstraintError(

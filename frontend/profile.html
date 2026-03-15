@@ -31,30 +31,24 @@
 
     <state-provider id="profile">
       <div class="profileHeader">
-        <render-if when="!local.user_id" class="profileErrorContainer">
+        <render-if if="!local.user_id" class="profileErrorContainer">
           <div class="profileError">
             <h2>Profile not found!</h2>
           </div>
         </render-if>
 
-        <render-if when="local.user_id">
+        <render-if if="local.user_id">
           <div id="profileContent">
             <img class="avatar" subscribe-to="avatar" subscribe-with="src" />
 
             <div>
-              <div
-                subscribe-to="display_name"
-                subscribe-with="textContent"
-              ></div>
-              <div
-                subscribe-to="description"
-                subscribe-with="textContent"
-              ></div>
+              <div subscribe-to="display_name"></div>
+              <div subscribe-to="description"></div>
             </div>
           </div>
         </render-if>
 
-        <render-if when="local.user_id">
+        <render-if if="local.user_id">
           <friendship-toggle
             refresh-target="#profile"
             response-target="toast-manager"
@@ -93,16 +87,48 @@
 
       <render-if
         id="createProfile"
-        when="window.location.pathname.split('/').filter(Boolean)[1] === 'create'"
+        if="window.location.pathname.split('/').filter(Boolean)[1] === 'create'"
       >
         <fullscreen-overlay target="#createProfile">
-          <profile-form action="create"></profile-form>
+          <smart-form-wrapper
+            id="createProfileForm"
+            url="/api/profiles"
+            method="POST"
+            refresh-target="#profile"
+            response-target="toast-manager"
+            show-response-message
+          >
+            <form>
+              <input-group
+                input-type="text"
+                label="Profilnév"
+                input-placeholder="Név123"
+                name="display_name"
+              ></input-group>
+
+              <input-group
+                input-type="textarea"
+                label="Leírás"
+                input-placeholder="Ez a profilom..."
+                name="description"
+              ></input-group>
+
+              <input-group
+                input-type="select"
+                label="Láthatóság"
+                name="visibility"
+                options="'Nyilvános'-'public','Csak barátok'-'friends-only'"
+              ></input-group>
+
+              <button>Profil létrehozása</button>
+            </form>
+          </smart-form-wrapper>
         </fullscreen-overlay>
       </render-if>
 
       <render-if
         id="modifyProfile"
-        when="window.location.pathname.split('/').filter(Boolean)[1] === 'update'"
+        if="window.location.pathname.split('/').filter(Boolean)[1] === 'update'"
       >
         <fullscreen-overlay target="#modifyProfile">
           <profile-form action="update"></profile-form>
@@ -111,7 +137,7 @@
 
       <div class="footer">
         <div class="comments">
-          <render-if when="user.id && local.user_id">
+          <render-if if="user.id && local.user_id">
             <smart-form-wrapper
               url="/api/comments"
               method="POST"
@@ -136,7 +162,7 @@
             </smart-form-wrapper>
           </render-if>
 
-          <render-if when="local.user_id">
+          <render-if if="local.user_id">
             <lazy-list
               page-size="1"
               mode="scroll"
@@ -160,7 +186,7 @@
                       <span>
                         <span subscribe-to="created_at"></span>
                         <br />
-                        <render-if when="local.updated_at">
+                        <render-if if="local.updated_at">
                           <span subscribe-to="updated_at"></span>
                         </render-if>
                       </span>
@@ -198,7 +224,7 @@
                       <span
                         >Dislikeok: <span subscribe-to="dislikes"></span
                       ></span>
-                      <render-if when="user.id">
+                      <render-if if="user.id">
                         <div style="display: flex">
                           <state-provider
                             subscribe-to="id"
@@ -220,10 +246,10 @@
                                   subscribe-to="target_id"
                                   subscribe-with="value"
                                 />
-                                <render-if when="local.type != 'like'">
+                                <render-if if="local.type != 'like'">
                                   <button>Like</button>
                                 </render-if>
-                                <render-if when="local.type == 'like'">
+                                <render-if if="local.type == 'like'">
                                   <button
                                     style="background: blue; color: white"
                                   >
@@ -258,10 +284,10 @@
                                   subscribe-to="target_id"
                                   subscribe-with="value"
                                 />
-                                <render-if when="local.type != 'dislike'">
+                                <render-if if="local.type != 'dislike'">
                                   <button>Dislike</button>
                                 </render-if>
-                                <render-if when="local.type == 'dislike'">
+                                <render-if if="local.type == 'dislike'">
                                   <button
                                     style="background: blue; color: white"
                                   >
@@ -273,7 +299,7 @@
                           </state-provider>
                         </div>
                       </render-if>
-                      <render-if when="user.id === local.author_id">
+                      <render-if if="user.id === local.author_id">
                         <div style="display: flex">
                           <smart-form-wrapper
                             url="/api/comments"
@@ -362,6 +388,15 @@
       document.querySelector("#profile").src = "/api/profiles/" + profileId;
       document.querySelector("lazy-list").src =
         "/api/comments?targetId=" + profileId;
+
+      document
+        .querySelector("#createProfileForm")
+        .addEventListener("response", (e) => {
+          const response = e.detail.response;
+          if (response.success && response.result.id) {
+            window.location.href = "/profile/" + response.result.id;
+          }
+        });
     </script>
   </body>
 </html>

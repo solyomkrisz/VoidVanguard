@@ -40,7 +40,7 @@
   </head>
   <body>
     <state-provider>
-      <!-- <state-provider
+      <state-provider
         as="user"
         src="/api/sessions"
         method="POST"
@@ -52,37 +52,38 @@
         subscribe-with="src"
         src-prefix="/api/profiles/"
       ></state-provider>
-      <div state="user" subscribe-to="id" subscribe-with="textContent"></div>
-      <a
-        state="profile"
-        subscribe-to="user_id"
-        subscribe-with="href"
-        href="/profile/create"
-        >Profil</a
-      > -->
-
-      <!-- <render-if multistatesubscribe when="!user.id">
-        <h2>HELLO!</h2>
-      </render-if> -->
+      <state-provider
+        as="friendSummary"
+        src="/api/friends?include=incomingCount"
+      ></state-provider>
 
       <!-- account quick manager -->
-      <!-- <div>
+      <div>
         <span state="user" subscribe-to="username">Logged out</span>
-        <render-if state="user" when="local.id">
-          <render-if state="profile" when="console.log(local.user_id)">
-            <a state="profile" subscribe-to="user_id" subscribe-with="href"
+        <render-if state="user" if="local.id">
+          <render-if state="profile" if="local.user_id">
+            <a
+              state="profile"
+              subscribe-to="user_id"
+              subscribe-with="href"
+              href-prefix="/profile/"
               >Profil megtekintése</a
             >
           </render-if>
-          <render-if state="profile" when="!local.user_id">
+          <render-if state="profile" if="!local.user_id">
             <a href="/profile/create">Profil létrehozása</a>
           </render-if>
+          <span
+            >Beérkező barátkérelmek:
+            <span state="friendSummary" subscribe-to="incomingCount"></span
+          ></span>
+          <logout-button></logout-button>
         </render-if>
-      </div> -->
+      </div>
     </state-provider>
 
-    <account-quick-manager></account-quick-manager>
-    <account-quick-manager></account-quick-manager>
+    <!-- <account-quick-manager></account-quick-manager>
+    <account-quick-manager></account-quick-manager> -->
 
     <div class="container">
       <div>
@@ -214,6 +215,12 @@
                   "access_token",
                   result.result.access_token,
                 );
+
+                for (const state of Array.from(
+                  document.querySelectorAll("state-provider[as='user']"),
+                )) {
+                  state.refresh();
+                }
 
                 const decoded = jwt.decode(result?.result?.access_token);
 
