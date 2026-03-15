@@ -15,13 +15,15 @@ export default class InputGroup extends HTMLElement {
 
     if (!input) return;
 
-    if (!input.id) {
-      const id = "input-" + crypto.randomUUID();
+    let id = input.id;
 
+    if (!id && label) {
+      id = "input-" + crypto.randomUUID();
       input.id = id;
-      if (label) {
-        label.setAttribute("for", id);
-      }
+    }
+
+    if (label) {
+      label.setAttribute("for", id);
     }
 
     const wrapper = document.createElement("div");

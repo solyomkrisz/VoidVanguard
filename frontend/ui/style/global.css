@@ -15,16 +15,16 @@
   width: 100%;
 }
 
-input-group {
+.input-group {
   display: flex;
   flex-direction: column;
 }
 
-input-group textarea {
+.input-group textarea {
   resize: vertical;
 }
 
-input-group label {
+.input-group label {
   color: white;
 }
 
