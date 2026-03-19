@@ -90,7 +90,7 @@
         if="window.location.pathname.split('/').filter(Boolean)[1] === 'create'"
       >
         <fullscreen-overlay target="#createProfile">
-          <smart-form-wrapper
+          <smart-form
             id="createProfileForm"
             url="/api/profiles"
             method="POST"
@@ -122,7 +122,7 @@
 
               <button>Profil létrehozása</button>
             </form>
-          </smart-form-wrapper>
+          </smart-form>
         </fullscreen-overlay>
       </render-if>
 
@@ -138,7 +138,7 @@
       <div class="footer">
         <div class="comments">
           <render-if if="user.id && local.user_id">
-            <smart-form-wrapper
+            <smart-form
               url="/api/comments"
               method="POST"
               response-target="toast-manager"
@@ -157,7 +157,7 @@
                 </input-group>
                 <button>Közzététel</button>
               </form>
-            </smart-form-wrapper>
+            </smart-form>
           </render-if>
 
           <render-if if="local.user_id">
@@ -192,7 +192,7 @@
                     <div class="body">
                       <div subscribe-to="content" class="to-toggle"></div>
 
-                      <smart-form-wrapper
+                      <smart-form
                         class="to-toggle"
                         url="/api/comments"
                         method="PATCH"
@@ -216,7 +216,7 @@
                             <button>Mentés</button>
                           </toggle-button>
                         </form>
-                      </smart-form-wrapper>
+                      </smart-form>
 
                       <span>Likeok: <span subscribe-to="likes"></span></span>
                       <span
@@ -230,7 +230,7 @@
                             src-prefix="/api/reactions/"
                             class="reactionState"
                           >
-                            <smart-form-wrapper
+                            <smart-form
                               url="/api/reactions"
                               method="POST"
                               refresh-target="closest:.comment-state"
@@ -255,7 +255,7 @@
                                   </button>
                                 </render-if>
                               </form>
-                            </smart-form-wrapper>
+                            </smart-form>
                           </state-provider>
 
                           <state-provider
@@ -264,7 +264,7 @@
                             src-prefix="/api/reactions/"
                             class="reactionState"
                           >
-                            <smart-form-wrapper
+                            <smart-form
                               url="/api/reactions"
                               method="POST"
                               refresh-target="closest:.comment-state"
@@ -293,13 +293,13 @@
                                   </button>
                                 </render-if>
                               </form>
-                            </smart-form-wrapper>
+                            </smart-form>
                           </state-provider>
                         </div>
                       </render-if>
                       <render-if if="user.id === local.author_id">
                         <div style="display: flex">
-                          <smart-form-wrapper
+                          <smart-form
                             url="/api/comments"
                             method="DELETE"
                             response-target="toast-manager"
@@ -314,7 +314,7 @@
                               />
                               <button>Törlés</button>
                             </form>
-                          </smart-form-wrapper>
+                          </smart-form>
 
                           <toggle-button target=".to-toggle" class="to-toggle">
                             <button>Szerkesztés</button>
@@ -323,7 +323,7 @@
 
                         <!-- <dropdown-container hide-toggle-when-active>
                           <button toggle original-toggle>Szerkesztés</button>
-                          <smart-form-wrapper
+                          <smart-form
                             url="/api/comments"
                             method="PATCH"
                             response-target="toast-manager"
@@ -344,7 +344,7 @@
                               ></textarea>
                               <button toggle>Mentés</button>
                             </form>
-                          </smart-form-wrapper>
+                          </smart-form>
                         </dropdown-container> -->
                       </render-if>
                     </div>
@@ -359,9 +359,9 @@
       </div>
 
       <fullscreen-overlay id="commentEditor" target="#commentEditor" hidden>
-        <smart-form-wrapper>
+        <smart-form>
           <form></form>
-        </smart-form-wrapper>
+        </smart-form>
       </fullscreen-overlay>
     </state-provider>
 

@@ -1,5 +1,5 @@
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
-import _ from "/ui/component/form/SmartFormWrapper.js";
+import _ from "/ui/component/form/SmartForm.js";
 import _1 from "/ui/component/form/InputGroup.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
@@ -20,7 +20,7 @@ export default class ProfileForm extends BaseCustomElement {
 
   set action(value) {
     this.setAttribute("action", value);
-    this.queryShadowSelector("smart-form-wrapper").method = method[this.action];
+    this.queryShadowSelector("smart-form").method = method[this.action];
   }
 
   constructor() {
@@ -35,7 +35,7 @@ export default class ProfileForm extends BaseCustomElement {
 
   build() {
     this.setShadowInnerHTML(`
-      <smart-form-wrapper
+      <smart-form
         url="/api/profiles"
         method="${method[this.action]}"
         refresh-target="#profile"
@@ -63,7 +63,7 @@ export default class ProfileForm extends BaseCustomElement {
 
           <button>Módosítások mentése</button>
         </form>
-      </smart-form-wrapper>  
+      </smart-form>  
     `);
   }
 

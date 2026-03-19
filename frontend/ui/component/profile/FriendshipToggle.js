@@ -1,5 +1,5 @@
 import _ from "/ui/component/form/InputGroup.js";
-import _1 from "/ui/component/form/SmartFormWrapper.js";
+import _1 from "/ui/component/form/SmartForm.js";
 import State from "/state/State.js";
 import userState from "/state/user.js";
 
@@ -16,7 +16,7 @@ export default class FriendshipToggle extends HTMLElement {
 
   build() {
     this.innerHTML = `
-      <smart-form-wrapper
+      <smart-form
         url="/api/friends/"
         refresh-target="${this.getAttribute("refresh-target")}"
         response-target="${this.getAttribute("response-target")}"
@@ -25,13 +25,13 @@ export default class FriendshipToggle extends HTMLElement {
           <input type="hidden" name="userId" />
           <button></button>
         </form>
-      </smart-form-wrapper>
+      </smart-form>
     `;
   }
 
   // prettier-ignore
   subscribe(state) {
-    const smartFormWrapper = this.querySelector("smart-form-wrapper"),
+    const smartFormWrapper = this.querySelector("smart-form"),
           input            = this.querySelector("input"),
           button           = this.querySelector("button");
 
