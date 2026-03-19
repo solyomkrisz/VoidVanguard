@@ -40,7 +40,7 @@ export default class ProfileForm extends BaseCustomElement {
         method="${method[this.action]}"
         refresh-target="#profile"
         response-target="toast-manager"
-        show-response-message
+        with-message
       >
         <form>
           <input-group class="input-group">

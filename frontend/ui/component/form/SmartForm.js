@@ -26,30 +26,18 @@ function isBodyAllowed(method) {
   return !["GET", "HEAD"].includes(method.toUpperCase());
 }
 
-// prettier-ignore
-const attributes = {
-  "url": { type: String },
-  "method": { type: String },
-  "refresh-target": { type: String },
-  "response-target": { type: String },
-  "show-response-message": { type: Boolean },
-};
-
 class SmartForm extends HTMLElement {
+  // prettier-ignore
+  static attributes = {
+    "url": { type: String },
+    "method": { type: String },
+    "refresh-target": { type: String },
+    "response-target": { type: String },
+    "with-message": { type: Boolean },
+  };
+
   constructor() {
     super();
-  }
-
-  setConfig(config = {}) {}
-
-  getConfig() {
-    return {
-      url: this.url,
-      method: this.method,
-      refreshTarget: this.refreshTarget,
-      responseTarget: this.responseTarget,
-      showResponseMessage: this.showResponseMessage,
-    };
   }
 
   connectedCallback() {
@@ -65,8 +53,6 @@ class SmartForm extends HTMLElement {
     const responseMessage = form.appendChild(
       element("response-message").attr("hidden", ""),
     );
-
-    // const config = this.getConfig();
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -91,7 +77,7 @@ class SmartForm extends HTMLElement {
         }),
       );
 
-      if (this.showResponseMessage) {
+      if (this.withMessage) {
         responseMessage.from(response);
       }
 
@@ -100,9 +86,7 @@ class SmartForm extends HTMLElement {
           document.querySelector(this.responseTarget).onResponse(response);
         } catch (error) {
           console.error(
-            "Unable to send response to the specified target(s): " +
-              this.responseTarget +
-              ".",
+            `Unable to send response to the specified target(s): ${this.responseTarget}.`,
           );
         }
       }
@@ -122,23 +106,10 @@ class SmartForm extends HTMLElement {
     });
 
     this._initialized = true;
-
-    // this.unwrap();
-    // this.replaceWith(form);
-  }
-
-  unwrap() {
-    if (!this.parentNode) return;
-
-    while (this.firstChild) {
-      this.parentNode.insertBefore(this.firstChild, this);
-    }
-
-    this.parentNode.removeChild(this);
   }
 }
 
-defineAttributeAccessors(SmartForm.prototype, attributes);
+defineAttributeAccessors(SmartForm.prototype, SmartForm.attributes);
 
 window.customElements.define("smart-form", SmartForm);
 
