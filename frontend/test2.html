@@ -27,10 +27,18 @@
             type: Array,
             notify: true,
             readOnly: false,
+            reflect: false,
+            value: "SZIA",
+          },
+          testComputed: {
+            computed: "hello(color)",
           },
         },
         test: function () {
           console.log(this, "<my-element> test");
+        },
+        hello: function (color) {
+          return color + "20";
         },
       });
 
@@ -39,7 +47,7 @@
   </head>
   <body>
     <my-element color="red"></my-element>
-    <my-element id="el2" color="black"></my-element>
+    <my-element id="el2"></my-element>
 
     <script type="module">
       const el = document.querySelector("my-element");
@@ -47,11 +55,30 @@
       document.addEventListener("color-changed", (e) => {
         console.log(e.target, e.detail);
       });
-      el.color = ["blue"];
-      el.test();
-      el2.color = ["black"];
+      // el.test();
+
+      // el.color = ["blue"];
+      // el2.color = ["black"];
       console.log(el.color);
-      console.log(el2.color);
+      el.color = "yellow";
+      el.setAttribute("color", "yellow");
+      console.log(el.color);
+      console.log(el.testComputed);
+
+      // Valahogy így kéne!!!!
+      //
+      // const str = "computeProperty(firstName, lastName)";
+      // const strSplit = str.split("(");
+      // const fnToLookUp = strSplit[0];
+      // const argumentsToLookUpValueFor = strSplit[1].slice(-1); // végét leszedjük
+
+      // const values = [];
+
+      // for (const arg of argumentsToLookUpValueFor.split(",")) {
+      //   const value = lookUpValueFor(arg, this);
+      //   values.push(value);
+      // }
+      // this[fnToLookUp].apply(this, values);
     </script>
   </body>
 </html>
