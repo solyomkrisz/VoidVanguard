@@ -37,6 +37,8 @@ export default function define(config = {}) {
       this._properties = {};
       this._computed = {};
       this._dependencies = new Map();
+      this._computing = new Set();
+      this._computingStack = [];
 
       // set default properties
       for (const [propName, def] of Object.entries(properties)) {
@@ -95,8 +97,9 @@ export default function define(config = {}) {
       for (const propName of dependents) {
         const computed = this._computed[propName];
 
-        if (computed) {
+        if (computed && !computed.dirty) {
           computed.dirty = true;
+          this._markDependentsDirty(propName);
         }
       }
     }
@@ -158,20 +161,35 @@ export default function define(config = {}) {
         return;
       }
 
+      if (this._computing.has(propName)) {
+        console.warn(
+          `Circular dependency detected: "${[...this._computingStack, propName].join(" → ")}"`,
+        );
+        return;
+      }
+
       if (prop.dirty) {
-        const args = prop.params.map((param) => {
-          if (!(param in this)) {
-            console.warn(
-              `Missing dependency ${param} for computed ${propName}.`,
-            );
-            return undefined;
-          }
+        this._computing.add(propName);
+        this._computingStack.push(propName);
 
-          return this[param];
-        });
+        try {
+          const args = prop.params.map((param) => {
+            if (!(param in this)) {
+              console.warn(
+                `Missing dependency ${param} for computed ${propName}.`,
+              );
+              return undefined;
+            }
 
-        prop.value = prop.fn(...args);
-        prop.dirty = false;
+            return this[param];
+          });
+
+          prop.value = prop.fn(...args);
+          prop.dirty = false;
+        } finally {
+          this._computing.delete(propName);
+          this._computingStack.pop();
+        }
       }
 
       return prop.value;
@@ -296,18 +314,6 @@ export default function define(config = {}) {
 
     const isComputed = typeof def === "string" || (def && def.computed);
 
-    function createDefaultGetter() {
-      if (options.deserialize) {
-        return function () {
-          return deserialize(this._properties[prop]);
-        };
-      }
-
-      return function () {
-        return this._properties[prop];
-      };
-    }
-
     const descriptor = {};
 
     if (isComputed) {
@@ -315,6 +321,18 @@ export default function define(config = {}) {
         return this._getComputed(prop);
       };
     } else {
+      function createDefaultGetter() {
+        if (options.deserialize) {
+          return function () {
+            return deserialize(this._properties[prop]);
+          };
+        }
+
+        return function () {
+          return this._properties[prop];
+        };
+      }
+
       descriptor.get = options.get || createDefaultGetter();
 
       if (!options.readOnly) {

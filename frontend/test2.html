@@ -33,6 +33,9 @@
           testComputed: {
             computed: "hello(color)",
           },
+          testComputed2: {
+            computed: "hello(testComputed)",
+          },
         },
         test: function () {
           console.log(this, "<my-element> test");
@@ -59,11 +62,14 @@
 
       // el.color = ["blue"];
       // el2.color = ["black"];
-      console.log(el.color);
-      el.color = "yellow";
-      el.setAttribute("color", "yellow");
-      console.log(el.color);
+      // console.log(el.color);
+      // el.color = "yellow";
+      // el.setAttribute("color", "yellow");
+      // console.log(el.color);
       console.log(el.testComputed);
+      el.color = "yellow";
+      console.log(el.testComputed);
+      console.log(el.testComputed2);
 
       // Valahogy így kéne!!!!
       //
