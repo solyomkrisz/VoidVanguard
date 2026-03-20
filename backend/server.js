@@ -34,6 +34,10 @@ router.get("/test", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/test.html"));
 });
 
+router.get("/test2", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/test2.html"));
+});
+
 app.use("/", router);
 app.use("/api", endpoints);
 

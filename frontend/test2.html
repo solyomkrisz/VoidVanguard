@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teszt 2</title>
+    <script type="module">
+      import define from "./ui/component/v2/Define.js";
+
+      const MyElement = define({
+        is: "my-element",
+        super: HTMLElement,
+        created: function () {
+          this.initialized = false;
+          // console.log("The element has been created.");
+        },
+        connected: function () {
+          // console.log("The element has been attached to the DOM.");
+        },
+        disconnected: function () {
+          // console.log("The element has been removed from the DOM.");
+        },
+        attributeChanged: function (name, oldValue, newValue) {},
+        properties: {
+          value: Number,
+          color: {
+            type: Array,
+            notify: true,
+            readOnly: false,
+          },
+        },
+        test: function () {
+          console.log(this, "<my-element> test");
+        },
+      });
+
+      // console.log(MyElement.prototype);
+    </script>
+  </head>
+  <body>
+    <my-element color="red"></my-element>
+    <my-element id="el2" color="black"></my-element>
+
+    <script type="module">
+      const el = document.querySelector("my-element");
+      const el2 = document.querySelector("#el2");
+      document.addEventListener("color-changed", (e) => {
+        console.log(e.target, e.detail);
+      });
+      el.color = ["blue"];
+      el.test();
+      el2.color = ["black"];
+      console.log(el.color);
+      console.log(el2.color);
+    </script>
+  </body>
+</html>
