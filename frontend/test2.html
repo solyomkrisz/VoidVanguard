@@ -28,7 +28,7 @@
             notify: true,
             readOnly: false,
             reflect: false,
-            value: "SZIA",
+            value: ["green"],
           },
           testComputed: {
             computed: "hello(color)",
@@ -49,11 +49,20 @@
     </script>
   </head>
   <body>
-    <my-element color="red"></my-element>
-    <my-element id="el2"></my-element>
+    <my-element id="el2">
+      <template>
+        <span class="[[profile]] [[id]]" id="[[_id]]">[[color]]</span>
+      </template>
+    </my-element>
+
+    <my-element color="red" id="el1">
+      <template>
+        <div>[[id]]</div>
+      </template>
+    </my-element>
 
     <script type="module">
-      const el = document.querySelector("my-element");
+      const el = document.querySelector("#el1");
       const el2 = document.querySelector("#el2");
       document.addEventListener("color-changed", (e) => {
         console.log(e.target, e.detail);
@@ -66,10 +75,18 @@
       // el.color = "yellow";
       // el.setAttribute("color", "yellow");
       // console.log(el.color);
-      console.log(el.testComputed);
-      el.color = "yellow";
-      console.log(el.testComputed);
-      console.log(el.testComputed2);
+      // console.log(el.testComputed);
+      // el.color = [...el.color, "yellow"];
+      // console.log(el.color);
+      // console.log(el.color[0]);
+      // el.set("color.0", "red");
+      console.log(el2._bindings);
+      console.log(el._bindings);
+      setTimeout(() => {
+        el2.color = "purple";
+      }, 2000);
+      // console.log(el.testComputed);
+      // console.log(el.testComputed2);
 
       // Valahogy így kéne!!!!
       //

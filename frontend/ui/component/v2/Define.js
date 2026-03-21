@@ -11,6 +11,41 @@ function toKebabCase(str) {
     .toLowerCase();
 }
 
+function isIndex(key) {
+  return String(Number(key)) === key;
+}
+
+function clone(value) {
+  if (Array.isArray(value)) {
+    return [...value];
+  }
+
+  if (value && typeof value === "object") {
+    return { ...value };
+  }
+
+  return {};
+}
+
+function resolvedToDisplayValue(binding, value) {
+  if (value === undefined) {
+    console.warn(`Binding ${binding} resolved to undefined`);
+    return "";
+  }
+
+  if (value === null) return "";
+
+  return String(value);
+}
+
+function getRootFromPath(path) {
+  return path.split(".").shift();
+}
+
+function getPropertyConfig(config) {
+  return typeof config === "function" ? { type: config } : config || {};
+}
+
 export default function define(config = {}) {
   //#region destructurize
   const {
@@ -24,12 +59,19 @@ export default function define(config = {}) {
     ...custom
   } = config;
 
+  const normalizedProperties = {};
+
+  for (const [key, value] of Object.entries(properties)) {
+    normalizedProperties[key] = getPropertyConfig(value);
+  }
+
   if (!is) {
     console.warn("Couldn't define custom element: no name is provided.");
     return;
   }
 
   class CustomElement extends Base {
+    //#region constructor
     constructor() {
       super();
 
@@ -39,8 +81,11 @@ export default function define(config = {}) {
       this._dependencies = new Map();
       this._computing = new Set();
       this._computingStack = [];
+      this._parsed = false;
+      this._bindings = null;
+      this._bindingDependencies = new Map();
 
-      // set default properties
+      //#region set default properties
       for (const [propName, def] of Object.entries(properties)) {
         // register computed properties
         if (typeof def === "string" || "computed" in def) {
@@ -70,8 +115,6 @@ export default function define(config = {}) {
         this._setProperty(propName, value, { origin: "constructor" }, def);
       }
 
-      this._bindings = new WeakMap();
-
       if (typeof created === "function") {
         created.call(this);
       }
@@ -79,6 +122,7 @@ export default function define(config = {}) {
       this._constructed = true;
     }
 
+    //#region dependency related
     _addDependency(dependent, dependency) {
       if (!this._dependencies.has(dependency)) {
         this._dependencies.set(dependency, new Set());
@@ -104,10 +148,185 @@ export default function define(config = {}) {
       }
     }
 
-    _registerBindings() {
-      const templates = this.querySelectorAll("template");
+    //#region other internals
+    _resolvePath(path) {
+      const parts = path.split(".");
+      let value = this;
+
+      for (const part of parts) {
+        if (value == null) return value;
+
+        if (value === this && part in this._computed) {
+          value = this._getComputed(part);
+        } else {
+          const key = isIndex(part) ? Number(part) : part;
+          value = value[key];
+        }
+      }
+
+      return value;
     }
 
+    //#region binding parser
+    _parseTemplate() {
+      if (this._parsed) {
+        return;
+      }
+
+      const root = this;
+
+      const bindings = new Map();
+
+      const addBinding = (node, bindingConfig) => {
+        if (!bindings.has(node)) {
+          bindings.set(node, []);
+        }
+
+        bindings.get(node).push(bindingConfig);
+
+        // register binding dependencies
+        for (const { expr } of bindingConfig.bindings) {
+          const dependency = getRootFromPath(expr);
+
+          if (!this._bindingDependencies.has(dependency)) {
+            this._bindingDependencies.set(dependency, new Set());
+          }
+
+          this._bindingDependencies.get(dependency).add(bindingConfig);
+        }
+
+        return bindingConfig;
+      };
+
+      const walk = (node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent;
+
+          const matches = [...text.matchAll(/\[\[(.*?)\]\]/g)];
+
+          if (matches.length) {
+            addBinding(node, {
+              type: "text",
+              node,
+              template: text,
+              cache: text,
+              bindings: matches.map((b) => ({
+                raw: b[0],
+                expr: b[1].trim(),
+              })),
+            });
+          }
+
+          return;
+        }
+
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tagName = node.tagName.toLowerCase();
+
+          // ! stop at custom element boundary
+          if (tagName.includes("-")) {
+            return;
+          }
+
+          for (const attr of node.attributes) {
+            const matches = [...attr.value.matchAll(/\[\[(.*?)\]\]/g)];
+
+            if (matches.length) {
+              addBinding(node, {
+                type: "attribute",
+                node,
+                attribute: attr.name,
+                template: attr.value,
+                cache: attr.value,
+                bindings: matches.map((b) => ({
+                  raw: b[0],
+                  expr: b[1].trim(),
+                })),
+              });
+            }
+          }
+
+          for (const child of node.childNodes) {
+            walk(child);
+          }
+        }
+      };
+
+      for (const child of root.childNodes) {
+        walk(child);
+      }
+
+      this._bindings = bindings;
+      this._parsed = true;
+    }
+
+    _updateBindingTemplate(template, bindings) {
+      let result = template;
+
+      for (const { raw, expr } of bindings) {
+        const value = this._resolvePath(expr);
+        const display = resolvedToDisplayValue(expr, value);
+
+        result = result.split(raw).join(display);
+      }
+
+      return result;
+    }
+
+    _updateBindingCache(bindingConfig) {
+      bindingConfig.cache = this._updateBindingTemplate(
+        bindingConfig.template,
+        bindingConfig.bindings,
+      );
+    }
+
+    _displayLatestCache(bindingConfig) {
+      const { type, node, cache } = bindingConfig;
+
+      if (type === "text" && node.textContent !== cache) {
+        return (node.textContent = cache);
+      }
+
+      if (type === "attribute") {
+        const { attribute } = bindingConfig;
+
+        if (node.getAttribute(attribute) !== cache) {
+          return node.setAttribute(bindingConfig.attribute, cache);
+        }
+      }
+    }
+
+    _updateBindingsForDependency(dependency) {
+      if (!this._bindingDependencies) {
+        return;
+      }
+
+      const bindings = this._bindingDependencies.get(dependency);
+
+      if (!bindings) {
+        return;
+      }
+
+      for (const bindingConfig of bindings) {
+        this._updateBindingCache(bindingConfig);
+        this._displayLatestCache(bindingConfig);
+      }
+    }
+
+    _initializeBindings() {
+      if (!this._bindings) {
+        return;
+      }
+
+      this._bindings.forEach((bindings) => {
+        for (const bindingConfig of bindings) {
+          this._updateBindingCache(bindingConfig);
+          this._displayLatestCache(bindingConfig);
+        }
+      });
+    }
+
+    //#region computed prop related
     _parseComputed(str) {
       const match = str.match(/^(\w+)\s*\(([^)]*)\)$/);
 
@@ -195,6 +414,57 @@ export default function define(config = {}) {
       return prop.value;
     }
 
+    //#region exposed apis
+    set(path, value) {
+      if (typeof path !== "string") {
+        return;
+      }
+
+      const parts = path.split(".");
+      const rootProp = parts.shift();
+
+      if (!(rootProp in this._properties)) {
+        console.warn(`Property ${rootProp} does not exist.`);
+        return;
+      }
+
+      const rootValue = this._properties[rootProp];
+
+      let newRoot = clone(rootValue);
+      let current = newRoot;
+
+      for (let i = 0; i < parts.length - 1; i++) {
+        const key = parts[i];
+        const nextKey = parts[i + 1];
+
+        const decodedKey = isIndex(key) ? Number(key) : key;
+
+        let next = current[decodedKey];
+
+        if (next == null) {
+          next = isIndex(nextKey) ? [] : {};
+        } else {
+          next = clone(next);
+        }
+
+        current[decodedKey] = next;
+        current = next;
+      }
+
+      let lastKey = parts[parts.length - 1];
+      lastKey = isIndex(lastKey) ? Number(lastKey) : lastKey;
+
+      current[lastKey] = value;
+
+      this._setProperty(
+        rootProp,
+        newRoot,
+        { origin: "set" },
+        normalizedProperties[rootProp],
+      );
+    }
+
+    //#region centralized property setter
     _setProperty(propName, value, meta, options = {}) {
       const { serialize, notify, reflect, type } = options;
 
@@ -210,6 +480,7 @@ export default function define(config = {}) {
 
       if (!Object.is(old, value)) {
         this._markDependentsDirty(propName);
+        this._updateBindingsForDependency(propName);
 
         if (this._constructed && notify) {
           this.dispatchEvent(
@@ -253,8 +524,24 @@ export default function define(config = {}) {
       this.setAttribute(attrName, value);
     }
 
+    //#region lifecycle callbacks
     connectedCallback() {
       super.connectedCallback?.(this);
+
+      const template = this.querySelector("template");
+
+      if (!template) {
+        console.warn(`<${config.is}> must have a <template> child!`);
+        return;
+      }
+
+      const fragment = template.content.cloneNode(true);
+
+      template.remove();
+      this.appendChild(fragment);
+
+      this._parseTemplate();
+      this._initializeBindings();
 
       if (typeof connected === "function") {
         connected.call(this);
@@ -276,21 +563,21 @@ export default function define(config = {}) {
         attributeChanged.call(this, name, oldValue, newValue);
       }
 
-      if (typeof properties[name]?.change === "function") {
-        properties[name].change.call(this, oldValue, newValue);
+      if (typeof normalizedProperties[name]?.change === "function") {
+        normalizedProperties[name].change.call(this, oldValue, newValue);
       }
 
       // Reflect attrib into prop
       const propName = toCamelCase(name);
 
-      if (properties[propName]?.reflect) {
+      if (normalizedProperties[propName]?.reflect) {
         this._setProperty(
           propName,
           newValue,
           {
             origin: "attributeChangedCallback",
           },
-          properties[propName],
+          normalizedProperties[propName],
         );
       }
     }
@@ -310,7 +597,7 @@ export default function define(config = {}) {
   //#region create properties
   // prop must be in camelCase by default not kebab-case
   for (const [prop, def] of Object.entries(properties || {})) {
-    const options = typeof def === "function" ? { type: def } : def || {};
+    const options = normalizedProperties[prop];
 
     const isComputed = typeof def === "string" || (def && def.computed);
 
