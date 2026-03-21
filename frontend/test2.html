@@ -9,26 +9,17 @@
 
       const MyElement = define({
         is: "my-element",
-        super: HTMLElement,
-        created: function () {
-          this.initialized = false;
-          // console.log("The element has been created.");
-        },
-        connected: function () {
-          // console.log("The element has been attached to the DOM.");
-        },
-        disconnected: function () {
-          // console.log("The element has been removed from the DOM.");
-        },
-        attributeChanged: function (name, oldValue, newValue) {},
         properties: {
+          pid: {
+            type: String,
+          },
           value: Number,
           color: {
             type: Array,
             notify: true,
             readOnly: false,
             reflect: false,
-            value: ["green"],
+            value: ["GREEN", "RED"],
           },
           testComputed: {
             computed: "hello(color)",
@@ -41,7 +32,7 @@
           console.log(this, "<my-element> test");
         },
         hello: function (color) {
-          return color + "20";
+          return color[0] + 20;
         },
       });
 
@@ -51,13 +42,16 @@
   <body>
     <my-element id="el2">
       <template>
-        <span class="[[profile]] [[id]]" id="[[_id]]">[[color]]</span>
-      </template>
-    </my-element>
+        <span class="[[color.0]] [[id]]" id="[[_id]]">
+          <span>[[testComputed]]</span>
+          <div>[[color.0]]</div>
+        </span>
 
-    <my-element color="red" id="el1">
-      <template>
-        <div>[[id]]</div>
+        <my-element color$="[[color]]" id="el1">
+          <template>
+            <div>[[color.0]]</div>
+          </template>
+        </my-element>
       </template>
     </my-element>
 
@@ -80,11 +74,16 @@
       // console.log(el.color);
       // console.log(el.color[0]);
       // el.set("color.0", "red");
-      console.log(el2._bindings);
-      console.log(el._bindings);
+      // console.log(el2._bindings);
+      // console.log(el._bindings);
       setTimeout(() => {
-        el2.color = "purple";
+        el2.set("color.0", "purple");
+        el2.set("color.0", "black");
+        el2.set("color.0", "brown");
       }, 2000);
+      // setTimeout(() => {
+      //   el2.set("color.0", "RED");
+      // }, 2000);
       // console.log(el.testComputed);
       // console.log(el.testComputed2);
 

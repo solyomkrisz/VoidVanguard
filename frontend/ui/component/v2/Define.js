@@ -24,7 +24,7 @@ function clone(value) {
     return { ...value };
   }
 
-  return {};
+  return value;
 }
 
 function resolvedToDisplayValue(binding, value) {
@@ -59,10 +59,10 @@ export default function define(config = {}) {
     ...custom
   } = config;
 
-  const normalizedProperties = {};
+  const normalizedPropertyDefinitions = {};
 
   for (const [key, value] of Object.entries(properties)) {
-    normalizedProperties[key] = getPropertyConfig(value);
+    normalizedPropertyDefinitions[key] = getPropertyConfig(value);
   }
 
   if (!is) {
@@ -84,6 +84,8 @@ export default function define(config = {}) {
       this._parsed = false;
       this._bindings = null;
       this._bindingDependencies = new Map();
+      this._bindingUpdateQueue = new Set();
+      this._hasScheduledBindingUpdate = false;
 
       //#region set default properties
       for (const [propName, def] of Object.entries(properties)) {
@@ -112,7 +114,7 @@ export default function define(config = {}) {
           value = value.call(this);
         }
 
-        this._setProperty(propName, value, { origin: "constructor" }, def);
+        this._setProperty(propName, value, { origin: "constructor" });
       }
 
       if (typeof created === "function") {
@@ -143,6 +145,8 @@ export default function define(config = {}) {
 
         if (computed && !computed.dirty) {
           computed.dirty = true;
+
+          this._scheduleBindingUpdate(propName);
           this._markDependentsDirty(propName);
         }
       }
@@ -165,6 +169,26 @@ export default function define(config = {}) {
       }
 
       return value;
+    }
+
+    //#region batch updates
+    _scheduleBindingUpdate(dependency, meta) {
+      this._bindingUpdateQueue.add(dependency);
+
+      if (this._hasScheduledBindingUpdate) {
+        return;
+      }
+
+      this._hasScheduledBindingUpdate = true;
+
+      window.queueMicrotask(() => {
+        for (const dependency of this._bindingUpdateQueue) {
+          this._updateBindingsForDependency(dependency);
+        }
+
+        this._bindingUpdateQueue.clear();
+        this._hasScheduledBindingUpdate = false;
+      });
     }
 
     //#region binding parser
@@ -223,27 +247,39 @@ export default function define(config = {}) {
         if (node.nodeType === Node.ELEMENT_NODE) {
           const tagName = node.tagName.toLowerCase();
 
-          // ! stop at custom element boundary
-          if (tagName.includes("-")) {
-            return;
-          }
-
           for (const attr of node.attributes) {
+            const isPropBinding = attr.name.endsWith("$");
+
             const matches = [...attr.value.matchAll(/\[\[(.*?)\]\]/g)];
 
             if (matches.length) {
-              addBinding(node, {
-                type: "attribute",
+              const bindingConfig = {
                 node,
                 attribute: attr.name,
-                template: attr.value,
-                cache: attr.value,
                 bindings: matches.map((b) => ({
                   raw: b[0],
                   expr: b[1].trim(),
                 })),
-              });
+              };
+
+              if (isPropBinding) {
+                bindingConfig.type = "property";
+                bindingConfig.propName = attr.name.slice(0, -1);
+
+                addBinding(node, bindingConfig);
+              } else {
+                bindingConfig.type = "attribute";
+                bindingConfig.template = attr.value;
+                bindingConfig.cache = attr.value;
+
+                addBinding(node, bindingConfig);
+              }
             }
+          }
+
+          // ! stop at custom element boundary, so we don't look into them because thats their territory
+          if (tagName.includes("-")) {
+            return;
           }
 
           for (const child of node.childNodes) {
@@ -280,7 +316,7 @@ export default function define(config = {}) {
       );
     }
 
-    _displayLatestCache(bindingConfig) {
+    _applyChanges(bindingConfig) {
       const { type, node, cache } = bindingConfig;
 
       if (type === "text" && node.textContent !== cache) {
@@ -293,6 +329,14 @@ export default function define(config = {}) {
         if (node.getAttribute(attribute) !== cache) {
           return node.setAttribute(bindingConfig.attribute, cache);
         }
+      }
+
+      if (type === "property") {
+        return node._setProperty(
+          bindingConfig.propName,
+          this._resolvePath(bindingConfig.bindings[0].expr),
+          { origin: "binding", srcElement: this },
+        );
       }
     }
 
@@ -308,8 +352,11 @@ export default function define(config = {}) {
       }
 
       for (const bindingConfig of bindings) {
-        this._updateBindingCache(bindingConfig);
-        this._displayLatestCache(bindingConfig);
+        if (bindingConfig.type !== "property") {
+          this._updateBindingCache(bindingConfig);
+        }
+
+        this._applyChanges(bindingConfig);
       }
     }
 
@@ -320,8 +367,11 @@ export default function define(config = {}) {
 
       this._bindings.forEach((bindings) => {
         for (const bindingConfig of bindings) {
-          this._updateBindingCache(bindingConfig);
-          this._displayLatestCache(bindingConfig);
+          if (bindingConfig.type !== "property") {
+            this._updateBindingCache(bindingConfig);
+          }
+
+          this._applyChanges(bindingConfig);
         }
       });
     }
@@ -456,49 +506,81 @@ export default function define(config = {}) {
 
       current[lastKey] = value;
 
-      this._setProperty(
-        rootProp,
-        newRoot,
-        { origin: "set" },
-        normalizedProperties[rootProp],
-      );
+      this._setProperty(rootProp, newRoot, { origin: "set" });
+    }
+
+    // prettier-ignore
+    _handlePropertyChangeSideEffects(propName, oldValue, newValue, notify, meta) {
+      if (this._constructed) {
+        this._markDependentsDirty(propName);
+        this._scheduleBindingUpdate(propName, { origin: "_setProperty" });
+      }
+
+      if (this._constructed && notify) {
+        this.dispatchEvent(
+          new CustomEvent(`${toKebabCase(propName)}-changed`, {
+            detail: {
+              old: oldValue,
+              new: newValue,
+            },
+            bubbles: true,
+            composed: true,
+          }),
+        );
+      }
+    }
+
+    _throwOnReadOnlyViolation(propName, value, readOnly, meta) {
+      if (readOnly && this._constructed) {
+        throw new Error(
+          `Assignment to read-only property "${propName}" (origin: "${meta.origin}").`,
+        );
+      }
+    }
+
+    _serialize(value, serializer) {
+      if (typeof serializer === "function") {
+        return serializer(value);
+      }
+
+      return value;
     }
 
     //#region centralized property setter
-    _setProperty(propName, value, meta, options = {}) {
-      const { serialize, notify, reflect, type } = options;
+    // prettier-ignore
+    _setProperty(propName, newValue, meta) {
+      const propertySchema =
+        this.constructor.__propertySchema?.[propName] || {};
 
-      const old = this._properties[propName];
+      const { serialize, notify, reflect, readOnly } = propertySchema;
 
-      if (typeof serialize === "function") {
-        value = options.serialize(value);
+      this._throwOnReadOnlyViolation(propName, newValue, readOnly, meta);
+
+      const oldValue = this._properties[propName];
+      
+      newValue = this._serialize(newValue);
+
+      this._properties[propName] = newValue;
+
+      if (!Object.is(oldValue, newValue)) {
+        this._handlePropertyChangeSideEffects(propName, oldValue, newValue, notify, meta);
       }
 
-      this._properties[propName] = value;
+      this._reflectToAttribute(reflect, propName, newValue, propertySchema, meta);
+    }
+
+    // prettier-ignore
+    _reflectToAttribute(reflect, propName, value, schema, meta) {
+      if (!reflect || !this._constructed || meta?.origin === "attributeChangedCallback") {
+        return;
+      }
 
       const attrName = toKebabCase(propName);
 
-      if (!Object.is(old, value)) {
-        this._markDependentsDirty(propName);
-        this._updateBindingsForDependency(propName);
+      const { type } = schema;
 
-        if (this._constructed && notify) {
-          this.dispatchEvent(
-            new CustomEvent(`${attrName}-changed`, {
-              detail: {
-                old,
-                new: value,
-              },
-              bubbles: true,
-              composed: true,
-            }),
-          );
-        }
-      }
-
-      // prettier-ignore
-      if (!reflect || !this._constructed || meta.origin === "attributeChangedCallback") {
-        return;
+      if (!type) {
+        value = String(value);
       }
 
       if (type === Boolean) {
@@ -563,22 +645,19 @@ export default function define(config = {}) {
         attributeChanged.call(this, name, oldValue, newValue);
       }
 
-      if (typeof normalizedProperties[name]?.change === "function") {
-        normalizedProperties[name].change.call(this, oldValue, newValue);
+      const propertySchema = this.constructor.__propertySchema;
+
+      if (typeof propertySchema[name]?.change === "function") {
+        propertySchema[name].change.call(this, oldValue, newValue);
       }
 
       // Reflect attrib into prop
       const propName = toCamelCase(name);
 
-      if (normalizedProperties[propName]?.reflect) {
-        this._setProperty(
-          propName,
-          newValue,
-          {
-            origin: "attributeChangedCallback",
-          },
-          normalizedProperties[propName],
-        );
+      if (propertySchema[propName]?.reflect) {
+        this._setProperty(propName, newValue, {
+          origin: "attributeChangedCallback",
+        });
       }
     }
   }
@@ -597,7 +676,7 @@ export default function define(config = {}) {
   //#region create properties
   // prop must be in camelCase by default not kebab-case
   for (const [prop, def] of Object.entries(properties || {})) {
-    const options = normalizedProperties[prop];
+    const options = normalizedPropertyDefinitions[prop];
 
     const isComputed = typeof def === "string" || (def && def.computed);
 
@@ -626,7 +705,7 @@ export default function define(config = {}) {
         descriptor.set =
           options.set ||
           function (value) {
-            this._setProperty(prop, value, { origin: "setter" }, options);
+            this._setProperty(prop, value, { origin: "setter" });
           };
       }
     }
@@ -639,8 +718,16 @@ export default function define(config = {}) {
     CustomElement.prototype[key] = value;
   }
 
+  //#region attach property definitions
+  Object.defineProperty(CustomElement, "__propertySchema", {
+    value: normalizedPropertyDefinitions,
+    enumerable: false,
+  });
+
   //#region define custom element
-  if (!window.customElements.get(config.is)) {
+  if (window.customElements.get(config.is)) {
+    console.warn(`Custom element <${config.is}> has already been defined.`);
+  } else {
     window.customElements.define(config.is, CustomElement);
   }
 
