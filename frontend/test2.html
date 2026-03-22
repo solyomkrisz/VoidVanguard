@@ -31,6 +31,14 @@
             computed: "computeFullName(firstName, lastName)",
           },
           greeting: "createGreetingMessage(fullName)",
+          show: {
+            type: Boolean,
+            value: false,
+          },
+          show2: {
+            type: Boolean,
+            value: false,
+          },
         },
         test: function () {
           console.log(this, "<my-element> test");
@@ -47,6 +55,13 @@
             Keresztnév: [[lastName]]<br />
             Utca név: [[address.street.name]]
           </div>
+          <template is="dom-if" if="[[show]]">
+            <h1>Hello [[firstName]]</h1>
+            <template is="dom-if" if="[[show2]]">
+              <h1>[[lastName]]</h1>  
+            </template>
+          </template>
+          <br/>
         `,
       });
 
@@ -90,8 +105,7 @@
         console.log(e.target, e.detail);
       });
 
-      // el2.firstName = "Choppera";
-      el1.lastName = "Chopper";
+      el1.lastName = "Géza";
       el1.firstName = "Jani";
 
       console.log(el1.address);
@@ -110,9 +124,20 @@
       */
 
       setTimeout(() => {
-        // console.log(el2.fullName);
-        // el2.firstName = "Chopperus";
+        el1.show = true;
+        test.show = true;
+        console.log("TEST SHOW 2000ms: ", test.show);
       }, 2000);
+
+      setTimeout(() => {
+        // test.show = true;
+        console.log("TEST SHOW: ", test.show);
+      }, 3000);
+
+      setTimeout(() => {
+        el1.firstName = "Géza";
+        el1.show2 = true;
+      }, 5000);
     </script>
   </body>
 </html>

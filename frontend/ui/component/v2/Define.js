@@ -89,6 +89,48 @@ function parseTemplate(root) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       const tagName = node.tagName.toLowerCase();
 
+      if (tagName === "template") {
+        const is = node.getAttribute("is");
+
+        if (is === "dom-if") {
+          const condition = node.getAttribute("if");
+
+          const match = condition?.match(/\[\[(.*?)\]\]/);
+
+          if (!match) {
+            return;
+          }
+
+          addBinding(node, {
+            type: "if",
+            node,
+            condition: match[1].trim(),
+            template: node.content,
+          });
+
+          return;
+        }
+
+        if (is === "dom-repeat") {
+          const items = node.getAttribute("items");
+
+          const match = items?.match(/\[\[(.*?)\]\]/g);
+
+          if (!match) {
+            return;
+          }
+
+          addBinding(node, {
+            type: "repeat",
+            node,
+            items: match[1].trim(),
+            template: node.content,
+          });
+
+          return;
+        }
+      }
+
       for (const attr of node.attributes) {
         const matches = [...attr.value.matchAll(/\[\[(.*?)\]\]/g)];
 
@@ -142,14 +184,23 @@ function insertMarkers(bindingsPerNode) {
   let markerId = 0;
 
   for (const [node, bindings] of bindingsPerNode) {
-    const marker = document.createComment(`polyester-marker-${markerId}`);
-
     if (!node.parentNode) continue;
+
+    const marker = document.createComment(`polyester-marker-${markerId}`);
 
     node.parentNode.insertBefore(marker, node);
 
+    const isStructural = bindings.some(
+      (b) => b.type === "if" || b.type === "repeat",
+    );
+
+    if (isStructural) {
+      node.remove();
+    }
+
     for (const bindingConfig of bindings) {
       bindingConfig.marker = markerId;
+      bindingConfig.node = null;
     }
 
     bindingsPerMarker.set(markerId, bindings);
@@ -207,6 +258,13 @@ function resolveMarkersToNodes(root, bindingsPerMarker) {
 
     const targetNode = getSiblingNode(node);
 
+    const isStructural = bindings.some((b) => b.type === "if");
+
+    if (isStructural) {
+      markerToNode.set(markerId, node);
+      continue;
+    }
+
     if (!targetNode) {
       continue;
     }
@@ -221,9 +279,25 @@ function resolveMarkersToNodes(root, bindingsPerMarker) {
 function createDependencyGraph(inputMap) {
   const bindingsPerDependency = new Map();
 
+  const getExpressions = (bindingConfig) => {
+    if (bindingConfig.bindings) {
+      return bindingConfig.bindings.map((b) => b.expr);
+    }
+
+    if (bindingConfig.condition) {
+      return [bindingConfig.condition];
+    }
+
+    if (bindingConfig.items) {
+      return [bindingConfig.items];
+    }
+
+    return [];
+  };
+
   for (const bindings of inputMap.values()) {
     for (const bindingConfig of bindings) {
-      for (const { expr } of bindingConfig.bindings) {
+      for (const expr of getExpressions(bindingConfig)) {
         const dependency = getRootFromPath(expr);
 
         if (!bindingsPerDependency.has(dependency)) {
@@ -359,6 +433,16 @@ export default function Polyester(config = {}) {
       this._dependencies.get(dependency).add(dependent);
     }
 
+    _mergeDependecies(dependencies) {
+      for (const [dependency, bindings] of dependencies) {
+        if (!this._bindingDependencies.has(dependency)) {
+          this._bindingDependencies.set(dependency, []);
+        }
+
+        this._bindingDependencies.get(dependency).push(...bindings);
+      }
+    }
+
     _markDependentsDirty(dependency) {
       const dependents = this._dependencies.get(dependency);
 
@@ -381,9 +465,9 @@ export default function Polyester(config = {}) {
     //#region other internals
     // if a property is not listed, but in html you try to set it with propname$="[[reference]]" it will resolve to undefined, since the code below
     // assumes a getter for the properties, which is only possible if it was set correctly.
-    _resolvePath(path) {
+    _resolvePath(path, scope = this) {
       const parts = path.split(".");
-      let value = this;
+      let value = scope;
 
       for (const part of parts) {
         if (value == null) return value;
@@ -463,6 +547,7 @@ export default function Polyester(config = {}) {
         this._bindings = bindingsPerLocalNode;
         console.log(this._bindings);
         this._bindingDependencies = createDependencyGraph(bindingsPerLocalNode);
+        console.log(this._bindingDependencies);
 
         this._domReady = true;
 
@@ -555,6 +640,15 @@ export default function Polyester(config = {}) {
       }
 
       for (const bindingConfig of bindings) {
+        if (bindingConfig.type === "if") {
+          this._updateDomIf(bindingConfig);
+          continue;
+        }
+
+        if (bindingConfig.type === "repeat") {
+          continue;
+        }
+
         if (bindingConfig.type !== "property") {
           this._updateBindingCache(bindingConfig);
         }
@@ -570,6 +664,15 @@ export default function Polyester(config = {}) {
 
       this._bindings.forEach((bindings) => {
         for (const bindingConfig of bindings) {
+          if (bindingConfig.type === "if") {
+            this._updateDomIf(bindingConfig);
+            continue;
+          }
+
+          if (bindingConfig.type === "repeat") {
+            continue;
+          }
+
           if (bindingConfig.type !== "property") {
             this._updateBindingCache(bindingConfig);
           }
@@ -578,6 +681,107 @@ export default function Polyester(config = {}) {
         }
       });
     }
+
+    //#region dom-if
+    _parseDomIf(bindingConfig) {
+      // already parsed
+      if (bindingConfig._instanceFragment) {
+        return;
+      }
+
+      const fragment = bindingConfig.template.cloneNode(true);
+
+      const bindingsPerNode = parseTemplate(fragment);
+      const bindingsPerMarker = insertMarkers(bindingsPerNode);
+
+      const domIfBindings = new Map();
+
+      for (const [markerId, localNode] of resolveMarkersToNodes(
+        fragment,
+        bindingsPerMarker,
+      )) {
+        for (const domIfBindingConfig of bindingsPerMarker.get(markerId)) {
+          const domIfBindingConfigCopy = {
+            ...domIfBindingConfig,
+            node: localNode,
+          };
+
+          if (!domIfBindings.has(localNode)) {
+            domIfBindings.set(localNode, []);
+          }
+
+          domIfBindings.get(localNode).push(domIfBindingConfigCopy);
+        }
+      }
+
+      const dependencies = createDependencyGraph(domIfBindings);
+
+      this._mergeDependecies(dependencies);
+
+      bindingConfig._instanceFragment = {
+        fragment,
+        nodes: [...fragment.childNodes],
+        bindings: domIfBindings,
+        dependencies,
+        _inserted: false,
+      };
+
+      this._updateDomIfBindings(bindingConfig._instanceFragment); // initial update just like with main dom
+
+      return bindingConfig._instanceFragment;
+    }
+
+    _updateDomIf(bindingConfig) {
+      const shouldRender = !!this._resolvePath(bindingConfig.condition, this);
+
+      let instanceFragment = bindingConfig._instanceFragment;
+
+      if (!instanceFragment) {
+        instanceFragment = this._parseDomIf(bindingConfig);
+      }
+
+      const { nodes } = instanceFragment;
+      const parent = bindingConfig.node.parentNode;
+      const anchor = bindingConfig.node.nextSibling;
+
+      if (shouldRender) {
+        if (!instanceFragment._inserted) {
+          for (const node of nodes) {
+            parent.insertBefore(node, anchor);
+          }
+
+          instanceFragment._inserted = true;
+        }
+      } else {
+        if (instanceFragment._inserted) {
+          for (const node of nodes) {
+            if (node.isConnected) {
+              node.remove();
+            }
+          }
+
+          instanceFragment._inserted = false;
+        }
+      }
+    }
+
+    _updateDomIfBindings(instanceFragment) {
+      for (const bindings of instanceFragment.bindings.values()) {
+        for (const bindingConfig of bindings) {
+          if (bindingConfig.type === "property") {
+            this._applyChanges(bindingConfig);
+          } else if (bindingConfig.type === "if") {
+            this._updateDomIf(bindingConfig);
+          } else {
+            this._updateBindingCache(bindingConfig);
+            this._applyChanges(bindingConfig);
+          }
+        }
+      }
+    }
+
+    //#region dom-repeat
+    _updateDomRepeat(bindingConfig) {}
 
     //#region computed prop related
     _parseComputed(str) {
