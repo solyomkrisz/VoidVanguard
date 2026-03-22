@@ -1,3 +1,4 @@
+//#region helper functions
 function toCamelCase(str) {
   return str
     .toLowerCase()
@@ -9,6 +10,26 @@ function toKebabCase(str) {
     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
     .replace(/(A-Z)([A-Z][a-z])/g, "$1-$2")
     .toLowerCase();
+}
+
+function addToMap(map, item, key = (i) => i) {
+  const _key = key(item);
+
+  if (!map.has(_key)) {
+    map.set(_key, []);
+  }
+
+  map.get(_key).push(item);
+}
+
+function regroupMap(inputMap, key = (i) => i) {
+  const outputMap = new Map();
+
+  for (const item of inputMap.values()) {
+    addToMap(outputMap, item, key);
+  }
+
+  return outputMap;
 }
 
 function isIndex(key) {
@@ -27,9 +48,199 @@ function clone(value) {
   return value;
 }
 
+// TODO: parse -> save bindings with actual nodes -> loop through all bindings and insert comment before the nodes -> replace the bindings' node marker with the comment's/marker's id
+//#region template parser
+function parseTemplate(root) {
+  const bindingsPerNode = new Map();
+
+  function addBinding(node, binding) {
+    if (!bindingsPerNode.has(node)) {
+      bindingsPerNode.set(node, []);
+    }
+
+    bindingsPerNode.get(node).push(binding);
+  }
+
+  const walk = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent;
+
+      const matches = [...text.matchAll(/\[\[(.*?)\]\]/g)];
+
+      if (!matches.length) return;
+
+      addBinding(node, {
+        type: "text",
+        template: text,
+        node,
+        bindings: Object.freeze(
+          matches.map((b) =>
+            Object.freeze({
+              raw: b[0],
+              expr: b[1].trim(),
+            }),
+          ),
+        ),
+      });
+
+      return;
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const tagName = node.tagName.toLowerCase();
+
+      for (const attr of node.attributes) {
+        const matches = [...attr.value.matchAll(/\[\[(.*?)\]\]/g)];
+
+        if (!matches.length) continue;
+
+        const isPropBinding = attr.name.endsWith("$");
+
+        addBinding(node, {
+          type: isPropBinding ? "property" : "attribute",
+          name: isPropBinding ? toCamelCase(attr.name.slice(0, -1)) : attr.name,
+          node,
+          template: attr.value,
+          bindings: Object.freeze(
+            matches.map((b) =>
+              Object.freeze({
+                raw: b[0],
+                expr: b[1].trim(),
+              }),
+            ),
+          ),
+        });
+      }
+
+      // ! stop at custom element boundary, so we don't look into them because thats their territory
+      if (tagName.includes("-")) {
+        return;
+      }
+
+      for (const child of [...node.childNodes]) {
+        walk(child);
+      }
+
+      return;
+    }
+
+    if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      node.childNodes.forEach((node) => {
+        walk(node);
+      });
+    }
+  };
+
+  walk(root);
+
+  return bindingsPerNode;
+}
+
+//#region marker inserter
+function insertMarkers(bindingsPerNode) {
+  const bindingsPerMarker = new Map();
+  let markerId = 0;
+
+  for (const [node, bindings] of bindingsPerNode) {
+    const marker = document.createComment(`polyester-marker-${markerId}`);
+
+    if (!node.parentNode) continue;
+
+    node.parentNode.insertBefore(marker, node);
+
+    for (const bindingConfig of bindings) {
+      bindingConfig.marker = markerId;
+    }
+
+    bindingsPerMarker.set(markerId, bindings);
+
+    markerId++;
+  }
+
+  return bindingsPerMarker;
+}
+
+//#region marker resolver
+function getSiblingNode(node) {
+  let next = node.nextSibling;
+
+  while (
+    next &&
+    next.nodeType !== Node.ELEMENT_NODE &&
+    next.nodeType !== Node.TEXT_NODE
+  ) {
+    next = next.nextSibling;
+  }
+
+  return next;
+}
+
+function resolveMarkersToNodes(root, bindingsPerMarker) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
+
+  const markerToNode = new Map();
+
+  let node;
+
+  while ((node = walker.nextNode())) {
+    const value = node.nodeValue;
+
+    if (!value) {
+      continue;
+    }
+
+    if (!value.startsWith("polyester-marker-")) {
+      continue;
+    }
+
+    const markerId = Number(value.slice("polyester-marker-".length));
+
+    if (Number.isNaN(markerId)) {
+      continue;
+    }
+
+    const bindings = bindingsPerMarker.get(markerId);
+
+    if (!bindings) {
+      continue;
+    }
+
+    const targetNode = getSiblingNode(node);
+
+    if (!targetNode) {
+      continue;
+    }
+
+    markerToNode.set(markerId, targetNode);
+  }
+
+  return markerToNode;
+}
+
+//#region dependency graph
+function createDependencyGraph(inputMap) {
+  const bindingsPerDependency = new Map();
+
+  for (const bindings of inputMap.values()) {
+    for (const bindingConfig of bindings) {
+      for (const { expr } of bindingConfig.bindings) {
+        const dependency = getRootFromPath(expr);
+
+        if (!bindingsPerDependency.has(dependency)) {
+          bindingsPerDependency.set(dependency, []);
+        }
+
+        bindingsPerDependency.get(dependency).push(bindingConfig);
+      }
+    }
+  }
+
+  return bindingsPerDependency;
+}
+
 function resolvedToDisplayValue(binding, value) {
   if (value === undefined) {
-    console.warn(`Binding ${binding} resolved to undefined`);
+    console.warn(`Binding "${binding}" resolved to undefined.`);
     return "";
   }
 
@@ -46,11 +257,13 @@ function getPropertyConfig(config) {
   return typeof config === "function" ? { type: config } : config || {};
 }
 
-export default function define(config = {}) {
-  //#region destructurize
+//#region main function
+export default function Polyester(config = {}) {
   const {
     is,
     super: Base = HTMLElement,
+    parsingMethod = "instance",
+    template,
     created,
     connected,
     disconnected,
@@ -58,6 +271,18 @@ export default function define(config = {}) {
     properties = {},
     ...custom
   } = config;
+
+  let templateNode;
+
+  if (typeof template === "string") {
+    templateNode = document.createElement("template");
+    templateNode.innerHTML = template;
+  } else if (template instanceof HTMLTemplateElement) {
+    templateNode = template;
+  } else {
+    console.warn("The provided template is invalid.");
+    templateNode = document.createElement("template");
+  }
 
   const normalizedPropertyDefinitions = {};
 
@@ -81,9 +306,10 @@ export default function define(config = {}) {
       this._dependencies = new Map();
       this._computing = new Set();
       this._computingStack = [];
-      this._parsed = false;
+      this._domReady = false;
+      this._markerToNode = null;
       this._bindings = null;
-      this._bindingDependencies = new Map();
+      this._bindingDependencies = null;
       this._bindingUpdateQueue = new Set();
       this._hasScheduledBindingUpdate = false;
 
@@ -146,13 +372,15 @@ export default function define(config = {}) {
         if (computed && !computed.dirty) {
           computed.dirty = true;
 
-          this._scheduleBindingUpdate(propName);
+          this._asyncUpdateBindingsForDependency(propName);
           this._markDependentsDirty(propName);
         }
       }
     }
 
     //#region other internals
+    // if a property is not listed, but in html you try to set it with propname$="[[reference]]" it will resolve to undefined, since the code below
+    // assumes a getter for the properties, which is only possible if it was set correctly.
     _resolvePath(path) {
       const parts = path.split(".");
       let value = this;
@@ -172,7 +400,14 @@ export default function define(config = {}) {
     }
 
     //#region batch updates
-    _scheduleBindingUpdate(dependency, meta) {
+    _asyncUpdateBindingsForDependency(dependency, meta) {
+      if (!this._constructed || !this.isConnected) {
+        console.warn(
+          "Async scheduling disabled while the component is not yet constructed!",
+        );
+        return;
+      }
+
       this._bindingUpdateQueue.add(dependency);
 
       if (this._hasScheduledBindingUpdate) {
@@ -183,7 +418,7 @@ export default function define(config = {}) {
 
       window.queueMicrotask(() => {
         for (const dependency of this._bindingUpdateQueue) {
-          this._updateBindingsForDependency(dependency);
+          this._syncUpdateBindingsForDependency(dependency);
         }
 
         this._bindingUpdateQueue.clear();
@@ -191,109 +426,72 @@ export default function define(config = {}) {
       });
     }
 
-    //#region binding parser
-    _parseTemplate() {
-      if (this._parsed) {
+    //#region binding and content init
+    _initializeContent() {
+      if (this._domReady) {
         return;
       }
 
-      const root = this;
+      if (parsingMethod === "element") {
+        const fragment = this.constructor.__template.content.cloneNode(true);
 
-      const bindings = new Map();
+        this.innerHTML = "";
+        this.appendChild(fragment);
 
-      const addBinding = (node, bindingConfig) => {
-        if (!bindings.has(node)) {
-          bindings.set(node, []);
-        }
+        const bindingsPerLocalNode = new Map();
 
-        bindings.get(node).push(bindingConfig);
+        // ! never overwrite bindingConfig.bindings
+        for (const [markerId, localNode] of resolveMarkersToNodes(
+          this,
+          this.constructor.__bindingsPerMarker,
+        )) {
+          for (const bindingConfig of this.constructor.__bindingsPerMarker.get(
+            markerId,
+          )) {
+            const bindingConfigCopy = {
+              ...bindingConfig,
+              node: localNode,
+            };
 
-        // register binding dependencies
-        for (const { expr } of bindingConfig.bindings) {
-          const dependency = getRootFromPath(expr);
-
-          if (!this._bindingDependencies.has(dependency)) {
-            this._bindingDependencies.set(dependency, new Set());
-          }
-
-          this._bindingDependencies.get(dependency).add(bindingConfig);
-        }
-
-        return bindingConfig;
-      };
-
-      const walk = (node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          const text = node.textContent;
-
-          const matches = [...text.matchAll(/\[\[(.*?)\]\]/g)];
-
-          if (matches.length) {
-            addBinding(node, {
-              type: "text",
-              node,
-              template: text,
-              cache: text,
-              bindings: matches.map((b) => ({
-                raw: b[0],
-                expr: b[1].trim(),
-              })),
-            });
-          }
-
-          return;
-        }
-
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const tagName = node.tagName.toLowerCase();
-
-          for (const attr of node.attributes) {
-            const isPropBinding = attr.name.endsWith("$");
-
-            const matches = [...attr.value.matchAll(/\[\[(.*?)\]\]/g)];
-
-            if (matches.length) {
-              const bindingConfig = {
-                node,
-                attribute: attr.name,
-                bindings: matches.map((b) => ({
-                  raw: b[0],
-                  expr: b[1].trim(),
-                })),
-              };
-
-              if (isPropBinding) {
-                bindingConfig.type = "property";
-                bindingConfig.propName = attr.name.slice(0, -1);
-
-                addBinding(node, bindingConfig);
-              } else {
-                bindingConfig.type = "attribute";
-                bindingConfig.template = attr.value;
-                bindingConfig.cache = attr.value;
-
-                addBinding(node, bindingConfig);
-              }
+            if (!bindingsPerLocalNode.has(localNode)) {
+              bindingsPerLocalNode.set(localNode, []);
             }
-          }
 
-          // ! stop at custom element boundary, so we don't look into them because thats their territory
-          if (tagName.includes("-")) {
-            return;
-          }
-
-          for (const child of node.childNodes) {
-            walk(child);
+            bindingsPerLocalNode.get(localNode).push(bindingConfigCopy);
           }
         }
-      };
+        this._bindings = bindingsPerLocalNode;
+        console.log(this._bindings);
+        this._bindingDependencies = createDependencyGraph(bindingsPerLocalNode);
 
-      for (const child of root.childNodes) {
-        walk(child);
+        this._domReady = true;
+
+        return;
       }
 
-      this._bindings = bindings;
-      this._parsed = true;
+      const template = this.querySelector("template");
+
+      if (!template) {
+        console.warn(`<${config.is}> must have a <template> child!`);
+        return;
+      }
+
+      const fragment = template.content.cloneNode(true);
+
+      template.remove();
+      this.appendChild(fragment);
+
+      let allBindings = [];
+
+      // extract all bindings
+      this.childNodes.forEach((node) => {
+        allBindings = [...allBindings, ...parseTemplate(node)];
+      });
+
+      this._bindings = new Map(allBindings);
+      this._bindingDependencies = createDependencyGraph(this._bindings);
+
+      this._domReady = true;
     }
 
     _updateBindingTemplate(template, bindings) {
@@ -324,23 +522,28 @@ export default function define(config = {}) {
       }
 
       if (type === "attribute") {
-        const { attribute } = bindingConfig;
+        const { name } = bindingConfig;
 
-        if (node.getAttribute(attribute) !== cache) {
-          return node.setAttribute(bindingConfig.attribute, cache);
+        if (node.getAttribute(name) !== cache) {
+          return node.setAttribute(name, cache);
         }
       }
 
       if (type === "property") {
+        if (typeof node._setProperty !== "function") {
+          console.warn(`<${node.tagName}> does not implement _setProperty.`);
+          return;
+        }
+
         return node._setProperty(
-          bindingConfig.propName,
+          bindingConfig.name,
           this._resolvePath(bindingConfig.bindings[0].expr),
           { origin: "binding", srcElement: this },
         );
       }
     }
 
-    _updateBindingsForDependency(dependency) {
+    _syncUpdateBindingsForDependency(dependency) {
       if (!this._bindingDependencies) {
         return;
       }
@@ -509,32 +712,37 @@ export default function define(config = {}) {
       this._setProperty(rootProp, newRoot, { origin: "set" });
     }
 
+    //#region centralized property setter
     // prettier-ignore
     _handlePropertyChangeSideEffects(propName, oldValue, newValue, notify, meta) {
       if (this._constructed) {
-        this._markDependentsDirty(propName);
-        this._scheduleBindingUpdate(propName, { origin: "_setProperty" });
-      }
+        if (this.isConnected) {
+          this._markDependentsDirty(propName);
+          this._asyncUpdateBindingsForDependency(propName, { origin: "_setProperty" });
+        }
 
-      if (this._constructed && notify) {
-        this.dispatchEvent(
-          new CustomEvent(`${toKebabCase(propName)}-changed`, {
-            detail: {
-              old: oldValue,
-              new: newValue,
-            },
-            bubbles: true,
-            composed: true,
-          }),
-        );
+        if (notify) {
+          this.dispatchEvent(
+            new CustomEvent(`${toKebabCase(propName)}-changed`, {
+              detail: {
+                old: oldValue,
+                new: newValue,
+              },
+              bubbles: true,
+              composed: true,
+            }),
+          );
+        }
       }
     }
 
     _throwOnReadOnlyViolation(propName, value, readOnly, meta) {
       if (readOnly && this._constructed) {
-        throw new Error(
+        console.error(
           `Assignment to read-only property "${propName}" (origin: "${meta.origin}").`,
         );
+
+        return true;
       }
     }
 
@@ -546,7 +754,6 @@ export default function define(config = {}) {
       return value;
     }
 
-    //#region centralized property setter
     // prettier-ignore
     _setProperty(propName, newValue, meta) {
       const propertySchema =
@@ -554,11 +761,13 @@ export default function define(config = {}) {
 
       const { serialize, notify, reflect, readOnly } = propertySchema;
 
-      this._throwOnReadOnlyViolation(propName, newValue, readOnly, meta);
+      if (this._throwOnReadOnlyViolation(propName, newValue, readOnly, meta)) {
+        return;
+      }
 
       const oldValue = this._properties[propName];
       
-      newValue = this._serialize(newValue);
+      newValue = this._serialize(newValue, serialize);
 
       this._properties[propName] = newValue;
 
@@ -610,19 +819,7 @@ export default function define(config = {}) {
     connectedCallback() {
       super.connectedCallback?.(this);
 
-      const template = this.querySelector("template");
-
-      if (!template) {
-        console.warn(`<${config.is}> must have a <template> child!`);
-        return;
-      }
-
-      const fragment = template.content.cloneNode(true);
-
-      template.remove();
-      this.appendChild(fragment);
-
-      this._parseTemplate();
+      this._initializeContent();
       this._initializeBindings();
 
       if (typeof connected === "function") {
@@ -646,14 +843,13 @@ export default function define(config = {}) {
       }
 
       const propertySchema = this.constructor.__propertySchema;
+      const propName = toCamelCase(name);
 
-      if (typeof propertySchema[name]?.change === "function") {
-        propertySchema[name].change.call(this, oldValue, newValue);
+      if (typeof propertySchema[propName]?.change === "function") {
+        propertySchema[propName].change.call(this, oldValue, newValue);
       }
 
       // Reflect attrib into prop
-      const propName = toCamelCase(name);
-
       if (propertySchema[propName]?.reflect) {
         this._setProperty(propName, newValue, {
           origin: "attributeChangedCallback",
@@ -721,6 +917,20 @@ export default function define(config = {}) {
   //#region attach property definitions
   Object.defineProperty(CustomElement, "__propertySchema", {
     value: normalizedPropertyDefinitions,
+    enumerable: false,
+  });
+
+  //#region attach template
+  Object.defineProperty(CustomElement, "__template", {
+    value: templateNode,
+    enumerable: false,
+  });
+
+  //#region attach bindings
+  Object.defineProperty(CustomElement, "__bindingsPerMarker", {
+    value: (function () {
+      return insertMarkers(parseTemplate(templateNode.content));
+    })(),
     enumerable: false,
   });
 
