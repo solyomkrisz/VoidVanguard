@@ -104,8 +104,14 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
       initiatorId: requesterId,
       recipientId: userId,
     });
-  } catch {
-    blockStatus = true;
+  } catch (error) {
+    if (error.name === "InitiatorBlockedRecipientError") {
+      blockStatus = "you-blocked";
+    }
+
+    if (error.name === "RecipientBlockedInitiatorError") {
+      blockStatus = "got-blocked";
+    }
   }
 
   const allFriends = await friend.getAllFriends({ userId });
