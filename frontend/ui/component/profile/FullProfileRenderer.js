@@ -1,6 +1,7 @@
 import * as net from "/common/network.js";
 import "./FriendshipActionButton.js";
 import "./BlockActionButton.js";
+import { isEqual } from "../../../common/common.js";
 
 export default class FullProfileRenderer extends HTMLElement {
   static get observedAttributes() {
@@ -44,7 +45,7 @@ export default class FullProfileRenderer extends HTMLElement {
   }
 
   onBlockStatusChange(e) {
-    console.log(e.detail);
+    this.update({ origin: "blockStatusChangeHandler" });
   }
 
   connectedCallback() {
@@ -94,7 +95,7 @@ export default class FullProfileRenderer extends HTMLElement {
     this._rendered = true;
   }
 
-  async update() {
+  async update(meta) {
     if (!this._rendered) {
       this.render();
     }
@@ -108,7 +109,10 @@ export default class FullProfileRenderer extends HTMLElement {
     }
 
     this._elements.friendshipActionButton.setAttribute("user-id", this.userId);
-    this._elements.blockActionButton.setAttribute("user-id", this.userId);
+
+    if (meta?.origin !== "blockStatusChangeHandler") {
+      this._elements.blockActionButton.setAttribute("user-id", this.userId);
+    }
 
     if (!response.success) {
       console.error("Unable to fetch profile.");
@@ -121,9 +125,47 @@ export default class FullProfileRenderer extends HTMLElement {
     const { avatar, profileName, profileDescription } = this._elements;
     const currProfileData = this._profileData;
 
-    avatar.src = currProfileData.avatar;
-    profileName.textContent = currProfileData.display_name;
-    profileDescription.textContent = currProfileData.description;
+    if (
+      !isEqual(this._profileData, this._previousProfileData, "block_status")
+    ) {
+      this.updateFriendshipActionButtonVisibility();
+    }
+
+    if (!isEqual(this._profileData, this._previousProfileData, "avatar")) {
+      avatar.src = currProfileData.avatar;
+    }
+
+    if (
+      !isEqual(this._profileData, this._previousProfileData, "display_name")
+    ) {
+      profileName.textContent = currProfileData.display_name;
+    }
+
+    if (!isEqual(this._profileData, this._previousProfileData, "description")) {
+      profileDescription.textContent = currProfileData.description;
+    }
+  }
+
+  updateFriendshipActionButtonVisibility() {
+    const button = this._elements.friendshipActionButton;
+
+    const wasBlocked =
+      this._previousProfileData?.block_status === "you-blocked" ||
+      this._previousProfileData?.block_status === "got-blocked";
+
+    const isBlocked =
+      this._profileData?.block_status === "you-blocked" ||
+      this._profileData?.block_status === "got-blocked";
+
+    if (!isBlocked) {
+      if (wasBlocked) {
+        button?.refresh();
+      }
+
+      button.hidden = false;
+    } else {
+      button.hidden = true;
+    }
   }
 }
 

@@ -137,7 +137,7 @@ function isIndex(key) {
   return String(Number(key)) === key;
 }
 
-export function lookupProperty(path, root) {
+export function lookupProperty(root, path = "") {
   let current = root;
 
   for (const part of path.split(".")) {
@@ -153,9 +153,9 @@ export function lookupProperty(path, root) {
   return current;
 }
 
-export function isEqual(obja, objb, path) {
-  const vala = lookupProperty(path, obja);
-  const valb = lookupProperty(path, objb);
+export function isEqual(obja, objb, path = "") {
+  const vala = lookupProperty(obja, path);
+  const valb = lookupProperty(objb, path);
 
   return Object.is(vala, valb);
 }

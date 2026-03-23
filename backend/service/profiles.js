@@ -97,23 +97,10 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
     recipientId: userId,
   });
 
-  let blockStatus = false;
-
-  try {
-    await block.checkBlockStatus({
-      initiatorId: requesterId,
-      recipientId: userId,
-    });
-  } catch (error) {
-    // if (error.name === "BothBlockedError") {
-    //   blockStatus = "both-blocked";
-    // }
-    if (error.definition?.name === "InitiatorBlockedRecipientError") {
-      blockStatus = "you-blocked";
-    } else if (error.definition?.name === "RecipientBlockedInitiatorError") {
-      blockStatus = "got-blocked";
-    }
-  }
+  let blockStatus = await block.getBlockStatus({
+    initiatorId: requesterId,
+    recipientId: userId,
+  });
 
   const allFriends = await friend.getAllFriends({ userId });
 
@@ -129,7 +116,7 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
       display_name,
       description,
       friendship_status: friendshipStatus,
-      is_blocked: blockStatus,
+      block_status: blockStatus,
       all_friends: allFriends,
     };
   }
