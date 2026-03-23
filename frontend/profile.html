@@ -21,7 +21,7 @@
       </template>
     </div>
 
-    <full-profile></full-profile>
+    <full-profile-renderer></full-profile-renderer>
 
     <script>
       function onSearchboxItemClick(event) {
@@ -39,8 +39,11 @@
     </script>
 
     <script type="module">
+      import { onDOMContentLoaded } from "/common/common.js";
       import Searchbox from "/ui/js/Searchbox.js";
-      import FullProfile from "/ui/component/profile/FullProfile.js";
+      import "/ui/component/profile/FullProfileRenderer.js";
+
+      document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
 
       Searchbox(
         ".searchbox",
@@ -49,7 +52,7 @@
       );
 
       const userId = window.location.pathname.split("/").pop();
-      document.querySelector("full-profile").userId = userId;
+      document.querySelector("full-profile-renderer").userId = userId;
     </script>
   </body>
 </html>

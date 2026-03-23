@@ -105,11 +105,12 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
       recipientId: userId,
     });
   } catch (error) {
-    if (error.name === "InitiatorBlockedRecipientError") {
+    // if (error.name === "BothBlockedError") {
+    //   blockStatus = "both-blocked";
+    // }
+    if (error.definition?.name === "InitiatorBlockedRecipientError") {
       blockStatus = "you-blocked";
-    }
-
-    if (error.name === "RecipientBlockedInitiatorError") {
+    } else if (error.definition?.name === "RecipientBlockedInitiatorError") {
       blockStatus = "got-blocked";
     }
   }

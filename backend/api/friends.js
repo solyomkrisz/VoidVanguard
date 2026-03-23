@@ -11,7 +11,8 @@ import {
 
 const router = express.Router();
 
-router.get("/", authenticate(), modifyTargetUser(), controller.summary);
+// router.get("/", authenticate(), modifyTargetUser(), controller.summary);
+router.get("/:id", authenticate(), modifyTargetUser(), controller.summary);
 
 router.post(
   "/",

@@ -99,6 +99,69 @@ export const REC_BLOCKED_INI = new CustomError({
   },
 });
 
+export const BOTH_BLOCKED = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "BothBlockedError",
+    code: "ER_BOTH_BLOCKED",
+    message: "Both users have blocked each other",
+  },
+});
+
+export const CANNOT_BLOCK_YOURSELF = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "CannotBlockYourselfError",
+    code: "ER_INV_BLOCK_TARG",
+    message: "Cannot block yourself",
+  },
+});
+
+export const UNABLE_TO_UNBLOCK = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "UnableToUnblockError",
+    code: "ER_UNABLE_TO_UNBLOCK",
+    message: "Unable to unblock: the block does not exist",
+  },
+});
+
+export const CANNOT_FRIEND_YOURSELF = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "CannotFriendYourselfError",
+    code: "ER_FRIEND_YOURSELF",
+    message: "Your cannot friend yourself",
+  },
+});
+
+export const FRIENSHIP_ALREADY_EXISTS = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "FriendshipExistsError",
+    code: "ER_FRIEND_ALRD_EXISTS",
+    message: "A friendship already exists",
+  },
+});
+
+export const UNABLE_TO_ACCEPT_FR_REQ = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "UnableToAcceptFriendRequestError",
+    code: "ER_FR_REQ",
+    message: "Unable to accept friend request, it does not exist",
+  },
+});
+
+export const UNABLE_TO_REMOVE_FRIEND = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "UnableToRemoveFriendError",
+    code: "ER_FR_REM",
+    message: "Unable to delete friendship, it does not exist",
+  },
+});
+
 export const UNAUTHORIZED = new CustomError({
   statusCode: 401,
   definition: {

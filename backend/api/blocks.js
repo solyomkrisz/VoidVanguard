@@ -5,13 +5,15 @@ import { upload, authenticate, modifyTargetUser } from "../common/common.js";
 
 const router = express.Router();
 
-router.get(
-  "/",
-  authenticate(),
-  modifyTargetUser(),
-  validator.POST,
-  controller.getBlockedUsers,
-);
+// router.get(
+//   "/",
+//   authenticate(),
+//   modifyTargetUser(),
+//   validator.POST,
+//   controller.getBlockedUsers,
+// );
+
+router.get("/:id", authenticate(), modifyTargetUser(), controller.summary);
 
 router.post(
   "/",

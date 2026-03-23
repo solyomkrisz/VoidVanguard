@@ -8,10 +8,11 @@ import {
 
 export async function summary(request, response) {
   try {
-    const userId = request.targetUser.id;
+    const requesterId = request.targetUser.id;
+    const userId = request.params.id;
     const include = (request.query.include || "").split(",");
 
-    const result = await service.getSummary(userId, include);
+    const result = await service.getSummary({ userId, requesterId, include });
 
     response
       .status(200)

@@ -1,8 +1,6 @@
-import { dir, element, text } from "../../UI.js";
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
-import userState from "../../../state/user.js";
+import { element, text } from "/ui/UI.js";
 
-export default class LogoutButton extends BaseCustomElement {
+export default class LogoutButton extends HTMLElement {
   constructor() {
     super();
   }
@@ -14,9 +12,7 @@ export default class LogoutButton extends BaseCustomElement {
   }
 
   build() {
-    const button = this.appendShadowChild(
-      element("button", text("Kijelentkezés")),
-    );
+    const button = this.appendChild(element("button", text("Kijelentkezés")));
 
     button.addEventListener("click", async () => {
       if (!localStorage.getItem("access_token")) return;
@@ -37,12 +33,8 @@ export default class LogoutButton extends BaseCustomElement {
         console.error("Logout error:", error);
       }
 
-      userState.reset();
-
-      for (const state of Array.from(
-        document.querySelectorAll("state-provider[as='user']"),
-      )) {
-        state.reset();
+      if (window.VoidVanguard) {
+        window.VoidVanguard.user = {};
       }
     });
   }

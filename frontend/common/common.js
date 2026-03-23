@@ -91,8 +91,27 @@ export const path = Object.freeze({
 
 export async function onDOMContentLoaded() {
   try {
-    const result = await net.send("/api/sessions", { method: "POST" });
-    result.success && userState.from(result.result);
+    const response = await net.send("/api/sessions", { method: "POST" });
+
+    if (response.success) {
+      if (!window.VoidVanguard) {
+        window.VoidVanguard = {};
+      }
+
+      window.VoidVanguard.user = {
+        ...response.result,
+      };
+
+      document.dispatchEvent(
+        new CustomEvent("login", {
+          detail: {
+            user: response.result,
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
   } catch (error) {
     return;
   }
@@ -112,4 +131,35 @@ export function debounce(fn, delay) {
 
 export function toCamelCase(str) {
   return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+}
+
+function isIndex(key) {
+  return String(Number(key)) === key;
+}
+
+export function lookupProperty(path, root) {
+  let current = root;
+
+  for (const part of path.split(".")) {
+    const key = isIndex(part) ? Number(part) : part;
+
+    current = current[key];
+
+    if (current == null) {
+      return current;
+    }
+  }
+
+  return current;
+}
+
+export function isEqual(obja, objb, path) {
+  const vala = lookupProperty(path, obja);
+  const valb = lookupProperty(path, objb);
+
+  return Object.is(vala, valb);
+}
+
+export function isLoggedIn() {
+  return Boolean(window.VoidVanguard?.user?.id);
 }
