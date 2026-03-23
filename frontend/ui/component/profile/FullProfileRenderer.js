@@ -1,7 +1,8 @@
 import * as net from "/common/network.js";
-import "./FriendshipActionButton.js";
-import "./BlockActionButton.js";
-import { isEqual } from "../../../common/common.js";
+import "/ui/component/profile/FriendshipActionButton.js";
+import "/ui/component/profile/BlockActionButton.js";
+import "/ui/component/profile/CommentSectionRenderer.js";
+import { isEqual } from "/common/common.js";
 
 export default class FullProfileRenderer extends HTMLElement {
   static get observedAttributes() {
@@ -22,7 +23,7 @@ export default class FullProfileRenderer extends HTMLElement {
     this._elements = {};
     this._profileData = {};
     this._previousProfileData = {};
-    this._rendered = false;
+    this._built = false;
 
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
@@ -49,7 +50,7 @@ export default class FullProfileRenderer extends HTMLElement {
   }
 
   connectedCallback() {
-    this.render();
+    this.build();
 
     document.addEventListener("login", this.onLogin);
     document.addEventListener("logout", this.onLogout);
@@ -65,8 +66,8 @@ export default class FullProfileRenderer extends HTMLElement {
     document.removeEventListener("logout", this.onLogout);
   }
 
-  render() {
-    if (this._rendered) return;
+  build() {
+    if (this._built) return;
 
     this.innerHTML = `
         <div class="profile-header">
@@ -80,6 +81,11 @@ export default class FullProfileRenderer extends HTMLElement {
                 <block-action-button></block-action-button>
             </div>
         </div>
+        <div class="profile-body"></div>
+        <div class="profile-footer">
+          <comment-section-renderer>
+          </comment-section-renderer>
+        </div>
     `;
 
     const elements = this._elements;
@@ -91,13 +97,16 @@ export default class FullProfileRenderer extends HTMLElement {
       "friendship-action-button",
     );
     elements.blockActionButton = this.querySelector("block-action-button");
+    elements.commentSectionRenderer = this.querySelector(
+      "comment-section-renderer",
+    );
 
-    this._rendered = true;
+    this._built = true;
   }
 
   async update(meta) {
-    if (!this._rendered) {
-      this.render();
+    if (!this._built) {
+      this.build();
     }
 
     const currentUserId = this.userId;

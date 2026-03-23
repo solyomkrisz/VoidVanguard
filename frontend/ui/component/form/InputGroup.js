@@ -1,12 +1,12 @@
 export default class InputGroup extends HTMLElement {
   constructor() {
     super();
+    this._built = false;
   }
 
   connectedCallback() {
-    if (this._initialized) return;
+    if (this._built) return;
     this.build();
-    this._initialized = true;
   }
 
   build() {
@@ -26,15 +26,7 @@ export default class InputGroup extends HTMLElement {
       label.setAttribute("for", id);
     }
 
-    const wrapper = document.createElement("div");
-
-    wrapper.append(...this.children);
-
-    for (const { name, value } of this.attributes) {
-      wrapper.setAttribute(name, value);
-    }
-
-    this.replaceWith(wrapper);
+    this._built = true;
   }
 }
 

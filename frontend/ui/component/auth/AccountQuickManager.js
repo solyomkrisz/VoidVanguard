@@ -1,10 +1,9 @@
-import _ from "/ui/component/auth/LogoutButton.js";
-import _1 from "/ui/component/core/StateProviderElement.js";
-import userState from "../../../state/user.js";
+import "/ui/component/auth/LogoutButton.js";
 
 export default class AccountQuickManager extends HTMLElement {
   constructor() {
     super();
+    this._elements = {};
   }
 
   connectedCallback() {
@@ -18,44 +17,24 @@ export default class AccountQuickManager extends HTMLElement {
   build() {
     this.innerHTML = `
       <div>
+        <a href="">Bejelentkezés</a>
+        <a href="">Regisztráció</a>
+      </div>
+      <div>
         <span>Logged out</span>
         <a>Profile megtekintése</a>
-        <state-provider>
-          <span>Beérkező barátkérelmek: <span subscribe-to="incomingCount"></span></span>
-        </state-provider>
         <logout-button></logout-button>
       </div>
     `;
 
-    const username = this.querySelector("span");
-    const profileLink = this.querySelector("a");
-    const stateProvider = this.querySelector("state-provider");
-    const logoutButton = this.querySelector("logout-button");
+    const elements = this._elements;
 
-    // prettier-ignore
-    {
-      userState.sub("username", (_, value) => {
-        username.textContent = value || "Logged out";
+    elements.ifLoggedIn = this.querySelector("div:first-child");
+    elements.notLoggedIn = this.querySelector("div:last-child");
 
-        if (value) logoutButton.hidden = false;
-        else logoutButton.hidden = true;
-      });
-
-      userState.sub("id", (_, value) => {
-        if (value) {
-          profileLink.hidden = false;
-          stateProvider.hidden = false;
-
-          profileLink.setAttribute("href", "/profile/" + value);
-          stateProvider.src = "/api/friends?include=incomingCount";
-
-          return;
-        }
-
-        profileLink.hidden = true;
-        stateProvider.hidden = true;
-      });
-    }
+    elements.username = this.querySelector("span");
+    elements.profileLink = this.querySelector("a");
+    elements.logoutButton = this.querySelector("logout-button");
   }
 }
 

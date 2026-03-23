@@ -1,5 +1,5 @@
-import _ from "./InputGroup.js";
-import _1 from "/ui/component/feedback/ResponseMessage.js";
+import "/ui/component/form/InputGroup.js";
+import "/ui/component/feedback/ResponseMessage.js";
 import { element } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import { defineAttributeAccessors } from "../core/Core.js";

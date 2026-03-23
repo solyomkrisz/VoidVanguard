@@ -29,7 +29,7 @@ export default class FriendshipActionButton extends HTMLElement {
 
     this._elements = {};
     this._status = null;
-    this._rendered = false;
+    this._built = false;
 
     this.sendUserAction = this.sendUserAction.bind(this);
     this.onLogin = this.onLogin.bind(this);
@@ -44,7 +44,7 @@ export default class FriendshipActionButton extends HTMLElement {
   }
 
   connectedCallback() {
-    this.render();
+    this.build();
 
     document.addEventListener("login", this.onLogin);
     document.addEventListener("logout", this.onLogout);
@@ -89,8 +89,8 @@ export default class FriendshipActionButton extends HTMLElement {
     }
   }
 
-  render() {
-    if (this._rendered) return;
+  build() {
+    if (this._built) return;
 
     this.innerHTML = `<button></button>`;
 
@@ -98,7 +98,7 @@ export default class FriendshipActionButton extends HTMLElement {
     button.addEventListener("click", this.sendUserAction);
 
     this._elements.button = button;
-    this._rendered = true;
+    this._built = true;
   }
 
   async sendUserAction() {
