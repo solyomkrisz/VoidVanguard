@@ -1,10 +1,11 @@
 import * as net from "/common/network.js";
+import { isEqual } from "/common/common.js";
 import "/ui/component/profile/FriendshipActionButton.js";
 import "/ui/component/profile/BlockActionButton.js";
-import "/ui/component/profile/CommentSectionRenderer.js";
-import { isEqual } from "/common/common.js";
+import "/ui/component/profile/CommentSection.js";
+import "/ui/component/profile/CommentForm.js";
 
-export default class FullProfileRenderer extends HTMLElement {
+export default class FullProfile extends HTMLElement {
   static get observedAttributes() {
     return ["user-id"];
   }
@@ -56,7 +57,7 @@ export default class FullProfileRenderer extends HTMLElement {
     document.addEventListener("logout", this.onLogout);
     this.addEventListener(
       "friendship-status-change",
-      this.onFriendshipStatusChange,
+      this.onFriendshipStatusChange
     );
     this.addEventListener("block-status-change", this.onBlockStatusChange);
   }
@@ -83,8 +84,9 @@ export default class FullProfileRenderer extends HTMLElement {
         </div>
         <div class="profile-body"></div>
         <div class="profile-footer">
-          <comment-section-renderer>
-          </comment-section-renderer>
+          <comment-section>
+            <comment-form></comment-form>
+          </comment-section>
         </div>
     `;
 
@@ -94,12 +96,11 @@ export default class FullProfileRenderer extends HTMLElement {
     elements.profileName = this.querySelector(".profile-name");
     elements.profileDescription = this.querySelector(".profile-description");
     elements.friendshipActionButton = this.querySelector(
-      "friendship-action-button",
+      "friendship-action-button"
     );
     elements.blockActionButton = this.querySelector("block-action-button");
-    elements.commentSectionRenderer = this.querySelector(
-      "comment-section-renderer",
-    );
+    elements.commentSection = this.querySelector("comment-section");
+    elements.commentForm = this.querySelector("comment-form");
 
     this._built = true;
   }
@@ -117,10 +118,17 @@ export default class FullProfileRenderer extends HTMLElement {
       return;
     }
 
-    this._elements.friendshipActionButton.setAttribute("user-id", this.userId);
+    const elements = this._elements;
+
+    elements.friendshipActionButton.setAttribute("user-id", this.userId);
+    elements.commentForm.setAttribute("target-id", this.userId);
+    elements.commentSection.setAttribute(
+      "src",
+      "/api/comments?targetId=" + this.userId
+    );
 
     if (meta?.origin !== "blockStatusChangeHandler") {
-      this._elements.blockActionButton.setAttribute("user-id", this.userId);
+      elements.blockActionButton.setAttribute("user-id", this.userId);
     }
 
     if (!response.success) {
@@ -178,4 +186,4 @@ export default class FullProfileRenderer extends HTMLElement {
   }
 }
 
-window.customElements.define("full-profile-renderer", FullProfileRenderer);
+window.customElements.define("full-profile", FullProfile);

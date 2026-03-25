@@ -1,6 +1,6 @@
-import LazyItemListRenderer from "/ui/component/data/LazyItemListRenderer.js";
+import LazyItemList from "/ui/component/data/LazyItemList.js";
 
-export default class CommentSectionRenderer extends LazyItemListRenderer {
+export default class CommentSection extends LazyItemList {
   constructor() {
     super();
   }
@@ -31,7 +31,4 @@ export default class CommentSectionRenderer extends LazyItemListRenderer {
   }
 }
 
-window.customElements.define(
-  "comment-section-renderer",
-  CommentSectionRenderer,
-);
+window.customElements.define("comment-section", CommentSection);

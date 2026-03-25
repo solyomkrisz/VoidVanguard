@@ -1,6 +1,6 @@
 import * as net from "/common/network.js";
 
-export default class LazyItemListRenderer extends HTMLElement {
+export default class LazyItemList extends HTMLElement {
   static get observedAttributes() {
     return ["src", "mode", "page-size"];
   }
@@ -80,7 +80,7 @@ export default class LazyItemListRenderer extends HTMLElement {
           this.loadNextPage();
         }
       },
-      { root: null, rootMargin: "100px" },
+      { root: null, rootMargin: "100px" }
     );
 
     this._scrollObserver.observe(this._sentinel);
@@ -184,4 +184,4 @@ export default class LazyItemListRenderer extends HTMLElement {
   }
 }
 
-window.customElements.define("lazy-item-list-renderer", LazyItemListRenderer);
+window.customElements.define("lazy-item-list", LazyItemList);

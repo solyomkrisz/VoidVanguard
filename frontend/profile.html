@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hu">
   <head>
     <meta charset="UTF-8" />
@@ -21,19 +21,19 @@
       </template>
     </div>
 
-    <full-profile-renderer></full-profile-renderer>
+    <full-profile></full-profile>
 
     <script>
       function onSearchboxItemClick(event) {
         event.currentTarget.parentElement.hidden = true;
 
         const userId = event.currentTarget?.querySelector(
-          "input[type='hidden']",
+          "input[type='hidden']"
         )?.value;
 
         if (userId) {
           window.history.replaceState({}, "", userId);
-          document.querySelector("full-profile-renderer").userId = userId;
+          document.querySelector("full-profile").userId = userId;
         }
       }
     </script>
@@ -41,18 +41,18 @@
     <script type="module">
       import { onDOMContentLoaded } from "/common/common.js";
       import Searchbox from "/ui/js/Searchbox.js";
-      import "/ui/component/profile/FullProfileRenderer.js";
+      import "/ui/component/profile/FullProfile.js";
 
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
 
       Searchbox(
         ".searchbox",
         "/api/profiles?search=",
-        (response) => response.result.profiles,
+        (response) => response.result.profiles
       );
 
       const userId = window.location.pathname.split("/").pop();
-      document.querySelector("full-profile-renderer").userId = userId;
+      document.querySelector("full-profile").userId = userId;
     </script>
   </body>
 </html>
