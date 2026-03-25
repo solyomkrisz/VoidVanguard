@@ -57,7 +57,7 @@ export default class FullProfile extends HTMLElement {
     document.addEventListener("logout", this.onLogout);
     this.addEventListener(
       "friendship-status-change",
-      this.onFriendshipStatusChange
+      this.onFriendshipStatusChange,
     );
     this.addEventListener("block-status-change", this.onBlockStatusChange);
   }
@@ -84,7 +84,7 @@ export default class FullProfile extends HTMLElement {
         </div>
         <div class="profile-body"></div>
         <div class="profile-footer">
-          <comment-section>
+          <comment-section controls="scroll" page-size="1">
             <comment-form></comment-form>
           </comment-section>
         </div>
@@ -96,7 +96,7 @@ export default class FullProfile extends HTMLElement {
     elements.profileName = this.querySelector(".profile-name");
     elements.profileDescription = this.querySelector(".profile-description");
     elements.friendshipActionButton = this.querySelector(
-      "friendship-action-button"
+      "friendship-action-button",
     );
     elements.blockActionButton = this.querySelector("block-action-button");
     elements.commentSection = this.querySelector("comment-section");
@@ -124,7 +124,7 @@ export default class FullProfile extends HTMLElement {
     elements.commentForm.setAttribute("target-id", this.userId);
     elements.commentSection.setAttribute(
       "src",
-      "/api/comments?targetId=" + this.userId
+      "/api/comments?targetId=" + this.userId,
     );
 
     if (meta?.origin !== "blockStatusChangeHandler") {

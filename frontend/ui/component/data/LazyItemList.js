@@ -21,12 +21,16 @@ export default class LazyItemList extends HTMLElement {
     return Number(this.getAttribute("page-size") || 10);
   }
 
-  set mode(value) {
+  set controls(value) {
     if (!["scroll", "pages", "button"].includes(value)) {
       return;
     }
 
-    this.setAttribute("mode", value);
+    this.setAttribute("controls", value);
+  }
+
+  get controls() {
+    return this.getAttribute("controls");
   }
 
   constructor() {
@@ -59,11 +63,9 @@ export default class LazyItemList extends HTMLElement {
   }
 
   build() {
-    this._built = true;
-
     this._container = this.appendChild(document.createElement("div"));
 
-    if (this.mode === "scroll") {
+    if (this.controls === "scroll") {
       const sentinel = document.createElement("div");
       sentinel.style.height = "1px";
 
@@ -71,6 +73,8 @@ export default class LazyItemList extends HTMLElement {
 
       this.initScrollObserver();
     }
+
+    this._built = true;
   }
 
   initScrollObserver() {
@@ -80,7 +84,7 @@ export default class LazyItemList extends HTMLElement {
           this.loadNextPage();
         }
       },
-      { root: null, rootMargin: "100px" }
+      { root: null, rootMargin: "100px" },
     );
 
     this._scrollObserver.observe(this._sentinel);
