@@ -54,9 +54,15 @@ export async function updateComment(request, response) {
       content: request.body.content,
     });
 
+    const updatedComment = await service.select({
+      commentId: request.body.commentId,
+    });
+
     response
       .status(200)
-      .json(createResponse(true, null, "Comment successfully updated"));
+      .json(
+        createResponse(true, updatedComment, "Comment successfully updated"),
+      );
   } catch (error) {
     handleCaughtError(response, error);
   }

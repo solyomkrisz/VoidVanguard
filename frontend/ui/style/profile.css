@@ -13,3 +13,16 @@ body {
 .avatar {
   width: 128px;
 }
+
+comment-item {
+  display: block;
+  margin-bottom: 15px;
+}
+
+comment-item .comment-content {
+  white-space: pre-line;
+}
+
+comment-item textarea {
+  resize: vertical;
+}

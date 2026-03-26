@@ -145,6 +145,7 @@ export default class InlineEditor extends HTMLElement {
         detail: {
           oldValue,
           newValue: text.textContent,
+          name: this.getAttribute("name"),
         },
         bubbles: true,
         composed: true,

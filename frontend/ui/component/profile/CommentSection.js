@@ -88,6 +88,8 @@ export default class CommentSection extends LazyItemList {
       return;
     }
 
+    formData.append("commentId", commentId);
+
     const response = await net.send("/api/comments", {
       method: "PATCH",
       body: formData,
@@ -95,10 +97,14 @@ export default class CommentSection extends LazyItemList {
 
     const { success, result } = response;
 
+    console.log(response);
+
     if (!success) {
       console.error("Failed to update comment.");
       return;
     }
+
+    e.target.comment = result;
   }
 
   extractItems(response) {
