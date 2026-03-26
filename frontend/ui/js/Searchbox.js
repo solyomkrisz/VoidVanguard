@@ -1,5 +1,6 @@
 import { debounce } from "../../../common/common.js";
 import * as net from "../../common/network.js";
+import { on, off } from "/common/eventhub.js";
 
 function listResults(results, container, template) {
   container.innerHTML = "";
@@ -48,7 +49,7 @@ export default function Searchbox(target, url, getIterable) {
   input.addEventListener("input", handleInput);
 
   input.addEventListener("focus", () => (div.hidden = false));
-  document.addEventListener("pointerdown", ({ target }) => {
+  on("pointerdown", ({ target }) => {
     if (!searchbox.contains(target)) {
       div.hidden = true;
     }

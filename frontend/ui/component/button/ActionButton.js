@@ -1,4 +1,5 @@
 import { isLoggedIn } from "/common/common.js";
+import { on, off } from "/common/eventhub.js";
 import * as net from "/common/network.js";
 
 export default class FriendshipActionButton extends HTMLElement {
@@ -46,16 +47,16 @@ export default class FriendshipActionButton extends HTMLElement {
   connectedCallback() {
     this.build();
 
-    document.addEventListener("login", this.onLogin);
-    document.addEventListener("logout", this.onLogout);
+    on("login", this.onLogin);
+    on("logout", this.onLogout);
 
     this.updateVisibility();
     this.updateStatus();
   }
 
   disconnectedCallback() {
-    document.removeEventListener("login", this.onLogin);
-    document.removeEventListener("logout", this.onLogout);
+    off("login", this.onLogin);
+    off("logout", this.onLogout);
   }
 
   onLogin() {

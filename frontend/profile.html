@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hu">
   <head>
     <meta charset="UTF-8" />
@@ -7,19 +7,31 @@
     <link rel="stylesheet" href="/ui/style/searchbox.css" />
     <link rel="stylesheet" href="/ui/style/profile.css" />
     <title>Profil</title>
+    <style>
+      nav {
+        display: flex;
+        gap: 10px;
+      }
+    </style>
   </head>
   <body>
-    <div class="searchbox">
-      <input type="text" />
-      <div class="searchbox-item-list"></div>
-      <template>
-        <div class="searchbox-list-item" onclick="onSearchboxItemClick(event)">
-          <input type="hidden" data-bind="user_id" bind-target="value" />
-          <img data-bind="avatar" bind-target="src" />
-          <div data-bind="display_name"></div>
-        </div>
-      </template>
-    </div>
+    <nav>
+      <div class="searchbox">
+        <input type="text" />
+        <div class="searchbox-item-list"></div>
+        <template>
+          <div
+            class="searchbox-list-item"
+            onclick="onSearchboxItemClick(event)"
+          >
+            <input type="hidden" data-bind="user_id" bind-target="value" />
+            <img data-bind="avatar" bind-target="src" />
+            <div data-bind="display_name"></div>
+          </div>
+        </template>
+      </div>
+      <logout-button></logout-button>
+    </nav>
 
     <full-profile></full-profile>
 
@@ -28,7 +40,7 @@
         event.currentTarget.parentElement.hidden = true;
 
         const userId = event.currentTarget?.querySelector(
-          "input[type='hidden']"
+          "input[type='hidden']",
         )?.value;
 
         if (userId) {
@@ -42,13 +54,14 @@
       import { onDOMContentLoaded } from "/common/common.js";
       import Searchbox from "/ui/js/Searchbox.js";
       import "/ui/component/profile/FullProfile.js";
+      import "/ui/component/auth/LogoutButton.js";
 
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
 
       Searchbox(
         ".searchbox",
         "/api/profiles?search=",
-        (response) => response.result.profiles
+        (response) => response.result.profiles,
       );
 
       const userId = window.location.pathname.split("/").pop();

@@ -33,8 +33,19 @@ export default class LogoutButton extends HTMLElement {
         console.error("Logout error:", error);
       }
 
-      if (window.VoidVanguard) {
+      if (window?.VoidVanguard?.user) {
+        const oldId = window.VoidVanguard.user?.id;
+
         window.VoidVanguard.user = {};
+
+        document.dispatchEvent(
+          new CustomEvent("logout", {
+            detail: {
+              oldId,
+              newId: null,
+            },
+          }),
+        );
       }
     });
   }

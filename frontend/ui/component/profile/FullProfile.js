@@ -1,5 +1,6 @@
 import * as net from "/common/network.js";
 import { isEqual } from "/common/common.js";
+import { on, off } from "/common/eventhub.js";
 import "/ui/component/profile/FriendshipActionButton.js";
 import "/ui/component/profile/BlockActionButton.js";
 import "/ui/component/profile/CommentSection.js";
@@ -53,8 +54,8 @@ export default class FullProfile extends HTMLElement {
   connectedCallback() {
     this.build();
 
-    document.addEventListener("login", this.onLogin);
-    document.addEventListener("logout", this.onLogout);
+    on("login", this.onLogin);
+    on("logout", this.onLogout);
     this.addEventListener(
       "friendship-status-change",
       this.onFriendshipStatusChange,
@@ -63,8 +64,8 @@ export default class FullProfile extends HTMLElement {
   }
 
   disconnectedCallback() {
-    document.removeEventListener("login", this.onLogin);
-    document.removeEventListener("logout", this.onLogout);
+    off("login", this.onLogin);
+    off("logout", this.onLogout);
   }
 
   build() {
@@ -130,6 +131,11 @@ export default class FullProfile extends HTMLElement {
     if (meta?.origin !== "blockStatusChangeHandler") {
       elements.blockActionButton.setAttribute("user-id", this.userId);
     }
+
+    this._elements.commentSection.setAttribute(
+      "src",
+      `/api/comments?targetId=${this.userId}`,
+    );
 
     if (!response.success) {
       console.error("Unable to fetch profile.");
