@@ -55,7 +55,7 @@ export default class CommentForm extends HTMLElement {
 
     const { success, result, message } = response;
 
-    if (!success) {
+    if (!success || !result) {
       console.log(result, message);
       console.error("An error occured during posting your comment.");
       return;
@@ -63,9 +63,12 @@ export default class CommentForm extends HTMLElement {
 
     this.dispatchEvent(
       new CustomEvent("comment-post", {
+        detail: {
+          comment: result,
+        },
         bubbles: true,
         composed: true,
-      })
+      }),
     );
   }
 }

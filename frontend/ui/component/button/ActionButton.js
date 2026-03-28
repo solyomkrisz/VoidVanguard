@@ -4,7 +4,7 @@ import * as net from "/common/network.js";
 
 export default class FriendshipActionButton extends HTMLElement {
   static get observedAttributes() {
-    return ["user-id"];
+    return ["user-id", "controlled"];
   }
 
   set userId(value) {
@@ -23,6 +23,18 @@ export default class FriendshipActionButton extends HTMLElement {
 
   get status() {
     return this._status;
+  }
+
+  set controlled(value) {
+    if (value) {
+      this.setAttribute("controlled", "");
+    } else {
+      this.removeAttribute("controlled");
+    }
+  }
+
+  get controlled() {
+    return this.hasAttribute("controlled");
   }
 
   constructor() {
@@ -129,7 +141,9 @@ export default class FriendshipActionButton extends HTMLElement {
       return;
     }
 
-    await this.updateStatus();
+    if (!this.controlled) {
+      await this.updateStatus();
+    }
 
     this.dispatchEvent(
       new CustomEvent(this.getEventName(), {
@@ -144,6 +158,8 @@ export default class FriendshipActionButton extends HTMLElement {
     if (!this.userId || this.getVisibility()) {
       return;
     }
+
+    if (this.controlled) return;
 
     const currentUserId = this.userId;
 

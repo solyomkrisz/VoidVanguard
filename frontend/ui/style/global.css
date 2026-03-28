@@ -11,10 +11,6 @@
   display: block;
 }
 
-:host > button {
-  width: 100%;
-}
-
 .input-group {
   display: flex;
   flex-direction: column;

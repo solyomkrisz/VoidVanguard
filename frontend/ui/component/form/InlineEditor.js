@@ -114,8 +114,8 @@ export default class InlineEditor extends HTMLElement {
   build() {
     const elements = this._elements;
 
-    elements.text = this.firstElementChild;
-    elements.editor = this.lastElementChild;
+    elements.text = this.querySelector("[data-text]");
+    elements.editor = this.querySelector("[data-editor]");
 
     if (!elements.text || !elements.editor) {
       console.warn(
@@ -145,7 +145,7 @@ export default class InlineEditor extends HTMLElement {
         detail: {
           oldValue,
           newValue: text.textContent,
-          name: this.getAttribute("name"),
+          name: this._elements.editor.getAttribute("name"),
         },
         bubbles: true,
         composed: true,

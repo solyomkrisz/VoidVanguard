@@ -1,14 +1,40 @@
+import { isLoggedIn } from "/common/common.js";
+import { on, off } from "/common/eventhub.js";
 import { element, text } from "/ui/UI.js";
 
 export default class LogoutButton extends HTMLElement {
   constructor() {
     super();
+
+    this._elements = {};
+    this._built = false;
+
+    this.onLogin = this.onLogin.bind(this);
+    this.onLogout = this.onLogout.bind(this);
   }
 
   connectedCallback() {
-    if (this._initialized) return;
+    if (this._built) return;
     this.build();
-    this._initialized = true;
+  }
+
+  disconnectedCallback() {
+    off("login", this.onLogin);
+    off("logout", this.onLogout);
+  }
+
+  onLogin(e) {
+    const button = this._elements.button;
+    if (!button) return;
+
+    button.hidden = false;
+  }
+
+  onLogout(e) {
+    const button = this._elements.button;
+    if (!button) return;
+
+    button.hidden = true;
   }
 
   build() {
@@ -48,6 +74,15 @@ export default class LogoutButton extends HTMLElement {
         );
       }
     });
+
+    if (!isLoggedIn()) button.hidden = true;
+
+    this._elements.button = button;
+
+    on("login", this.onLogin);
+    on("logout", this.onLogout);
+
+    this._built = true;
   }
 }
 

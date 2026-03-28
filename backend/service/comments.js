@@ -1,6 +1,7 @@
 import * as CustomError from "../common/CustomError.js";
 import Comments from "../sql/table/Comments.js";
 import { v4 as uuidv4 } from "uuid";
+import * as block from "./blocks.js";
 
 export async function deleteComment({ userId, commentId }) {
   if ((await Comments.delete(userId, commentId)).affectedRows === 0) {
@@ -24,6 +25,12 @@ export async function createComment({
   if (parentId && !(await commentExists(parentId))) {
     throw CustomError.TEST;
   }
+
+  // throws
+  await block.checkBlockStatus({
+    initiatorId: authorId,
+    recipientId: targetId,
+  });
 
   const id = uuidv4();
 

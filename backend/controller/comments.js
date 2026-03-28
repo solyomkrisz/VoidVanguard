@@ -31,16 +31,18 @@ export async function getComment(request, response) {
 
 export async function createComment(request, response) {
   try {
-    await service.createComment({
+    const commentId = await service.createComment({
       authorId: request.targetUser.id,
       targetId: request.body.targetId,
       parentId: request.body.parentId,
       content: request.body.content,
     });
 
+    const comment = await service.select({ commentId });
+
     response
       .status(200)
-      .json(createResponse(true, null, "Comment posted successfully"));
+      .json(createResponse(true, comment, "Comment posted successfully"));
   } catch (error) {
     handleCaughtError(response, error);
   }

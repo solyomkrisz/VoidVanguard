@@ -1,74 +1,83 @@
+import "/ui/component/form/SmartForm.js";
+import "/ui/component/form/InputGroup.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
-import _ from "/ui/component/form/SmartForm.js";
-import _1 from "/ui/component/form/InputGroup.js";
+import * as net from "/common/network.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
-const method = {
-  update: "PATCH",
-  create: "POST",
-};
-
 export default class ProfileForm extends BaseCustomElement {
-  static get observedAttributes() {
-    return ["action"];
-  }
-
-  get action() {
-    return this.getAttribute("action");
-  }
-
-  set action(value) {
-    this.setAttribute("action", value);
-    this.queryShadowSelector("smart-form").method = method[this.action];
-  }
-
   constructor() {
     super([path.join(dir, "global.css")]);
+
+    this._built = false;
+    this.onSubmit = this.onSubmit.bind(this);
   }
 
   connectedCallback() {
-    if (this._initialized) return;
+    if (this._built) return;
     this.build();
-    this._initialized = true;
+  }
+
+  async onSubmit(e) {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const response = await net.send("/api/profiles", {
+      method: "POST",
+      body: formData,
+    });
+
+    this.onResponse(response);
+  }
+
+  onResponse(response) {
+    const { success, result, message } = response;
+
+    if (!success) {
+      console.error(message ?? "Failed to create profile.");
+      return;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent("profile-create", {
+        detail: { result },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   build() {
     this.setShadowInnerHTML(`
-      <smart-form
-        url="/api/profiles"
-        method="${method[this.action]}"
-        refresh-target="#profile"
-        response-target="toast-manager"
-        with-message
-      >
-        <form>
-          <input-group class="input-group">
-            <label>Profilnév</label>
-            <input type="text" name="display_name" placeholder="Név123" />
-          </input-group>
+      <form>
+        <input-group class="input-group">
+          <label>Profilnév</label>
+          <input type="text" name="display_name" placeholder="Név123" />
+        </input-group>
 
-          <input-group class="input-group">
-            <label>Leírás</label>
-            <textarea name="description" placeholder="Ez a profilom..."></textarea>
-          </input-group>
-          
-          <input-group class="input-group">
-            <label>Láthatóság</label>
-            <select name="visibility">
-              <option value="public">Nyilvános</option>
-              <option value="friends-only">Csak barátok</option>
-            </select>
-          </input-group>
+        <input-group class="input-group">
+          <label>Leírás</label>
+          <textarea name="description" placeholder="Ez a profilom..."></textarea>
+        </input-group>
+        
+        <input-group class="input-group">
+          <label>Láthatóság</label>
+          <select name="visibility">
+            <option value="public">Nyilvános</option>
+            <option value="friends-only">Csak barátok</option>
+          </select>
+        </input-group>
 
-          <button>Módosítások mentése</button>
-        </form>
-      </smart-form>  
+        <button>Profil létrehozása</button>
+      </form>
     `);
-  }
 
-  onResponse(response) {
-    console.log(response);
+    const form = this.queryShadowSelector("form");
+    form.addEventListener("submit", this.onSubmit);
+
+    this._built = true;
   }
 }
 

@@ -1,10 +1,12 @@
 import * as net from "/common/network.js";
-import { isEqual } from "/common/common.js";
+import { isEqual, isLoggedIn } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import "/ui/component/profile/FriendshipActionButton.js";
 import "/ui/component/profile/BlockActionButton.js";
 import "/ui/component/profile/CommentSection.js";
 import "/ui/component/profile/CommentForm.js";
+import "/ui/component/layout/FullscreenOverlay.js";
+import "/ui/component/profile/ProfileForm.js";
 
 export default class FullProfile extends HTMLElement {
   static get observedAttributes() {
@@ -31,11 +33,12 @@ export default class FullProfile extends HTMLElement {
     this.onLogout = this.onLogout.bind(this);
     this.onFriendshipStatusChange = this.onFriendshipStatusChange.bind(this);
     this.onBlockStatusChange = this.onBlockStatusChange.bind(this);
+    this.onProfileCreate = this.onProfileCreate.bind(this);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "user-id" && oldValue !== newValue) {
-      this.update();
+      setTimeout(() => this.update());
     }
   }
 
@@ -44,11 +47,17 @@ export default class FullProfile extends HTMLElement {
   onLogout(e) {}
 
   onFriendshipStatusChange(e) {
-    console.log(e.detail);
+    this.update({ origin: "friendshipStatusChangeHandler" });
   }
 
   onBlockStatusChange(e) {
     this.update({ origin: "blockStatusChangeHandler" });
+  }
+
+  onProfileCreate(e) {
+    const profileData = e.detail?.result;
+
+    if (!profileData) return;
   }
 
   connectedCallback() {
@@ -61,6 +70,7 @@ export default class FullProfile extends HTMLElement {
       this.onFriendshipStatusChange,
     );
     this.addEventListener("block-status-change", this.onBlockStatusChange);
+    this.addEventListener("profile-create", this.onProfileCreate);
   }
 
   disconnectedCallback() {
@@ -68,10 +78,31 @@ export default class FullProfile extends HTMLElement {
     off("logout", this.onLogout);
   }
 
+  onError(error) {
+    const elements = this._elements;
+    if (!elements) return;
+
+    elements.profileContainer.hidden = true;
+    elements.errorMessage.hidden = false;
+
+    if (
+      isLoggedIn() &&
+      error.code === "ER_PROFILE_NOT_FOUND" &&
+      this.userId === window.VoidVanguard.user.id
+    ) {
+      elements.fullscreenOverlay.hidden = false;
+    }
+  }
+
   build() {
     if (this._built) return;
 
     this.innerHTML = `
+      <div class="error" hidden>
+        <h1>Hiba történt a profil betöltése közben</h1>
+      </div>
+
+      <div class="profile-container">
         <div class="profile-header">
             <img class="avatar" />
             <div>
@@ -79,8 +110,8 @@ export default class FullProfile extends HTMLElement {
                 <div class="profile-description"></div>
             </div>
             <div class="profile-header-actions">
-                <friendship-action-button></friendship-action-button>
-                <block-action-button></block-action-button>
+                <friendship-action-button controlled></friendship-action-button>
+                <block-action-button controlled></block-action-button>
             </div>
         </div>
         <div class="profile-body"></div>
@@ -89,10 +120,19 @@ export default class FullProfile extends HTMLElement {
             <comment-form></comment-form>
           </comment-section>
         </div>
+      </div>
+
+      <div>
+        <fullscreen-overlay no-close hidden>
+          <profile-form></profile-form>
+        </fullscreen-overlay>
+      </div>
     `;
 
     const elements = this._elements;
 
+    elements.profileContainer = this.querySelector(".profile-container");
+    elements.errorMessage = this.querySelector(".error");
     elements.avatar = this.querySelector(".avatar");
     elements.profileName = this.querySelector(".profile-name");
     elements.profileDescription = this.querySelector(".profile-description");
@@ -102,6 +142,7 @@ export default class FullProfile extends HTMLElement {
     elements.blockActionButton = this.querySelector("block-action-button");
     elements.commentSection = this.querySelector("comment-section");
     elements.commentForm = this.querySelector("comment-form");
+    elements.fullscreenOverlay = this.querySelector("fullscreen-overlay");
 
     this._built = true;
   }
@@ -121,36 +162,47 @@ export default class FullProfile extends HTMLElement {
 
     const elements = this._elements;
 
-    elements.friendshipActionButton.setAttribute("user-id", this.userId);
     elements.commentForm.setAttribute("target-id", this.userId);
     elements.commentSection.setAttribute(
       "src",
-      "/api/comments?targetId=" + this.userId,
+      `/api/comments?targetId=${this.userId}`,
     );
+
+    if (meta?.origin !== "friendshipStatusChangeHandler") {
+      elements.friendshipActionButton.setAttribute("user-id", this.userId);
+    }
 
     if (meta?.origin !== "blockStatusChangeHandler") {
       elements.blockActionButton.setAttribute("user-id", this.userId);
     }
 
-    this._elements.commentSection.setAttribute(
-      "src",
-      `/api/comments?targetId=${this.userId}`,
-    );
-
     if (!response.success) {
       console.error("Unable to fetch profile.");
+      this.onError(response.result);
+
       return;
     }
 
     this._previousProfileData = this._profileData;
     this._profileData = response.result;
 
+    elements.profileContainer.hidden = false;
+    elements.errorMessage.hidden = true;
+
     const { avatar, profileName, profileDescription } = this._elements;
     const currProfileData = this._profileData;
+
+    // update action buttons
+    // prettier-ignore
+    if (!isEqual(this._profileData, this._previousProfileData, "friendship_status")) {
+      elements.friendshipActionButton.status = currProfileData.friendship_status;
+    }
 
     if (
       !isEqual(this._profileData, this._previousProfileData, "block_status")
     ) {
+      elements.blockActionButton.status = currProfileData.block_status;
+      this.updateCommentSection();
       this.updateFriendshipActionButtonVisibility();
     }
 
@@ -166,6 +218,17 @@ export default class FullProfile extends HTMLElement {
 
     if (!isEqual(this._profileData, this._previousProfileData, "description")) {
       profileDescription.textContent = currProfileData.description;
+    }
+  }
+
+  updateCommentSection() {
+    const commentSection = this._elements.commentSection;
+    const blockStatus = this._profileData.block_status;
+
+    if (blockStatus === "you-blocked" || blockStatus === "got-blocked") {
+      commentSection.removeAttribute("can-comment");
+    } else {
+      commentSection.setAttribute("can-comment", "");
     }
   }
 
