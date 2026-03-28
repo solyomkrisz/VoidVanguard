@@ -7,6 +7,9 @@ import "/ui/component/profile/CommentSection.js";
 import "/ui/component/profile/CommentForm.js";
 import "/ui/component/layout/FullscreenOverlay.js";
 import "/ui/component/profile/ProfileForm.js";
+import "/ui/component/decorative/DashedBorderBox.js";
+import "/ui/component/form/InlineEditor.js";
+import "/ui/component/skeleton/SkeletonText.js";
 
 export default class FullProfile extends HTMLElement {
   static get observedAttributes() {
@@ -42,9 +45,13 @@ export default class FullProfile extends HTMLElement {
     }
   }
 
-  onLogin(e) {}
+  onLogin(e) {
+    this.updateContent();
+  }
 
-  onLogout(e) {}
+  onLogout(e) {
+    this.updateContent();
+  }
 
   onFriendshipStatusChange(e) {
     this.update({ origin: "friendshipStatusChangeHandler" });
@@ -56,8 +63,10 @@ export default class FullProfile extends HTMLElement {
 
   onProfileCreate(e) {
     const profileData = e.detail?.result;
-
     if (!profileData) return;
+
+    this.updateContent(profileData);
+    this._elements.fullscreenOverlay?.remove();
   }
 
   connectedCallback() {
@@ -94,6 +103,46 @@ export default class FullProfile extends HTMLElement {
     }
   }
 
+  updateProfileHeaderDetailsInner() {
+    const elements = this._elements;
+
+    const container = elements.profileHeaderDetails;
+    if (!container) return;
+
+    if (
+      isLoggedIn() &&
+      this._profileData.user_id === window.VoidVanguard.user.id
+    ) {
+      container.innerHTML = `
+        <skeleton-text lines="1"></skeleton-text>
+        <inline-editor>
+          <dashed-border-box>
+            <div data-text class="profile-name has-skeleton"></div>
+          </dashed-border-box>
+          <input data-editor type="text" name="display_name" />
+        </inline-editor>
+
+        <skeleton-text lines="2"></skeleton-text>
+        <inline-editor>
+          <dashed-border-box>
+            <div data-text class="profile-description has-skeleton"></div>
+          </dashed-border-box>
+          <textarea data-editor name="description"></textarea>
+        </inline-editor>
+      `;
+    } else {
+      container.innerHTML = `
+        <skeleton-text lines="1"></skeleton-text>
+        <div class="profile-name has-skeleton"></div>
+        <skeleton-text lines="2"></skeleton-text>
+        <div class="profile-description has-skeleton"></div>
+      `;
+    }
+
+    elements.profileName = this.querySelector(".profile-name");
+    elements.profileDescription = this.querySelector(".profile-description");
+  }
+
   build() {
     if (this._built) return;
 
@@ -102,12 +151,14 @@ export default class FullProfile extends HTMLElement {
         <h1>Hiba történt a profil betöltése közben</h1>
       </div>
 
-      <div class="profile-container">
+      <div class="profile-container skeleton--loading">
         <div class="profile-header">
             <img class="avatar" />
-            <div>
-                <div class="profile-name"></div>
-                <div class="profile-description"></div>
+            <div class="profile-header-details">
+                <skeleton-text lines="1"></skeleton-text>
+                <div class="profile-name has-skeleton"></div>
+                <skeleton-text lines="2"></skeleton-text>
+                <div class="profile-description has-skeleton"></div>
             </div>
             <div class="profile-header-actions">
                 <friendship-action-button controlled></friendship-action-button>
@@ -134,6 +185,9 @@ export default class FullProfile extends HTMLElement {
     elements.profileContainer = this.querySelector(".profile-container");
     elements.errorMessage = this.querySelector(".error");
     elements.avatar = this.querySelector(".avatar");
+    elements.profileHeaderDetails = this.querySelector(
+      ".profile-header-details",
+    );
     elements.profileName = this.querySelector(".profile-name");
     elements.profileDescription = this.querySelector(".profile-description");
     elements.friendshipActionButton = this.querySelector(
@@ -152,6 +206,8 @@ export default class FullProfile extends HTMLElement {
       this.build();
     }
 
+    const elements = this._elements;
+
     const currentUserId = this.userId;
 
     const response = await net.send("/api/profiles/" + currentUserId);
@@ -159,8 +215,6 @@ export default class FullProfile extends HTMLElement {
     if (currentUserId !== this.userId) {
       return;
     }
-
-    const elements = this._elements;
 
     elements.commentForm.setAttribute("target-id", this.userId);
     elements.commentSection.setAttribute(
@@ -183,42 +237,48 @@ export default class FullProfile extends HTMLElement {
       return;
     }
 
-    this._previousProfileData = this._profileData;
-    this._profileData = response.result;
+    this.updateContent(response.result);
+  }
 
-    elements.profileContainer.hidden = false;
-    elements.errorMessage.hidden = true;
-
-    const { avatar, profileName, profileDescription } = this._elements;
-    const currProfileData = this._profileData;
-
-    // update action buttons
-    // prettier-ignore
-    if (!isEqual(this._profileData, this._previousProfileData, "friendship_status")) {
-      elements.friendshipActionButton.status = currProfileData.friendship_status;
+  updateContent(data = null) {
+    if (data) {
+      this._previousProfileData = this._profileData;
+      this._profileData = data;
     }
 
-    if (
-      !isEqual(this._profileData, this._previousProfileData, "block_status")
-    ) {
-      elements.blockActionButton.status = currProfileData.block_status;
+    const currData = this._profileData;
+
+    this.updateProfileHeaderDetailsInner();
+
+    const elements = this._elements;
+    const { avatar, profileName, profileDescription } = this._elements;
+
+    if (!isEqual(currData, this._previousProfileData, "friendship_status")) {
+      elements.friendshipActionButton.status = currData.friendship_status;
+    }
+
+    if (!isEqual(currData, this._previousProfileData, "block_status")) {
+      elements.blockActionButton.status = currData.block_status;
       this.updateCommentSection();
       this.updateFriendshipActionButtonVisibility();
     }
 
-    if (!isEqual(this._profileData, this._previousProfileData, "avatar")) {
-      avatar.src = currProfileData.avatar;
+    if (!isEqual(currData, this._previousProfileData, "avatar")) {
+      avatar.src = currData.avatar;
     }
 
-    if (
-      !isEqual(this._profileData, this._previousProfileData, "display_name")
-    ) {
-      profileName.textContent = currProfileData.display_name;
+    if (!isEqual(currData, this._previousProfileData, "display_name")) {
+      profileName.textContent = currData.display_name;
     }
 
-    if (!isEqual(this._profileData, this._previousProfileData, "description")) {
-      profileDescription.textContent = currProfileData.description;
+    if (!isEqual(currData, this._previousProfileData, "description")) {
+      profileDescription.textContent = currData.description;
     }
+
+    elements.profileContainer.hidden = false;
+    elements.errorMessage.hidden = true;
+
+    elements.profileContainer.classList.remove("skeleton--loading");
   }
 
   updateCommentSection() {

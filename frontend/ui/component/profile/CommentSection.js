@@ -83,28 +83,28 @@ export default class CommentSection extends LazyItemList {
   }
 
   onLogin(e) {
-    const newId = e.detail?.newId;
-    const oldId = e.detail?.oldId;
+    // const newId = e.detail?.newId;
+    // const oldId = e.detail?.oldId;
 
-    {
-      const entries = this._byAuthor.get(oldId);
+    // {
+    //   const entries = this._byAuthor.get(oldId);
 
-      if (entries) {
-        for (const entry of entries) {
-          entry.element.update();
-        }
-      }
-    }
+    //   if (entries) {
+    //     for (const entry of entries) {
+    //       entry.element.update();
+    //     }
+    //   }
+    // }
 
-    {
-      const entries = this._byAuthor.get(newId);
+    // {
+    //   const entries = this._byAuthor.get(newId);
 
-      if (entries) {
-        for (const entry of entries) {
-          entry.element.update();
-        }
-      }
-    }
+    //   if (entries) {
+    //     for (const entry of entries) {
+    //       entry.element.update();
+    //     }
+    //   }
+    // }
 
     const commentForm = this.querySelector("comment-form");
     if (commentForm) {
@@ -113,15 +113,15 @@ export default class CommentSection extends LazyItemList {
   }
 
   onLogout(e) {
-    const id = e.detail?.oldId;
+    // const id = e.detail?.oldId;
 
-    const entries = this._byAuthor.get(id);
+    // const entries = this._byAuthor.get(id);
 
-    if (!entries) return;
+    // if (!entries) return;
 
-    for (const entry of entries) {
-      entry.element.update();
-    }
+    // for (const entry of entries) {
+    //   entry.element.update();
+    // }
 
     const commentForm = this.querySelector("comment-form");
     if (commentForm) {

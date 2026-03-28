@@ -1,4 +1,5 @@
 import { isLoggedIn } from "/common/common.js";
+import { on, off } from "/common/eventhub.js";
 import "/ui/component/form/InlineEditor.js";
 import "/ui/component/decorative/DashedBorderBox.js";
 import "/ui/component/profile/CommentReactions.js";
@@ -26,12 +27,22 @@ export default class CommentItem extends HTMLElement {
     this.onInlineEdit = this.onInlineEdit.bind(this);
     this.onSave = this.onSave.bind(this);
     this.onDelete = this.onDelete.bind(this);
+    this.onLogin = this.onLogin.bind(this);
+    this.onLogout = this.onLogout.bind(this);
     this.onReactionsClick = this.onReactionsClick.bind(this);
   }
 
   connectedCallback() {
     if (this._built) return;
     this.build();
+
+    on("login", this.onLogin);
+    on("logout", this.onLogout);
+  }
+
+  disconnectedCallback() {
+    off("login", this.onLogin);
+    off("logout", this.onLogout);
   }
 
   onInlineEdit(e) {
@@ -60,6 +71,14 @@ export default class CommentItem extends HTMLElement {
       button.hidden = true;
       this._editing = false;
     }
+  }
+
+  onLogin(e) {
+    this.update();
+  }
+
+  onLogout(e) {
+    this.update();
   }
 
   onReactionsClick(e) {
@@ -122,7 +141,7 @@ export default class CommentItem extends HTMLElement {
           <div class="comment-body">
               <inline-editor>
                   <dashed-border-box>
-                    <div data-text class="comment-content editable">${(this.comment.content ?? "").trim()}</div>
+                    <div data-text class="comment-content">${(this.comment.content ?? "").trim()}</div>
                   </dashed-border-box>
                   <textarea data-editor name="content"></textarea>
               </inline-editor>
@@ -144,7 +163,6 @@ export default class CommentItem extends HTMLElement {
   }
 
   getTemplate() {
-    console.log(this.comment);
     return `
       <div class="comment-header">
           <div>${this.comment.author ?? ""}</div>
@@ -181,8 +199,9 @@ export default class CommentItem extends HTMLElement {
 
     const elements = this._elements;
 
+    const loggedIn = isLoggedIn();
     const shouldPersonalize =
-      isLoggedIn() && window.VoidVanguard?.user?.id === this.comment.author_id;
+      loggedIn && window.VoidVanguard?.user?.id === this.comment.author_id;
 
     if (force || shouldPersonalize !== this._personalized) {
       if (shouldPersonalize) {
@@ -205,7 +224,14 @@ export default class CommentItem extends HTMLElement {
         elements.deleteButton = null;
       }
 
+      elements.commentReactions = this.querySelector("comment-reactions");
+      elements.commentReactions.userReaction = this.comment.user_reaction_type;
+
       this._personalized = shouldPersonalize;
+    }
+
+    if (!loggedIn) {
+      elements.commentReactions.hidden = true;
     }
   }
 }

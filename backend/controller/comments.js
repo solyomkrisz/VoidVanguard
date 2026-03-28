@@ -4,6 +4,7 @@ import { createResponse, handleCaughtError } from "../common/common.js";
 export async function lazySelectComments(request, response) {
   try {
     const result = await service.lazySelectByTarget({
+      requesterId: request?.targetUser?.id ?? null,
       targetId: request.query.targetId,
       page: request.query.page,
       limit: request.query.limit,
@@ -19,7 +20,10 @@ export async function lazySelectComments(request, response) {
 
 export async function getComment(request, response) {
   try {
-    const result = await service.select({ commentId: request.params.id });
+    const result = await service.select({
+      requesterId: request?.targetUser?.id ?? null,
+      commentId: request.params.id,
+    });
 
     response
       .status(200)

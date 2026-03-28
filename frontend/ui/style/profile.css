@@ -1,3 +1,8 @@
+*[data-text] {
+  padding: 5px;
+  cursor: pointer;
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -23,11 +28,11 @@ comment-item .comment-content {
   white-space: pre-line;
 }
 
-comment-item .comment-content.editable:hover {
-  padding: 5px;
-}
-
 comment-item textarea {
   width: 100%;
   resize: vertical;
+}
+
+comment-reactions .active {
+  background-color: steelblue;
 }

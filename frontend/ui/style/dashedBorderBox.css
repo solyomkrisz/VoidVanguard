@@ -12,6 +12,7 @@ svg {
   display: block;
   pointer-events: none;
 
+  visibility: hidden;
   opacity: 0;
   transition:
     opacity 0.1s ease,
@@ -35,6 +36,7 @@ rect {
 }
 
 :host(:hover) svg {
+  visibility: visible;
   opacity: 1;
 }
 

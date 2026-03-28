@@ -39,10 +39,20 @@ export async function createComment({
   return id;
 }
 
-export async function lazySelectByTarget({ targetId, page = 1, limit = 20 }) {
+export async function lazySelectByTarget({
+  targetId,
+  page = 1,
+  limit = 20,
+  requesterId = null,
+}) {
   const offset = (page - 1) * limit;
 
-  const comments = await Comments.lazySelectByTarget(targetId, limit, offset);
+  const comments = await Comments.lazySelectByTarget(
+    requesterId,
+    targetId,
+    limit,
+    offset,
+  );
   const total = await Comments.getTotalCommentsForTarget(targetId);
 
   return {
@@ -54,8 +64,8 @@ export async function lazySelectByTarget({ targetId, page = 1, limit = 20 }) {
   };
 }
 
-export async function select({ commentId }) {
-  const row = Comments.select(commentId);
+export async function select({ requesterId = null, commentId }) {
+  const row = Comments.select(requesterId, commentId);
 
   if (!row) {
     throw CustomError.TEST;

@@ -20,6 +20,11 @@ export default class CommentReactions extends HTMLElement {
     const oldValue = this._userReaction;
     if (oldValue === value) return;
     this._userReaction = value;
+    this.onUserReactionChange();
+  }
+
+  get userReaction() {
+    return this._userReaction;
   }
 
   constructor() {
@@ -64,6 +69,14 @@ export default class CommentReactions extends HTMLElement {
     button.addEventListener("click", this.onReaction);
 
     return button;
+  }
+
+  onUserReactionChange() {
+    const { likeButton, dislikeButton } = this._elements;
+    if (!likeButton || !dislikeButton) return;
+
+    likeButton.classList.toggle("active", this.userReaction === "like");
+    dislikeButton.classList.toggle("active", this.userReaction === "dislike");
   }
 
   updateDOM() {

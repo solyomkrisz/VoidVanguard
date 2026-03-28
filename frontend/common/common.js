@@ -139,6 +139,7 @@ function isIndex(key) {
 
 export function lookupProperty(root, path = "") {
   let current = root;
+  if (current == null) return current;
 
   for (const part of path.split(".")) {
     const key = isIndex(part) ? Number(part) : part;

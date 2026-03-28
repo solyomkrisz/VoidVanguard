@@ -26,9 +26,13 @@ export async function createProfile({ userId, role, body }) {
     throw CustomError.TEST;
   }
 
-  return {
-    id: userId,
-  };
+  const profile = await getProfile({
+    userId,
+    requesterId: userId,
+    role,
+  });
+
+  return profile;
 }
 
 export async function getFullProfile({ userId }) {

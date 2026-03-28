@@ -13,12 +13,23 @@ const router = express.Router();
 
 router.get(
   "/",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
   checkSchema(validator.GET),
   handleValidation,
   controller.lazySelectComments,
 );
 
-router.get("/:id", controller.getComment);
+router.get(
+  "/:id",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  controller.getComment,
+);
 
 router.post(
   "/",

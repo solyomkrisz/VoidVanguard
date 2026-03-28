@@ -1,4 +1,3 @@
-import "/ui/component/form/SmartForm.js";
 import "/ui/component/form/InputGroup.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import * as net from "/common/network.js";
@@ -9,6 +8,7 @@ export default class ProfileForm extends BaseCustomElement {
   constructor() {
     super([path.join(dir, "global.css")]);
 
+    this._elements = {};
     this._built = false;
     this.onSubmit = this.onSubmit.bind(this);
   }
@@ -34,9 +34,19 @@ export default class ProfileForm extends BaseCustomElement {
 
   onResponse(response) {
     const { success, result, message } = response;
+    const { responseMessage } = this._elements;
+
+    if (responseMessage) {
+      responseMessage.textContent = "";
+    }
 
     if (!success) {
-      console.error(message ?? "Failed to create profile.");
+      console.error("Failed to create profile.");
+
+      if (responseMessage) {
+        responseMessage.textContent = message;
+      }
+
       return;
     }
 
@@ -72,10 +82,13 @@ export default class ProfileForm extends BaseCustomElement {
 
         <button>Profil létrehozása</button>
       </form>
+      <div id="message"></div>
     `);
 
     const form = this.queryShadowSelector("form");
     form.addEventListener("submit", this.onSubmit);
+
+    this._elements.responseMessage = this.queryShadowSelector("#message");
 
     this._built = true;
   }

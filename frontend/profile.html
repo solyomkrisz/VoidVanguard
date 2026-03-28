@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="/ui/style/global.css" />
     <link rel="stylesheet" href="/ui/style/searchbox.css" />
     <link rel="stylesheet" href="/ui/style/profile.css" />
+    <link rel="stylesheet" href="/ui/style/dashedBorderBox.css" />
+    <link rel="stylesheet" href="/ui/style/skeleton.css" />
     <title>Profil</title>
     <style>
       nav {
@@ -34,6 +36,33 @@
     </nav>
 
     <full-profile></full-profile>
+
+    <template id="dashed-box-template">
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        style="
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        "
+      >
+        <rect
+          x="0"
+          y="0"
+          width="100"
+          height="100"
+          fill="none"
+          stroke="#333"
+          stroke-width="4"
+          vector-effect="non-scaling-stroke"
+          stroke-dasharray="10 5"
+          style="animation: dash 1s infinite linear"
+        />
+      </svg>
+    </template>
 
     <script>
       function onSearchboxItemClick(event) {

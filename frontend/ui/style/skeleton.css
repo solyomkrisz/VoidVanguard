@@ -1,0 +1,11 @@
+.skeleton--loading .has-skeleton {
+  visibility: hidden;
+}
+
+.skeleton--loading text-skeleton {
+  display: block;
+}
+
+text-skeleton {
+  display: none;
+}
