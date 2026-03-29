@@ -9,14 +9,32 @@ body {
   gap: 10px;
 }
 
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .profile-header {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+.profile-header-details {
+  display: flex;
+  flex-direction: column;
+}
+
 .avatar {
   width: 128px;
+  height: 128px;
+}
+
+.profile-header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 comment-item {
@@ -35,4 +53,15 @@ comment-item textarea {
 
 comment-reactions .active {
   background-color: steelblue;
+}
+
+.friend-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.friend-list-item img {
+  width: 32px;
+  height: 32px;
 }

@@ -6,6 +6,23 @@ import {
   handleSequelizeUniqueConstraintError,
 } from "../common/common.js";
 
+export async function lazySelectByTarget(request, response) {
+  try {
+    const result = await service.lazySelectByTarget({
+      requesterId: request?.targetUser?.id ?? null,
+      targetId: request.query.targetId,
+      page: request.query.page,
+      limit: request.query.limit,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, result, "Friends fetched successfully"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
 export async function summary(request, response) {
   try {
     const requesterId = request.targetUser.id;

@@ -91,7 +91,7 @@ export function authorize(
 
 export function modifyTargetUser(requiredRole = Role.ADMIN) {
   return function (request, response, next) {
-    if (request.user.role < requiredRole) {
+    if (request?.user?.role < requiredRole) {
       return next();
     }
     const targetUserId = request?.body?.targetUserId;

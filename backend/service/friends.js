@@ -3,6 +3,38 @@ import Users from "../sql/table/Users.js";
 import Friends from "../sql/table/Friends.js";
 import * as block from "./blocks.js";
 
+export async function lazySelectByTarget({
+  targetId,
+  page = 1,
+  limit = 20,
+  requesterId = null,
+}) {
+  const offset = (page - 1) * limit;
+
+  let friends, total;
+
+  try {
+    await block.checkBlockStatus({
+      initiatorId: requesterId,
+      recipientId: targetId,
+    });
+
+    friends = await Friends.list(targetId, { limit, offset });
+    total = await Friends.countAll(targetId);
+  } catch {
+    friends = [];
+    total = 0;
+  }
+
+  return {
+    friends,
+    page,
+    limit,
+    total,
+    hasNext: offset + friends.length < total,
+  };
+}
+
 export async function getSummary({ userId, requesterId, include = [] }) {
   const result = {};
 
@@ -44,6 +76,11 @@ export async function getFriendshipStatus({ initiatorId, recipientId }) {
   }
 
   return status;
+}
+
+export async function list({ userId, limit = null, orderBy = null }) {
+  const rows = await Friends.list(userId, { limit, orderBy });
+  return rows;
 }
 
 export async function getAllFriends({ userId }) {

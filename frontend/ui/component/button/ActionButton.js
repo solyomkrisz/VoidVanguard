@@ -135,9 +135,12 @@ export default class FriendshipActionButton extends HTMLElement {
       body: formData,
     });
 
-    this._elements.button.disabled = false;
+    if (this.hasAttribute("auto-enable")) {
+      this._elements.button.disabled = false;
+    }
 
     if (!response.success) {
+      this.enable();
       return;
     }
 
@@ -174,6 +177,10 @@ export default class FriendshipActionButton extends HTMLElement {
     }
 
     this.status = result.status;
+  }
+
+  enable() {
+    this._elements.button.disabled = false;
   }
 
   refresh() {

@@ -1,4 +1,5 @@
 import * as net from "/common/network.js";
+import "/ui/component/button/PaginationControls.js";
 
 export default class LazyItemList extends HTMLElement {
   static get observedAttributes() {
@@ -22,7 +23,7 @@ export default class LazyItemList extends HTMLElement {
   }
 
   set controls(value) {
-    if (!["scroll", "pages", "button"].includes(value)) {
+    if (!["scroll", "pagination", "button", "none"].includes(value)) {
       return;
     }
 
@@ -38,13 +39,23 @@ export default class LazyItemList extends HTMLElement {
 
     this._built = false;
 
+    this._lastResponse = null;
     this._page = 1;
     this._loading = false;
     this._hasNext = true;
 
-    this._sentinel = null;
-    this._container = null;
     this._scrollObserver = null;
+
+    this._container = null;
+    this._controllerContainer = null;
+    this._sentinel = null; // controls="scroll"
+    this._button = null; // controls="button"
+    this._paginationControls = null; // controls="pages"
+
+    this._byPage = new Map();
+    this._cacheLimit = 4;
+
+    this.loadMore = this.loadMore.bind(this);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -64,14 +75,33 @@ export default class LazyItemList extends HTMLElement {
 
   build() {
     this._container = this.appendChild(document.createElement("div"));
+    this._container.setAttribute("aria-live", "polite");
+
+    this._controllerContainer = this.appendChild(document.createElement("div"));
 
     if (this.controls === "scroll") {
       const sentinel = document.createElement("div");
       sentinel.style.height = "1px";
 
-      this._sentinel = this.appendChild(sentinel);
+      this._sentinel = this._controllerContainer.appendChild(sentinel);
 
       this.initScrollObserver();
+    }
+
+    if (this.controls === "button") {
+      this._button = this._controllerContainer.appendChild(
+        document.createElement("button"),
+      );
+
+      this._button.textContent = "Több betöltése";
+      this._button.addEventListener("click", this.loadMore);
+    }
+
+    if (this.controls === "pagination") {
+      this._paginationControls = this._controllerContainer.appendChild(
+        document.createElement("pagination-controls"),
+      );
+      this.addEventListener("page-request", this.onPageRequest);
     }
 
     this._built = true;
@@ -97,8 +127,64 @@ export default class LazyItemList extends HTMLElement {
     this._scrollObserver.observe(this._sentinel);
   }
 
+  showPage(page) {
+    this._page = page;
+
+    if (!this._byPage.has(page)) {
+      this._container.textContent = "";
+      this.loadNextPage();
+
+      return;
+    }
+
+    const nodes = this._byPage.get(page);
+    if (!nodes) return;
+
+    this._container.textContent = "";
+
+    for (const node of nodes) {
+      this._container.appendChild(node);
+    }
+  }
+
+  onPageRequest(e) {
+    const page = e.detail?.page;
+    if (!page) return;
+
+    this.showPage(page);
+  }
+
+  async loadMore(e) {
+    const button = e.target;
+    if (!button) return;
+
+    button.disabled = true;
+
+    await this.loadNextPage();
+
+    if (this._hasNext) {
+      button.disabled = false;
+    }
+  }
+
+  onLoadFinish() {
+    if (!this._hasNext && this._button) {
+      this._button.disabled = true;
+    }
+
+    if (this._paginationControls) {
+      const totalItems = this.extractTotal(this._lastResponse);
+      const totalPages = Math.ceil(totalItems / this.pageSize);
+      this._paginationControls.setAttribute("total", totalPages);
+    }
+  }
+
   async loadNextPage() {
-    if (!this.src || this._loading || !this._hasNext) {
+    if (
+      !this.src ||
+      this._loading ||
+      (!this._hasNext && this.controls !== "pagination")
+    ) {
       return;
     }
 
@@ -111,6 +197,7 @@ export default class LazyItemList extends HTMLElement {
       url.searchParams.set("limit", this.pageSize);
 
       const response = await this.executeRequest(url);
+      this._lastResponse = response;
 
       if (!this.isValidResponse(response)) {
         throw new Error("Request failed");
@@ -123,11 +210,44 @@ export default class LazyItemList extends HTMLElement {
       this._page += 1;
       this._hasNext = this.extractHasNext(response);
 
-      this.reobserve();
+      if (this._controls === "scroll") {
+        this.reobserve();
+      }
     } catch (error) {
       console.error(error);
     } finally {
       this._loading = false;
+      this.onLoadFinish();
+    }
+  }
+
+  save(node) {
+    if (this.controls !== "pagination") return;
+
+    if (!this._byPage.has(this._page)) {
+      this._byPage.set(this._page, new Set());
+    }
+
+    this._byPage.get(this._page).add(node);
+
+    this.clearPages();
+  }
+
+  clearPages() {
+    if (!this._cacheLimit) return;
+
+    const pages = Array.from(this._byPage.keys());
+
+    const half = Math.floor(this._cacheLimit / 2);
+    const minPage = Math.max(1, this._page - half);
+    const maxPage = this._page + half;
+
+    for (const page of pages) {
+      if (page < minPage || page > maxPage) {
+        const nodes = this._byPage.get(page);
+        nodes?.forEach((node) => node.remove());
+        this._byPage.delete(page);
+      }
     }
   }
 
@@ -142,6 +262,7 @@ export default class LazyItemList extends HTMLElement {
       });
 
       if (node) {
+        this.save(node);
         this._container.appendChild(node);
       }
     }
@@ -174,10 +295,17 @@ export default class LazyItemList extends HTMLElement {
     return response?.result?.hasNext;
   }
 
+  /** Override in subclass */
+  extractTotal(response) {
+    return response?.result?.total;
+  }
+
   reset() {
     this._page = 1;
     this._loading = false;
     this._hasNext = true;
+    this._lastResponse = null;
+    this._byPage.clear();
 
     this._container.textContent = "";
   }

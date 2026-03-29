@@ -24,7 +24,7 @@ export default class FriendshipActionButton extends ActionButton {
       case "not-friends":
         button.textContent = "Barát hozzáadása";
         break;
-      case "incoming":
+      case "received":
         button.textContent = "Barátkérelem elfogadása";
         break;
       case "sent":
@@ -39,7 +39,7 @@ export default class FriendshipActionButton extends ActionButton {
     switch (this.status) {
       case "not-friends":
         return "POST";
-      case "incoming":
+      case "received":
         return "PATCH";
       case "accepted":
       case "sent":

@@ -107,21 +107,66 @@ class Friends extends Table {
   async getAll(userId) {
     const [rows] = await execute(
       `
-        SELECT friends.initiator_id, COALESCE(profiles.display_name, users.username) AS name
+        SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
         FROM friends
         INNER JOIN users ON users.id = friends.initiator_id
         LEFT JOIN profiles ON profiles.user_id = users.id
         WHERE recipient_id = ? AND status = 'accepted'
 
-        UNION
+        UNION ALL
 
-        SELECT friends.recipient_id, COALESCE(profiles.display_name, users.username) AS name
+        SELECT friends.recipient_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
         FROM friends
         INNER JOIN users ON users.id = friends.recipient_id
         LEFT JOIN profiles ON profiles.user_id = users.id
         WHERE initiator_id = ? AND status = 'accepted'
       `,
       [userId, userId],
+    );
+
+    return rows;
+  }
+
+  async list(userId, { limit = null, offset = null, orderBy = null } = {}) {
+    const ORDER_BY = {
+      name: "ORDER BY name ASC",
+      random: "ORDER BY RAND()",
+    };
+
+    const orderClause = ORDER_BY[orderBy] || "";
+    const limitClause = limit != null ? "LIMIT ?" : "";
+    const offsetClause = offset != null ? "OFFSET ?" : "";
+
+    const params = [userId, userId];
+
+    if (limit != null) params.push(limit);
+    if (offset != null) params.push(offset);
+
+    const [rows] = await execute(
+      `
+        SELECT * FROM
+
+        (
+          SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
+          FROM friends
+          INNER JOIN users ON users.id = friends.initiator_id
+          LEFT JOIN profiles ON profiles.user_id = users.id
+          WHERE recipient_id = ? AND status = 'accepted'
+
+          UNION ALL
+
+          SELECT friends.recipient_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
+          FROM friends
+          INNER JOIN users ON users.id = friends.recipient_id
+          LEFT JOIN profiles ON profiles.user_id = users.id
+          WHERE initiator_id = ? AND status = 'accepted'
+        ) AS friend_list
+
+        ${orderClause}
+        ${limitClause}
+        ${offsetClause}
+      `,
+      params,
     );
 
     return rows;

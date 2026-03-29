@@ -1,5 +1,6 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { on, off } from "/common/eventhub.js";
+import { isLoggedIn } from "/common/common.js";
 import * as net from "/common/network.js";
 import "/ui/component/form/InlineEditor.js";
 import "/ui/component/profile/CommentItem.js";
@@ -48,7 +49,7 @@ export default class CommentSection extends LazyItemList {
     const commentForm = this.querySelector("comment-form");
     if (!commentForm) return;
 
-    if (this.canComment) {
+    if (this.canComment && isLoggedIn()) {
       commentForm.hidden = false;
     } else {
       commentForm.hidden = true;
@@ -60,6 +61,7 @@ export default class CommentSection extends LazyItemList {
 
     if (this._built) return;
     this.build();
+    this.changeCommentFormVisibility();
 
     this.addEventListener("comment-post", this.onCommentPost);
     this.addEventListener("comment-update", this.onCommentUpdate);
@@ -83,29 +85,6 @@ export default class CommentSection extends LazyItemList {
   }
 
   onLogin(e) {
-    // const newId = e.detail?.newId;
-    // const oldId = e.detail?.oldId;
-
-    // {
-    //   const entries = this._byAuthor.get(oldId);
-
-    //   if (entries) {
-    //     for (const entry of entries) {
-    //       entry.element.update();
-    //     }
-    //   }
-    // }
-
-    // {
-    //   const entries = this._byAuthor.get(newId);
-
-    //   if (entries) {
-    //     for (const entry of entries) {
-    //       entry.element.update();
-    //     }
-    //   }
-    // }
-
     const commentForm = this.querySelector("comment-form");
     if (commentForm) {
       commentForm.hidden = false;
@@ -113,16 +92,6 @@ export default class CommentSection extends LazyItemList {
   }
 
   onLogout(e) {
-    // const id = e.detail?.oldId;
-
-    // const entries = this._byAuthor.get(id);
-
-    // if (!entries) return;
-
-    // for (const entry of entries) {
-    //   entry.element.update();
-    // }
-
     const commentForm = this.querySelector("comment-form");
     if (commentForm) {
       commentForm.hidden = true;
@@ -171,7 +140,7 @@ export default class CommentSection extends LazyItemList {
     const comment = e.detail?.comment;
 
     // comes from superclass
-    if (!this._container || !comment) {
+    if (!this._container || !comment || this.controls === "pagination") {
       this._byId.clear();
       this._byAuthor.clear();
 

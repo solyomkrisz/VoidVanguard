@@ -27,3 +27,7 @@
 a {
   color: #333;
 }
+
+fullscreen-overlay a {
+  color: #fff;
+}

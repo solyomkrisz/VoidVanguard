@@ -11,7 +11,16 @@ import {
 
 const router = express.Router();
 
-// router.get("/", authenticate(), modifyTargetUser(), controller.summary);
+router.get(
+  "/",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  modifyTargetUser(),
+  controller.lazySelectByTarget,
+);
+
 router.get("/:id", authenticate(), modifyTargetUser(), controller.summary);
 
 router.post(

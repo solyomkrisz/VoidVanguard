@@ -125,4 +125,8 @@ export default class BaseCustomElement extends HTMLElement {
   appendShadowChild(child) {
     return this.shadowRoot.appendChild(child);
   }
+
+  clearShadow() {
+    this.shadowRoot.textContent = "";
+  }
 }
