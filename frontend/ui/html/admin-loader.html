@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoidVanguard - Adminisztrációs felület</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      admin-loader {
+        width: 100%;
+        height: 100vh;
+        display: block;
+      }
+
+      iframe {
+        height: 100vh !important;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <admin-loader></admin-loader>
+
+    <script type="module">
+      import "/ui/component/admin/AdminLoader.js";
+    </script>
+  </body>
+</html>

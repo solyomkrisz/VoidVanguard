@@ -1,5 +1,9 @@
 import * as service from "../service/auth.js";
-import { createResponse, handleCaughtError } from "../common/common.js";
+import {
+  createResponse,
+  handleCaughtError,
+  accessTokenLifetimeMin,
+} from "../common/common.js";
 
 export async function login(request, response) {
   try {
@@ -14,6 +18,14 @@ export async function login(request, response) {
       path: "/api/tokens",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+    /** */
+    response.cookie("access_token", accessToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      maxAge: accessTokenLifetimeMin * 60 * 1000,
+    });
+    /** */
 
     response
       .status(200)

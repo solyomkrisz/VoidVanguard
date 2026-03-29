@@ -1,6 +1,10 @@
 import * as service from "../service/tokens.js";
 import * as authService from "../service/auth.js";
-import { createResponse, handleCaughtError } from "../common/common.js";
+import {
+  createResponse,
+  handleCaughtError,
+  accessTokenLifetimeMin,
+} from "../common/common.js";
 
 export async function refresh(request, response) {
   const token = request?.cookies?.refresh_token;
@@ -18,6 +22,14 @@ export async function refresh(request, response) {
   }
   try {
     const accessToken = await service.refresh(token);
+
+    /** */
+    response.cookie("access_token", accessToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      maxAge: accessTokenLifetimeMin * 60 * 1000,
+    });
+    /** */
 
     response
       .status(200)

@@ -11,7 +11,7 @@ const getReqKey = ({ method }, url) => `${method}:${url}`;
 // prettier-ignore
 export async function refreshAccessToken () {
     if (!isExpired(localStorage.getItem("access_token"))){
-        return;
+        return true;
     }
 
     tokenRefresh.isPending = true;
@@ -20,12 +20,15 @@ export async function refreshAccessToken () {
     tokenRefresh.promise = fetch("/api/tokens")
         .then(async response => {
           if (!response.ok) {
-            return;
+            return false;
           }
 
           return response.json();
         })
-        .catch(error => console.error(error))
+        .catch(error => {
+          console.error(error);
+          return false;
+        })
         .finally(() => {
             tokenRefresh.isPending = false;
             tokenRefresh.promise = null;
@@ -35,17 +38,24 @@ export async function refreshAccessToken () {
 
     if (!result) {
       console.error("Failed to refresh access token");
-      return;
+      return false;
     }
 
     if (!result?.success) {
       result?.message && console.error(result.message);
+      // return false;
     }
 
     const token = result?.result?.access_token || "";
 
+    if (!token) {
+      return false;
+    }
+
     console.log(`New access token: ${token}`);
     localStorage.setItem("access_token", token);
+
+    return true;
 }
 
 export async function send(
@@ -92,5 +102,27 @@ export async function send(
       .finally(() => pendingRequests.delete(key));
     pendingRequests.set(key, promise);
     return promise;
+  }
+}
+
+export async function importWithRefresh(url, maxRetries = 1) {
+  let attempts = 0;
+
+  while (attempts <= maxRetries) {
+    try {
+      const module = await import(url);
+      return module;
+    } catch (error) {
+      attempts++;
+
+      if (attempts > maxRetries) {
+        throw error;
+      }
+
+      const success = await refreshAccessToken();
+      if (!success) {
+        throw new Error("Token refresh failed");
+      }
+    }
   }
 }
