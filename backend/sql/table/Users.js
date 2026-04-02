@@ -78,6 +78,14 @@ class Users extends Table {
     return rows.length ? rows[0] : null;
   }
 
+  async select(id) {
+    const [rows] = await execute(
+      "SELECT id, username, role, email, gender FROM users WHERE id = ?",
+      [id],
+    );
+    return rows.length ? rows[0] : null;
+  }
+
   async update(id, updates) {
     const columns = Object.keys(updates);
 
@@ -86,7 +94,10 @@ class Users extends Table {
     const set = columns.map((i) => `${i} = ?`).join(",");
     const values = [...Object.values(updates), id];
 
-    const [result] = await execute(`UPDATE SET ${set} WHERE id = ?`, values);
+    const [result] = await execute(
+      `UPDATE users SET ${set} WHERE id = ?`,
+      values,
+    );
 
     return result.affectedRows > 0;
   }

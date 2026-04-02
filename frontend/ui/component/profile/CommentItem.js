@@ -232,6 +232,8 @@ export default class CommentItem extends HTMLElement {
 
     if (!loggedIn) {
       elements.commentReactions.hidden = true;
+    } else {
+      elements.commentReactions.hidden = false;
     }
   }
 }

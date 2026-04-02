@@ -4,6 +4,11 @@ import Password from "../common/Password.js";
 import Permission from "../common/Permission.js";
 import { v4 as uuidv4 } from "uuid";
 
+export async function getUser({ userId }) {
+  const user = await Users.select(userId);
+  return user;
+}
+
 export async function createUser({ username, email, gender, password }) {
   const id = uuidv4();
   const passwordHash = await Password.hash(password);
@@ -24,7 +29,7 @@ export async function deleteUser({ id }) {
 export async function updateUser({ userId, role, body }) {
   const user = await Users._select(userId);
 
-  if (user) {
+  if (!user) {
     throw CustomError.USER_NOT_FOUND;
   }
 

@@ -10,6 +10,8 @@
   <body>
     <h1>Adminisztrációs felület</h1>
 
+    <hr />
+
     <nav>
       <div class="searchbox">
         <input type="text" />
@@ -20,7 +22,7 @@
             onclick="onSearchboxItemClick(event)"
           >
             <input type="hidden" data-bind="user_id" bind-target="value" />
-            <img data-bind="avatar" bind-target="src" />
+            <img />
             <div data-bind="display_name"></div>
           </div>
         </template>
@@ -28,7 +30,28 @@
       <logout-button></logout-button>
     </nav>
 
-    <admin-module></admin-module>
+    <hr />
+
+    <admin-module>
+      <account-form-restorer user-id>
+        <account-form action="update" admin restore></account-form>
+      </account-form-restorer>
+
+      <br />
+      <hr />
+      <br />
+
+      <profile-form-restorer user-id>
+        <profile-form admin restore></profile-form>
+      </profile-form-restorer>
+
+      <br />
+      <hr />
+      <br />
+
+      <friend-list-full controls="pagination" page-size="6" user-id>
+      </friend-list-full>
+    </admin-module>
 
     <script>
       function onSearchboxItemClick(event) {
@@ -39,8 +62,13 @@
         )?.value;
 
         if (userId) {
-          window.history.replaceState({}, "", userId);
-          document.querySelector("full-profile").userId = userId;
+          const modules = document.querySelectorAll("admin-module");
+
+          for (const module of modules) {
+            if (module.getAttribute("target-user-id") !== userId) {
+              module.setAttribute("target-user-id", userId);
+            }
+          }
         }
       }
     </script>
@@ -51,6 +79,13 @@
       import { on, off } from "/common/eventhub.js";
       import { importWithRefresh } from "/common/network.js";
       import "/ui/component/auth/LogoutButton.js";
+      import "/ui/component/profile/ProfileForm.js";
+      import "/ui/component/profile/ProfileFormRestorer.js";
+      import "/ui/component/profile/FriendListFull.js";
+      await importWithRefresh("/protected/ui/component/account/AccountForm.js");
+      await importWithRefresh(
+        "/protected/ui/component/account/AccountFormRestorer.js",
+      );
       await importWithRefresh("/protected/ui/component/admin/AdminModule.js");
 
       on("logout", function () {

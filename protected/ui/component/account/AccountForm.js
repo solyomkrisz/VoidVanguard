@@ -1,7 +1,7 @@
 import "/ui/component/form/InputGroup.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import * as net from "/common/network.js";
-import { setFieldValue } from "/common/common";
+import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
@@ -10,16 +10,7 @@ const METHOD = {
   update: "PATCH",
 };
 
-export default class ProfileForm extends BaseCustomElement {
-  set action(value) {
-    const oldValue = this.getAttribute("action");
-
-    if (value !== oldValue) {
-      this.setAttribute("action", value);
-      this.update();
-    }
-  }
-
+export default class AccountForm extends BaseCustomElement {
   get action() {
     return this.getAttribute("action");
   }
@@ -35,7 +26,7 @@ export default class ProfileForm extends BaseCustomElement {
     this._built = false;
 
     this.onSubmit = this.onSubmit.bind(this);
-    this.restoreForm = this.restoreForm.bind(this);
+    this.restoreFrom = this.restoreFrom.bind(this);
   }
 
   connectedCallback() {
@@ -49,6 +40,19 @@ export default class ProfileForm extends BaseCustomElement {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
+    // If updating and the user didn't specify a new password, we delete the password key from the formData
+    // so that the endpoint won't throw error
+    if (this.action === "update") {
+      if (!formData.get("password")) {
+        formData.delete("password");
+      }
+
+      if (!formData.get("passwordConfirm")) {
+        formData.delete("passwordConfirm");
+      }
+    }
+
+    /** Needed to be compatible with <admin-module> */
     if (this.admin) {
       this.dispatchEvent(
         new CustomEvent("sign-request", {
@@ -65,7 +69,8 @@ export default class ProfileForm extends BaseCustomElement {
   }
 
   async sendRequest(formData) {
-    const response = await net.send("/api/profiles", {
+    console.log(formData);
+    const response = await net.send("/api/users", {
       method: METHOD[this.action] || "POST",
       body: formData,
     });
@@ -87,11 +92,13 @@ export default class ProfileForm extends BaseCustomElement {
 
     if (!success) {
       console.error(
-        `Failed to ${this.action === "update" ? "update" : "create"} profile:`,
+        `Failed to ${this.action === "update" ? "modify" : "create"} account.`,
       );
 
       return;
     }
+
+    console.log(response);
 
     this.dispatchEvent(
       new CustomEvent(this.getEventName(), {
@@ -102,44 +109,51 @@ export default class ProfileForm extends BaseCustomElement {
     );
   }
 
+  /** Needed to be compatible with <admin-module> */
   onSignSuccess(formData) {
     this.sendRequest(formData);
   }
 
+  /** Needed to be compatible with <admin-module> */
   onSignError() {
-    console.error("Unable to send signed data");
-  }
-
-  update() {
-    const elements = this._elements;
-    const button = elements.button;
-    if (button) {
-      button.textContent = this.updateButtonText();
-    }
+    console.error("Unable to send signed data.");
   }
 
   build() {
     this.setShadowInnerHTML(`
       <form>
         <input-group class="input-group">
-          <label>Profilnév</label>
-          <input type="text" name="display_name" placeholder="Név123" />
+          <label>Felhasználónév</label>
+          <input type="text" name="username" placeholder="Felhasználónév" />
         </input-group>
 
         <input-group class="input-group">
-          <label>Leírás</label>
-          <textarea name="description" placeholder="Ez a profilom..."></textarea>
+          <label>Email cím</label>
+          <input type="email" name="email" placeholder="email@email.email" />
+        </input-group>
+
+        <div>
+          <div>
+            <input type="radio" name="gender" value="0" />
+            <label>Férfi</label>
+          </div>
+          <div>
+            <input type="radio" name="gender" value="1" />
+            <label>Nő</label>
+          </div>
+        </div>
+
+        <input-group class="input-group">
+          <label>Jelszó</label>
+          <input type="password" name="password" placeholder="Jelszó" />
         </input-group>
         
         <input-group class="input-group">
-          <label>Láthatóság</label>
-          <select name="visibility">
-            <option value="public">Nyilvános</option>
-            <option value="friends-only">Csak barátok</option>
-          </select>
+          <label>Jelszó megerősítése</label>
+          <input type="password" name="passwordConfirm" placeholder="Jelszó megerősítése" />
         </input-group>
 
-        <button>Profil létrehozása</button>
+        <button>Fiókadatok módosítása</button>
       </form>
       <div id="message"></div>
     `);
@@ -147,23 +161,25 @@ export default class ProfileForm extends BaseCustomElement {
     const form = this.queryShadowSelector("form");
     form.addEventListener("submit", this.onSubmit);
 
-    this._elements.button = this.queryShadowSelector("button");
     this._elements.responseMessage = this.queryShadowSelector("#message");
 
-    this.addEventListener("restore", this.restoreForm);
+    this.addEventListener("restore", this.restoreFrom);
 
     this._built = true;
   }
 
-  restoreForm(e) {
+  restoreFrom(e) {
     const data = e.detail?.data;
     const form = this.queryShadowSelector("form");
-
-    data && (this.action = "update");
 
     for (const [name, value] of Object.entries(data)) {
       const field = form.elements.namedItem(name);
       if (!field) continue;
+
+      if (name === "gender") {
+        setFieldValue(field, String(value));
+        continue;
+      }
 
       setFieldValue(field, value);
     }
@@ -172,22 +188,22 @@ export default class ProfileForm extends BaseCustomElement {
   getEventName() {
     switch (this.action) {
       case "update":
-        return "profile-update";
+        return "account-update";
       case "create":
       default:
-        return "profile-create";
+        return "account-create";
     }
   }
 
   updateButtonText() {
     switch (this.action) {
       case "update":
-        return "Profil módosítása";
+        return "Fiókadatok módosítása";
       case "create":
       default:
-        return "Profil létrehozása";
+        return "Fiók létrehozása";
     }
   }
 }
 
-window.customElements.define("profile-form", ProfileForm);
+window.customElements.define("account-form", AccountForm);

@@ -25,7 +25,7 @@ nav {
   resize: vertical;
 }
 
-.input-group label {
+.body:not(admin-module) .input-group label {
   color: white;
 }
 

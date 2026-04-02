@@ -24,7 +24,6 @@ export default class LogoutButton extends HTMLElement {
   }
 
   onLogin(e) {
-    console.log(isLoggedIn());
     const button = this._elements.button;
     if (!button) return;
 

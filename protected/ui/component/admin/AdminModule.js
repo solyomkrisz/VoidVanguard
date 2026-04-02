@@ -1,6 +1,10 @@
 export default class AdminModule extends HTMLElement {
+  static get observedAttributes() {
+    return ["target-user-id"];
+  }
+
   get targetId() {
-    return this.getAttribute("target-id");
+    return this.getAttribute("target-user-id");
   }
 
   constructor() {
@@ -10,10 +14,20 @@ export default class AdminModule extends HTMLElement {
     this.onSignRequest = this.onSignRequest.bind(this);
   }
 
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "target-user-id" && oldValue !== newValue) {
+      const nodes = Array.from(this.querySelectorAll("[user-id]"));
+
+      for (const node of nodes) {
+        if (node.getAttribute("user-id") !== this.targetUserId) {
+          node.setAttribute("user-id", this.targetUserId);
+        }
+      }
+    }
+  }
+
   connectedCallback() {
     this.build();
-    console.log("AdminModule - connectedCallback");
-    console.log(localStorage.getItem("access_token"));
   }
 
   build() {
@@ -30,12 +44,12 @@ export default class AdminModule extends HTMLElement {
 
     if (!handler) return;
 
-    if (!this.targetId || !formData) {
+    if (!this.targetUserId || !formData) {
       handler.onSignError?.();
       return;
     }
 
-    formData.append("targetId", this.targetId);
+    formData.append("targetUserId", this.targetUserId);
 
     handler.onSignSuccess?.(formData);
   }

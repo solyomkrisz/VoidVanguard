@@ -164,3 +164,26 @@ export function isEqual(obja, objb, path = "") {
 export function isLoggedIn() {
   return Boolean(window.VoidVanguard?.user?.id);
 }
+
+export function setFieldValue(field, value) {
+  if (field instanceof RadioNodeList) {
+    Array.from(field).forEach((input) => {
+      input.checked = input.value === value;
+    });
+    return;
+  }
+
+  if (field.type === "checkbox") {
+    field.checked = Boolean(value);
+  } else if (
+    field.tagName === "SELECT" &&
+    field.multiple &&
+    Array.isArray(value)
+  ) {
+    Array.from(field.options).forEach((option) => {
+      option.selected = value.includes(option.value);
+    });
+  } else {
+    field.value = value ?? "";
+  }
+}

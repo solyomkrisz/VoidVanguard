@@ -118,9 +118,7 @@ export function modifyTargetUser(requiredRole = Role.ADMIN) {
     if (!targetUserId) {
       return next();
     }
-    request.targetUser = {
-      id: targetUserId,
-    };
+    request.targetUser.id = targetUserId;
     next();
   };
 }

@@ -131,7 +131,7 @@ export const CANNOT_FRIEND_YOURSELF = new CustomError({
   definition: {
     name: "CannotFriendYourselfError",
     code: "ER_FRIEND_YOURSELF",
-    message: "Your cannot friend yourself",
+    message: "You cannot friend yourself",
   },
 });
 
@@ -168,6 +168,15 @@ export const UNAUTHORIZED = new CustomError({
     name: "UnauthorizedError",
     code: "ER_UNAUTH",
     message: "Unauthorized",
+  },
+});
+
+export const FORBIDDEN = new CustomError({
+  statusCode: 403,
+  definition: {
+    name: "ForbiddenError",
+    code: "ER_FORBIDDEN",
+    message: "You do not have permission to perform this action",
   },
 });
 
