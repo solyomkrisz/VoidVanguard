@@ -207,7 +207,9 @@ export default class LazyItemList extends HTMLElement {
 
       this.renderContent(items, response);
 
-      this._page += 1;
+      if (this.controls !== "pagination") {
+        this._page += 1;
+      }
       this._hasNext = this.extractHasNext(response);
 
       if (this._controls === "scroll") {
@@ -233,7 +235,12 @@ export default class LazyItemList extends HTMLElement {
     this.clearPages();
   }
 
-  clearPages() {
+  clearPages(all = false) {
+    if (all) {
+      this._byPage.clear();
+      return;
+    }
+
     if (!this._cacheLimit) return;
 
     const pages = Array.from(this._byPage.keys());
@@ -300,12 +307,18 @@ export default class LazyItemList extends HTMLElement {
     return response?.result?.total;
   }
 
+  reloadCurrentPage() {
+    this.clearPages(true);
+    this._container.textContent = "";
+    this.loadNextPage();
+  }
+
   reset() {
     this._page = 1;
     this._loading = false;
     this._hasNext = true;
     this._lastResponse = null;
-    this._byPage.clear();
+    this.clearPages(true);
 
     this._container.textContent = "";
   }

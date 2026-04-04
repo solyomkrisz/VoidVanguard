@@ -179,6 +179,10 @@ export default class CommentSection extends LazyItemList {
 
     e.target.remove();
 
+    if (this.controls === "pagination") {
+      this.reloadCurrentPage();
+    }
+
     const entry = this._byId.get(commentId);
     if (!entry) return;
 
