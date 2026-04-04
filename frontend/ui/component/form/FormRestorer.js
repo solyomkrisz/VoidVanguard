@@ -104,7 +104,7 @@ export default class FormRestorer extends HTMLElement {
   }
 
   restore(mapped) {
-    if ((!this._target) instanceof HTMLFormElement) {
+    if (this._target instanceof HTMLFormElement) {
       this.restoreForm(mapped);
       return;
     }
@@ -123,8 +123,22 @@ export default class FormRestorer extends HTMLElement {
   async restoreCustomElement(mapped) {
     await window.customElements.whenDefined(this._target.tagName.toLowerCase());
 
+    /**
+     * This class is usually extended and may target another custom element.
+     * If the target of the dispatched restore event is a custom element,
+     * the restoration is deferred to that element.
+     * In that case you must import the target's class in the same module as the subclass
+     * to ensure the event dispatch works correctly, and more importantly, so that the target custom element instances
+     * are upgraded and have the required handlers.
+     *
+     * In JS modules, top-level imports block execution until resolved.
+     * Custom elements are upgraded synchronously when defined, so the target
+     * must already be defined by the time this logic runs.
+     * Using CustomElementRegistry.prototype.whenDefined here may not be necessary if the target
+     * is imported at the top.
+     */
     this._target.dispatchEvent(
-      new CustomEvent("form-restore", {
+      new CustomEvent("restore", {
         detail: { data: mapped },
         bubbles: false,
       }),

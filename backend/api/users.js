@@ -5,10 +5,10 @@ import * as validator from "../validator/user.js";
 import {
   createResponse,
   authenticate,
+  authorize,
   modifyTargetUser,
   handleValidation,
   upload,
-  authorize,
 } from "../common/common.js";
 import Role from "../common/Role.js";
 
@@ -19,7 +19,6 @@ router.get(
   authenticate(),
   authorize(Role.ADMIN),
   validator.GET,
-  handleValidation,
   controller.get,
 );
 

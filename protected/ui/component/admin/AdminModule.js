@@ -3,7 +3,7 @@ export default class AdminModule extends HTMLElement {
     return ["target-user-id"];
   }
 
-  get targetId() {
+  get targetUserId() {
     return this.getAttribute("target-user-id");
   }
 

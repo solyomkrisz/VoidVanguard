@@ -2,6 +2,7 @@ import FormRestorer from "/ui/component/form/FormRestorer.js";
 import "/ui/component/profile/ProfileForm.js";
 
 export default class ProfileFormRestorer extends FormRestorer {
+  // key in object from server: form input name
   static mapping = {
     display_name: "display_name",
     description: "description",

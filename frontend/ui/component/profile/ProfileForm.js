@@ -1,7 +1,7 @@
 import "/ui/component/form/InputGroup.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import * as net from "/common/network.js";
-import { setFieldValue } from "/common/common";
+import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
@@ -35,7 +35,7 @@ export default class ProfileForm extends BaseCustomElement {
     this._built = false;
 
     this.onSubmit = this.onSubmit.bind(this);
-    this.restoreForm = this.restoreForm.bind(this);
+    this.restoreFrom = this.restoreFrom.bind(this);
   }
 
   connectedCallback() {
@@ -49,6 +49,7 @@ export default class ProfileForm extends BaseCustomElement {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
+    /** Needed to be compatible with <admin-module> */
     if (this.admin) {
       this.dispatchEvent(
         new CustomEvent("sign-request", {
@@ -87,7 +88,7 @@ export default class ProfileForm extends BaseCustomElement {
 
     if (!success) {
       console.error(
-        `Failed to ${this.action === "update" ? "update" : "create"} profile:`,
+        `Failed to ${this.action === "update" ? "modify" : "create"} profile.`,
       );
 
       return;
@@ -102,10 +103,12 @@ export default class ProfileForm extends BaseCustomElement {
     );
   }
 
+  /** Needed to be compatible with <admin-module> */
   onSignSuccess(formData) {
     this.sendRequest(formData);
   }
 
+  /** Needed to be compatible with <admin-module> */
   onSignError() {
     console.error("Unable to send signed data");
   }
@@ -150,12 +153,12 @@ export default class ProfileForm extends BaseCustomElement {
     this._elements.button = this.queryShadowSelector("button");
     this._elements.responseMessage = this.queryShadowSelector("#message");
 
-    this.addEventListener("restore", this.restoreForm);
+    this.addEventListener("restore", this.restoreFrom);
 
     this._built = true;
   }
 
-  restoreForm(e) {
+  restoreFrom(e) {
     const data = e.detail?.data;
     const form = this.queryShadowSelector("form");
 
