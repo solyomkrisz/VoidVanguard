@@ -87,11 +87,11 @@ class Blocks extends Table {
     const query = `
       SELECT
         blocks.blocked_id AS user_id,
-        COALESCE(profiles.display_name, users.username) AS name,
+        COALESCE(profiles.display_name, users.username) AS name
       FROM blocks
       INNER JOIN users ON users.id = blocks.blocked_id
       LEFT JOIN profiles ON profiles.user_id = users.id
-      WHERE blocks.blocker_id = ?
+      WHERE blocker_id = ?
       ${limitClause}
       ${offsetClause}
     `;

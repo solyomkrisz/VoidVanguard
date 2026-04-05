@@ -127,7 +127,7 @@ class Friends extends Table {
     return rows;
   }
 
-  async count(userId, { status = null, direction = null } = {}) {
+  async count(userId, { status = "accepted", direction = null }) {
     let query = "SELECT COUNT(*) AS count FROM friends";
     const params = [];
     let condition = "";
@@ -177,8 +177,7 @@ class Friends extends Table {
     let params = [];
 
     const incomingQuery = `
-      SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username)
-      AS name
+      SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
       FROM friends
       INNER JOIN users ON users.id = friends.initiator_id
       LEFT JOIN profiles ON profiles.user_id = users.id
