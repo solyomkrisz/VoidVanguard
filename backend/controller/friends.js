@@ -8,11 +8,16 @@ import {
 
 export async function lazySelectByTarget(request, response) {
   try {
+    const statusFilter = request?.query?.status;
+    const directionFilter = request?.query?.direction;
+
     const result = await service.lazySelectByTarget({
       requesterId: request?.targetUser?.id ?? null,
       targetId: request.query.targetId,
-      page: request.query.page,
-      limit: request.query.limit,
+      page: Number(request.query?.page || 1),
+      limit: Number(request.query?.limit || 20),
+      status: statusFilter,
+      direction: directionFilter,
     });
 
     response

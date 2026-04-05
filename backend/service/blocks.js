@@ -2,6 +2,31 @@ import * as CustomError from "../common/CustomError.js";
 import Blocks from "../sql/table/Blocks.js";
 import Friends from "../sql/table/Friends.js";
 
+export async function lazySelectByTarget({ targetId, page = 1, limit = 20 }) {
+  const offset = (page - 1) * limit;
+
+  console.log("TARGET ID: ", targetId);
+
+  let blocks, total;
+
+  try {
+    blocks = await Blocks.lazySelectByTarget(targetId, { offset, limit });
+    total = await Blocks.count(targetId);
+  } catch (error) {
+    console.log(error);
+    blocks = [];
+    total = 0;
+  }
+
+  return {
+    blocks,
+    page,
+    limit,
+    total,
+    hasNext: offset + blocks.length < total,
+  };
+}
+
 export async function getSummary({ userId, requesterId, include = [] }) {
   const result = {};
 

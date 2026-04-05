@@ -134,6 +134,14 @@ class Comments extends Table {
     );
     return result;
   }
+
+  async adminDelete(commentId) {
+    const [result] = await execute(
+      "DELETE entities FROM entities INNER JOIN comments ON comments.id = entities.id WHERE comments.id = ?",
+      [commentId],
+    );
+    return result;
+  }
 }
 
 export default new Comments();

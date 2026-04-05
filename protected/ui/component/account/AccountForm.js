@@ -110,8 +110,8 @@ export default class AccountForm extends BaseCustomElement {
   }
 
   /** Needed to be compatible with <admin-module> */
-  onSignSuccess(formData) {
-    this.sendRequest(formData);
+  onSignSuccess(data) {
+    this.sendRequest(data.formData);
   }
 
   /** Needed to be compatible with <admin-module> */

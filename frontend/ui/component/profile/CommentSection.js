@@ -45,6 +45,30 @@ export default class CommentSection extends LazyItemList {
     }
   }
 
+  removeFromMaps(comment) {
+    const commentId = comment?.id;
+    const authorId = comment?.author_id;
+
+    if (!commentId || !authorId) return;
+
+    const entry = this._byId.get(commentId);
+    if (!entry) return;
+
+    const authorSet = this._byAuthor.get(authorId);
+    if (authorSet) {
+      authorSet.delete(entry);
+      if (authorSet.size === 0) {
+        this._byAuthor.delete(authorId);
+      }
+    }
+
+    this._byId.delete(commentId);
+  }
+
+  onNodeDeletion(node) {
+    this.removeFromMaps(node.comment);
+  }
+
   changeCommentFormVisibility() {
     const commentForm = this.querySelector("comment-form");
     if (!commentForm) return;
@@ -85,17 +109,11 @@ export default class CommentSection extends LazyItemList {
   }
 
   onLogin(e) {
-    const commentForm = this.querySelector("comment-form");
-    if (commentForm) {
-      commentForm.hidden = false;
-    }
+    this.changeCommentFormVisibility();
   }
 
   onLogout(e) {
-    const commentForm = this.querySelector("comment-form");
-    if (commentForm) {
-      commentForm.hidden = true;
-    }
+    this.changeCommentFormVisibility();
   }
 
   async onCommentReaction(e) {
@@ -156,10 +174,12 @@ export default class CommentSection extends LazyItemList {
   async onCommentDelete(e) {
     e.stopPropagation();
 
-    const commentId = e.detail?.comment?.id;
+    const comment = e.detail?.comment;
+
+    const commentId = comment?.id;
     if (!commentId) return;
 
-    const authorId = e.detail?.comment?.author_id;
+    const authorId = comment?.author_id;
     if (!authorId) return;
 
     const formData = new FormData();
@@ -183,18 +203,20 @@ export default class CommentSection extends LazyItemList {
       this.reloadCurrentPage();
     }
 
-    const entry = this._byId.get(commentId);
-    if (!entry) return;
+    // const entry = this._byId.get(commentId);
+    // if (!entry) return;
 
-    const authorSet = this._byAuthor.get(authorId);
-    if (authorSet) {
-      authorSet.delete(entry);
-      if (authorSet.size === 0) {
-        this._byAuthor.delete(authorId);
-      }
-    }
+    // const authorSet = this._byAuthor.get(authorId);
+    // if (authorSet) {
+    //   authorSet.delete(entry);
+    //   if (authorSet.size === 0) {
+    //     this._byAuthor.delete(authorId);
+    //   }
+    // }
 
-    this._byId.delete(commentId);
+    // this._byId.delete(commentId);
+
+    this.removeFromMaps(comment);
   }
 
   async onCommentUpdate(e) {

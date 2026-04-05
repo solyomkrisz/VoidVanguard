@@ -127,7 +127,43 @@ class Friends extends Table {
     return rows;
   }
 
-  async list(userId, { limit = null, offset = null, orderBy = null } = {}) {
+  async count(userId, { status = null, direction = null } = {}) {
+    let query = "SELECT COUNT(*) AS count FROM friends";
+    const params = [];
+    let condition = "";
+
+    direction = direction ?? (status === "accepted" ? "both" : "outgoing");
+
+    if (direction === "both") {
+      condition = "( (initiator_id = ? OR recipient_id = ?) AND status = ? )";
+      params.push(userId, userId, status);
+    } else if (direction === "incoming") {
+      condition = "recipient_id = ? AND status = ?";
+      params.push(userId, status);
+    } else if (direction === "outgoing") {
+      condition = "initiator_id = ? AND status = ?";
+      params.push(userId, status);
+    }
+
+    if (condition.length) {
+      query += " WHERE " + condition;
+    }
+
+    const [[{ count }]] = await execute(query, params);
+
+    return count;
+  }
+
+  async list(
+    userId,
+    {
+      limit = null,
+      offset = null,
+      orderBy = null,
+      status = "accepted",
+      direction = null,
+    } = {},
+  ) {
     const ORDER_BY = {
       name: "ORDER BY name ASC",
       random: "ORDER BY RAND()",
@@ -137,37 +173,47 @@ class Friends extends Table {
     const limitClause = limit != null ? "LIMIT ?" : "";
     const offsetClause = offset != null ? "OFFSET ?" : "";
 
-    const params = [userId, userId];
+    let query = "SELECT * FROM (";
+    let params = [];
+
+    const incomingQuery = `
+      SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username)
+      AS name
+      FROM friends
+      INNER JOIN users ON users.id = friends.initiator_id
+      LEFT JOIN profiles ON profiles.user_id = users.id
+      WHERE recipient_id = ? AND status = ?
+    `;
+
+    const outgoingQuery = `
+      SELECT friends.recipient_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
+      FROM friends
+      INNER JOIN users ON users.id = friends.recipient_id
+      LEFT JOIN profiles ON profiles.user_id = users.id
+      WHERE initiator_id = ? AND status = ?
+    `;
+
+    if (!direction) {
+      direction = status === "accepted" ? "both" : "outgoing";
+    }
+
+    if (direction === "both") {
+      query += `${incomingQuery} UNION ALL ${outgoingQuery}`;
+      params = [userId, status, userId, status];
+    } else if (direction === "incoming") {
+      query += incomingQuery;
+      params = [userId, status];
+    } else if (direction === "outgoing") {
+      query += outgoingQuery;
+      params = [userId, status];
+    }
+
+    query += `) AS friend_list ${orderClause} ${limitClause} ${offsetClause}`;
 
     if (limit != null) params.push(limit);
     if (offset != null) params.push(offset);
 
-    const [rows] = await execute(
-      `
-        SELECT * FROM
-
-        (
-          SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
-          FROM friends
-          INNER JOIN users ON users.id = friends.initiator_id
-          LEFT JOIN profiles ON profiles.user_id = users.id
-          WHERE recipient_id = ? AND status = 'accepted'
-
-          UNION ALL
-
-          SELECT friends.recipient_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
-          FROM friends
-          INNER JOIN users ON users.id = friends.recipient_id
-          LEFT JOIN profiles ON profiles.user_id = users.id
-          WHERE initiator_id = ? AND status = 'accepted'
-        ) AS friend_list
-
-        ${orderClause}
-        ${limitClause}
-        ${offsetClause}
-      `,
-      params,
-    );
+    const [rows] = await execute(query, params);
 
     return rows;
   }

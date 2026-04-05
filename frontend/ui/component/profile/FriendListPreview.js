@@ -1,4 +1,14 @@
+import * as net from "/common/network.js";
+
 export default class FriendListPreview extends HTMLElement {
+  static get observedAttributes() {
+    return ["user-id"];
+  }
+
+  get userId() {
+    return this.getAttribute("user-id");
+  }
+
   set data(value) {
     this._data = value;
     this.renderContent();
@@ -16,6 +26,12 @@ export default class FriendListPreview extends HTMLElement {
     this._container = null;
   }
 
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "user-id" && oldValue !== newValue) {
+      this.update();
+    }
+  }
+
   connectedCallback() {
     if (this._built) return;
     this.build();
@@ -24,6 +40,29 @@ export default class FriendListPreview extends HTMLElement {
   build() {
     this._container = this.appendChild(document.createElement("div"));
     this._built = true;
+  }
+
+  refresh() {
+    this.update();
+  }
+
+  async update() {
+    const response = await net.send(
+      `/api/friends/${this.userId}?include=preview`,
+    );
+
+    const { success, result, message } = response;
+
+    if (!success || !result) {
+      console.error(message);
+      return;
+    }
+
+    const data = result.preview;
+
+    if (!data) return;
+
+    this.data = data;
   }
 
   renderItem(item) {

@@ -19,6 +19,7 @@ export default class BlockActionButton extends ActionButton {
 
     switch (this.status) {
       case "you-blocked":
+      case "both-blocked":
         button.textContent = "Tiltás feloldása";
         break;
       default:
@@ -30,6 +31,7 @@ export default class BlockActionButton extends ActionButton {
   getBehaviour() {
     switch (this.status) {
       case "you-blocked":
+      case "both-blocked":
         return "DELETE";
       case "got-blocked":
       case "not-blocked":

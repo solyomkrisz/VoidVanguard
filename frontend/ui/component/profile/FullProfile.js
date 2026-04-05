@@ -42,6 +42,7 @@ export default class FullProfile extends HTMLElement {
 
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
+    this.onFriendListChange = this.onFriendListChange.bind(this);
     this.onFriendshipStatusChange = this.onFriendshipStatusChange.bind(this);
     this.onBlockStatusChange = this.onBlockStatusChange.bind(this);
     this.onProfileCreate = this.onProfileCreate.bind(this);
@@ -51,16 +52,27 @@ export default class FullProfile extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "user-id" && oldValue !== newValue) {
-      requestAnimationFrame(() => this.update());
+      requestAnimationFrame(() =>
+        this.update({ origin: "attributeChangedCallback" }),
+      );
     }
   }
 
   onLogin(e) {
-    this.updateContent();
+    this.update({ origin: "onLogin" });
   }
 
   onLogout(e) {
-    this.updateContent();
+    this.update({ origin: "onLogout" });
+  }
+
+  onFriendListChange(e) {
+    if (this.userId === e?.detail?.userId) {
+      const { friendList } = this._elements;
+      if (!friendList) return;
+
+      friendList.refresh?.();
+    }
   }
 
   async onFriendshipStatusChange(e) {
@@ -77,7 +89,7 @@ export default class FullProfile extends HTMLElement {
     const profileData = e.detail?.result;
     if (!profileData) return;
 
-    this.updateContent(profileData);
+    this.updateContent({ origin: "onProfileCreate" }, profileData);
     this._elements.profileFormOverlay?.remove();
   }
 
@@ -92,7 +104,7 @@ export default class FullProfile extends HTMLElement {
       body: formData,
     });
 
-    const { success, result, message } = response;
+    const { success, message } = response;
 
     if (!success) {
       console.error("Error during profile update: " + message);
@@ -139,6 +151,7 @@ export default class FullProfile extends HTMLElement {
     on("login", this.onLogin);
     on("logout", this.onLogout);
 
+    this.addEventListener("friend-list-change", this.onFriendListChange);
     this.addEventListener(
       "friendship-status-change",
       this.onFriendshipStatusChange,
@@ -152,6 +165,7 @@ export default class FullProfile extends HTMLElement {
     off("login", this.onLogin);
     off("logout", this.onLogout);
 
+    this.removeEventListener("friend-list-change", this.onFriendListChange);
     this.removeEventListener(
       "friendship-status-change",
       this.onFriendshipStatusChange,
@@ -333,8 +347,6 @@ export default class FullProfile extends HTMLElement {
       this.build();
     }
 
-    const elements = this._elements;
-
     const currentUserId = this.userId;
 
     const response = await net.send("/api/profiles/" + currentUserId);
@@ -350,10 +362,10 @@ export default class FullProfile extends HTMLElement {
       return;
     }
 
-    this.updateContent(response.result);
+    this.updateContent(meta, response.result);
   }
 
-  updateContent(data = null) {
+  updateContent(meta, data = null) {
     if (!this._built) this.build();
 
     if (data) {
@@ -377,14 +389,14 @@ export default class FullProfile extends HTMLElement {
 
     if (friendshipActionButton) {
       elements.friendshipActionButton.status = currData.friendship_status;
+      this.updateFriendshipActionButtonVisibility();
     }
 
     if (blockActionButton) {
       elements.blockActionButton.status = currData.block_status;
-
-      this.updateCommentSection();
-      this.updateFriendshipActionButtonVisibility();
     }
+
+    this.updateCommentSection();
 
     if (!isEqual(currData, this._previousProfileData, "user_id")) {
       if (blockActionButton) {
@@ -395,11 +407,12 @@ export default class FullProfile extends HTMLElement {
         elements.friendshipActionButton.setAttribute("user-id", this.userId);
       }
 
+      if (elements.friendList) {
+        elements.friendList.setAttribute("user-id", this.userId);
+      }
+
       if (elements.friendListFull) {
-        elements.friendListFull.setAttribute(
-          "src",
-          `/api/friends?targetId=` + this.userId,
-        );
+        elements.friendListFull.setAttribute("user-id", this.userId);
       }
 
       elements.commentForm.setAttribute("target-id", this.userId);
@@ -407,6 +420,14 @@ export default class FullProfile extends HTMLElement {
         "src",
         `/api/comments?targetId=${this.userId}`,
       );
+    }
+
+    if (
+      meta?.origin === "friendshipStatusChangeHandler" ||
+      meta?.origin === "blockStatusChangeHandler"
+    ) {
+      elements.friendListFull.refresh?.(); // if someone friend the user, it must show up on that list.
+      elements.friendList.refresh?.();
     }
 
     if (!isEqual(currData, this._previousProfileData, "avatar")) {
@@ -422,12 +443,14 @@ export default class FullProfile extends HTMLElement {
     }
 
     // friendlist
-    if (currData.friend_list_preview) {
-      elements.friendList.data = currData.friend_list_preview;
-    }
+    // if (currData.friend_list_preview) {
+    //   elements.friendList.data = currData.friend_list_preview;
+    // }
 
-    elements.profileContainer.hidden = false;
-    elements.errorMessage.hidden = true;
+    if (Object.keys(currData).length > 0) {
+      elements.profileContainer.hidden = false;
+      elements.errorMessage.hidden = true;
+    }
   }
 
   updateCommentSection() {
@@ -436,7 +459,11 @@ export default class FullProfile extends HTMLElement {
 
     const blockStatus = this._profileData.block_status;
 
-    if (blockStatus === "you-blocked" || blockStatus === "got-blocked") {
+    if (
+      blockStatus === "you-blocked" ||
+      blockStatus === "got-blocked" ||
+      blockStatus === "both-blocked"
+    ) {
       commentSection.removeAttribute("can-comment");
     } else {
       commentSection.setAttribute("can-comment", "");
@@ -449,11 +476,13 @@ export default class FullProfile extends HTMLElement {
 
     const wasBlocked =
       this._previousProfileData?.block_status === "you-blocked" ||
-      this._previousProfileData?.block_status === "got-blocked";
+      this._previousProfileData?.block_status === "got-blocked" ||
+      this._previousProfileData?.block_status === "both-blocked";
 
     const isBlocked =
       this._profileData?.block_status === "you-blocked" ||
-      this._profileData?.block_status === "got-blocked";
+      this._profileData?.block_status === "got-blocked" ||
+      this._profileData?.block_status === "both-blocked";
 
     if (!isBlocked) {
       if (wasBlocked) {

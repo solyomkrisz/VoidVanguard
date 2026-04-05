@@ -2,12 +2,19 @@ import * as CustomError from "../common/CustomError.js";
 import Comments from "../sql/table/Comments.js";
 import { v4 as uuidv4 } from "uuid";
 import * as block from "./blocks.js";
+import Role from "../common/Role.js";
 
-export async function deleteComment({ userId, commentId }) {
+export async function deleteComment({ userId, role, commentId }) {
+  if (role >= Role.ADMIN) {
+    if ((await Comments.adminDelete(commentId)).affectedRows === 0) {
+      throw CustomError.TEST;
+    }
+    return null;
+  }
+
   if ((await Comments.delete(userId, commentId)).affectedRows === 0) {
     throw CustomError.TEST;
   }
-
   return null;
 }
 

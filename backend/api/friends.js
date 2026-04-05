@@ -26,8 +26,8 @@ router.get("/:id", authenticate(), modifyTargetUser(), controller.summary);
 router.post(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.POST),
   handleValidation,
   controller.sendFriendRequest,
@@ -36,8 +36,8 @@ router.post(
 router.patch(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.POST),
   handleValidation,
   controller.acceptFriendRequest,
@@ -46,8 +46,8 @@ router.patch(
 router.delete(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   controller.removeFriend,
 );
 

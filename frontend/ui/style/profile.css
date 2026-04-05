@@ -54,14 +54,3 @@ comment-item textarea {
 comment-reactions .active {
   background-color: steelblue;
 }
-
-.friend-list-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.friend-list-item img {
-  width: 32px;
-  height: 32px;
-}

@@ -8,7 +8,17 @@ export async function lazySelectByTarget({
   page = 1,
   limit = 20,
   requesterId = null,
+  status = "accepted",
+  direction = null,
 }) {
+  if (!["accepted", "pending"].includes(status)) {
+    throw CustomError.INVALID_REQUEST;
+  }
+
+  if (!["both", "incoming", "outgoing", null].includes(direction)) {
+    throw CustomError.INVALID_REQUEST;
+  }
+
   const offset = (page - 1) * limit;
 
   let friends, total;
@@ -19,8 +29,13 @@ export async function lazySelectByTarget({
       recipientId: targetId,
     });
 
-    friends = await Friends.list(targetId, { limit, offset });
-    total = await Friends.countAll(targetId);
+    friends = await Friends.list(targetId, {
+      limit,
+      offset,
+      status,
+      direction,
+    });
+    total = await Friends.count(targetId, { status, direction });
   } catch {
     friends = [];
     total = 0;
@@ -48,6 +63,10 @@ export async function getSummary({ userId, requesterId, include = [] }) {
 
   if (include.includes("pendingCount") && userId === requesterId) {
     result.pendingCount = await Friends.countAllPending(userId);
+  }
+
+  if (include.includes("preview")) {
+    result.preview = await list({ userId, limit: 6 });
   }
 
   if (include.includes("status")) {

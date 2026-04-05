@@ -104,8 +104,8 @@ export default class ProfileForm extends BaseCustomElement {
   }
 
   /** Needed to be compatible with <admin-module> */
-  onSignSuccess(formData) {
-    this.sendRequest(formData);
+  onSignSuccess(data) {
+    this.sendRequest(data.formData);
   }
 
   /** Needed to be compatible with <admin-module> */

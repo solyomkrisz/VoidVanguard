@@ -71,6 +71,39 @@ class Blocks extends Table {
     );
     return rows;
   }
+
+  async count(blockerId) {
+    const [[{ count }]] = await execute(
+      "SELECT COUNT(*) AS count FROM blocks WHERE blocker_id = ?",
+      [blockerId],
+    );
+    return count;
+  }
+
+  async lazySelectByTarget(blockerId, { limit = null, offset = null } = {}) {
+    const limitClause = limit != null ? "LIMIT ?" : "";
+    const offsetClause = offset != null ? "OFFSET ?" : "";
+
+    const query = `
+      SELECT
+        blocks.blocked_id AS user_id,
+        COALESCE(profiles.display_name, users.username) AS name,
+      FROM blocks
+      INNER JOIN users ON users.id = blocks.blocked_id
+      LEFT JOIN profiles ON profiles.user_id = users.id
+      WHERE blocks.blocker_id = ?
+      ${limitClause}
+      ${offsetClause}
+    `;
+
+    const params = [blockerId];
+
+    if (limit != null) params.push(limit);
+    if (offset != null) params.push(offset);
+
+    const [rows] = await execute(query, params);
+    return rows;
+  }
 }
 
 export default new Blocks();

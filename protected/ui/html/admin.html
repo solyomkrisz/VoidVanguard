@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VoidVanguard - Adminisztrációs felület</title>
     <link rel="stylesheet" href="/ui/style/global.css" />
+    <link rel="stylesheet" href="/ui/style/friend.css" />
     <link rel="stylesheet" href="/ui/style/searchbox.css" />
   </head>
   <body>
@@ -31,6 +32,7 @@
     </nav>
 
     <hr />
+    <h1>Fiók kezelése</h1>
 
     <admin-module>
       <account-form-restorer user-id>
@@ -39,18 +41,52 @@
 
       <br />
       <hr />
-      <br />
+      <h1>Profil kezelése</h1>
 
       <profile-form-restorer user-id>
         <profile-form admin restore></profile-form>
       </profile-form-restorer>
 
+      <div class="friend-manager">
+        <div>
+          <h1>Barátok kezelése</h1>
+          <friend-list-full controls="pagination" page-size="6" user-id admin>
+          </friend-list-full>
+        </div>
+
+        <div>
+          <h1>Beérkező barátkérelmek kezelése</h1>
+          <friend-list-full
+            controls="pagination"
+            page-size="6"
+            filter="status=pending&direction=incoming"
+            user-id
+            admin
+          >
+          </friend-list-full>
+        </div>
+
+        <div>
+          <h1>Kimenő barátkérelmek kezelése</h1>
+          <friend-list-full
+            controls="pagination"
+            page-size="6"
+            filter="status=pending&direction=outgoing"
+            user-id
+            admin
+          ></friend-list-full>
+        </div>
+      </div>
+
       <br />
       <hr />
-      <br />
+      <h1>Letiltott felhasználók kezelése</h1>
 
-      <friend-list-full controls="pagination" page-size="6" user-id>
-      </friend-list-full>
+      <blocked-user-list
+        controls="pagination"
+        page-size="6"
+        user-id
+      ></blocked-user-list>
     </admin-module>
 
     <script>
@@ -79,6 +115,7 @@
       import { on, off } from "/common/eventhub.js";
       import { importWithRefresh } from "/common/network.js";
       import "/ui/component/auth/LogoutButton.js";
+      import "/ui/component/account/BlockedUserList.js";
       import "/ui/component/profile/ProfileForm.js";
       import "/ui/component/profile/ProfileFormRestorer.js";
       import "/ui/component/profile/FriendListFull.js";

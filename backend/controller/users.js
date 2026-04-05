@@ -54,7 +54,7 @@ export async function update(request, response) {
 
     await service.updateUser({
       userId: request.targetUser.id,
-      role: request.targetUser.role,
+      role: request.user.role,
       body: request.body,
     });
 

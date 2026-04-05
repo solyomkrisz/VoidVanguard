@@ -33,7 +33,6 @@ export default class CommentItem extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this._built) return;
     this.build();
 
     on("login", this.onLogin);
@@ -186,6 +185,8 @@ export default class CommentItem extends HTMLElement {
   }
 
   build() {
+    if (this._built) return;
+
     this.update(true);
 
     this.addEventListener("inline-edit", this.onInlineEdit);

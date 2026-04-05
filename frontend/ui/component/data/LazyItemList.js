@@ -65,7 +65,11 @@ export default class LazyItemList extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this._built) return;
+    if (this._built) {
+      this._scrollObserver.observe?.(this._sentinel);
+      return;
+    }
+
     this.build();
   }
 
@@ -76,8 +80,10 @@ export default class LazyItemList extends HTMLElement {
   build() {
     this._container = this.appendChild(document.createElement("div"));
     this._container.setAttribute("aria-live", "polite");
+    this._container.classList.add("item-container");
 
     this._controllerContainer = this.appendChild(document.createElement("div"));
+    this._controllerContainer.classList.add("controller-container");
 
     if (this.controls === "scroll") {
       const sentinel = document.createElement("div");
@@ -252,7 +258,10 @@ export default class LazyItemList extends HTMLElement {
     for (const page of pages) {
       if (page < minPage || page > maxPage) {
         const nodes = this._byPage.get(page);
-        nodes?.forEach((node) => node.remove());
+        nodes?.forEach((node) => {
+          this.onNodeDeletion(node);
+          node.remove();
+        });
         this._byPage.delete(page);
       }
     }
@@ -273,6 +282,11 @@ export default class LazyItemList extends HTMLElement {
         this._container.appendChild(node);
       }
     }
+  }
+
+  /** Override in subclass */
+  onNodeDeletion(node) {
+    return node;
   }
 
   /** Override in subclass */
@@ -314,6 +328,8 @@ export default class LazyItemList extends HTMLElement {
   }
 
   reset() {
+    if (!this._built) return;
+
     this._page = 1;
     this._loading = false;
     this._hasNext = true;

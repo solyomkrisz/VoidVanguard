@@ -51,7 +51,7 @@ export default class AdminModule extends HTMLElement {
 
     formData.append("targetUserId", this.targetUserId);
 
-    handler.onSignSuccess?.(formData);
+    handler.onSignSuccess?.(e.detail);
   }
 }
 

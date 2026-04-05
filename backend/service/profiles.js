@@ -106,7 +106,7 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
     recipientId: userId,
   });
 
-  const friendListPreview = await friend.list({ userId, limit: 6 });
+  // const friendListPreview = await friend.list({ userId, limit: 6 });
 
   if (
     userId === requesterId ||
@@ -121,7 +121,7 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
       description,
       friendship_status: friendshipStatus,
       block_status: blockStatus,
-      friend_list_preview: friendListPreview,
+      // friend_list_preview: friendListPreview,
     };
   }
 
@@ -131,7 +131,7 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
     display_name,
     description: "",
     friendship_status: friendshipStatus,
-    is_blocked: blockStatus,
-    friend_list_preview: friendListPreview,
+    block_status: blockStatus,
+    // friend_list_preview: friendListPreview,
   };
 }

@@ -64,7 +64,7 @@ export async function create(request, response) {
   try {
     const result = await service.createProfile({
       userId: request.targetUser.id,
-      role: request.targetUser.role,
+      role: request.user.role,
       body: request.body,
     });
 
@@ -88,7 +88,7 @@ export async function update(request, response) {
 
     await service.updateProfile({
       userId: request.targetUser.id,
-      role: request.targetUser.role,
+      role: request.user.role,
       body: request.body,
     });
 

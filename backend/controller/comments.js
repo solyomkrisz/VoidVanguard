@@ -6,8 +6,8 @@ export async function lazySelectComments(request, response) {
     const result = await service.lazySelectByTarget({
       requesterId: request?.targetUser?.id ?? null,
       targetId: request.query.targetId,
-      page: request.query.page,
-      limit: request.query.limit,
+      page: Number(request.query?.page || 1),
+      limit: Number(request.query?.limit || 20),
     });
 
     response
@@ -78,6 +78,7 @@ export async function deleteComment(request, response) {
   try {
     await service.deleteComment({
       userId: request.targetUser.id,
+      role: request.user.role,
       commentId: request.body.commentId,
     });
 

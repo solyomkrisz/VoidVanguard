@@ -5,21 +5,16 @@ import { upload, authenticate, modifyTargetUser } from "../common/common.js";
 
 const router = express.Router();
 
-// router.get(
-//   "/",
-//   authenticate(),
-//   modifyTargetUser(),
-//   validator.POST,
-//   controller.getBlockedUsers,
-// );
+router.get("/", authenticate(), validator.GET, controller.lazySelectByTarget);
 
-router.get("/:id", authenticate(), modifyTargetUser(), controller.summary);
+// status check
+router.get("/:id", authenticate(), controller.summary);
 
 router.post(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   validator.POST,
   controller.blockUser,
 );
@@ -27,8 +22,8 @@ router.post(
 router.delete(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   validator.POST,
   controller.unblockUser,
 );
