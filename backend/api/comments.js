@@ -17,6 +17,7 @@ router.get(
     onValidAccessToken: (_, _1, next) => next(),
     onInvalidAccessToken: (_, _1, next) => next(),
   }),
+  modifyTargetUser(),
   checkSchema(validator.GET),
   handleValidation,
   controller.lazySelectComments,
@@ -28,14 +29,15 @@ router.get(
     onValidAccessToken: (_, _1, next) => next(),
     onInvalidAccessToken: (_, _1, next) => next(),
   }),
+  modifyTargetUser(),
   controller.getComment,
 );
 
 router.post(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.POST),
   handleValidation,
   controller.createComment,
@@ -44,8 +46,8 @@ router.post(
 router.patch(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.PATCH),
   handleValidation,
   controller.updateComment,

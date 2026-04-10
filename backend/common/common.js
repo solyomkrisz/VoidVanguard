@@ -3,6 +3,7 @@ import { validate, version } from "uuid";
 import { validationResult } from "express-validator";
 import * as CustomError from "./CustomError.js";
 import Role from "./Role.js";
+import { execute } from "../sql/database.js";
 
 import multer from "multer";
 import path from "path";
@@ -114,7 +115,8 @@ export function modifyTargetUser(requiredRole = Role.ADMIN) {
     if (request?.user?.role < requiredRole) {
       return next();
     }
-    const targetUserId = request?.body?.targetUserId;
+    const targetUserId =
+      request?.body?.targetUserId || request?.query?.targetUserId;
     if (!targetUserId) {
       return next();
     }
@@ -165,3 +167,26 @@ export function handleValidation(request, response, next) {
 }
 
 export const accessTokenLifetimeMin = 15;
+
+export async function runQueryWithPagination(
+  sql,
+  baseParams = [],
+  { limit = null, offset = null } = {},
+) {
+  const limitClause = limit != null ? "LIMIT ?" : "";
+  const offsetClause = offset != null ? "OFFSET ?" : "";
+
+  const finalSql = `
+    ${sql}
+    ${limitClause}
+    ${offsetClause}
+  `;
+
+  const params = [...baseParams];
+
+  if (limit != null) params.push(limit);
+  if (offset != null) params.push(offset);
+
+  const [rows] = await execute(finalSql, params);
+  return rows;
+}

@@ -10,6 +10,10 @@ export default class CommentForm extends HTMLElement {
     return this.getAttribute("target-id");
   }
 
+  get admin() {
+    return this.hasAttribute("admin");
+  }
+
   constructor() {
     super();
 
@@ -45,14 +49,45 @@ export default class CommentForm extends HTMLElement {
     const form = e.currentTarget;
 
     const formData = new FormData(form);
-    formData.append("authorId", window.VoidVanguard.user.id);
+    // formData.append("authorId", window.VoidVanguard.user.id);
     formData.append("targetId", this.targetId);
 
+    /** admin */
+    if (this.admin) {
+      this.dispatchEvent(
+        new CustomEvent("sign-request", {
+          detail: { formData },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      return;
+    }
+
+    this.sendRequest(formData);
+  }
+
+  /** Needed to be compatible with <admin-module> */
+  onSignSuccess(data) {
+    this.sendRequest(data.formData);
+  }
+
+  /** Needed to be compatible with <admin-module> */
+  onSignError(data) {
+    this.sendRequest(data.formData);
+  }
+
+  async sendRequest(formData) {
     const response = await net.send("/api/comments", {
       method: "POST",
       body: formData,
     });
 
+    this.onResponse(response);
+  }
+
+  async onResponse(response) {
     const { success, result, message } = response;
 
     if (!success || !result) {

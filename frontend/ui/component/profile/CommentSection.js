@@ -1,6 +1,6 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { on, off } from "/common/eventhub.js";
-import { isLoggedIn } from "/common/common.js";
+import { isLoggedIn, isAdmin } from "/common/common.js";
 import * as net from "/common/network.js";
 import "/ui/component/form/InlineEditor.js";
 import "/ui/component/profile/CommentItem.js";
@@ -203,19 +203,6 @@ export default class CommentSection extends LazyItemList {
       this.reloadCurrentPage();
     }
 
-    // const entry = this._byId.get(commentId);
-    // if (!entry) return;
-
-    // const authorSet = this._byAuthor.get(authorId);
-    // if (authorSet) {
-    //   authorSet.delete(entry);
-    //   if (authorSet.size === 0) {
-    //     this._byAuthor.delete(authorId);
-    //   }
-    // }
-
-    // this._byId.delete(commentId);
-
     this.removeFromMaps(comment);
   }
 
@@ -230,6 +217,16 @@ export default class CommentSection extends LazyItemList {
     }
 
     formData.append("commentId", commentId);
+
+    /** admin */
+    if (isAdmin()) {
+      const { comment } = this._byId.get(commentId);
+      const authorId = comment.author_id;
+
+      if (authorId) {
+        formData.append("targetUserId", authorId);
+      }
+    }
 
     const response = await net.send("/api/comments", {
       method: "PATCH",

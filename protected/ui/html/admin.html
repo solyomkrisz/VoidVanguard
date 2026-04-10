@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VoidVanguard - Adminisztrációs felület</title>
     <link rel="stylesheet" href="/ui/style/global.css" />
+    <link rel="stylesheet" href="/ui/style/profile.css" />
     <link rel="stylesheet" href="/ui/style/friend.css" />
+    <link rel="stylesheet" href="/ui/style/searchBar.css" />
     <link rel="stylesheet" href="/ui/style/searchbox.css" />
+    <link rel="stylesheet" href="/protected/ui/style/admin.css" />
+    <style>
+      full-profile {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
   </head>
   <body>
     <h1>Adminisztrációs felület</h1>
@@ -14,27 +25,31 @@
     <hr />
 
     <nav>
-      <div class="searchbox">
-        <input type="text" />
-        <div class="searchbox-item-list"></div>
-        <template>
-          <div
-            class="searchbox-list-item"
-            onclick="onSearchboxItemClick(event)"
-          >
-            <input type="hidden" data-bind="user_id" bind-target="value" />
-            <img />
-            <div data-bind="display_name"></div>
-          </div>
-        </template>
-      </div>
       <logout-button></logout-button>
     </nav>
 
     <hr />
-    <h1>Fiók kezelése</h1>
+
+    <div id="full-profile-container">
+      <div>
+        <button onclick="closeFullProfileContainer()">Bezár</button>
+      </div>
+      <admin-module>
+        <full-profile admin></full-profile>
+      </admin-module>
+    </div>
+
+    <search-bar>
+      <search-bar-result-list
+        controls="pagination"
+        page-size="6"
+      ></search-bar-result-list>
+    </search-bar>
 
     <admin-module>
+      <hr />
+      <h1>Fiók kezelése</h1>
+
       <account-form-restorer user-id>
         <account-form action="update" admin restore></account-form>
       </account-form-restorer>
@@ -107,6 +122,13 @@
           }
         }
       }
+
+      function closeFullProfileContainer() {
+        const container = document.querySelector("#full-profile-container");
+        if (!container) return;
+
+        container.classList.remove("active");
+      }
     </script>
 
     <script type="module">
@@ -114,11 +136,16 @@
       import { onDOMContentLoaded, isLoggedIn } from "/common/common.js";
       import { on, off } from "/common/eventhub.js";
       import { importWithRefresh } from "/common/network.js";
+      import "/ui/component/profile/FullProfile.js";
       import "/ui/component/auth/LogoutButton.js";
       import "/ui/component/account/BlockedUserList.js";
       import "/ui/component/profile/ProfileForm.js";
       import "/ui/component/profile/ProfileFormRestorer.js";
       import "/ui/component/profile/FriendListFull.js";
+      import "/ui/component/form/SearchBar.js";
+      await importWithRefresh(
+        "/protected/ui/component/data/SearchBarResultList.js",
+      );
       await importWithRefresh("/protected/ui/component/account/AccountForm.js");
       await importWithRefresh(
         "/protected/ui/component/account/AccountFormRestorer.js",
@@ -135,11 +162,11 @@
         onDOMContentLoaded();
       }
 
-      Searchbox(
-        ".searchbox",
-        "/api/profiles?search=",
-        (response) => response.result.profiles,
-      );
+      // Searchbox(
+      //   ".searchbox",
+      //   "/api/profiles?search=",
+      //   (response) => response.result.profiles,
+      // );
     </script>
   </body>
 </html>

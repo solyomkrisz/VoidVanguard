@@ -165,6 +165,10 @@ export function isLoggedIn() {
   return Boolean(window.VoidVanguard?.user?.id);
 }
 
+export function isAdmin() {
+  return isLoggedIn() && window.VoidVanguard.user?.role >= 1;
+}
+
 export function setFieldValue(field, value) {
   if (field instanceof RadioNodeList) {
     Array.from(field).forEach((input) => {

@@ -56,16 +56,23 @@ export default class LazyItemList extends HTMLElement {
     this._cacheLimit = 4;
 
     this.loadMore = this.loadMore.bind(this);
+
+    this._deferredAttributes = new Map();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "src" && oldValue !== newValue) {
+    if (!this._built) {
+      this._deferredAttributes.set(name, newValue);
+      return;
+    }
+
+    if (name === "src" && oldValue !== newValue && newValue) {
       this.refresh();
     }
   }
 
   connectedCallback() {
-    if (this._built) {
+    if (this._built && this.controls === "scroll") {
       this._scrollObserver.observe?.(this._sentinel);
       return;
     }
@@ -78,6 +85,8 @@ export default class LazyItemList extends HTMLElement {
   }
 
   build() {
+    if (this._built) return;
+
     this._container = this.appendChild(document.createElement("div"));
     this._container.setAttribute("aria-live", "polite");
     this._container.classList.add("item-container");
@@ -111,6 +120,16 @@ export default class LazyItemList extends HTMLElement {
     }
 
     this._built = true;
+
+    this.applyDeferredAttributes();
+  }
+
+  applyDeferredAttributes() {
+    for (const [name, value] of this._deferredAttributes) {
+      this.attributeChangedCallback(name, null, value);
+    }
+
+    this._deferredAttributes.clear();
   }
 
   initScrollObserver() {
@@ -328,13 +347,19 @@ export default class LazyItemList extends HTMLElement {
   }
 
   reset() {
-    if (!this._built) return;
+    if (!this._built) {
+      this.build();
+    }
 
     this._page = 1;
     this._loading = false;
     this._hasNext = true;
     this._lastResponse = null;
     this.clearPages(true);
+
+    if (this.controls === "pagination") {
+      this._paginationControls.setAttribute("total", "1");
+    }
 
     this._container.textContent = "";
   }

@@ -83,7 +83,7 @@ export async function select({ requesterId = null, commentId }) {
 
 export async function updateComment({ userId, commentId, content }) {
   if (!(await Comments.update(userId, commentId, content))) {
-    throw CustomError.ERROR;
+    throw CustomError.TEST;
   }
 
   return null;

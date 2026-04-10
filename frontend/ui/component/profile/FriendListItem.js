@@ -1,6 +1,18 @@
 import { on, off } from "/common/eventhub.js";
 
+const CONTROLS_DEFS = {
+  accept: { text: "Elfogadás", handler: "onAccept" },
+  delete: { text: "Eltávolítás", handler: "onDelete" },
+  cancel: { text: "Visszavonás", handler: "onDelete" },
+  deny: { text: "Elutasítás", handler: "onDelete" },
+  block: { text: "Letiltás", handler: "onBlock" },
+};
+
 export default class FriendListItem extends HTMLElement {
+  static get observedAttributes() {
+    return ["controls"];
+  }
+
   set friend(value) {
     this._friend = value;
     this.update();
@@ -10,8 +22,11 @@ export default class FriendListItem extends HTMLElement {
     return this._friend;
   }
 
-  get personalize() {
-    return this.hasAttribute("personalize");
+  get controlsConfig() {
+    const value = this.getAttribute("controls");
+    if (!value) return [];
+
+    return value.trim().split(/\s+/); // ["accept", "delete", "block"]
   }
 
   constructor() {
@@ -22,10 +37,27 @@ export default class FriendListItem extends HTMLElement {
     this._elements = {};
     this._built = false;
 
+    this.onAccept = this.onAccept.bind(this);
     this.onDelete = this.onDelete.bind(this);
     this.onBlock = this.onBlock.bind(this);
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "controls" && oldValue !== newValue) {
+      this.updateControls();
+    }
+  }
+
+  onAccept(e) {
+    this.dispatchEvent(
+      new CustomEvent("friend-accept", {
+        detail: { userId: this.friend?.user_id },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   onDelete(e) {
@@ -88,25 +120,35 @@ export default class FriendListItem extends HTMLElement {
   }
 
   createControls() {
-    if (this._elements?.controls) {
-      return this._elements.controls;
-    }
-
     const wrapper = document.createElement("div");
 
-    wrapper.innerHTML = `
-        <button>Barát eltávolítása</button>
-        <button>Felhasználó letiltása</button>
-    `;
+    for (const item of this.controlsConfig) {
+      const def = CONTROLS_DEFS[item];
+      if (!def) continue;
 
-    const buttons = wrapper.querySelectorAll("button");
-    const deleteFriendBtn = buttons[0];
-    const blockUserBtn = buttons[1];
+      const handler = this[def.handler];
+      if (typeof handler !== "function") continue;
 
-    deleteFriendBtn.addEventListener("click", this.onDelete);
-    blockUserBtn.addEventListener("click", this.onBlock);
+      const button = document.createElement("button");
+      button.textContent = def.text;
+      button.addEventListener("click", handler);
+
+      wrapper.appendChild(button);
+    }
 
     return wrapper;
+  }
+
+  updateControls() {
+    if (!this._built) return;
+
+    this.hideControls();
+
+    this._elements.controls = this.createControls();
+
+    if (this._personalized) {
+      this.appendChild(this._elements.controls);
+    }
   }
 
   hideControls() {

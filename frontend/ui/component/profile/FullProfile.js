@@ -1,6 +1,7 @@
 import * as net from "/common/network.js";
-import { isEqual, isLoggedIn } from "/common/common.js";
+import { isEqual, isLoggedIn, isAdmin } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
+import { el } from "/ui/UI.js";
 import "/ui/component/profile/FriendshipActionButton.js";
 import "/ui/component/profile/BlockActionButton.js";
 import "/ui/component/profile/CommentSection.js";
@@ -11,6 +12,50 @@ import "/ui/component/layout/FullscreenOverlay.js";
 import "/ui/component/profile/ProfileForm.js";
 import "/ui/component/decorative/DashedBorderBox.js";
 import "/ui/component/form/InlineEditor.js";
+
+// name - selector
+const TO_SELECT = new Map([
+  ["profileContainer", ".profile-container"],
+  ["errorMessage", ".error"],
+  ["avatar", ".avatar"],
+  ["profileHeaderDetails", ".profile-header-details"],
+  ["profileHeaderActions", ".profile-header-actions"],
+  ["friendList", "friend-list-preview"],
+  ["commentSection", "comment-section"],
+  ["commentForm", "comment-form"],
+  ["profileFormOverlay", "#profile-form"],
+  ["friendListOverlay", "#friend-list-full"],
+  ["friendListFull", "friend-list-full"],
+  ["friendListFullToggle", "#friend-list-full-toggle"],
+]);
+
+function selectElements(from, save) {
+  for (const [name, selector] of TO_SELECT) {
+    save[name] = from.querySelector(selector);
+  }
+
+  return save;
+}
+
+const EVENTHANDLERS = new Map([
+  ["friend-list-change", "onFriendListChange"],
+  ["friendship-status-change", "onFriendshipStatusChange"],
+  ["block-status-change", "onBlockStatusChange"],
+  ["profile-create", "onProfileCreate"],
+  ["inline-edit", "onInlineEdit"],
+]);
+
+function toggleEventListeners(instance, initializerName) {
+  for (const [name, handlerName] of EVENTHANDLERS) {
+    const handlerFn = instance[handlerName];
+    if (typeof handlerFn !== "function") continue;
+
+    const initializerFn = instance[initializerName];
+    if (typeof initializerFn !== "function") return;
+
+    initializerFn(name, handlerFn);
+  }
+}
 
 export default class FullProfile extends HTMLElement {
   static get observedAttributes() {
@@ -25,6 +70,18 @@ export default class FullProfile extends HTMLElement {
     this.setAttribute("user-id", value);
   }
 
+  get shouldShowEditors() {
+    return (
+      isLoggedIn() &&
+      this._profileData?.user_id != null &&
+      (this._profileData.user_id === window.VoidVanguard?.user?.id || isAdmin())
+    );
+  }
+
+  get admin() {
+    return this.hasAttribute("admin");
+  }
+
   constructor() {
     super();
 
@@ -33,7 +90,17 @@ export default class FullProfile extends HTMLElement {
     this._previousProfileData = {};
 
     this._relationshipControlsShown = null;
-    this._withEditors = null;
+
+    this._headerCache = {
+      editable: null,
+      readonly: null,
+      active: null,
+    };
+    this._actionsCache = {
+      controls: null,
+      save: null,
+      active: null,
+    };
 
     this._changed = new Set();
     this._editing = false;
@@ -99,6 +166,11 @@ export default class FullProfile extends HTMLElement {
 
     const formData = new FormData(form);
 
+    /** admin */
+    if (isAdmin()) {
+      formData.append("targetUserId", this.userId);
+    }
+
     const response = await net.send("/api/profiles", {
       method: "PATCH",
       body: formData,
@@ -151,28 +223,14 @@ export default class FullProfile extends HTMLElement {
     on("login", this.onLogin);
     on("logout", this.onLogout);
 
-    this.addEventListener("friend-list-change", this.onFriendListChange);
-    this.addEventListener(
-      "friendship-status-change",
-      this.onFriendshipStatusChange,
-    );
-    this.addEventListener("block-status-change", this.onBlockStatusChange);
-    this.addEventListener("profile-create", this.onProfileCreate);
-    this.addEventListener("inline-edit", this.onInlineEdit);
+    toggleEventListeners(this, "addEventListener");
   }
 
   disconnectedCallback() {
     off("login", this.onLogin);
     off("logout", this.onLogout);
 
-    this.removeEventListener("friend-list-change", this.onFriendListChange);
-    this.removeEventListener(
-      "friendship-status-change",
-      this.onFriendshipStatusChange,
-    );
-    this.removeEventListener("block-status-change", this.onBlockStatusChange);
-    this.removeEventListener("profile-create", this.onProfileCreate);
-    this.removeEventListener("inline-edit", this.onInlineEdit);
+    toggleEventListeners(this, "removeEventListener");
   }
 
   onError(error) {
@@ -185,89 +243,134 @@ export default class FullProfile extends HTMLElement {
     if (
       isLoggedIn() &&
       error?.code === "ER_PROFILE_NOT_FOUND" &&
-      this.userId === window.VoidVanguard.user.id
+      (this.userId === window.VoidVanguard.user.id || isAdmin())
     ) {
       elements.profileFormOverlay.hidden = false;
     }
   }
 
-  updateProfileHeaderDetailsInner() {
-    const elements = this._elements;
+  buildHeaderDetailsDOM(data, editable) {
+    if (!editable) {
+      return el("div", {}, [
+        el("div", { class: "profile-name" }, [data.display_name ?? ""]),
+        el("div", { class: "profile-description" }, [data.description ?? ""]),
+      ]);
+    }
 
+    return el("form", {}, [
+      el("inline-editor", {}, [
+        el("dashed-border-box", {}, [
+          el(
+            "div",
+            {
+              class: "profile-name",
+              "data-text": "",
+            },
+            [data.display_name ?? ""],
+          ),
+        ]),
+        el("input", {
+          "data-editor": "",
+          type: "text",
+          name: "display_name",
+        }),
+      ]),
+
+      el("inline-editor", {}, [
+        el("dashed-border-box", {}, [
+          el(
+            "div",
+            {
+              class: "profile-description",
+              "data-text": "",
+            },
+            [data.description ?? ""],
+          ),
+        ]),
+        el("textarea", {
+          "data-editor": "",
+          name: "description",
+        }),
+      ]),
+    ]);
+  }
+
+  buildProfileHeaderActionsDOM(showRelationshipControls) {
+    if (showRelationshipControls) {
+      return el("div", {}, [
+        el("friendship-action-button", { controlled: "" }),
+        el("block-action-button", { controlled: "" }),
+      ]);
+    }
+
+    return el("div", {}, [
+      el(
+        "button",
+        {
+          id: "save",
+          hidden: true,
+          onClick: this.onSave,
+        },
+        ["Mentés"],
+      ),
+    ]);
+  }
+
+  updateProfileHeaderDetailsDOM() {
+    const elements = this._elements;
     const container = elements.profileHeaderDetails;
     if (!container) return;
 
-    const addEditors =
-      isLoggedIn() &&
-      this._profileData.user_id != null &&
-      this._profileData.user_id === window.VoidVanguard.user.id;
+    const cache = this._headerCache;
+    const state = this._profileData;
 
-    if (this._withEditors === addEditors) return;
+    const editable = this.shouldShowEditors;
+    const key = editable ? "editable" : "readonly";
 
-    if (addEditors) {
-      container.innerHTML = `
-        <form>
-          <inline-editor>
-            <dashed-border-box>
-              <div data-text class="profile-name">${this._profileData.display_name ?? ""}</div>
-            </dashed-border-box>
-            <input data-editor type="text" name="display_name" />
-          </inline-editor>
+    if (cache.active === key) return;
+    cache.active = key;
 
-          <inline-editor>
-            <dashed-border-box>
-              <div data-text class="profile-description">${this._profileData.description ?? ""}</div>
-            </dashed-border-box>
-            <textarea data-editor name="description"></textarea>
-          </inline-editor>
-        </form>
-      `;
-    } else {
-      container.innerHTML = `
-        <div class="profile-name">${this._profileData.display_name ?? ""}</div>
-        <div class="profile-description">${this._profileData.description ?? ""}</div>
-      `;
+    if (!cache[key]) {
+      cache[key] = this.buildHeaderDetailsDOM(state, editable);
     }
 
-    elements.profileName = this.querySelector(".profile-name");
-    elements.profileDescription = this.querySelector(".profile-description");
+    container.replaceChildren(cache[key]);
 
-    this._withEditors = addEditors;
+    elements.profileName = container.querySelector(".profile-name");
+    elements.profileDescription = container.querySelector(
+      ".profile-description",
+    );
   }
 
   // prettier-ignore
   updateProfileHeaderActions() {
     const elements = this._elements;
-
     const container = elements.profileHeaderActions;
     if (!container) return;
+    
+    const cache = this._actionsCache;
+
+    const isOwnProfile = this._profileData?.user_id === window?.VoidVanguard?.user?.id
+    const showSaveButton = isOwnProfile || isAdmin();
 
     const showRelationshipControls =
       isLoggedIn() &&
       this._profileData.user_id != null &&
-      this._profileData.user_id !== window.VoidVanguard.user.id;
+      !showSaveButton;
+    const key = showRelationshipControls ? "controls" : "save";
 
-    if (this._relationshipControlsShown === showRelationshipControls) return;
-
-    if (showRelationshipControls) {
-      container.innerHTML = `
-        <friendship-action-button controlled></friendship-action-button>
-        <block-action-button controlled></block-action-button>
-      `;
-    } else {
-      container.innerHTML = `<button id="save" hidden>Mentés</button>`;
+    if (cache.active === key) return;
+    cache.active = key;
+    
+    if (!cache[key]) {
+      cache[key] = this.buildProfileHeaderActionsDOM(showRelationshipControls);
     }
 
-    elements.friendshipActionButton = this.querySelector("friendship-action-button");
-    elements.blockActionButton = this.querySelector("block-action-button");
+    container.replaceChildren(cache[key]);
 
-    const button = this.querySelector("#save");
-    if (button) {
-      button.addEventListener("click", this.onSave);
-      elements.saveButton = button;
-    }
-
-    this._relationshipControlsShown = showRelationshipControls;
+    elements.friendshipActionButton = container.querySelector("friendship-action-button");
+    elements.blockActionButton = container.querySelector("block-action-button");
+    elements.saveButton = container.querySelector("#save");
   }
 
   build() {
@@ -294,7 +397,7 @@ export default class FullProfile extends HTMLElement {
         </div>
         <div class="profile-footer">
           <comment-section controls="pagination" page-size="2">
-            <comment-form></comment-form>
+            <comment-form ${this.admin ? "admin" : ""}></comment-form>
           </comment-section>
         </div>
       </div>
@@ -309,31 +412,10 @@ export default class FullProfile extends HTMLElement {
       </div>
     `;
 
-    const elements = this._elements;
+    const elements = selectElements(this, this._elements);
 
-    elements.profileContainer = this.querySelector(".profile-container");
-    elements.errorMessage = this.querySelector(".error");
-    elements.avatar = this.querySelector(".avatar");
-
-    elements.profileHeaderDetails = this.querySelector(
-      ".profile-header-details",
-    );
-    this.updateProfileHeaderDetailsInner();
-
-    elements.profileHeaderActions = this.querySelector(
-      ".profile-header-actions",
-    );
+    this.updateProfileHeaderDetailsDOM();
     this.updateProfileHeaderActions();
-
-    elements.friendList = this.querySelector("friend-list-preview");
-    elements.commentSection = this.querySelector("comment-section");
-    elements.commentForm = this.querySelector("comment-form");
-    elements.profileFormOverlay = this.querySelector("#profile-form");
-    elements.friendListOverlay = this.querySelector("#friend-list-full");
-    elements.friendListFull = this.querySelector("friend-list-full");
-    elements.friendListFullToggle = this.querySelector(
-      "#friend-list-full-toggle",
-    );
 
     elements.friendListFullToggle.addEventListener("click", function () {
       elements.friendListOverlay.hidden = false;
@@ -343,22 +425,15 @@ export default class FullProfile extends HTMLElement {
   }
 
   async update(meta) {
-    if (!this._built) {
-      this.build();
-    }
+    if (!this._built) this.build();
 
     const currentUserId = this.userId;
-
     const response = await net.send("/api/profiles/" + currentUserId);
-
-    if (currentUserId !== this.userId) {
-      return;
-    }
+    if (currentUserId !== this.userId) return;
 
     if (!response.success) {
       console.error("Unable to fetch profile.");
       this.onError(response.result);
-
       return;
     }
 
@@ -368,58 +443,30 @@ export default class FullProfile extends HTMLElement {
   updateContent(meta, data = null) {
     if (!this._built) this.build();
 
+    const prev = this._profileData;
+
     if (data) {
-      this._previousProfileData = this._profileData;
+      this._previousProfileData = prev;
       this._profileData = data;
     }
 
-    const currData = this._profileData;
+    const state = this._profileData;
+    const prevState = this._previousProfileData;
 
-    this.updateProfileHeaderDetailsInner();
+    this.updateProfileHeaderDetailsDOM();
     this.updateProfileHeaderActions();
 
+    this.renderActions(state, prevState);
+    this.renderCoreFields(state, this._previousProfileData);
+
+    this.syncCommentSection(state);
+    this.syncChildComponents(state, prevState);
+    this.syncFriendshipVisibility(state, prevState);
+
     const elements = this._elements;
-    const {
-      avatar,
-      profileName,
-      profileDescription,
-      blockActionButton,
-      friendshipActionButton,
-    } = this._elements;
 
-    if (friendshipActionButton) {
-      elements.friendshipActionButton.status = currData.friendship_status;
-      this.updateFriendshipActionButtonVisibility();
-    }
-
-    if (blockActionButton) {
-      elements.blockActionButton.status = currData.block_status;
-    }
-
-    this.updateCommentSection();
-
-    if (!isEqual(currData, this._previousProfileData, "user_id")) {
-      if (blockActionButton) {
-        elements.blockActionButton.setAttribute("user-id", this.userId);
-      }
-
-      if (friendshipActionButton) {
-        elements.friendshipActionButton.setAttribute("user-id", this.userId);
-      }
-
-      if (elements.friendList) {
-        elements.friendList.setAttribute("user-id", this.userId);
-      }
-
-      if (elements.friendListFull) {
-        elements.friendListFull.setAttribute("user-id", this.userId);
-      }
-
-      elements.commentForm.setAttribute("target-id", this.userId);
-      elements.commentSection.setAttribute(
-        "src",
-        `/api/comments?targetId=${this.userId}`,
-      );
+    if (elements.profileFormOverlay) {
+      elements.profileFormOverlay.hidden = true;
     }
 
     if (
@@ -430,69 +477,107 @@ export default class FullProfile extends HTMLElement {
       elements.friendList.refresh?.();
     }
 
-    if (!isEqual(currData, this._previousProfileData, "avatar")) {
-      avatar.src = currData.avatar;
-    }
-
-    if (!isEqual(currData, this._previousProfileData, "display_name")) {
-      profileName.textContent = currData.display_name;
-    }
-
-    if (!isEqual(currData, this._previousProfileData, "description")) {
-      profileDescription.textContent = currData.description;
-    }
-
     // friendlist
-    // if (currData.friend_list_preview) {
-    //   elements.friendList.data = currData.friend_list_preview;
+    // if (state.friend_list_preview) {
+    //   elements.friendList.data = state.friend_list_preview;
     // }
 
-    if (Object.keys(currData).length > 0) {
+    if (Object.keys(state).length > 0) {
       elements.profileContainer.hidden = false;
       elements.errorMessage.hidden = true;
     }
   }
 
-  updateCommentSection() {
+  renderActions(state, prev) {
+    this.updateProfileHeaderActions();
+
+    const { friendshipActionButton, blockActionButton, saveButton } =
+      this._elements;
+
+    if (friendshipActionButton) {
+      friendshipActionButton.status = state.friendship_status;
+    }
+
+    if (blockActionButton) {
+      blockActionButton.status = state.block_status;
+    }
+
+    if (saveButton) {
+      saveButton.hidden = true;
+    }
+  }
+
+  renderCoreFields(state, prev) {
+    const { avatar, profileName, profileDescription } = this._elements;
+
+    if (!avatar || !profileName || !profileDescription) return;
+
+    if (!isEqual(state, prev, "avatar")) {
+      avatar.src = state.avatar;
+    }
+
+    if (!isEqual(state, prev, "display_name")) {
+      profileName.textContent = state.display_name;
+    }
+
+    if (!isEqual(state, prev, "description")) {
+      profileDescription.textContent = state.description;
+    }
+  }
+
+  syncChildComponents(state, prev) {
+    if (!isEqual(state, prev, "user_id")) {
+      this.setUserIdDependecies(state.user_id);
+    }
+  }
+
+  setUserIdDependecies(userId) {
+    const el = this._elements;
+
+    el.friendshipActionButton?.setAttribute("user-id", userId);
+    el.blockActionButton?.setAttribute("user-id", userId);
+    el.friendList?.setAttribute("user-id", userId);
+    el.friendListFull?.setAttribute("user-id", userId);
+
+    el.commentForm?.setAttribute("target-id", userId);
+    el.commentSection?.setAttribute("src", `/api/comments?targetId=${userId}`);
+  }
+
+  syncFriendshipVisibility(state, prev) {
+    const button = this._elements.friendshipActionButton;
+    if (!button) return;
+
+    const wasBlocked = this.isBlocked(prev);
+    const isBlocked = this.isBlocked(state);
+
+    if (!isBlocked) {
+      wasBlocked && button?.refresh();
+      button.hidden = false;
+
+      return;
+    }
+
+    button.hidden = true;
+  }
+
+  syncCommentSection(state) {
     const commentSection = this._elements.commentSection;
     if (!commentSection) return;
 
-    const blockStatus = this._profileData.block_status;
-
-    if (
-      blockStatus === "you-blocked" ||
-      blockStatus === "got-blocked" ||
-      blockStatus === "both-blocked"
-    ) {
+    if (this.isBlocked(state)) {
       commentSection.removeAttribute("can-comment");
     } else {
       commentSection.setAttribute("can-comment", "");
     }
   }
 
-  updateFriendshipActionButtonVisibility() {
-    const button = this._elements.friendshipActionButton;
-    if (!button) return;
-
-    const wasBlocked =
-      this._previousProfileData?.block_status === "you-blocked" ||
-      this._previousProfileData?.block_status === "got-blocked" ||
-      this._previousProfileData?.block_status === "both-blocked";
-
-    const isBlocked =
-      this._profileData?.block_status === "you-blocked" ||
-      this._profileData?.block_status === "got-blocked" ||
-      this._profileData?.block_status === "both-blocked";
-
-    if (!isBlocked) {
-      if (wasBlocked) {
-        button?.refresh();
-      }
-
-      button.hidden = false;
-    } else {
-      button.hidden = true;
-    }
+  isBlocked(state) {
+    if (!state || !state?.block_status) return false;
+    return (
+      state.block_status === "you-blocked" ||
+      state.block_status === "got-blocked" ||
+      state.block_status === "both-blocked"
+    );
   }
 }
 

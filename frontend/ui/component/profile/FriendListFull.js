@@ -3,6 +3,16 @@ import { on, off } from "/common/eventhub.js";
 import * as net from "/common/network.js";
 import "/ui/component/profile/FriendListItem.js";
 
+const CONTROL_MAP = {
+  pending: {
+    incoming: ["accept", "deny", "block"],
+    outgoing: ["cancel", "block"],
+  },
+  accepted: {
+    both: ["delete", "block"],
+  },
+};
+
 export default class FriendListFull extends LazyItemList {
   static get observedAttributes() {
     return ["user-id"];
@@ -10,6 +20,29 @@ export default class FriendListFull extends LazyItemList {
 
   get filter() {
     return this.getAttribute("filter");
+  }
+
+  get filterConfig() {
+    const value = this.getAttribute("filter");
+
+    if (!value) {
+      return {
+        status: "accepted",
+        direction: "both",
+      };
+    }
+
+    const parsed = Object.fromEntries(
+      value.split("&").map((pair) => {
+        const [key, value] = pair.split("=");
+        return [key, value];
+      }),
+    );
+
+    return {
+      status: parsed.status ?? "accepted",
+      direction: parsed.direction ?? "both",
+    };
   }
 
   get admin() {
@@ -65,6 +98,7 @@ export default class FriendListFull extends LazyItemList {
     }
 
     switch (e.type) {
+      case "friend-accept":
       case "friend-delete":
       case "user-block":
         this.handleRelationshipAction(e.type, formData);
@@ -83,6 +117,11 @@ export default class FriendListFull extends LazyItemList {
       let url, method;
 
       switch (type) {
+        case "friend-accept":
+          url = "/api/friends";
+          method = "PATCH";
+          break;
+
         case "friend-delete":
           url = "/api/friends";
           method = "DELETE";
@@ -152,6 +191,11 @@ export default class FriendListFull extends LazyItemList {
   attributeChangedCallback(name, oldValue, newValue) {
     // super.attributeChangedCallback?.(name, oldValue, newValue);
 
+    if (!this._built) {
+      this._deferredAttributes.set(name, newValue);
+      return;
+    }
+
     if (name === "user-id" && oldValue !== newValue && newValue) {
       const params = new URLSearchParams({
         targetId: newValue,
@@ -214,9 +258,21 @@ export default class FriendListFull extends LazyItemList {
     this._personalized = _shouldPersonalize;
   }
 
+  getControlsForFilter() {
+    const { status, direction } = this.filterConfig;
+
+    const statusConfig = CONTROL_MAP[status];
+    if (!statusConfig) return [];
+
+    return statusConfig[direction] || statusConfig.any || [];
+  }
+
   renderItem(item) {
     const el = document.createElement("friend-list-item");
     el.friend = item;
+
+    const controls = this.getControlsForFilter().join(" ");
+    el.setAttribute("controls", controls);
 
     const _shouldPersonalize = this.shouldPersonalize();
     this._personalized = _shouldPersonalize;

@@ -22,6 +22,20 @@ router.get(
   controller.get,
 );
 
+// for searching
+router.get(
+  "/",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  function (request, _, next) {
+    request.valid = !!(request?.query?.search && request.query.search.trim());
+    next();
+  },
+  controller.search,
+);
+
 router.post(
   "/",
   authenticate({

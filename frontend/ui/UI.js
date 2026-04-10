@@ -29,3 +29,35 @@ export function text(text) {
 }
 
 export const dir = "/ui/style/"; //Default style directory
+
+export function el(name, attrs = {}, children = []) {
+  const node = document.createElement(name);
+
+  for (const [key, value] of Object.entries(attrs)) {
+    if (value == null) continue;
+
+    if (key === "class") {
+      node.className = value;
+      continue;
+    }
+
+    if (key.startsWith("on") && typeof value === "function") {
+      node.addEventListener(key.slice(2).toLowerCase(), value);
+      continue;
+    }
+
+    if (typeof value === "boolean") {
+      if (value) node.setAttribute(key, "");
+      else node.removeAttribute(key);
+      continue;
+    }
+
+    node.setAttribute(key, value);
+  }
+
+  for (const child of children) {
+    node.append(child?.nodeType ? child : document.createTextNode(child));
+  }
+
+  return node;
+}

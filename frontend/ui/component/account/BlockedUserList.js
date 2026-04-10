@@ -16,7 +16,17 @@ export default class BlockedUserList extends LazyItemList {
   attributeChangedCallback(name, oldValue, newValue) {
     // super.attributeChangedCallback?.(name, oldValue, newValue);
 
+    if (!this._built) {
+      this._deferredAttributes.set(name, newValue);
+      return;
+    }
+
     if (name === "user-id" && oldValue !== newValue && newValue) {
+      console.log(
+        `${name} changed from [${oldValue}] to [${newValue}] when this._built was`,
+        this._built,
+      );
+
       this.setAttribute("src", `/api/blocks?targetId=${newValue}`);
       this.refresh();
     }

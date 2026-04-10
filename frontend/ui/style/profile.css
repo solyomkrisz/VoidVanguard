@@ -3,12 +3,6 @@
   cursor: pointer;
 }
 
-body {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .profile-container {
   display: flex;
   flex-direction: column;

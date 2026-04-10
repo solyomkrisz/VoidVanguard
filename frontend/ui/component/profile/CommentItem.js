@@ -1,4 +1,4 @@
-import { isLoggedIn } from "/common/common.js";
+import { isLoggedIn, isAdmin } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import "/ui/component/form/InlineEditor.js";
 import "/ui/component/decorative/DashedBorderBox.js";
@@ -202,7 +202,8 @@ export default class CommentItem extends HTMLElement {
 
     const loggedIn = isLoggedIn();
     const shouldPersonalize =
-      loggedIn && window.VoidVanguard?.user?.id === this.comment.author_id;
+      loggedIn &&
+      (window.VoidVanguard?.user?.id === this.comment.author_id || isAdmin());
 
     if (force || shouldPersonalize !== this._personalized) {
       if (shouldPersonalize) {

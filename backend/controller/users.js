@@ -7,13 +7,34 @@ import {
 } from "../common/common.js";
 import * as CustomError from "../common/CustomError.js";
 
-export async function get(request, response) {
-  if (!request.valid) throw CustomError.INVALID_REQUEST;
-
-  const userId = request?.params?.id;
-
+export async function search(request, response) {
   try {
+    if (!request.valid) throw CustomError.INVALID_REQUEST;
+
+    const result = await service.searchFor({
+      query: decodeURIComponent(request.query.search),
+      page: Number(request?.query?.page || 1),
+      limit: Number(request?.query?.limit || 6),
+    });
+
+    console.log(result);
+
+    response
+      .status(200)
+      .json(createResponse(true, result, "Search successfully completed"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function get(request, response) {
+  try {
+    if (!request.valid) throw CustomError.INVALID_REQUEST;
+
+    const userId = request?.params?.id;
+
     const result = await service.getUser({ userId });
+
     response
       .status(200)
       .json(createResponse(true, result, "User fetched successfully"));
