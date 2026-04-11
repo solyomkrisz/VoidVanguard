@@ -1,62 +1,46 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
+import "/protected/ui/component/data/SearchBarResultItem.js";
 
 class SearchBarResultList extends LazyItemList {
+  static get observedAttributes() {
+    return [...super.observedAttributes, "target-user-id"];
+  }
+
   get useEvent() {
     return this.hasAttribute("use-event");
   }
 
+  constructor() {
+    super();
+
+    this._items = new Set();
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    super.attributeChangedCallback?.(name, oldValue, newValue);
+
+    if (name === "target-user-id" && oldValue !== newValue) {
+      this.updatePersonalizations();
+    }
+  }
+
+  updatePersonalizations() {
+    for (const element of this._items) {
+      element.syncRelationshipButtons?.();
+    }
+  }
+
   renderItem(item) {
-    const div = document.createElement("div");
+    const el = document.createElement("search-bar-result-item");
 
-    div.innerHTML = `
-        <img />
-        <div>
-          <div class="username">@${item.username}</div>
-          ${item.display_name ? `<div class="display-name">${item.display_name}</div>` : ""}
-        </div>
-        <div>
-          <button id="disguise-button">Álcázás mint</button>
-          <button id="open-profile-button">Profil megnyitása</button>
-        </div>
-    `;
+    el.data = item;
+    if (this.useEvent) {
+      el.setAttribute("use-event", "");
+    }
 
-    const openProfileButton = div.querySelector("#open-profile-button");
-    openProfileButton.addEventListener("click", () => {
-      const fullProfile = document.querySelector("full-profile");
-      if (!fullProfile) return;
+    this._items.add(el);
 
-      fullProfile.setAttribute("user-id", item.id);
-
-      const container = document.querySelector("#full-profile-container");
-      if (!container) return;
-
-      container.classList.add("active");
-    });
-
-    const disguiseButton = div.querySelector("#disguise-button");
-    disguiseButton.addEventListener("click", () => {
-      if (this.useEvent) {
-        this.dispatchEvent(
-          new CustomEvent("target-user-change", {
-            detail: {
-              targetUserId: item.id,
-            },
-            bubbles: true,
-            composed: true,
-          }),
-        );
-
-        return;
-      }
-
-      const modules = document.querySelectorAll("admin-module");
-
-      for (const module of modules) {
-        module.setAttribute("target-user-id", item.id);
-      }
-    });
-
-    return div;
+    return el;
   }
 
   extractItems(response) {

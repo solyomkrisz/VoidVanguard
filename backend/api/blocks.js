@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/", authenticate(), validator.GET, controller.lazySelectByTarget);
 
 // status check
-router.get("/:id", authenticate(), controller.summary);
+router.get("/:id", authenticate(), modifyTargetUser(), controller.summary);
 
 router.post(
   "/",

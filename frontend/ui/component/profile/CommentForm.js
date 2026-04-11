@@ -1,4 +1,4 @@
-import { isLoggedIn } from "/common/common.js";
+import { isLoggedIn, isAdmin } from "/common/common.js";
 import * as net from "/common/network.js";
 
 export default class CommentForm extends HTMLElement {
@@ -53,7 +53,7 @@ export default class CommentForm extends HTMLElement {
     formData.append("targetId", this.targetId);
 
     /** admin */
-    if (this.admin) {
+    if (this.admin && isAdmin()) {
       this.dispatchEvent(
         new CustomEvent("sign-request", {
           detail: { formData },

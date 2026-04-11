@@ -216,7 +216,7 @@ export default class LazyItemList extends HTMLElement {
     this._loading = true;
 
     try {
-      const url = new URL(this.src, window.location.origin);
+      const url = this.getURL();
 
       url.searchParams.set("page", this._page);
       url.searchParams.set("limit", this.pageSize);
@@ -367,6 +367,10 @@ export default class LazyItemList extends HTMLElement {
   refresh() {
     this.reset();
     this.loadNextPage();
+  }
+
+  getURL() {
+    return new URL(this.src, window.location.origin);
   }
 }
 

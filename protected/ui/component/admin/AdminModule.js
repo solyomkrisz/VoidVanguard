@@ -25,6 +25,8 @@ export default class AdminModule extends HTMLElement {
           node.setAttribute("user-id", this.targetUserId);
         }
       }
+
+      document.querySelector("comment-section[admin]")?.reloadCurrentPage();
     }
   }
 

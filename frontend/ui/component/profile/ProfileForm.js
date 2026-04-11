@@ -28,6 +28,10 @@ export default class ProfileForm extends BaseCustomElement {
     return this.hasAttribute("admin");
   }
 
+  get selfSign() {
+    return this.hasAttribute("self-sign");
+  }
+
   constructor() {
     super([path.join(dir, "global.css")]);
 
@@ -51,6 +55,17 @@ export default class ProfileForm extends BaseCustomElement {
 
     /** Needed to be compatible with <admin-module> */
     if (this.admin) {
+      if (this.selfSign) {
+        const targetUserId =
+          this.closest("full-profile")?.getAttribute("user-id");
+        if (!targetUserId) return;
+
+        formData.append("targetUserId", targetUserId);
+        this.sendRequest(formData);
+
+        return;
+      }
+
       this.dispatchEvent(
         new CustomEvent("sign-request", {
           detail: { formData },

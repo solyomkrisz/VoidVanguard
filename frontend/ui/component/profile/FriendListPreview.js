@@ -69,11 +69,17 @@ export default class FriendListPreview extends HTMLElement {
     const el = document.createElement("template");
 
     el.innerHTML = `
-        <a href="/profile/${item.user_id}" class="friend-list-item">
-            <img />
-            <span>${item.name}</span>
-        </a>
+      <div class="friend-list-item">
+        <img />
+        <span>${item.name}</span>
+      </div>
     `;
+
+    el.content
+      .querySelector(".friend-list-item")
+      ?.addEventListener("click", () => {
+        this.closest("full-profile")?.setAttribute("user-id", item.user_id);
+      });
 
     return el.content;
   }

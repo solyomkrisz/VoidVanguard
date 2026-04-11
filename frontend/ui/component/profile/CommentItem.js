@@ -14,6 +14,10 @@ export default class CommentItem extends HTMLElement {
     return this._comment;
   }
 
+  get admin() {
+    return this.hasAttribute("admin");
+  }
+
   constructor() {
     super();
 
@@ -203,7 +207,8 @@ export default class CommentItem extends HTMLElement {
     const loggedIn = isLoggedIn();
     const shouldPersonalize =
       loggedIn &&
-      (window.VoidVanguard?.user?.id === this.comment.author_id || isAdmin());
+      (window.VoidVanguard?.user?.id === this.comment.author_id ||
+        (isAdmin() && this.admin));
 
     if (force || shouldPersonalize !== this._personalized) {
       if (shouldPersonalize) {

@@ -25,6 +25,7 @@
     <hr />
 
     <nav>
+      <remove-disguise-button></remove-disguise-button>
       <logout-button></logout-button>
     </nav>
 
@@ -54,13 +55,13 @@
         <account-form action="update" admin restore></account-form>
       </account-form-restorer>
 
-      <br />
+      <!-- <br />
       <hr />
       <h1>Profil kezelése</h1>
 
       <profile-form-restorer user-id>
         <profile-form admin restore></profile-form>
-      </profile-form-restorer>
+      </profile-form-restorer> -->
 
       <div class="friend-manager">
         <div>
@@ -151,6 +152,9 @@
         "/protected/ui/component/account/AccountFormRestorer.js",
       );
       await importWithRefresh("/protected/ui/component/admin/AdminModule.js");
+      await importWithRefresh(
+        "/protected/ui/component/button/RemoveDisguiseButton.js",
+      );
 
       on("logout", function () {
         window.top.location.href = "/";

@@ -51,9 +51,9 @@ function toggleEventListeners(instance, initializerName) {
     if (typeof handlerFn !== "function") continue;
 
     const initializerFn = instance[initializerName];
-    if (typeof initializerFn !== "function") return;
+    if (typeof initializerFn !== "function") continue;
 
-    initializerFn(name, handlerFn);
+    instance[initializerName](name, handlerFn);
   }
 }
 
@@ -74,7 +74,8 @@ export default class FullProfile extends HTMLElement {
     return (
       isLoggedIn() &&
       this._profileData?.user_id != null &&
-      (this._profileData.user_id === window.VoidVanguard?.user?.id || isAdmin())
+      (this._profileData.user_id === window.VoidVanguard?.user?.id ||
+        (this.admin && isAdmin()))
     );
   }
 
@@ -113,6 +114,7 @@ export default class FullProfile extends HTMLElement {
     this.onFriendshipStatusChange = this.onFriendshipStatusChange.bind(this);
     this.onBlockStatusChange = this.onBlockStatusChange.bind(this);
     this.onProfileCreate = this.onProfileCreate.bind(this);
+    this.onDelete = this.onDelete.bind(this);
     this.onSave = this.onSave.bind(this);
     this.onInlineEdit = this.onInlineEdit.bind(this);
   }
@@ -143,6 +145,7 @@ export default class FullProfile extends HTMLElement {
   }
 
   async onFriendshipStatusChange(e) {
+    console.log(e.target);
     await this.update({ origin: "friendshipStatusChangeHandler" });
     e.target?.enable();
   }
@@ -160,6 +163,29 @@ export default class FullProfile extends HTMLElement {
     this._elements.profileFormOverlay?.remove();
   }
 
+  async onDelete(e) {
+    const formData = new FormData();
+
+    /** admin */
+    if (this.admin && isAdmin()) {
+      formData.append("targetUserId", this.userId);
+    }
+
+    const response = await net.send("/api/profiles", {
+      method: "DELETE",
+      body: formData,
+    });
+
+    const { success, message } = response;
+
+    if (!success) {
+      console.error("Error during profile deletion: " + message);
+      return;
+    }
+
+    this.update({ origin: "profileDeletionHandler" });
+  }
+
   async onSave(e) {
     const form = this.querySelector("form");
     if (!form) return;
@@ -167,7 +193,7 @@ export default class FullProfile extends HTMLElement {
     const formData = new FormData(form);
 
     /** admin */
-    if (isAdmin()) {
+    if (this.admin && isAdmin()) {
       formData.append("targetUserId", this.userId);
     }
 
@@ -243,7 +269,7 @@ export default class FullProfile extends HTMLElement {
     if (
       isLoggedIn() &&
       error?.code === "ER_PROFILE_NOT_FOUND" &&
-      (this.userId === window.VoidVanguard.user.id || isAdmin())
+      (this.userId === window.VoidVanguard.user.id || (this.admin && isAdmin()))
     ) {
       elements.profileFormOverlay.hidden = false;
     }
@@ -313,6 +339,14 @@ export default class FullProfile extends HTMLElement {
         },
         ["Mentés"],
       ),
+      el(
+        "button",
+        {
+          id: "delete",
+          onClick: this.onDelete,
+        },
+        ["Törlés"],
+      ),
     ]);
   }
 
@@ -351,7 +385,7 @@ export default class FullProfile extends HTMLElement {
     const cache = this._actionsCache;
 
     const isOwnProfile = this._profileData?.user_id === window?.VoidVanguard?.user?.id
-    const showSaveButton = isOwnProfile || isAdmin();
+    const showSaveButton = isOwnProfile || (this.admin && isAdmin());
 
     const showRelationshipControls =
       isLoggedIn() &&
@@ -396,7 +430,7 @@ export default class FullProfile extends HTMLElement {
           </div>
         </div>
         <div class="profile-footer">
-          <comment-section controls="pagination" page-size="2">
+          <comment-section controls="pagination" page-size="2" ${this.admin ? "admin" : ""}>
             <comment-form ${this.admin ? "admin" : ""}></comment-form>
           </comment-section>
         </div>
@@ -404,7 +438,7 @@ export default class FullProfile extends HTMLElement {
 
       <div>
         <fullscreen-overlay id="profile-form" no-close hidden>
-          <profile-form></profile-form>
+          <profile-form ${this.admin ? "admin" : ""} self-sign></profile-form>
         </fullscreen-overlay>
         <fullscreen-overlay id="friend-list-full" hidden>
           <friend-list-full controls="pagination" page-size="6"></friend-list-full>

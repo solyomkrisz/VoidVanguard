@@ -22,6 +22,10 @@ export default class CommentSection extends LazyItemList {
     return this.hasAttribute("can-comment");
   }
 
+  get admin() {
+    return this.hasAttribute("admin");
+  }
+
   constructor() {
     super();
 
@@ -127,6 +131,16 @@ export default class CommentSection extends LazyItemList {
     formData.append("targetId", commentId);
     formData.append("type", type);
 
+    /** admin */
+    if (this.admin && isAdmin()) {
+      const targetUserId =
+        this.closest("admin-module")?.getAttribute("target-user-id");
+
+      if (targetUserId) {
+        formData.append("targetUserId", targetUserId);
+      }
+    }
+
     let response = await net.send("/api/reactions", {
       method: "POST",
       body: formData,
@@ -140,7 +154,19 @@ export default class CommentSection extends LazyItemList {
     }
 
     // refresh comment
-    response = await net.send("/api/comments/" + commentId);
+    let url = "/api/comments/" + commentId;
+
+    /** admin */
+    if (this.admin && isAdmin()) {
+      const targetUserId =
+        this.closest("admin-module")?.getAttribute("target-user-id");
+
+      if (targetUserId) {
+        url += "?targetUserId=" + targetUserId;
+      }
+    }
+
+    response = await net.send(url);
 
     ({ success, result } = response);
 
@@ -219,7 +245,7 @@ export default class CommentSection extends LazyItemList {
     formData.append("commentId", commentId);
 
     /** admin */
-    if (isAdmin()) {
+    if (this.admin && isAdmin()) {
       const { comment } = this._byId.get(commentId);
       const authorId = comment.author_id;
 
@@ -240,7 +266,7 @@ export default class CommentSection extends LazyItemList {
       return;
     }
 
-    e.target.comment = result;
+    e.target.comment = result; // Lehet később külön kéne lekérni az updatelt kommentet.
   }
 
   extractItems(response) {
@@ -263,6 +289,12 @@ export default class CommentSection extends LazyItemList {
 
   renderItem(comment) {
     const element = document.createElement("comment-item");
+
+    /** admin */
+    if (this.admin) {
+      element.setAttribute("admin", "");
+    }
+
     element.comment = comment;
 
     const entry = {
@@ -274,6 +306,19 @@ export default class CommentSection extends LazyItemList {
     this.categorizeItemBy(comment.author_id, this._byAuthor, entry, Set, _add);
 
     return element;
+  }
+
+  getURL() {
+    const url = new URL(this.src, window.location.origin);
+
+    const targetUserId =
+      this.closest("admin-module")?.getAttribute("target-user-id");
+
+    if (targetUserId && this.admin && isAdmin()) {
+      url.searchParams.set("targetUserId", targetUserId);
+    }
+
+    return url;
   }
 }
 
