@@ -1,4 +1,6 @@
 import "/ui/component/form/InputGroup.js";
+import "/ui/component/validator/DisplayNameInputValidator.js";
+import "/ui/component/validator/DescriptionInputValidator.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import * as net from "/common/network.js";
 import { setFieldValue } from "/common/common.js";
@@ -142,12 +144,16 @@ export default class ProfileForm extends BaseCustomElement {
       <form>
         <input-group class="input-group">
           <label>Profilnév</label>
-          <input type="text" name="display_name" placeholder="Név123" />
+          <display-name-input-validator>
+            <input type="text" name="display_name" placeholder="Név123" />
+          </display-name-input-validator>
         </input-group>
 
         <input-group class="input-group">
           <label>Leírás</label>
-          <textarea name="description" placeholder="Ez a profilom..."></textarea>
+          <description-input-validator>
+            <textarea name="description" placeholder="Ez a profilom..."></textarea>
+          </description-input-validator>
         </input-group>
         
         <input-group class="input-group">

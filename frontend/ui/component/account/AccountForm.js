@@ -5,6 +5,53 @@ import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
+import "/ui/component/validator/EmailInputValidator.js";
+import "/ui/component/validator/PasswordInputValidator.js";
+
+const _innerHTML = `
+<form>
+  <input-group class="input-group">
+    <label>Felhasználónév</label>
+    <input type="text" name="username" placeholder="Felhasználónév" />
+  </input-group>
+
+  <input-group class="input-group">
+    <label>Email cím</label>
+    <email-input-validator>
+      <input type="email" name="email" placeholder="email@email.email" />
+    </email-input-validator>
+  </input-group>
+
+  <div>
+    <div>
+      <input type="radio" name="gender" value="0" />
+      <label>Férfi</label>
+    </div>
+    <div>
+      <input type="radio" name="gender" value="1" />
+      <label>Nő</label>
+    </div>
+  </div>
+
+  <input-group class="input-group">
+    <label>Jelszó</label>
+    <password-input-validator>
+      <input type="password" name="password" placeholder="Jelszó" />
+    </password-input-validator>
+  </input-group>
+  
+  <input-group class="input-group">
+    <label>Jelszó megerősítése</label>
+    <password-input-validator>
+      <input type="password" name="passwordConfirm" placeholder="Jelszó megerősítése" />
+    </password-input-validator>
+  </input-group>
+
+  <button>Fiókadatok módosítása</button>
+</form>
+<div id="message"></div>
+`;
+
 const METHOD = {
   create: "POST",
   update: "PATCH",
@@ -24,10 +71,13 @@ export default class AccountForm extends BaseCustomElement {
 
     this._elements = {};
     this._built = false;
+    this._innerHTML = _innerHTML;
 
     this.onSubmit = this.onSubmit.bind(this);
     this.restoreFrom = this.restoreFrom.bind(this);
     this.resetForm = this.resetForm.bind(this);
+    this.onSubmitDisable = this.onSubmitDisable.bind(this);
+    this.onSubmitEnable = this.onSubmitEnable.bind(this);
   }
 
   connectedCallback() {
@@ -121,54 +171,34 @@ export default class AccountForm extends BaseCustomElement {
   }
 
   build() {
-    this.setShadowInnerHTML(`
-      <form>
-        <input-group class="input-group">
-          <label>Felhasználónév</label>
-          <input type="text" name="username" placeholder="Felhasználónév" />
-        </input-group>
-
-        <input-group class="input-group">
-          <label>Email cím</label>
-          <input type="email" name="email" placeholder="email@email.email" />
-        </input-group>
-
-        <div>
-          <div>
-            <input type="radio" name="gender" value="0" />
-            <label>Férfi</label>
-          </div>
-          <div>
-            <input type="radio" name="gender" value="1" />
-            <label>Nő</label>
-          </div>
-        </div>
-
-        <input-group class="input-group">
-          <label>Jelszó</label>
-          <input type="password" name="password" placeholder="Jelszó" />
-        </input-group>
-        
-        <input-group class="input-group">
-          <label>Jelszó megerősítése</label>
-          <input type="password" name="passwordConfirm" placeholder="Jelszó megerősítése" />
-        </input-group>
-
-        <button>Fiókadatok módosítása</button>
-      </form>
-      <div id="message"></div>
-    `);
+    this.setShadowInnerHTML(this._innerHTML);
 
     const form = this.queryShadowSelector("form");
     form.addEventListener("submit", this.onSubmit);
 
     this._elements.form = form;
     this._elements.responseMessage = this.queryShadowSelector("#message");
+    this._elements.button = this.queryShadowSelector("button");
 
     this.addEventListener("restore", this.restoreFrom);
     this.addEventListener("reset", this.resetForm);
 
+    if (this.hasAttribute("with-validator")) {
+      this.addEventListener("submit-disable", this.onSubmitDisable);
+      this.addEventListener("submit-enable", this.onSubmitEnable);
+    }
+
     this._built = true;
+  }
+
+  onSubmitDisable(e) {
+    e.stopPropagation();
+    this._elements.button.disabled = true;
+  }
+
+  onSubmitEnable(e) {
+    e.stopPropagation();
+    this._elements.button.disabled = false;
   }
 
   restoreFrom(e) {

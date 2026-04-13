@@ -36,3 +36,30 @@ a {
 fullscreen-overlay a {
   color: #fff;
 }
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.username {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: auto;
+  right: 0;
+  display: none;
+
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px;
+  min-width: 160px;
+  z-index: 1000;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}

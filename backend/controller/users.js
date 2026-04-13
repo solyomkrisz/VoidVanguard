@@ -6,6 +6,7 @@ import {
   handleSequelizeUniqueConstraintError,
 } from "../common/common.js";
 import * as CustomError from "../common/CustomError.js";
+import Role from "../common/Role.js";
 
 export async function search(request, response) {
   try {
@@ -30,6 +31,13 @@ export async function search(request, response) {
 export async function get(request, response) {
   try {
     if (!request.valid) throw CustomError.INVALID_REQUEST;
+
+    if (
+      request.targetUser.id !== request.params.id &&
+      request.targetUser.role < Role.ADMIN
+    ) {
+      throw CustomError.FORBIDDEN;
+    }
 
     const userId = request?.params?.id;
 

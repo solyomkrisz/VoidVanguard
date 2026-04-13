@@ -83,6 +83,11 @@ export const PATCH = {
     },
     normalizeEmail: true,
   },
+  role: {
+    in: ["body"],
+    optional: { options: { nullable: true } },
+    toInt: true,
+  },
   password: {
     in: ["body"],
     optional: { options: { nullable: true } },

@@ -13,6 +13,9 @@ import "/ui/component/profile/ProfileForm.js";
 import "/ui/component/decorative/DashedBorderBox.js";
 import "/ui/component/form/InlineEditor.js";
 
+import "/ui/component/validator/DisplayNameInputValidator.js";
+import "/ui/component/validator/DescriptionInputValidator.js";
+
 // name - selector
 const TO_SELECT = new Map([
   ["profileContainer", ".profile-container"],
@@ -116,6 +119,7 @@ export default class FullProfile extends HTMLElement {
     this.onProfileCreate = this.onProfileCreate.bind(this);
     this.onDelete = this.onDelete.bind(this);
     this.onSave = this.onSave.bind(this);
+    this.onCancel = this.onCancel.bind(this);
     this.onInlineEdit = this.onInlineEdit.bind(this);
   }
 
@@ -215,6 +219,12 @@ export default class FullProfile extends HTMLElement {
     this.update({ origin: "profileUpdateHandler" });
   }
 
+  onCancel(e) {
+    this._changed.clear();
+    this.toggleEditing();
+    this.renderCoreFields(this._profileData, null);
+  }
+
   onInlineEdit(e) {
     e.stopPropagation();
 
@@ -231,14 +241,17 @@ export default class FullProfile extends HTMLElement {
   }
 
   toggleEditing() {
-    const button = this._elements.saveButton;
-    if (!button) return;
+    const saveButton = this._elements.saveButton;
+    const cancelButton = this._elements.cancelButton;
+    if (!saveButton || !cancelButton) return;
 
     if (this._changed.size > 0 && !this._editing) {
-      button.hidden = false;
+      saveButton.hidden = false;
+      cancelButton.hidden = false;
       this._editing = true;
     } else if (this._changed.size === 0 && this._editing) {
-      button.hidden = true;
+      saveButton.hidden = true;
+      cancelButton.hidden = true;
       this._editing = false;
     }
   }
@@ -295,11 +308,13 @@ export default class FullProfile extends HTMLElement {
             [data.display_name ?? ""],
           ),
         ]),
-        el("input", {
-          "data-editor": "",
-          type: "text",
-          name: "display_name",
-        }),
+        el("display-name-input-validator", {}, [
+          el("input", {
+            "data-editor": "",
+            type: "text",
+            name: "display_name",
+          }),
+        ]),
       ]),
 
       el("inline-editor", {}, [
@@ -313,15 +328,17 @@ export default class FullProfile extends HTMLElement {
             [data.description ?? ""],
           ),
         ]),
-        el("textarea", {
-          "data-editor": "",
-          name: "description",
-        }),
+        el("description-input-validator", {}, [
+          el("textarea", {
+            "data-editor": "",
+            name: "description",
+          }),
+        ]),
       ]),
     ]);
   }
 
-  buildProfileHeaderActionsDOM(showRelationshipControls) {
+  buildProfileHeaderActionsDOM(showRelationshipControls, canEdit) {
     if (showRelationshipControls) {
       return el("div", {}, [
         el("friendship-action-button", { controlled: "" }),
@@ -329,25 +346,32 @@ export default class FullProfile extends HTMLElement {
       ]);
     }
 
-    return el("div", {}, [
-      el(
-        "button",
-        {
-          id: "save",
-          hidden: true,
-          onClick: this.onSave,
-        },
-        ["Mentés"],
-      ),
-      el(
-        "button",
-        {
-          id: "delete",
-          onClick: this.onDelete,
-        },
-        ["Törlés"],
-      ),
-    ]);
+    if (canEdit) {
+      return el("div", {}, [
+        el(
+          "button",
+          {
+            id: "save",
+            hidden: true,
+            onClick: this.onSave,
+          },
+          ["Mentés"],
+        ),
+        el("button", { id: "cancel", hidden: true, onClick: this.onCancel }, [
+          "Mégse",
+        ]),
+        el(
+          "button",
+          {
+            id: "delete",
+            onClick: this.onDelete,
+          },
+          ["Törlés"],
+        ),
+      ]);
+    }
+
+    return el("div");
   }
 
   updateProfileHeaderDetailsDOM() {
@@ -385,19 +409,28 @@ export default class FullProfile extends HTMLElement {
     const cache = this._actionsCache;
 
     const isOwnProfile = this._profileData?.user_id === window?.VoidVanguard?.user?.id
-    const showSaveButton = isOwnProfile || (this.admin && isAdmin());
+    const canEdit = isOwnProfile || (this.admin && isAdmin());
 
     const showRelationshipControls =
       isLoggedIn() &&
       this._profileData.user_id != null &&
-      !showSaveButton;
-    const key = showRelationshipControls ? "controls" : "save";
+      !canEdit;
+
+    let key;
+    
+    if (showRelationshipControls) {
+      key = "controls";
+    } else if (canEdit) {
+      key = "edit";
+    } else {
+      key = "none";
+    }
 
     if (cache.active === key) return;
     cache.active = key;
     
     if (!cache[key]) {
-      cache[key] = this.buildProfileHeaderActionsDOM(showRelationshipControls);
+      cache[key] = this.buildProfileHeaderActionsDOM(showRelationshipControls, canEdit);
     }
 
     container.replaceChildren(cache[key]);
@@ -405,6 +438,8 @@ export default class FullProfile extends HTMLElement {
     elements.friendshipActionButton = container.querySelector("friendship-action-button");
     elements.blockActionButton = container.querySelector("block-action-button");
     elements.saveButton = container.querySelector("#save");
+    elements.cancelButton = container.querySelector("#cancel");
+    elements.deleteButton = container.querySelector("#delete")
   }
 
   build() {
@@ -488,10 +523,11 @@ export default class FullProfile extends HTMLElement {
     const prevState = this._previousProfileData;
 
     this.updateProfileHeaderDetailsDOM();
+    console.log(meta, isLoggedIn());
     this.updateProfileHeaderActions();
 
     this.renderActions(state, prevState);
-    this.renderCoreFields(state, this._previousProfileData);
+    this.renderCoreFields(state, null);
 
     this.syncCommentSection(state);
     this.syncChildComponents(state, prevState);

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/ui/style/friend.css" />
     <link rel="stylesheet" href="/ui/style/dashedBorderBox.css" />
     <link rel="stylesheet" href="/ui/style/skeleton.css" />
+    <link rel="stylesheet" href="/ui/style/dropdownMenu.css" />
     <title>Profil</title>
     <style>
       body {
@@ -34,8 +35,7 @@
           </div>
         </template>
       </div>
-      <a href="/me">Fiók kezelése</a>
-      <logout-button></logout-button>
+      <account-quick-manager></account-quick-manager>
     </nav>
 
     <full-profile></full-profile>
@@ -86,6 +86,7 @@
       import { onDOMContentLoaded, isLoggedIn } from "/common/common.js";
       import Searchbox from "/ui/js/Searchbox.js";
       import "/ui/component/profile/FullProfile.js";
+      import "/ui/component/auth/AccountQuickManager.js";
       import "/ui/component/auth/LogoutButton.js";
 
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);

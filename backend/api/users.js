@@ -14,13 +14,8 @@ import Role from "../common/Role.js";
 
 const router = express.Router();
 
-router.get(
-  "/:id",
-  authenticate(),
-  authorize(Role.ADMIN),
-  validator.GET,
-  controller.get,
-);
+// only admin
+router.get("/:id", authenticate(), validator.GET, controller.get);
 
 // for searching
 router.get(

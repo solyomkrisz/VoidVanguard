@@ -63,7 +63,7 @@
       <h1>Fiók kezelése</h1>
 
       <account-form-restorer user-id>
-        <account-form action="update" admin restore></account-form>
+        <admin-account-form action="update" admin restore></admin-account-form>
       </account-form-restorer>
 
       <!-- <br />
@@ -158,7 +158,7 @@
       await importWithRefresh(
         "/protected/ui/component/data/SearchBarResultList.js",
       );
-      await importWithRefresh("/ui/component/account/AccountForm.js");
+      await importWithRefresh("/protected/ui/component/account/AccountForm.js");
       await importWithRefresh("/ui/component/account/AccountFormRestorer.js");
       await importWithRefresh("/protected/ui/component/admin/AdminModule.js");
       await importWithRefresh(
