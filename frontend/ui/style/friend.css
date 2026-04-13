@@ -9,7 +9,8 @@ friend-list-full .item-container {
 }
 
 friend-list-item,
-friend-list-item .friend-list-item {
+friend-list-item .friend-list-item,
+friend-list-item > a {
   display: flex;
   align-items: center;
   gap: 8px;

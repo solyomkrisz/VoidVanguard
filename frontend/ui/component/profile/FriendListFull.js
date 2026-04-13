@@ -1,5 +1,6 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { on, off } from "/common/eventhub.js";
+import { isLoggedIn } from "/common/common.js";
 import * as net from "/common/network.js";
 import "/ui/component/profile/FriendListItem.js";
 
@@ -196,50 +197,53 @@ export default class FriendListFull extends LazyItemList {
       return;
     }
 
-    if (name === "user-id" && oldValue !== newValue && newValue) {
-      const params = new URLSearchParams({
-        targetId: newValue,
-        status: "accepted",
-        direction: "both",
-      });
-
-      if (this.filter) {
-        this.filter.split("&").forEach((pair) => {
-          const [key, value] = pair.split("=");
-
-          if (key && value) {
-            params.set(key, value);
-          }
+    if (name === "user-id" && oldValue !== newValue) {
+      if (newValue) {
+        const params = new URLSearchParams({
+          targetId: newValue,
+          status: "accepted",
+          direction: "both",
         });
+
+        if (this.filter) {
+          this.filter.split("&").forEach((pair) => {
+            const [key, value] = pair.split("=");
+
+            if (key && value) {
+              params.set(key, value);
+            }
+          });
+        }
+
+        const url = `/api/friends?${params.toString()}`;
+
+        this.setAttribute("src", url);
+        this.refresh();
+      } else {
+        this.reset();
       }
-
-      const url = `/api/friends?${params.toString()}`;
-
-      // this.setAttribute(
-      //   "src",
-      //   "/api/friends?targetId=" +
-      //     newValue +
-      //     (this.filter ? "?filter=" + this.filter : ""),
-      // );
-      this.setAttribute("src", url);
-
-      this.refresh();
     }
   }
 
   connectedCallback() {
     super.connectedCallback?.();
 
+    this.addEventListener("friend-accept", this.onRelationshipModification);
     this.addEventListener("friend-delete", this.onRelationshipModification);
     this.addEventListener("user-block", this.onRelationshipModification);
 
     on("login", this.onLogin);
     on("logout", this.onLogout);
+
+    if (isLoggedIn() && this.hasAttribute("auto")) {
+      this.setAttribute("user-id", window.VoidVanguard.user.id);
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback?.();
 
+    this.removeEventListener("friend-accept", this.onRelationshipModification);
     this.removeEventListener("friend-delete", this.onRelationshipModification);
     this.removeEventListener("user-block", this.onRelationshipModification);
 

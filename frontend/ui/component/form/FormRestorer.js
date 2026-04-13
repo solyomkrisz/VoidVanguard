@@ -19,12 +19,12 @@ export default class FormRestorer extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (
-      (name === "src" || name === "user-id") &&
-      oldValue !== newValue &&
-      newValue
-    ) {
-      this.load();
+    if ((name === "src" || name === "user-id") && oldValue !== newValue) {
+      if (newValue) {
+        this.load();
+      } else {
+        this.reset();
+      }
     }
   }
 
@@ -103,6 +103,15 @@ export default class FormRestorer extends HTMLElement {
     return result;
   }
 
+  reset() {
+    if (this._target instanceof HTMLFormElement) {
+      this._target.reset();
+      return;
+    }
+
+    this.resetCustomElement();
+  }
+
   restore(mapped) {
     if (this._target instanceof HTMLFormElement) {
       this.restoreForm(mapped);
@@ -140,6 +149,14 @@ export default class FormRestorer extends HTMLElement {
     this._target.dispatchEvent(
       new CustomEvent("restore", {
         detail: { data: mapped },
+        bubbles: false,
+      }),
+    );
+  }
+
+  resetCustomElement() {
+    this._target?.dispatchEvent(
+      new CustomEvent("reset", {
         bubbles: false,
       }),
     );

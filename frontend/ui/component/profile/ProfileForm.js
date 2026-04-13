@@ -40,6 +40,7 @@ export default class ProfileForm extends BaseCustomElement {
 
     this.onSubmit = this.onSubmit.bind(this);
     this.restoreFrom = this.restoreFrom.bind(this);
+    this.resetForm = this.resetForm.bind(this);
   }
 
   connectedCallback() {
@@ -165,10 +166,12 @@ export default class ProfileForm extends BaseCustomElement {
     const form = this.queryShadowSelector("form");
     form.addEventListener("submit", this.onSubmit);
 
+    this._elements.form = form;
     this._elements.button = this.queryShadowSelector("button");
     this._elements.responseMessage = this.queryShadowSelector("#message");
 
     this.addEventListener("restore", this.restoreFrom);
+    this.addEventListener("reset", this.resetForm);
 
     this._built = true;
   }
@@ -185,6 +188,10 @@ export default class ProfileForm extends BaseCustomElement {
 
       setFieldValue(field, value);
     }
+  }
+
+  resetForm() {
+    this._elements.form?.reset?.();
   }
 
   getEventName() {

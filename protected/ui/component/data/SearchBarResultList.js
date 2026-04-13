@@ -14,6 +14,31 @@ class SearchBarResultList extends LazyItemList {
     super();
 
     this._items = new Set();
+
+    this._observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.removedNodes) {
+          if (this._items.has(node)) {
+            this._items.delete(node);
+          }
+        }
+      }
+    });
+  }
+
+  connectedCallback() {
+    super.connectedCallback?.();
+
+    this._observer.observe(this, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback?.();
+
+    this._observer.disconnect();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

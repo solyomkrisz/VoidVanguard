@@ -14,7 +14,10 @@ export default class SearchBarResultItem extends HTMLElement {
 
   set data(value) {
     this._data = value;
-    this.update();
+
+    if (this.isConnected) {
+      this.update();
+    }
   }
 
   get data() {
@@ -40,9 +43,15 @@ export default class SearchBarResultItem extends HTMLElement {
 
   connectedCallback() {
     this.build();
+    this.update();
   }
 
   onDisguise() {
+    const info = document.querySelector("#disguise-info");
+    if (info) {
+      info.textContent = `@${this.data.username} ${this.data.display_name ? `- ${this.data.display_name}` : ""} (${this.data.id})`;
+    }
+
     if (this.useEvent) {
       this.dispatchEvent(
         new CustomEvent("target-user-change", {
@@ -97,10 +106,22 @@ export default class SearchBarResultItem extends HTMLElement {
 
     if (!success) {
       console.error(`Unable to modify relationship: ${message}`);
+      this.syncRelationshipButtons();
       return;
     }
 
     this.syncRelationshipButtons();
+    this.notify();
+  }
+
+  notify() {
+    const nodes = Array.from(
+      document.querySelectorAll("friend-list-full[user-id]"),
+    ).concat(Array.from("blocked-user-list[user-id]"));
+
+    for (const node of nodes) {
+      node.partialRefresh?.();
+    }
   }
 
   async onFriendButtonClick() {
@@ -224,6 +245,8 @@ export default class SearchBarResultItem extends HTMLElement {
 
     if (prevFriendStatus !== this._relationship.friendshipStatus) {
       const button = this._elements.friendButton;
+
+      console.log(this._relationship.friendshipStatus);
 
       switch (this._relationship.friendshipStatus) {
         case "accepted":

@@ -18,15 +18,25 @@ export default class AdminModule extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "target-user-id" && oldValue !== newValue) {
-      const nodes = Array.from(this.querySelectorAll("[user-id]"));
+      if (newValue) {
+        const nodes = Array.from(this.querySelectorAll("[user-id]"));
 
-      for (const node of nodes) {
-        if (node.getAttribute("user-id") !== this.targetUserId) {
-          node.setAttribute("user-id", this.targetUserId);
+        for (const node of nodes) {
+          if (node.getAttribute("user-id") !== this.targetUserId) {
+            node.setAttribute("user-id", this.targetUserId);
+          }
+        }
+      } else {
+        const nodes = Array.from(this.querySelectorAll("[user-id]"));
+
+        for (const node of nodes) {
+          if (node.getAttribute("user-id") !== this.targetUserId) {
+            node.setAttribute("user-id", "");
+          }
         }
       }
 
-      document.querySelector("comment-section[admin]")?.reloadCurrentPage();
+      document.querySelector("comment-section[admin]")?.partialRefresh();
     }
   }
 

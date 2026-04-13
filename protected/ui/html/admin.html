@@ -17,9 +17,20 @@
         width: 100%;
         height: 100%;
       }
+
+      #disguise-info {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: gray;
+        padding: 10px;
+      }
     </style>
   </head>
   <body>
+    <div id="disguise-info"></div>
+
     <h1>Adminisztrációs felület</h1>
 
     <hr />
@@ -147,10 +158,8 @@
       await importWithRefresh(
         "/protected/ui/component/data/SearchBarResultList.js",
       );
-      await importWithRefresh("/protected/ui/component/account/AccountForm.js");
-      await importWithRefresh(
-        "/protected/ui/component/account/AccountFormRestorer.js",
-      );
+      await importWithRefresh("/ui/component/account/AccountForm.js");
+      await importWithRefresh("/ui/component/account/AccountFormRestorer.js");
       await importWithRefresh("/protected/ui/component/admin/AdminModule.js");
       await importWithRefresh(
         "/protected/ui/component/button/RemoveDisguiseButton.js",

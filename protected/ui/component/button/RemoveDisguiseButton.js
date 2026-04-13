@@ -16,7 +16,12 @@ export default class RemoveDisguiseButton extends HTMLElement {
       }
     }
 
-    document.querySelector("comment-section[admin]")?.reloadCurrentPage();
+    const info = document.querySelector("#disguise-info");
+    if (info) {
+      info.textContent = "";
+    }
+
+    document.querySelector("comment-section[admin]")?.partialRefresh();
     document
       .querySelector("search-bar-result-list")
       ?.removeAttribute("target-user-id");

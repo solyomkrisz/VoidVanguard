@@ -165,7 +165,7 @@ export default class FriendListItem extends HTMLElement {
     const elements = this._elements;
     if (!elements) return;
 
-    elements.link && (elements.link.href = "/profile/" + this.friend?.name);
+    elements.link && (elements.link.href = "/profile/" + this.friend?.user_id);
     elements.name && (elements.name.textContent = this.friend?.name);
   }
 

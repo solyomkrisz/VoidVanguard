@@ -341,6 +341,8 @@ export default class LazyItemList extends HTMLElement {
   }
 
   reloadCurrentPage() {
+    if (!this.controls !== "pagination") return;
+
     this.clearPages(true);
     this._container.textContent = "";
     this.loadNextPage();
@@ -362,6 +364,14 @@ export default class LazyItemList extends HTMLElement {
     }
 
     this._container.textContent = "";
+  }
+
+  partialRefresh() {
+    if (this.controls === "pagination") {
+      this.reloadCurrentPage();
+    } else {
+      this.refresh();
+    }
   }
 
   refresh() {
