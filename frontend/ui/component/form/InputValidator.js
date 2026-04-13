@@ -1,6 +1,10 @@
 import { debounce } from "/common/common.js";
 
 export default class InputValidator extends HTMLElement {
+  get disableOnInvalid() {
+    return this.getAttribute("disable-on-invalid");
+  }
+
   get for() {
     return this.getAttribute("for");
   }
@@ -56,13 +60,28 @@ export default class InputValidator extends HTMLElement {
         continue;
       }
 
-      this.emitEvent("submit-disable");
+      if (this.disableOnInvalid) {
+        const toDisable = document.querySelector(this.disableOnInvalid);
+        if (toDisable) {
+          toDisable.disabled = true;
+        }
+      } else {
+        this.emitEvent("submit-disable");
+      }
+
       this.showMessage(rule.message);
 
       return;
     }
 
-    this.emitEvent("submit-enable");
+    if (this.disableOnInvalid) {
+      const toDisable = document.querySelector(this.disableOnInvalid);
+      if (toDisable) {
+        toDisable.disabled = false;
+      }
+    } else {
+      this.emitEvent("submit-enable");
+    }
   }
 
   emitEvent(event) {

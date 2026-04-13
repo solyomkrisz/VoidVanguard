@@ -308,7 +308,7 @@ export default class FullProfile extends HTMLElement {
             [data.display_name ?? ""],
           ),
         ]),
-        el("display-name-input-validator", {}, [
+        el("display-name-input-validator", { "disable-on-invalid": "#save" }, [
           el("input", {
             "data-editor": "",
             type: "text",
@@ -328,7 +328,7 @@ export default class FullProfile extends HTMLElement {
             [data.description ?? ""],
           ),
         ]),
-        el("description-input-validator", {}, [
+        el("description-input-validator", { "disable-on-invalid": "#save" }, [
           el("textarea", {
             "data-editor": "",
             name: "description",
