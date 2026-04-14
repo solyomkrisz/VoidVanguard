@@ -1,5 +1,4 @@
 import * as net from "./network.js";
-import userState from "../state/user.js";
 
 export const DATA_STRUCTURE =
   typeof Float32Array !== "undefined" ? Float32Array : Array;

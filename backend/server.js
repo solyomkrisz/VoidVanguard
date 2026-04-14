@@ -37,6 +37,13 @@ router.get("/me", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/ui/html/me.html"));
 });
 
+// Functional test oldal
+router.get("/functionaltest", (request, response) => {
+  response.sendFile(
+    path.join(__dirname, "../frontend/ui/html/functionaltest.html"),
+  );
+});
+
 // Refresh oldal
 // router.get("/refresh", (request, response) => {
 //   response.sendFile(path.join(__dirname, "../frontend/ui/html/refresh.html"));

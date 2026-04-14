@@ -500,9 +500,9 @@ export default class FullProfile extends HTMLElement {
     const response = await net.send("/api/profiles/" + currentUserId);
     if (currentUserId !== this.userId) return;
 
-    if (!response.success) {
+    if (!response?.success) {
       console.error("Unable to fetch profile.");
-      this.onError(response.result);
+      this.onError(response?.result);
       return;
     }
 
