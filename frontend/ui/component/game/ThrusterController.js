@@ -11,13 +11,25 @@ export default class ThrusterController extends HTMLElement {
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
         :host {
-          padding: 10px;
+          padding: 0.8vmin 1.5vmin;
           border-top-left-radius: 8px;
           border-bottom-left-radius: 8px;
-          background-color: #555;
-          color: white;
-          -webkit-box-shadow: inset 10px -10px 6px -5px #898989; 
-          box-shadow: inset 10px -10px 6px -5px #898989;
+          background: #1a1a28;
+          border: 2px solid #2a5a9e;
+          border-right: none;
+          box-shadow: -4px 0 0 0 #0d0d15;
+          color: #6ab8ff;
+          font-size: 1.4vmin;
+          font-family: 'Jersey', 'Courier New', monospace;
+          text-transform: uppercase;
+          letter-spacing: 0.05vmin;
+          text-shadow: 1px 1px 0 #000;
+        }
+        input[type="checkbox"] {
+          accent-color: #4a90e2;
+          width: 1.2vmin;
+          height: 1.2vmin;
+          cursor: pointer;
         }
     `);
     this.shadowDOM.adoptedStyleSheets = [sheet];

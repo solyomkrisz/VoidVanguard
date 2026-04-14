@@ -39,6 +39,7 @@ export default class Block {
     in vec2 uvScale;
     in float texRotationRad;
     in float layerId;
+    in float instanceParallax;
 
     out vec2 vTexCoord;
     flat out int textureLayerId;
@@ -67,7 +68,9 @@ export default class Block {
       if (layerId >= 0.0) {
         vec2 aligned = translatedAndRotated + 0.5;
         vec2 zoomed = aligned * backgroundZoom;
-        gl_Position = vec4(cameraMatrix * vec3(zoomed, 1.0), 1.0);
+        vec2 scaled = vec2(cameraMatrix[0][0] * zoomed.x, cameraMatrix[1][1] * zoomed.y);
+        vec2 parallaxed = scaled + vec2(cameraMatrix[2][0], cameraMatrix[2][1]) * instanceParallax;
+        gl_Position = vec4(parallaxed, 0.0, 1.0);
       } else {
         gl_Position = vec4(cameraMatrix * vec3(translatedAndRotated, 1.0), 1.0); 
       }
@@ -110,7 +113,7 @@ export default class Block {
     WebGL.THROW_NO_GL_ERROR(gl, "BLOCK-initRender");
 
     const prog = game.glProgram;
-    const floatPerInstance = 14;
+    const floatPerInstance = 15;
 
     const a = game.attribute;
     game.vao._1 = gl.createVertexArray();
@@ -144,6 +147,7 @@ export default class Block {
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.uvScale, 2, gl.FLOAT, false, stride, 40, 1);
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.texRotationRad, 1, gl.FLOAT, false, stride, 48, 1);
     WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.layerId, 1, gl.FLOAT, false, stride, 52, 1);
+    WebGL.SETUP_INSTANCED_ATTRIBUTE(gl, a.instanceParallax, 1, gl.FLOAT, false, stride, 56, 1);
 
     game.draw = function(instanceCount) {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, instanceCount);

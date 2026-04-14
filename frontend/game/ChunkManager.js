@@ -13,36 +13,50 @@ export default class ChunkManager {
   }
 
   update() {
-    const { renderDistance, player } = this.game;
+    const { renderDistance, player, nebulaParallax, minStarParallax, chunkSize, backgroundZoom } = this.game;
 
     const [rx, ry] = renderDistance;
-    const [px, py] = player.chunk;
 
-    // Load chunks in render distance
+    // Nebula parallax center
+    const px = Math.floor(player.position[0] * nebulaParallax / (chunkSize * backgroundZoom));
+    const py = Math.floor(player.position[1] * nebulaParallax / (chunkSize * backgroundZoom));
+
+    // Star parallax center — lowest-parallax stars barely move, so their visible
+    // chunks drift far behind the nebula center as the player moves.
+    const spx = Math.floor(player.position[0] * minStarParallax / (chunkSize * backgroundZoom));
+    const spy = Math.floor(player.position[1] * minStarParallax / (chunkSize * backgroundZoom));
+
     // prettier-ignore
-    for (let y = py - ry; y < py + ry; y++) {
-      for (let x = px - rx; x < px + rx; x++) {
-        const id = ChunkManager.ENCODE_ID(x, y);
-
-        if (this.chunks.has(id)) continue;
-
-        if (this.deleted.has(id)) {
-          this.chunks.set(id, this.deleted.get(id).onInsert());
-        } else {
-          this.chunks.set(id, new Chunk(id, this.game, x, y).build().onInsert());
-        }
+    const loadChunk = (x, y) => {
+      const id = ChunkManager.ENCODE_ID(x, y);
+      if (this.chunks.has(id)) return;
+      if (this.deleted.has(id)) {
+        this.chunks.set(id, this.deleted.get(id).onInsert());
+      } else {
+        this.chunks.set(id, new Chunk(id, this.game, x, y).build().onInsert());
       }
-    }
+    };
 
-    // Delete if not in render distance
+    // Load chunks around nebula parallax center
+    // prettier-ignore
+    for (let y = py - ry; y < py + ry; y++)
+      for (let x = px - rx; x < px + rx; x++)
+        loadChunk(x, y);
+
+    // Load chunks around star parallax center (may be a completely different region)
+    // prettier-ignore
+    for (let y = spy - ry; y < spy + ry; y++)
+      for (let x = spx - rx; x < spx + rx; x++)
+        loadChunk(x, y);
+
+    // Only unload if outside BOTH regions
     // prettier-ignore
     for (const [id, chunk] of this.chunks.entries()) {
       const [cx, cy] = chunk.position;
+      const inNebula = Math.abs(cx - px)  <= rx && Math.abs(cy - py)  <= ry;
+      const inStar   = Math.abs(cx - spx) <= rx && Math.abs(cy - spy) <= ry;
 
-      const dx = Math.abs(cx - px), dy = Math.abs(cy - py);
-
-      // prettier-ignore
-      if (dx > rx || dy > ry) {
+      if (!inNebula && !inStar) {
         chunk.onRemove();
         this.deleted.set(id, this.chunks.get(id));
         this.chunks.delete(id);
@@ -56,6 +70,10 @@ export default class ChunkManager {
   }
 
   render() {
-    this.chunks.forEach((chunk, _) => chunk.render());
+    this.chunks.forEach((chunk) => chunk.renderNebula());
+    this.chunks.forEach((chunk) => chunk.renderStars());
+    if (this.game.showChunkDebug) {
+      this.chunks.forEach((chunk) => chunk.debug());
+    }
   }
 }

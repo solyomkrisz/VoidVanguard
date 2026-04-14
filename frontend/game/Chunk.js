@@ -57,9 +57,19 @@ export default class Chunk {
     this.objects.update();
   }
 
+  renderNebula() {
+    this.objects.forEach((object) => object.renderNebula?.());
+  }
+
+  renderStars() {
+    this.objects.forEach((object) => object.renderStars?.());
+  }
+
   render() {
     this.objects.render();
-    this.debug();
+    if (this.game.showChunkDebug) {
+      this.debug();
+    }
   }
 
   // prettier-ignore
@@ -87,6 +97,6 @@ export default class Chunk {
     const y = (1 - csy) * 0.5 * g.canvas.height;
 
     d.drawBox(x, y, size, size, "rgba(0, 255, 0, 1)", 1);
-    d.drawText(x, y, `chunk: (${this.position}), id: ${this.id}`, "20px Arial", "rgba(0, 255, 0, 1)");
+    d.drawText(x, y, `chunk: (${this.position}), id: ${this.id}`, "20px Jersey", "rgba(0, 255, 0, 1)");
   }
 }

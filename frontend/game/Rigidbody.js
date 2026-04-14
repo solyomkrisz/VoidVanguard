@@ -167,7 +167,8 @@ export default class Rigidbody extends Collidable {
         ..._b.vec2_2,
         ..._b.vec2_3,
         obj.getTextureRotation(currentTexture),
-        -1
+        -1,
+        0
       );
     }
 

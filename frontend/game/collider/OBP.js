@@ -211,6 +211,8 @@ export default class OBP extends Collider {
       _b = g.buffer,
       d = g.debugOverlay;
 
+    if (!g.showSpaceshipHitbox) return;
+
     const vertices = [];
 
     for (let i = 0; i < this.worldVertices.length; i += 2) {

@@ -125,8 +125,13 @@ export default class BC extends Collider {
     const screenCoords = vec2.set(b.vec2_1, (x + 1) * 0.5 * g.canvas.width, (1 - y) * 0.5 * g.canvas.height);
     const r = this.r * g.cameraMatrix[0] * 0.5 * g.canvas.width;
 
-    d.drawCircle(...screenCoords, r, "#fff");
-    d.drawText(screenCoords[0], screenCoords[1] - r - 10, `id: ${this.entity.id}`, "20px Arial", "#fff");
-    d.drawText(screenCoords[0] + r, screenCoords[1] + r, this.entity.cell.join(" | "), "20px Arial", "#fff");
+    if (g.showSpaceshipCircle)
+    {
+      d.drawCircle(...screenCoords, r, "#0ff");
+    }
+    if (g.showEntityIds) {
+      d.drawText(screenCoords[0], screenCoords[1] - r - 10, `id: ${this.entity.id}`, "20px Jersey", "#fff");
+      d.drawText(screenCoords[0] + r, screenCoords[1] + r, this.entity.cell.join(" | "), "20px Jersey", "#fff");
+    }
   }
 }
