@@ -1,22 +1,44 @@
-import { dir, element, text } from "../../UI.js";
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
-import userState from "../../../state/user.js";
+import { isLoggedIn } from "/common/common.js";
+import { on, off } from "/common/eventhub.js";
+import { element, text } from "/ui/UI.js";
 
-export default class LogoutButton extends BaseCustomElement {
+export default class LogoutButton extends HTMLElement {
   constructor() {
     super();
+
+    this._elements = {};
+    this._built = false;
+
+    this.onLogin = this.onLogin.bind(this);
+    this.onLogout = this.onLogout.bind(this);
   }
 
   connectedCallback() {
-    if (this._initialized) return;
+    if (this._built) return;
     this.build();
-    this._initialized = true;
+  }
+
+  disconnectedCallback() {
+    off("login", this.onLogin);
+    off("logout", this.onLogout);
+  }
+
+  onLogin(e) {
+    const button = this._elements.button;
+    if (!button) return;
+
+    button.hidden = false;
+  }
+
+  onLogout(e) {
+    const button = this._elements.button;
+    if (!button) return;
+
+    button.hidden = true;
   }
 
   build() {
-    const button = this.appendShadowChild(
-      element("button", text("Kijelentkezés")),
-    );
+    const button = this.appendChild(element("button", text("Kijelentkezés")));
 
     button.addEventListener("click", async () => {
       if (!localStorage.getItem("access_token")) return;
@@ -37,14 +59,30 @@ export default class LogoutButton extends BaseCustomElement {
         console.error("Logout error:", error);
       }
 
-      userState.reset();
+      if (window?.VoidVanguard?.user) {
+        const oldId = window.VoidVanguard.user?.id;
 
-      for (const state of Array.from(
-        document.querySelectorAll("state-provider[as='user']"),
-      )) {
-        state.reset();
+        window.VoidVanguard.user = {};
+
+        document.dispatchEvent(
+          new CustomEvent("logout", {
+            detail: {
+              oldId,
+              newId: null,
+            },
+          }),
+        );
       }
     });
+
+    if (!isLoggedIn()) button.hidden = true;
+
+    this._elements.button = button;
+
+    on("login", this.onLogin);
+    on("logout", this.onLogout);
+
+    this._built = true;
   }
 }
 

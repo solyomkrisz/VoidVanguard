@@ -39,49 +39,7 @@
     </style>
   </head>
   <body>
-    <state-provider>
-      <state-provider
-        as="user"
-        src="/api/sessions"
-        method="POST"
-      ></state-provider>
-      <state-provider
-        as="profile"
-        state="user"
-        subscribe-to="id"
-        subscribe-with="src"
-        src-prefix="/api/profiles/"
-      ></state-provider>
-      <state-provider
-        as="friendSummary"
-        src="/api/friends?include=incomingCount"
-      ></state-provider>
-
-      <!-- account quick manager -->
-      <div>
-        <span state="user" subscribe-to="username">Logged out</span>
-        <render-if state="user" if="local.id">
-          <render-if state="profile" if="local.user_id">
-            <a
-              state="profile"
-              subscribe-to="user_id"
-              subscribe-with="href"
-              href-prefix="/profile/"
-              >Profil megtekintése</a
-            >
-          </render-if>
-          <render-if state="profile" if="!local.user_id">
-            <a href="/profile/create">Profil létrehozása</a>
-          </render-if>
-          <span
-            >Beérkező barátkérelmek:
-            <span state="friendSummary" subscribe-to="incomingCount"></span
-          ></span>
-          <logout-button></logout-button>
-        </render-if>
-      </div>
-    </state-provider>
-
+    <logout-button></logout-button>
     <!-- <account-quick-manager></account-quick-manager>
     <account-quick-manager></account-quick-manager> -->
 

@@ -1,71 +1,56 @@
-import _ from "/ui/component/data/CollectionView.js";
-import _1 from "/ui/component/core/StateProviderElement.js";
-import { debounce } from "../../../common/common.js";
+import { debounce } from "/common/common.js";
 
 export default class SearchBar extends HTMLElement {
-  static get observedAttributes() {
-    return ["base-url"];
+  get controls() {
+    return this.getAttribute("controls");
+  }
+
+  get pageSize() {
+    return this.getAttribute("page-size");
   }
 
   get baseUrl() {
     return this.getAttribute("base-url");
   }
 
-  set baseUrl(value) {
-    this.setAttribute("base-url", value);
-    this.build();
-  }
-
   constructor() {
     super();
+
+    this._built = false;
   }
 
   connectedCallback() {
-    if (this._initialized) return;
     this.build();
-    this._initialized = true;
   }
 
   build() {
-    this.innerHTML += `
-        <input type="text" autocomplete="off" placeholder="Írjon ide a kereséshez" />
-        <state-provider></state-provider>
-    `;
+    if (this._built) return;
 
-    const template = this.querySelector("template");
+    const input = document.createElement("input");
+    input.type = "text";
+    this.insertBefore(input, this.firstChild);
 
-    if (!template) return;
+    const itemList = this.querySelector("search-bar-result-list");
 
-    const fragment = template.content.cloneNode(true);
-    const collection = fragment.querySelector("collection-view");
-    collection.setAttribute("subscribe", "");
-    const stateProvider = this.querySelector("state-provider");
-
-    stateProvider.appendChild(fragment);
-
-    const handleInput = debounce(({ target }) => {
+    const handleInput = debounce(async ({ target }) => {
       const value = target.value;
 
       if (!value) {
-        collection.clear();
+        itemList.reset();
+        itemList.removeAttribute("src");
+
         return;
       }
 
-      stateProvider.src = this.baseUrl.replace(
-        "{value}",
-        encodeURIComponent(target.value),
+      itemList.setAttribute(
+        "src",
+        `/api/users?search=${encodeURIComponent(value)}`,
       );
     }, 1000);
 
-    const input = this.querySelector("input");
-
     input.addEventListener("input", handleInput);
-    input.addEventListener("focus", () => (collection.hidden = false));
-    document.addEventListener("pointerdown", ({ target }) => {
-      if (!this.contains(target)) {
-        collection.hidden = true;
-      }
-    });
+
+    this._built = true;
   }
 }
 

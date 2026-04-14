@@ -38,8 +38,8 @@ router.get(
 router.post(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.POST),
   handleValidation,
   controller.create,
@@ -48,13 +48,19 @@ router.post(
 router.patch(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.PATCH),
   handleValidation,
   controller.update,
 );
 
-router.delete("/", authenticate(), modifyTargetUser(), controller.remove);
+router.delete(
+  "/",
+  authenticate(),
+  upload.none(),
+  modifyTargetUser(),
+  controller.remove,
+);
 
 export default router;

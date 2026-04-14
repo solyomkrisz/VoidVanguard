@@ -3,6 +3,7 @@ import { validate, version } from "uuid";
 import { validationResult } from "express-validator";
 import * as CustomError from "./CustomError.js";
 import Role from "./Role.js";
+import { execute } from "../sql/database.js";
 
 import multer from "multer";
 import path from "path";
@@ -27,7 +28,7 @@ export function createResponse(success, result, message = null) {
 }
 
 export function authenticate(
-  opitons = {
+  options = {
     onValidAccessToken: (_, _1, next) => {
       next();
     },
@@ -43,25 +44,45 @@ export function authenticate(
   },
 ) {
   return function (request, response, next) {
+    // const authorization = request?.headers?.authorization;
+    // if (!authorization) {
+    //   return options.onInvalidAccessToken(request, response, next);
+    // }
+    // const tmp = authorization.split(" ");
+    // if (tmp.length < 2 || tmp[0] !== "Bearer") {
+    //   return options.onInvalidAccessToken(request, response, next);
+    // }
+    // const accessToken = tmp[1];
+    // if (!accessToken) {
+    //   return options.onInvalidAccessToken(request, response, next);
+    // }
+
+    let accessToken;
     const authorization = request?.headers?.authorization;
-    if (!authorization) {
-      return opitons.onInvalidAccessToken(request, response, next);
+
+    if (authorization) {
+      const tmp = authorization?.split?.(" ");
+      if (tmp?.length === 2 && tmp[0] === "Bearer") {
+        accessToken = tmp[1];
+      }
     }
-    const tmp = authorization.split(" ");
-    if (tmp.length < 2 || tmp[0] !== "Bearer") {
-      return opitons.onInvalidAccessToken(request, response, next);
-    }
-    const accessToken = tmp[1];
+
     if (!accessToken) {
-      return opitons.onInvalidAccessToken(request, response, next);
+      accessToken = request?.cookies?.access_token;
     }
+
+    if (!accessToken) {
+      return options.onInvalidAccessToken(request, response, next);
+    }
+
     try {
       const payload = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
       request.user = payload;
       request.targetUser = payload;
-      opitons.onValidAccessToken(request, response, next);
+      options.onValidAccessToken(request, response, next);
     } catch (error) {
-      opitons.onInvalidAccessToken(request, response, next);
+      // console.log(`Access token: ${accessToken}`, error);
+      options.onInvalidAccessToken(request, response, next);
     }
   };
 }
@@ -91,16 +112,15 @@ export function authorize(
 
 export function modifyTargetUser(requiredRole = Role.ADMIN) {
   return function (request, response, next) {
-    if (request.user.role < requiredRole) {
+    if (request?.user?.role < requiredRole) {
       return next();
     }
-    const targetUserId = request?.body?.targetUserId;
+    const targetUserId =
+      request?.body?.targetUserId || request?.query?.targetUserId;
     if (!targetUserId) {
       return next();
     }
-    request.targetUser = {
-      id: targetUserId,
-    };
+    request.targetUser.id = targetUserId;
     next();
   };
 }
@@ -144,4 +164,29 @@ export function handleValidation(request, response, next) {
   const errors = validationResult(request);
   if (!errors.isEmpty()) return handleExpressValidatorErrors(response, errors);
   next();
+}
+
+export const accessTokenLifetimeMin = 15;
+
+export async function runQueryWithPagination(
+  sql,
+  baseParams = [],
+  { limit = null, offset = null } = {},
+) {
+  const limitClause = limit != null ? "LIMIT ?" : "";
+  const offsetClause = offset != null ? "OFFSET ?" : "";
+
+  const finalSql = `
+    ${sql}
+    ${limitClause}
+    ${offsetClause}
+  `;
+
+  const params = [...baseParams];
+
+  if (limit != null) params.push(limit);
+  if (offset != null) params.push(offset);
+
+  const [rows] = await execute(finalSql, params);
+  return rows;
 }

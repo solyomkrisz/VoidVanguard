@@ -26,9 +26,13 @@ export async function createProfile({ userId, role, body }) {
     throw CustomError.TEST;
   }
 
-  return {
-    id: userId,
-  };
+  const profile = await getProfile({
+    userId,
+    requesterId: userId,
+    role,
+  });
+
+  return profile;
 }
 
 export async function getFullProfile({ userId }) {
@@ -97,18 +101,12 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
     recipientId: userId,
   });
 
-  let blockStatus = false;
+  let blockStatus = await block.getBlockStatus({
+    initiatorId: requesterId,
+    recipientId: userId,
+  });
 
-  try {
-    await block.checkBlockStatus({
-      initiatorId: requesterId,
-      recipientId: userId,
-    });
-  } catch {
-    blockStatus = true;
-  }
-
-  const allFriends = await friend.getAllFriends({ userId });
+  // const friendListPreview = await friend.list({ userId, limit: 6 });
 
   if (
     userId === requesterId ||
@@ -122,8 +120,8 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
       display_name,
       description,
       friendship_status: friendshipStatus,
-      is_blocked: blockStatus,
-      all_friends: allFriends,
+      block_status: blockStatus,
+      // friend_list_preview: friendListPreview,
     };
   }
 
@@ -133,7 +131,7 @@ export async function getProfile({ userId, requesterId, role = -1 }) {
     display_name,
     description: "",
     friendship_status: friendshipStatus,
-    is_blocked: blockStatus,
-    all_friends: allFriends,
+    block_status: blockStatus,
+    // friend_list_preview: friendListPreview,
   };
 }

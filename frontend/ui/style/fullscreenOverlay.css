@@ -17,6 +17,6 @@
   backdrop-filter: blur(10px);
 }
 
-toggle-button {
+#close-button {
   align-self: flex-end;
 }

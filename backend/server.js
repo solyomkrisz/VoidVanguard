@@ -5,6 +5,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import endpoints from "./api/api.js";
 
+import Role from "./common/Role.js";
+import { authenticate, authorize } from "./common/common.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -26,7 +29,43 @@ router.get("/", (request, response) => {
 
 // Profil oldal
 router.get("/profile/:id", (request, response) => {
-  response.sendFile(path.join(__dirname, "../frontend/profile.html"));
+  response.sendFile(path.join(__dirname, "../frontend/ui/html/profile.html"));
+});
+
+// Én oldal
+router.get("/me", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/ui/html/me.html"));
+});
+
+// Refresh oldal
+// router.get("/refresh", (request, response) => {
+//   response.sendFile(path.join(__dirname, "../frontend/ui/html/refresh.html"));
+// });
+
+// Admin oldal
+// router.get(
+//   "/admin",
+//   authenticate({
+//     onValidAccessToken: (request, _1, next) => next(),
+//     onInvalidAccessToken: (request, response, _1) => {
+//       response.redirect("/refresh?original=/admin");
+//     },
+//   }),
+//   authorize(Role.ADMIN, {
+//     onMatch: (_, _1, next) => next(),
+//     onMismatch: (_, response, _1) => {
+//       response.sendFile(path.join(__dirname, "../frontend/ui/html/error.html"));
+//     },
+//   }),
+//   (request, response) => {
+//     response.sendFile(path.join(__dirname, "../protected/ui/html/admin.html"));
+//   },
+// );
+
+router.get("/admin", (request, response) => {
+  response.sendFile(
+    path.join(__dirname, "../frontend/ui/html/admin-loader.html"),
+  );
 });
 
 // Teszt oldal
@@ -38,6 +77,24 @@ app.use("/", router);
 app.use("/api", endpoints);
 
 app.use(express.static(path.join(__dirname, "../frontend"))); //?frontend mappa tartalmának betöltése az oldal működéséhez
+
+app.use(
+  "/protected",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, response, _1) => {
+      response.redirect("/");
+    },
+  }),
+  authorize(Role.ADMIN, {
+    onMatch: (_, _1, next) => next(),
+    onMismatch: (_, response, _1) => {
+      response.sendFile(path.join(__dirname, "../frontend/ui/html/error.html"));
+    },
+  }),
+  express.static(path.join(__dirname, "../protected")),
+);
+
 app.listen(port, ip, () => {
   console.log(`Szerver elérhetősége: http://${ip}:${port}`);
 });

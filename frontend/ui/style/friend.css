@@ -1,0 +1,23 @@
+.friend-manager {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+friend-list-full .item-container {
+  margin-bottom: 20px;
+}
+
+friend-list-item,
+friend-list-item .friend-list-item,
+friend-list-item > a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+friend-list-item img {
+  width: 32px;
+  height: 32px;
+}

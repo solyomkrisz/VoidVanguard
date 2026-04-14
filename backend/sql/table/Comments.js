@@ -25,7 +25,7 @@ class Comments extends Table {
     return !!rows.length;
   }
 
-  async lazySelectByTarget(targetId, limit, offset) {
+  async lazySelectByTarget(requesterId, targetId, limit, offset) {
     const [rows] = await execute(
       `
         SELECT
@@ -35,8 +35,10 @@ class Comments extends Table {
           DATE_FORMAT(comments.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
           username AS author,
 
-          COUNT(likes.user_id) AS likes,
-          COUNT(dislikes.user_id) AS dislikes
+          user_reaction.type AS user_reaction_type,
+
+          COUNT(DISTINCT likes.user_id) AS likes,
+          COUNT(DISTINCT dislikes.user_id) AS dislikes
 
         FROM comments
 
@@ -48,13 +50,17 @@ class Comments extends Table {
         LEFT JOIN reactions as dislikes
           ON dislikes.target_id = comments.id AND dislikes.type = 'dislike'
 
+        LEFT JOIN reactions AS user_reaction
+          ON user_reaction.target_id = comments.id
+          AND user_reaction.user_id = ?
+
         WHERE comments.target_id = ?
 
         GROUP BY comments.id
         ORDER BY created_at DESC, comments.id
         DESC LIMIT ? OFFSET ?
       `,
-      [targetId, limit, offset],
+      [requesterId ?? -1, targetId, limit, offset],
     );
 
     return rows;
@@ -68,7 +74,7 @@ class Comments extends Table {
     return total;
   }
 
-  async select(id) {
+  async select(requesterId, id) {
     const [rows] = await execute(
       `
         SELECT
@@ -78,8 +84,10 @@ class Comments extends Table {
           DATE_FORMAT(comments.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
           username AS author,
 
-          COUNT(likes.user_id) AS likes,
-          COUNT(dislikes.user_id) AS dislikes
+          user_reaction.type AS user_reaction_type,
+
+          COUNT(DISTINCT likes.user_id) AS likes,
+          COUNT(DISTINCT dislikes.user_id) AS dislikes
 
         FROM comments
 
@@ -91,9 +99,13 @@ class Comments extends Table {
         LEFT JOIN reactions as dislikes
           ON dislikes.target_id = comments.id AND dislikes.type = 'dislike'
 
+        LEFT JOIN reactions AS user_reaction
+          ON user_reaction.target_id = comments.id
+          AND user_reaction.user_id = ?
+
         WHERE comments.id = ?
       `,
-      [id],
+      [requesterId ?? -1, id],
     );
 
     return rows.length ? rows[0] : null;
@@ -119,6 +131,14 @@ class Comments extends Table {
     const [result] = await execute(
       "DELETE entities FROM entities INNER JOIN comments ON comments.id = entities.id WHERE comments.id = ? AND comments.author_id = ?",
       [commentId, userId],
+    );
+    return result;
+  }
+
+  async adminDelete(commentId) {
+    const [result] = await execute(
+      "DELETE entities FROM entities INNER JOIN comments ON comments.id = entities.id WHERE comments.id = ?",
+      [commentId],
     );
     return result;
   }

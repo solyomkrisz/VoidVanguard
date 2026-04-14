@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/global.css" />
+    <link rel="stylesheet" href="/ui/style/searchbox.css" />
+    <link rel="stylesheet" href="/ui/style/profile.css" />
+    <link rel="stylesheet" href="/ui/style/friend.css" />
+    <link rel="stylesheet" href="/ui/style/dashedBorderBox.css" />
+    <link rel="stylesheet" href="/ui/style/skeleton.css" />
+    <link rel="stylesheet" href="/ui/style/dropdownMenu.css" />
+    <title>Profil</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="searchbox">
+        <input type="text" />
+        <div class="searchbox-item-list"></div>
+        <template>
+          <div
+            class="searchbox-list-item"
+            onclick="onSearchboxItemClick(event)"
+          >
+            <input type="hidden" data-bind="user_id" bind-target="value" />
+            <img data-bind="avatar" bind-target="src" />
+            <div data-bind="display_name"></div>
+          </div>
+        </template>
+      </div>
+      <account-quick-manager></account-quick-manager>
+    </nav>
+
+    <full-profile></full-profile>
+
+    <template id="dashed-box-template">
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        style="
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        "
+      >
+        <rect
+          x="0"
+          y="0"
+          width="100"
+          height="100"
+          fill="none"
+          stroke="#333"
+          stroke-width="4"
+          vector-effect="non-scaling-stroke"
+          stroke-dasharray="10 5"
+          style="animation: dash 1s infinite linear"
+        />
+      </svg>
+    </template>
+
+    <script>
+      function onSearchboxItemClick(event) {
+        event.currentTarget.parentElement.hidden = true;
+
+        const userId = event.currentTarget?.querySelector(
+          "input[type='hidden']",
+        )?.value;
+
+        if (userId) {
+          window.history.replaceState({}, "", userId);
+          document.querySelector("full-profile").userId = userId;
+        }
+      }
+    </script>
+
+    <script type="module">
+      import { onDOMContentLoaded, isLoggedIn } from "/common/common.js";
+      import Searchbox from "/ui/js/Searchbox.js";
+      import "/ui/component/profile/FullProfile.js";
+      import "/ui/component/auth/AccountQuickManager.js";
+      import "/ui/component/auth/LogoutButton.js";
+
+      document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+
+      Searchbox(
+        ".searchbox",
+        "/api/profiles?search=",
+        (response) => response.result.profiles,
+      );
+
+      const userId = window.location.pathname.split("/").pop();
+      document.querySelector("full-profile").userId = userId;
+    </script>
+  </body>
+</html>

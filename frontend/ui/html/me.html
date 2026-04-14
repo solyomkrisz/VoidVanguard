@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/viewSwitcher.css" />
+    <link rel="stylesheet" href="/ui/style/friend.css" />
+    <title>Felhasználó kezelése</title>
+  </head>
+  <body>
+    <h1>Fiókkezelő központ</h1>
+
+    <view-switcher layout="sidebar" initial="account-manager" no-cache>
+      <template id="account-manager" data-name="Fiók szerkesztése">
+        <h1>Fiók szerkesztése</h1>
+        <account-form-restorer user-id auto>
+          <account-form action="update" restore with-validator></account-form>
+        </account-form-restorer>
+      </template>
+
+      <template id="accepted-friend-requests" data-name="Barátok">
+        <h1>Barátok</h1>
+        <friend-list-full controls="pagination" page-size="6" user-id auto>
+        </friend-list-full>
+      </template>
+
+      <template id="incoming-friend-requests" data-name="Bejövő barátkérelmek">
+        <h1>Bejövő barátkérelmek</h1>
+        <friend-list-full
+          controls="pagination"
+          page-size="6"
+          filter="status=pending&direction=incoming"
+          user-id
+          auto
+        >
+        </friend-list-full>
+      </template>
+
+      <template id="outgoing-friend-requests" data-name="Kimenő barátkérelmek">
+        <h1>Kimenő barátkérelmek</h1>
+        <friend-list-full
+          controls="pagination"
+          page-size="6"
+          filter="status=pending&direction=outgoing"
+          user-id
+          auto
+        ></friend-list-full>
+      </template>
+
+      <template id="blocked-users" data-name="Letiltott felhasználók">
+        <h1>Letiltott felhasználók</h1>
+        <blocked-user-list
+          controls="pagination"
+          page-size="6"
+          user-id
+          auto
+        ></blocked-user-list>
+      </template>
+    </view-switcher>
+
+    <script type="module">
+      import "/ui/component/layout/ViewSwitcher.js";
+      import "/ui/component/profile/FriendListFull.js";
+      import "/ui/component/account/BlockedUserList.js";
+      import "/ui/component/account/AccountFormRestorer.js";
+      import "/ui/component/account/AccountForm.js";
+      import { onDOMContentLoaded, isLoggedIn } from "/common/common.js";
+      import { on, off } from "/common/eventhub.js";
+
+      document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+
+      on("login", () => {
+        Array.from(document.querySelectorAll("[user-id]")).forEach((item) => {
+          item.setAttribute("user-id", window.VoidVanguard.user.id);
+        });
+      });
+
+      on("logout", () => {
+        window.location.href = "/";
+      });
+
+      const url = new URL(window.location.href);
+      const active = new URLSearchParams(url.searchParams).get("active");
+
+      if (active) {
+        requestAnimationFrame(() => {
+          document.querySelector("view-switcher")?.setActive(active);
+        });
+      }
+    </script>
+  </body>
+</html>

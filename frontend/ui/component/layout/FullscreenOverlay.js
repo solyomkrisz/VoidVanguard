@@ -1,19 +1,22 @@
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
-import _ from "/ui/component/button/ToggleButton.js";
-import { dir, element, text } from "/ui/UI.js";
+import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
 export default class FullscreenOverlay extends BaseCustomElement {
   static get observedAttributes() {
-    return ["target"];
+    return ["no-close"];
   }
 
-  get target() {
-    return this.getAttribute("target");
+  set noClose(value) {
+    if (value) {
+      this.setAttribute("no-close", "");
+    } else {
+      this.removeAttribute("no-close");
+    }
   }
 
-  set target(value) {
-    this.setAttribute("target", value);
+  get noClose() {
+    return this.hasAttribute("no-close");
   }
 
   constructor() {
@@ -21,17 +24,36 @@ export default class FullscreenOverlay extends BaseCustomElement {
       path.join(dir, "global.css"),
       path.join(dir, "fullscreenOverlay.css"),
     ]);
+
+    this._elements = {};
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "no-close") {
+      this.updateCloseButtonVisibility();
+    }
+  }
+
+  updateCloseButtonVisibility() {
+    const closeButton = this._elements?.closeButton;
+    if (!closeButton) return;
+    closeButton.hidden = this.noClose;
   }
 
   connectedCallback() {
     if (this._initialized) return;
 
     this.setShadowInnerHTML(`
-      <toggle-button target="${this.target}">
-        <button>Bezár</button>
-      </toggle-button>
+      <button id="close-button">Bezár</button>
       <slot></slot>
     `);
+
+    const closeButton = this.queryShadowSelector("#close-button");
+    closeButton.addEventListener("click", () => {
+      this.hidden = true;
+    });
+    this._elements.closeButton = closeButton;
+    this.updateCloseButtonVisibility();
 
     this._initialized = true;
   }

@@ -24,8 +24,8 @@ router.get(
 router.post(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.POST),
   handleValidation,
   controller.create,

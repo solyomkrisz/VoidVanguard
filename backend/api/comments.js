@@ -13,18 +13,31 @@ const router = express.Router();
 
 router.get(
   "/",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  modifyTargetUser(),
   checkSchema(validator.GET),
   handleValidation,
   controller.lazySelectComments,
 );
 
-router.get("/:id", controller.getComment);
+router.get(
+  "/:id",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  modifyTargetUser(),
+  controller.getComment,
+);
 
 router.post(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.POST),
   handleValidation,
   controller.createComment,
@@ -33,8 +46,8 @@ router.post(
 router.patch(
   "/",
   authenticate(),
-  modifyTargetUser(),
   upload.none(),
+  modifyTargetUser(),
   checkSchema(validator.PATCH),
   handleValidation,
   controller.updateComment,

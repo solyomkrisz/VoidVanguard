@@ -91,8 +91,27 @@ export const path = Object.freeze({
 
 export async function onDOMContentLoaded() {
   try {
-    const result = await net.send("/api/sessions", { method: "POST" });
-    result.success && userState.from(result.result);
+    const response = await net.send("/api/sessions", { method: "POST" });
+
+    if (response.success) {
+      if (!window.VoidVanguard) {
+        window.VoidVanguard = {};
+      }
+
+      window.VoidVanguard.user = {
+        ...response.result,
+      };
+
+      document.dispatchEvent(
+        new CustomEvent("login", {
+          detail: {
+            user: response.result,
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
   } catch (error) {
     return;
   }
@@ -108,4 +127,67 @@ export function debounce(fn, delay) {
       fn.apply(this, args);
     }, delay);
   };
+}
+
+export function toCamelCase(str) {
+  return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+}
+
+function isIndex(key) {
+  return String(Number(key)) === key;
+}
+
+export function lookupProperty(root, path = "") {
+  let current = root;
+  if (current == null) return current;
+
+  for (const part of path.split(".")) {
+    const key = isIndex(part) ? Number(part) : part;
+
+    current = current[key];
+
+    if (current == null) {
+      return current;
+    }
+  }
+
+  return current;
+}
+
+export function isEqual(obja, objb, path = "") {
+  const vala = lookupProperty(obja, path);
+  const valb = lookupProperty(objb, path);
+
+  return Object.is(vala, valb);
+}
+
+export function isLoggedIn() {
+  return Boolean(window.VoidVanguard?.user?.id);
+}
+
+export function isAdmin() {
+  return isLoggedIn() && window.VoidVanguard.user?.role >= 1;
+}
+
+export function setFieldValue(field, value) {
+  if (field instanceof RadioNodeList) {
+    Array.from(field).forEach((input) => {
+      input.checked = input.value === value;
+    });
+    return;
+  }
+
+  if (field.type === "checkbox") {
+    field.checked = Boolean(value);
+  } else if (
+    field.tagName === "SELECT" &&
+    field.multiple &&
+    Array.isArray(value)
+  ) {
+    Array.from(field.options).forEach((option) => {
+      option.selected = value.includes(option.value);
+    });
+  } else {
+    field.value = value ?? "";
+  }
 }

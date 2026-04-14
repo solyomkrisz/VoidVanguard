@@ -5,6 +5,7 @@ import Column from "../Column.js";
 import { execute } from "../database.js";
 import * as CustomError from "../../common/CustomError.js";
 import Password from "../../common/Password.js";
+import { runQueryWithPagination } from "../../common/common.js";
 
 class Users extends Table {
   constructor() {
@@ -19,6 +20,34 @@ class Users extends Table {
         new Column("created_at"),
       ],
     });
+  }
+
+  async search(query, options = {}) {
+    const sql = `
+      SELECT users.id, users.username, profiles.display_name, profiles.avatar
+      FROM users
+      LEFT JOIN profiles ON users.id = profiles.user_id
+      WHERE
+        users.username LIKE ? OR
+        profiles.display_name LIKE ?
+    `;
+
+    return runQueryWithPagination(sql, [`${query}%`, `${query}%`], options);
+  }
+
+  async countForSearch(query) {
+    const sql = `
+      SELECT COUNT(DISTINCT users.id) AS count
+      FROM users
+      LEFT JOIN profiles ON users.id = profiles.user_id
+      WHERE
+        users.username LIKE ? OR
+        profiles.display_name LIKE ?
+    `;
+
+    const [[{ count }]] = await execute(sql, [`${query}%`, `${query}%`]);
+
+    return count;
   }
 
   async exists(id) {
@@ -78,6 +107,14 @@ class Users extends Table {
     return rows.length ? rows[0] : null;
   }
 
+  async select(id) {
+    const [rows] = await execute(
+      "SELECT id, username, role, email, gender FROM users WHERE id = ?",
+      [id],
+    );
+    return rows.length ? rows[0] : null;
+  }
+
   async update(id, updates) {
     const columns = Object.keys(updates);
 
@@ -86,7 +123,10 @@ class Users extends Table {
     const set = columns.map((i) => `${i} = ?`).join(",");
     const values = [...Object.values(updates), id];
 
-    const [result] = await execute(`UPDATE SET ${set} WHERE id = ?`, values);
+    const [result] = await execute(
+      `UPDATE users SET ${set} WHERE id = ?`,
+      values,
+    );
 
     return result.affectedRows > 0;
   }

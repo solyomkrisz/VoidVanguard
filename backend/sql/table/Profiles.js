@@ -21,7 +21,7 @@ class Profiles extends Table {
 
   async like(query) {
     const [rows] = await execute(
-      "SELECT user_id, avatar, display_name FROM profiles WHERE display_name LIKE ?",
+      "SELECT user_id, avatar, display_name FROM profiles WHERE display_name LIKE ? LIMIT 6",
       [`${query}%`],
     );
     return rows;
