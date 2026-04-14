@@ -465,7 +465,7 @@ export default class FullProfile extends HTMLElement {
           </div>
         </div>
         <div class="profile-footer">
-          <comment-section controls="pagination" page-size="2" ${this.admin ? "admin" : ""}>
+          <comment-section controls="scroll" page-size="2" ${this.admin ? "admin" : ""}>
             <comment-form ${this.admin ? "admin" : ""}></comment-form>
           </comment-section>
         </div>

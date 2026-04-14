@@ -47,7 +47,7 @@
         <button onclick="closeFullProfileContainer()">Bezár</button>
       </div>
       <admin-module>
-        <full-profile admin></full-profile>
+        <full-profile style="overflow-y: scroll" admin></full-profile>
       </admin-module>
     </div>
 
@@ -158,7 +158,9 @@
       await importWithRefresh(
         "/protected/ui/component/data/SearchBarResultList.js",
       );
-      await importWithRefresh("/protected/ui/component/account/AccountForm.js");
+      await importWithRefresh(
+        "/protected/ui/component/account/AdminAccountForm.js",
+      );
       await importWithRefresh("/ui/component/account/AccountFormRestorer.js");
       await importWithRefresh("/protected/ui/component/admin/AdminModule.js");
       await importWithRefresh(

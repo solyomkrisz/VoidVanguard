@@ -237,7 +237,7 @@ export default class LazyItemList extends HTMLElement {
       }
       this._hasNext = this.extractHasNext(response);
 
-      if (this._controls === "scroll") {
+      if (this.controls === "scroll") {
         this.reobserve();
       }
     } catch (error) {
