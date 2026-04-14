@@ -17,20 +17,41 @@ export default class TooltipTemplate extends HTMLElement {
         :host {
           overflow-wrap: break-word;
           word-break: break-word;
-          padding: 10px;
-          border-radius: 8px;
-          background-color: #555;
-          color: white;
-          -webkit-box-shadow: inset 6px -6px 6px -5px #898989; 
-          box-shadow: inset 6px -6px 6px -5px #898989;
+          padding: 0.5vmin 1.1vmin 0.6vmin;
+          background: rgba(6, 8, 20, 0.88);
+          border-right: 2px solid #1e3a5f;
+          border-bottom: 2px solid #1e3a5f;
+          border-left: 2px solid #0a1628;
+          border-top: 2px solid #1e3a5f;
+          font-family: 'Jersey', 'Courier New', monospace;
+          -webkit-font-smoothing: none;
+          font-smooth: never;
         }
 
         p {
-            margin: 0;
+          margin: 0;
+          font-size: 1.4vmin;
+          color: #c8e6ff;
+          text-shadow: 0 0 6px rgba(100, 180, 255, 0.55), 1px 1px 0 #000;
+          line-height: 1.5;
+        }
+
+        strong {
+          font-size: 1.6vmin;
+          color: #4a7fb5;
+          letter-spacing: 0.12em;
+          text-shadow: 0 0 4px #0d2a50;
+          text-transform: uppercase;
         }
 
         hr {
-          margin-block: 6px;
+          margin-block: 4px;
+          border: none;
+          border-top: 1px solid #1e3a5f;
+        }
+
+        span {
+          color: #c8e6ff;
         }
     `);
     this.shadowDOM.adoptedStyleSheets = [sheet];

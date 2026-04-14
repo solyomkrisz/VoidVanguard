@@ -19,6 +19,31 @@ import * as UI from "./ui/UI.js";
 import _ from "./ui/component/game/ContextMenuTemplate.js";
 import * as jwt from "./common/jwt.js";
 
+// Wire up settings button at page load so it works on the login screen too
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPanel = document.getElementById("settingsPanel");
+settingsBtn.addEventListener("click", () => {
+  const isOpen = settingsPanel.style.display === "flex" && !settingsPanel.classList.contains("closing");
+
+  if (isOpen) {
+    settingsPanel.classList.remove("open");
+    settingsPanel.classList.add("closing");
+    settingsPanel.addEventListener("animationend", () => {
+      settingsPanel.style.display = "none";
+      settingsPanel.classList.remove("closing");
+    }, { once: true });
+  } else {
+    settingsPanel.style.display = "flex";
+    settingsPanel.classList.remove("closing");
+    void settingsPanel.offsetWidth;
+    settingsPanel.classList.add("open");
+  }
+
+  settingsBtn.classList.remove("pressed");
+  void settingsBtn.offsetWidth;
+  settingsBtn.classList.add("pressed");
+});
+
 // Most itt igy megvarjuk hogy legyen login
 document.addEventListener("login", () => {
   console.log("Login esemeny megkapva, jatek inditasa...");
@@ -171,14 +196,14 @@ function initializeGame() {
   debug.addElement("seed");
   debug.bindSource("seed", "seed");
 
-  debug.addElement("playerRotation");
+  debug.addElement("playerRotation", "12vmin");
   debug.bindSource(
     "playerRotation",
     "playerRotation",
     (p) => (p.src.playerRotation = game.player.rotation),
   );
 
-  debug.addElement("P XY");
+  debug.addElement("P XY", "18vmin");
   debug.bindSource(
     "P XY",
     "playerPosition",
@@ -189,7 +214,7 @@ function initializeGame() {
       ]),
   );
 
-  debug.addElement("M XY");
+  debug.addElement("M XY", "18vmin");
   debug.bindSource(
     "M XY",
     "mousePosition",
@@ -202,6 +227,45 @@ function initializeGame() {
 
   game.setDebugPanel(debug);
   game.startDebugging();
+
+  // Wire up game flags from checkbox states (HTML is the single source of truth)
+  const toggleNebula      = document.getElementById("toggleNebula");
+  const toggleChunkDebug  = document.getElementById("toggleChunkDebug");
+  const toggleGridCells   = document.getElementById("toggleGridCells");
+  const toggleEntityIds   = document.getElementById("toggleEntityIds");
+  const toggleSpaceshipCircle = document.getElementById("toggleSpaceshipCircle");
+  const toggleSpaceshipHitbox = document.getElementById("toggleSpaceshipHitbox");
+
+  game.showNebula      = toggleNebula.checked;
+  game.showChunkDebug  = toggleChunkDebug.checked;
+  game.showGridCells   = toggleGridCells.checked;
+  game.showEntityIds   = toggleEntityIds.checked;
+  game.showSpaceshipCircle = toggleSpaceshipCircle.checked;
+  game.showSpaceshipHitbox = toggleSpaceshipHitbox.checked;
+
+  toggleNebula.addEventListener("change", (e) => {
+    game.showNebula = e.target.checked;
+  });
+
+  toggleChunkDebug.addEventListener("change", (e) => {
+    game.showChunkDebug = e.target.checked;
+  });
+
+  toggleGridCells.addEventListener("change", (e) => {
+    game.showGridCells = e.target.checked;
+  });
+
+  toggleEntityIds.addEventListener("change", (e) => {
+    game.showEntityIds = e.target.checked;
+  });
+
+  toggleSpaceshipCircle.addEventListener("change", (e) => {
+    game.showSpaceshipCircle = e.target.checked;
+  });
+
+  toggleSpaceshipHitbox.addEventListener("change", (e) => {
+    game.showSpaceshipHitbox = e.target.checked;
+  });
 }
 
 // Check if already logged in on page load

@@ -89,7 +89,7 @@ export default class Mouse extends Rigidbody {
     const dir = vec2.sub(_b.vec2_1, this.position, dragged.position);
     vec2.normalize(dir, dir);
 
-    _b.force_1.setFromMagDir(20, dir);
+    _b.force_1.setFromMagDir(50, dir);
     dragged.netForce.apply(_b.force_1);
   }
 

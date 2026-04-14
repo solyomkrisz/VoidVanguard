@@ -11,6 +11,18 @@ export default class AutopilotToggle extends HTMLElement {
       :host {
         display: flex;
         align-items: center;
+        gap: 0.5vmin;
+        cursor: pointer;
+        user-select: none;
+      }
+      label {
+        cursor: pointer;
+      }
+      input[type="checkbox"] {
+        accent-color: #4a90e2;
+        width: 1.2vmin;
+        height: 1.2vmin;
+        cursor: pointer;
       }
     `);
     this.shadowDOM.adoptedStyleSheets = [sheet];

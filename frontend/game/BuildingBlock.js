@@ -21,10 +21,13 @@ export default class BuildingBlock extends Rigidbody {
     this.model.init(this);
 
     this.contextMenuTemplate = game.contextMenu.template.ENEMY_CONTEXT_MENU;
+    this.snapCooldown = 15;
   }
 
   update() {
     this.rotation = 0;
+
+    if (this.snapCooldown > 0) this.snapCooldown--;
 
     this.updateVelocity();
     this.updatePosition();
@@ -74,7 +77,7 @@ export default class BuildingBlock extends Rigidbody {
 
     other.is(Type.MOUSE) && mouse.isDown && mouse.attach(this);
     
-    if (this.posDiff() < 0.5 && this.isDragged() && other.is(Type.PLAYER)) {
+    if (this.snapCooldown <= 0 && this.posDiff() < 0.5 && this.isDragged() && other.is(Type.PLAYER)) {
       vec2.copy(_b.vec2_1, this.position);
       const nLP = vec2.sub(_b.vec2_1, _b.vec2_1, other.position); // newLocalPosition
 

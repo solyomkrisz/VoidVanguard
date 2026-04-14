@@ -20,13 +20,19 @@ export default class FlightComputer extends HTMLElement {
         width: 100%;
         max-height: 100px;
         height: 100%;
-        padding: 10px 20px;
+        padding: 0.8vmin 1.5vmin;
         border-top-left-radius: 8px;
         border-top-right-radius: 8px;
-        background-color: #555;
-        color: #fff;
-        -webkit-box-shadow: inset 8px -8px 6px -5px #898989; 
-        box-shadow: inset 8px -8px 6px -5px #898989;
+        background: #1a1a28;
+        border: 2px solid #2a5a9e;
+        border-bottom: none;
+        box-shadow: 0 -4px 0 0 #0d0d15;
+        color: #6ab8ff;
+        font-size: 1.4vmin;
+        font-family: 'Jersey', 'Courier New', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.05vmin;
+        text-shadow: 1px 1px 0 #000;
       }
     `);
     this.shadowDOM.adoptedStyleSheets = [sheet];

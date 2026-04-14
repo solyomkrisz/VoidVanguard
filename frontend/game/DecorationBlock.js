@@ -14,12 +14,20 @@ export default class DecorationBlock {
     this.density = density;
     this.id = `${this.position[0]},${this.position[1]}`;
     this.pixels = null;
+    this.starPixels = null;
     this.textureLayerId = null;
+    this.starTextureLayerId = null;
+    this.instanceParallax = game.nebulaParallax;
   }
 
   onRemove() {
     this.game.layerId.release(this.textureLayerId);
     this.textureLayerId = null;
+
+    if (this.starTextureLayerId) {
+      this.game.layerId.release(this.starTextureLayerId);
+      this.starTextureLayerId = null;
+    }
 
     return this;
   }
@@ -36,13 +44,17 @@ export default class DecorationBlock {
           if (this.density > 0.9) radius = 6;
           else if (this.density > 0.8) radius = 2;
 
-          this.game.sg.populate(this.position, this.pixels, radius);
+          this.starPixels = new Uint8ClampedArray(DecorationBlock.TEXTURE_WIDTH * DecorationBlock.TEXTURE_HEIGHT * 4);
+          const { distanceFactor } = this.game.sg.populate(this.position, this.starPixels, radius);
+          this.instanceParallax = this.game.nebulaParallax * (0.01 + distanceFactor * 0.15);
         }
 
         this.createTexture();
+        if (this.starPixels) this.createStarTexture();
       }, 10);
     } else {
       this.createTexture();
+      if (this.starPixels) this.createStarTexture();
     }
 
     return this;
@@ -53,8 +65,17 @@ export default class DecorationBlock {
   }
 
   // prettier-ignore
-  render() {
-    this.game.dataCollector.push(0, 0, ...this.position, 1, 0, 0, 1, 0, 0, 1, 1, 0, this.textureLayerId);
+  renderNebula() {
+    if (this.game.showNebula && this.textureLayerId) {
+      this.game.dataCollector.push(0, 0, ...this.position, 1, 0, 0, 1, 0, 0, 1, 1, 0, this.textureLayerId, this.game.nebulaParallax);
+    }
+  }
+
+  // prettier-ignore
+  renderStars() {
+    if (this.game.showNebula && this.starTextureLayerId) {
+      this.game.dataCollector.push(0, 0, ...this.position, 1, 0, 0, 1, 0, 0, 1, 1, 0, this.starTextureLayerId, this.instanceParallax);
+    }
 
     // this.debug();
   }
@@ -69,6 +90,19 @@ export default class DecorationBlock {
 
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.game.textureArray);
     gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, this.textureLayerId, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels);
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
+  }
+
+  // prettier-ignore
+  createStarTexture() {
+    if (this.starTextureLayerId) return;
+
+    const gl = this.game.gl;
+
+    this.starTextureLayerId = this.game.layerId.get();
+
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.game.textureArray);
+    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, this.starTextureLayerId, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.starPixels);
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
   }
 

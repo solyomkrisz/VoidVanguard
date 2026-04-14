@@ -33,7 +33,7 @@ export default class DynamicTooltip extends HTMLElement {
         z-index: 1001;
         user-select: none;
         pointer-events: none;
-        max-width: 250px;
+        max-width: 350px;
       }
     `);
     this.shadowDOM.adoptedStyleSheets = [sheet];

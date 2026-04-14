@@ -5,15 +5,25 @@ export default class DebugPanel {
 
   constructor(src = null) {
     this.container = document.createElement("div");
-    this.container.style.cssText =
-      "position:absolute;z-index:1000;top:0;left:0;padding:10px;font-family:Arial,Helvetica,sans-serif;font-size:22px;color:#fff;font-size:min(min(4vw,4vh), 24px);";
+    this.container.style.cssText = [
+      "position:fixed",
+      "top:0",
+      "left:50%",
+      "transform:translateX(-50%)",
+      "z-index:900",
+      "display:flex",
+      "flex-direction:row",
+      "align-items:stretch",
+      "pointer-events:none",
+      "font-family:'Jersey','Courier New',monospace",
+      "font-smooth:never",
+      "-webkit-font-smoothing:none",
+    ].join(";");
     document.body.appendChild(this.container);
 
     this.src = src;
 
-    this.ogDisplayValue = this.container.style.display
-      ? this.container.style.display
-      : "block";
+    this.ogDisplayValue = "flex";
 
     this.updateInterval = 1000; // ms
     this.updateFunctions = new Array();
@@ -42,15 +52,49 @@ export default class DebugPanel {
     this.src = src;
   }
 
-  addElement(name) {
-    const a = document.createElement("div");
-    a.style.cssText = "display:flex;gap:5px;";
-    a.appendChild(document.createTextNode(`${name}:`));
-    const b = document.createElement("div");
-    a.appendChild(b);
-    this.container.appendChild(a);
+  addElement(name, width = "7vmin") {
+    const cell = document.createElement("div");
+    cell.style.cssText = [
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "justify-content:center",
+      "padding:0.3vmin 1.1vmin 0.5vmin",
+      "background:rgba(6,8,20,0.82)",
+      "border-right:2px solid #1e3a5f",
+      "border-bottom:2px solid #1e3a5f",
+      "border-left:2px solid #0a1628",
+      `width:${width}`,
+      "flex-shrink:0",
+      "overflow:hidden",
+      "gap:0",
+    ].join(";");
 
-    this[DebugPanel.SANITIZE_NAME(name)] = b;
+    const label = document.createElement("div");
+    label.textContent = name.toUpperCase();
+    label.style.cssText = [
+      "font-size:1vmin",
+      "color:#4a7fb5",
+      "letter-spacing:0.12em",
+      "text-shadow:0 0 4px #0d2a50",
+      "white-space:nowrap",
+      "line-height:1.4",
+    ].join(";");
+
+    const value = document.createElement("div");
+    value.style.cssText = [
+      "font-size:1.55vmin",
+      "color:#c8e6ff",
+      "text-shadow:0 0 6px rgba(100,180,255,0.55),1px 1px 0 #000",
+      "white-space:nowrap",
+      "line-height:1.2",
+    ].join(";");
+
+    cell.appendChild(label);
+    cell.appendChild(value);
+    this.container.appendChild(cell);
+
+    this[DebugPanel.SANITIZE_NAME(name)] = value;
   }
 
   /**

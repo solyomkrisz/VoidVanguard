@@ -58,6 +58,10 @@ export default class Game extends WebGLCanvas {
 
     this.tileSize = 14;
     this.backgroundZoom = 2;
+    this.nebulaParallax = 0.15;
+    // Minimum star parallax — must match the lower bound of the formula in DecorationBlock
+    // nebulaParallax * (0.01 + distanceFactor_min(0.3) * 0.15) = nebulaParallax * 0.055
+    this.minStarParallax = this.nebulaParallax * 0.055;
     this.chunkSize = 8;
     this.renderDistance = vec2.fromValues(3, 2);
     this.chunks = new ChunkManager(this);
@@ -82,6 +86,14 @@ export default class Game extends WebGLCanvas {
     this.debugOverlay = null;
     this.blockStyle = null;
     this.textureManager = null;
+
+    this.showNebula = true;
+    this.showSpaceGrid = true;
+    this.showChunkDebug = false;
+    this.showEntityIds = false;
+    this.showGridCells = false;
+    this.showSpaceshipCircle = false;
+    this.showSpaceshipHitbox = false;
 
     this.update = this.update.bind(this);
   }
@@ -219,10 +231,61 @@ export default class Game extends WebGLCanvas {
   }
 
   // prettier-ignore
+  drawSpaceGrid() {
+    const ctx = this.debugOverlay.ctx;
+    const W = this.debugOverlay.canvas.width;
+    const H = this.debugOverlay.canvas.height;
+    const gridSize = 2; // 2×2 blocks per cell
+
+    const [ppx, ppy] = this.player.previousPosition;
+    const [pcx, pcy] = this.player.position;
+    const px = ppx + (pcx - ppx) * this.alpha;
+    const py = ppy + (pcy - ppy) * this.alpha;
+
+    // mat3.cam scale calculation - therefor grid always matches the camera
+    let scaleX = this.scale, scaleY = this.scale;
+    if (this.aspectRatio >= 1) scaleX = this.scale / this.aspectRatio;
+    else                       scaleY = this.scale * this.aspectRatio;
+    const ppuX = scaleX * W / 2;
+    const ppuY = scaleY * H / 2;
+
+    const halfW = W / (2 * ppuX);
+    const halfH = H / (2 * ppuY);
+
+    const x0 = Math.floor((px - halfW) / gridSize) * gridSize;
+    const y0 = Math.floor((py - halfH) / gridSize) * gridSize;
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+
+    for (let wx = x0; wx <= px + halfW + gridSize; wx += gridSize) {
+      const sx = (wx - px) * ppuX + W / 2;
+      ctx.moveTo(sx, 0);
+      ctx.lineTo(sx, H);
+    }
+
+    for (let wy = y0; wy <= py + halfH + gridSize; wy += gridSize) {
+      const sy = H / 2 - (wy - py) * ppuY;
+      ctx.moveTo(0, sy);
+      ctx.lineTo(W, sy);
+    }
+
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // prettier-ignore
   render() {
     if (this.debugOverlay) {
       this.debugOverlay.clearCanvas();
-      this.grid.debug();
+      if (this.showSpaceGrid) {
+        this.drawSpaceGrid();
+      }
+      if (this.showGridCells) {
+        this.grid.debug();
+      }
     }
 
     if (this.blockStyle) {
@@ -241,7 +304,7 @@ export default class Game extends WebGLCanvas {
     this.textureManager.loadFromActiveSlot(); // Remove if no dynamic textures are created
     this.textureManager.updateSprites();
 
-    this.chunks.render(); // render first so it will be in the background
+    this.chunks.render(); // nebula pass then star pass, so stars always draw on top
 
     this.enemies.render();
     this.projectiles.render();

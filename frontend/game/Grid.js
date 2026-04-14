@@ -101,7 +101,7 @@ export default class Grid {
       const y = (1 - csy) * 0.5 * g.canvas.height;
 
       d.drawBox(x, y, size, size, "red", 6);
-      d.drawText(x, y, `cell: (${key}), objects: ${cell.objects.length}, idle: ${cell.idle.toFixed(1)}`, "20px Arial", "red");
+      d.drawText(x, y, `cell: (${key}), objects: ${cell.objects.length}, idle: ${cell.idle.toFixed(1)}`, "20px Jersey", "red");
     }
   }
 }
