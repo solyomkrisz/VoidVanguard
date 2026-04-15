@@ -1,4 +1,8 @@
-import BaseCustomElement from "../core/BaseCustomElement.js";
+import { dir } from "/ui/UI.js";
+import { path } from "/common/common.js";
+import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import "/ui/component/layout/DrilldownMenu.js";
+import "/ui/component/game/SaveForm.js";
 
 export default class PauseMenu extends BaseCustomElement {
   set game(value) {
@@ -11,8 +15,9 @@ export default class PauseMenu extends BaseCustomElement {
 
   constructor() {
     super([
-      "/frontend/ui/style/global.css",
-      "/frontend/ui/style/pauseMenu.css",
+      path.join(dir, "global.css"),
+      path.join(dir, "pauseMenu.css"),
+      path.join(dir, "drilldownMenu.css"),
     ]);
 
     this._elements = {};
@@ -20,12 +25,22 @@ export default class PauseMenu extends BaseCustomElement {
     this._built = false;
 
     this.onResume = this.onResume.bind(this);
+    this.onGoBack = this.onGoBack.bind(this);
+    this.onViewChange = this.onViewChange.bind(this);
     this.onSaveRequest = this.onSaveRequest.bind(this);
   }
 
   onResume() {
     if (!this.game) return;
     this.game.resume();
+  }
+
+  onGoBack(e) {
+    this._elements.resumeButton.hidden = false;
+  }
+
+  onViewChange() {
+    this._elements.resumeButton.hidden = true;
   }
 
   async onSaveRequest(e) {
@@ -37,7 +52,7 @@ export default class PauseMenu extends BaseCustomElement {
 
     await this.game.saveCurrentStateAs(formData);
 
-    e.target.enable?.();
+    e?.detail?.onDone?.();
   }
 
   connectedCallback() {
@@ -50,14 +65,22 @@ export default class PauseMenu extends BaseCustomElement {
     this.hidden = true;
 
     this.setShadowInnerHTML(`
-        <button>Folytatás</button>    
+        <h1 class="title">Játék megállítva</h1>
+        <button id="resume">Folytatás</button>
+        <drilldown-menu layout="">
+          <template id="save-game" data-name="Játékmenet mentése">
+            <save-form></save-form>
+          </template>
+        </drilldown-menu>
     `);
 
-    const resumeButton = this.queryShadowSelector("button");
+    const resumeButton = this.queryShadowSelector("#resume");
     resumeButton.addEventListener("click", this.onResume);
     this._elements.resumeButton = resumeButton;
 
     this.addEventListener("save-request", this.onSaveRequest);
+    this.addEventListener("view-change", this.onViewChange);
+    this.addEventListener("go-back", this.onGoBack);
 
     this._built = true;
   }

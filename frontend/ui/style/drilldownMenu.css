@@ -1,0 +1,17 @@
+drilldown-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.drilldown-menu-nav {
+  display: flex;
+  gap: 10px;
+}
+
+.drilldown-menu-nav > * {
+  cursor: pointer;
+}
+
+.drilldown-menu-nav .active {
+  font-weight: bold;
+}

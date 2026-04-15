@@ -146,7 +146,16 @@ export default class Game extends WebGLCanvas {
     this.inSavingProcess = true;
 
     if (!isLoggedIn()) {
-      window.localStorage.setItem(slotName, JSON.stringify(this.exportSave()));
+      const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
+      let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
+
+      localSaves.set(slotName, this.exportSave());
+
+      window.localStorage.setItem(
+        "localSaves",
+        JSON.stringify([...localSaves])
+      );
+
       console.log("Game state has been saved locally as " + slotName);
       this.inSavingProcess = false;
 
@@ -170,9 +179,7 @@ export default class Game extends WebGLCanvas {
       return;
     }
 
-    console.log(
-      `GAME-saveCurrentStateAs: ${response?.message ? response.message : ""}`
-    );
+    console.log("Game state has been saved remotely as " + slotName);
   }
 
   // prettier-ignore
@@ -260,12 +267,17 @@ export default class Game extends WebGLCanvas {
     if (!this.running) return;
     this.running = false;
     window.cancelAnimationFrame(this.frameId);
+    this.tooltip.disable();
     this.UI.pauseMenu?.show();
   }
 
   resume() {
+    this.tooltip.enable();
     this.UI.pauseMenu.hide();
-    this.start();
+
+    this.last = window.performance.now();
+    this.frameId = window.requestAnimationFrame(this.update);
+    this.running = true;
   }
 
   update() {

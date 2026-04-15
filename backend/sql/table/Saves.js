@@ -3,6 +3,7 @@ import Role from "../../common/Role.js";
 import Permission from "../../common/Permission.js";
 import Column from "../Column.js";
 import { execute } from "../database.js";
+import { runQueryWithPagination } from "../../common/common.js";
 import * as CustomError from "../../common/CustomError.js";
 
 class Saves extends Table {
@@ -22,7 +23,7 @@ class Saves extends Table {
   async insert({ id, userId, slotName, gameState }) {
     const [result] = await execute(
       "INSERT INTO saves(id, user_id, slot_name, game_state) VALUES(?, ?, ?, ?)",
-      [id, userId, slotName, gameState],
+      [id, userId, slotName, gameState]
     );
     return result;
   }
@@ -30,7 +31,7 @@ class Saves extends Table {
   async getBySlotName(userId, slotName) {
     const [rows] = await execute(
       "SELECT * FROM saves WHERE user_id = ? AND slot_name = ?",
-      [userId, slotName],
+      [userId, slotName]
     );
     return rows.length ? rows : null;
   }
@@ -43,7 +44,7 @@ class Saves extends Table {
   async getByIdForUser(saveId, userId) {
     const [rows] = await execute(
       "SELECT * FROM saves WHERE id = ? AND user_id = ?",
-      [saveId, userId],
+      [saveId, userId]
     );
     return rows.length ? rows : null;
   }

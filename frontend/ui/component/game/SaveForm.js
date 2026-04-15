@@ -1,9 +1,11 @@
-import BaseCustomElement from "../core/BaseCustomElement.js";
-import "../form/InputGroup.js";
+import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import "/ui/component/form/InputGroup.js";
+import { dir } from "/ui/UI.js";
+import { path } from "/common/common.js";
 
 export default class SaveForm extends BaseCustomElement {
   constructor() {
-    super();
+    super([path.join(dir, "global.css"), path.join(dir, "saveForm.css")]);
 
     this._elements = {};
     this._built = false;
@@ -16,14 +18,16 @@ export default class SaveForm extends BaseCustomElement {
   }
 
   onSubmit(e) {
+    e.preventDefault();
+
     const formData = new FormData(e.target);
 
     this.dispatchEvent(
       new CustomEvent("save-request", {
-        detail: { formData },
+        detail: { formData, onDone: () => this.enable() },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
 
     this._elements.submitButton.disabled = true;
@@ -53,3 +57,5 @@ export default class SaveForm extends BaseCustomElement {
     this._built = true;
   }
 }
+
+window.customElements.define("save-form", SaveForm);
