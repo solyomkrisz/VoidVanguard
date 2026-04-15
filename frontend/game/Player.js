@@ -43,6 +43,12 @@ export default class Player extends Spaceship {
     this.model.init(this);
   }
 
+  destroy() {
+    for (const key of Object.keys(this.UI)) {
+      this.UI[key].remove?.();
+    }
+  }
+
   exportSave() {
     return {
       score: this.score,
@@ -110,10 +116,10 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation
+            this.rotation,
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
         }
@@ -146,10 +152,10 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation
+            this.rotation,
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
         }

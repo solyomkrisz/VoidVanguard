@@ -20,10 +20,10 @@ class Saves extends Table {
     });
   }
 
-  async insert({ id, userId, slotName, gameState }) {
+  async insert({ id, userId, slotName, gameState, stateHash }) {
     const [result] = await execute(
-      "INSERT INTO saves(id, user_id, slot_name, game_state) VALUES(?, ?, ?, ?)",
-      [id, userId, slotName, gameState]
+      "INSERT INTO saves(id, user_id, slot_name, game_state, state_hash) VALUES(?, ?, ?, ?, ?)",
+      [id, userId, slotName, gameState, stateHash],
     );
     return result;
   }
@@ -31,22 +31,47 @@ class Saves extends Table {
   async getBySlotName(userId, slotName) {
     const [rows] = await execute(
       "SELECT * FROM saves WHERE user_id = ? AND slot_name = ?",
-      [userId, slotName]
+      [userId, slotName],
     );
     return rows.length ? rows : null;
   }
 
-  async getById(saveId) {
+  async selectById(saveId) {
     const [rows] = await execute("SELECT * FROM saves WHERE id = ?", [saveId]);
     return rows.length ? rows : null;
   }
 
-  async getByIdForUser(saveId, userId) {
+  async selectByIdForUser(saveId, userId) {
     const [rows] = await execute(
       "SELECT * FROM saves WHERE id = ? AND user_id = ?",
-      [saveId, userId]
+      [saveId, userId],
     );
     return rows.length ? rows : null;
+  }
+
+  async countSavesForUserId(userId) {
+    const [[{ count }]] = await execute(
+      "SELECT COUNT(*) AS count FROM saves WHERE user_id = ?",
+      [userId],
+    );
+    return count;
+  }
+
+  async lazySelectByUserId(userId, { limit = null, offset = null }) {
+    const sql = `
+      SELECT
+        *,
+        DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
+        DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at
+      FROM saves
+      WHERE user_id = ?
+      ORDER BY updated_at DESC
+    `;
+
+    return await runQueryWithPagination(sql, [userId], {
+      limit,
+      offset,
+    });
   }
 }
 

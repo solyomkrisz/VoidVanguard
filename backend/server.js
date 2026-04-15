@@ -44,6 +44,11 @@ router.get("/functionaltest", (request, response) => {
   );
 });
 
+// Game oldal
+router.get("/game", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/ui/html/game.html"));
+});
+
 // Refresh oldal
 // router.get("/refresh", (request, response) => {
 //   response.sendFile(path.join(__dirname, "../frontend/ui/html/refresh.html"));

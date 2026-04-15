@@ -11,6 +11,8 @@ import * as validator from "../validator/save.js";
 
 const router = express.Router();
 
+router.get("/", authenticate(), controller.lazySelectByUserId);
+
 router.get("/:id", authenticate(), validator.GET, controller.selectSave);
 
 router.post(

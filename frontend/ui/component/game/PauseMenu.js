@@ -25,7 +25,6 @@ export default class PauseMenu extends BaseCustomElement {
     this._built = false;
 
     this.onResume = this.onResume.bind(this);
-    this.onGoBack = this.onGoBack.bind(this);
     this.onViewChange = this.onViewChange.bind(this);
     this.onSaveRequest = this.onSaveRequest.bind(this);
   }
@@ -35,12 +34,15 @@ export default class PauseMenu extends BaseCustomElement {
     this.game.resume();
   }
 
-  onGoBack(e) {
-    this._elements.resumeButton.hidden = false;
-  }
+  onViewChange(e) {
+    const currentView = e?.detail?.currentView;
+    if (!currentView) return;
 
-  onViewChange() {
-    this._elements.resumeButton.hidden = true;
+    if (currentView === "root-level") {
+      this._elements.resumeButton.hidden = false;
+    } else {
+      this._elements.resumeButton.hidden = true;
+    }
   }
 
   async onSaveRequest(e) {
@@ -67,9 +69,12 @@ export default class PauseMenu extends BaseCustomElement {
     this.setShadowInnerHTML(`
         <h1 class="title">Játék megállítva</h1>
         <button id="resume">Folytatás</button>
-        <drilldown-menu layout="">
+        <drilldown-menu initial="root-level">
           <template id="save-game" data-name="Játékmenet mentése">
             <save-form></save-form>
+          </template>
+          <template id="root-level">
+            <button data-target="save-game">Játékmenet mentése</button>
           </template>
         </drilldown-menu>
     `);
@@ -80,7 +85,6 @@ export default class PauseMenu extends BaseCustomElement {
 
     this.addEventListener("save-request", this.onSaveRequest);
     this.addEventListener("view-change", this.onViewChange);
-    this.addEventListener("go-back", this.onGoBack);
 
     this._built = true;
   }

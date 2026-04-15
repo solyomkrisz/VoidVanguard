@@ -1,17 +1,13 @@
 drilldown-menu {
-  display: flex;
-  flex-direction: column;
+  display: block;
 }
 
-.drilldown-menu-nav {
+.drilldown-menu-main {
   display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
-.drilldown-menu-nav > * {
-  cursor: pointer;
-}
-
-.drilldown-menu-nav .active {
-  font-weight: bold;
+.drilldown-menu-go-back-button {
+  width: 100%;
 }

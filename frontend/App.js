@@ -1,23 +1,23 @@
-import Game from "./game/Game.js";
-import Block from "./game/Block.js";
-import DebugPanel from "./game/DebugPanel.js";
-import Keyboard from "./game/Keyboard.js";
-import TextureManager from "./game/TextureManager.js";
-import Sprite from "./game/Sprite.js";
-import { TextureID, SpriteID } from "./game/texture/Texture.js";
-import Enemy from "./game/Enemy.js";
-import DebugOverlay from "./game/DebugOverlay.js";
-import BlockStyle from "./game/BlockStyle.js";
-import Model from "./game/Model.js";
-import { GlobalState } from "./game/State.js";
-import Shape from "./game/Shape.js";
-import Mouse from "./game/Mouse.js";
-import BuildingBlock from "./game/BuildingBlock.js";
-import Models from "./game/SpaceShipModels.js";
-import Thruster from "./game/Thruster.js";
-import * as UI from "./ui/UI.js";
-import _ from "./ui/component/game/ContextMenuTemplate.js";
-import * as jwt from "./common/jwt.js";
+import Game from "/game/Game.js";
+import Block from "/game/Block.js";
+import DebugPanel from "/game/DebugPanel.js";
+import Keyboard from "/game/Keyboard.js";
+import TextureManager from "/game/TextureManager.js";
+import Sprite from "/game/Sprite.js";
+import { TextureID, SpriteID } from "/game/texture/Texture.js";
+import Enemy from "/game/Enemy.js";
+import DebugOverlay from "/game/DebugOverlay.js";
+import BlockStyle from "/game/BlockStyle.js";
+import Model from "/game/Model.js";
+import { GlobalState } from "/game/State.js";
+import Shape from "/game/Shape.js";
+import Mouse from "/game/Mouse.js";
+import BuildingBlock from "/game/BuildingBlock.js";
+import Models from "/game/SpaceShipModels.js";
+import Thruster from "/game/Thruster.js";
+import * as UI from "/ui/UI.js";
+import _ from "/ui/component/game/ContextMenuTemplate.js";
+import * as jwt from "/common/jwt.js";
 
 // Wire up settings button at page load so it works on the login screen too
 const settingsBtn = document.getElementById("settingsBtn");
@@ -85,6 +85,8 @@ game.tooltip.createTemplate("THRUSTER_INFO", "HAJTÓMŰ", [
 
 // Jatek elinditasa login utan
 function initializeGame() {
+  if (game.running) return;
+
   game.createCanvas();
   game.createContextMenu();
 
@@ -187,9 +189,9 @@ function initializeGame() {
   game.setDebugOverlay(debugOverlay);
   debugOverlay.init();
 
-  const blockStyle = new BlockStyle();
-  game.setBlockStyle(blockStyle);
-  blockStyle.init();
+  // const blockStyle = new BlockStyle();
+  // game.setBlockStyle(blockStyle);
+  // blockStyle.init();
 
   const debug = new DebugPanel();
   debug.setSource(game);
