@@ -1,5 +1,5 @@
-import * as UI from "../../UI.js";
-import _ from "./AutopilotToggle.js";
+import * as UI from "/ui/UI.js";
+import _ from "/ui/component/game/AutopilotToggle.js";
 
 export default class FlightComputer extends HTMLElement {
   constructor() {

@@ -1,5 +1,5 @@
-import Thruster from "../../../game/Thruster.js";
-import * as UI from "../../UI.js";
+import Thruster from "/game/Thruster.js";
+import * as UI from "/ui/UI.js";
 
 export default class ThrusterController extends HTMLElement {
   constructor() {
@@ -42,7 +42,7 @@ export default class ThrusterController extends HTMLElement {
       // prettier-ignore
       const container = UI.element("div", UI.element("span", UI.text(key + ": ")));
       this[key] = container.appendChild(
-        UI.element("span", UI.text(this.source[key])),
+        UI.element("span", UI.text(this.source[key]))
       );
 
       this.shadowDOM.appendChild(container);
@@ -60,7 +60,7 @@ export default class ThrusterController extends HTMLElement {
           },
           bubbles: false,
           composed: true,
-        }),
+        })
       );
     });
 

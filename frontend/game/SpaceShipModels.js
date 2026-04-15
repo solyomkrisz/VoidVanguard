@@ -1,9 +1,9 @@
-import Shape from "./Shape.js";
-import Block from "./Block.js";
-import { SpriteID, TextureID } from "./texture/Texture.js";
-import Model from "./Model.js";
-import { createBlock } from "./BlockTypes.js";
-import Thruster from "./Thruster.js";
+import Shape from "/game/Shape.js";
+import Block from "/game/Block.js";
+import { SpriteID, TextureID } from "/game/texture/Texture.js";
+import Model from "/game/Model.js";
+import { createBlock } from "/game/BlockTypes.js";
+import Thruster from "/game/Thruster.js";
 
 const offset = 0;
 // starting player model

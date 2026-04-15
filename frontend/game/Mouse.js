@@ -1,10 +1,10 @@
-import * as vec3 from "../common/vec3.js";
-import * as vec2 from "../common/vec2.js";
-import Rigidbody from "./Rigidbody.js";
-import Model from "./Model.js";
-import Block from "./Block.js";
-import Shape from "./Shape.js";
-import * as Type from "./Type.js";
+import * as vec3 from "/common/vec3.js";
+import * as vec2 from "/common/vec2.js";
+import Rigidbody from "/game/Rigidbody.js";
+import Model from "/game/Model.js";
+import Block from "/game/Block.js";
+import Shape from "/game/Shape.js";
+import * as Type from "/game/Type.js";
 
 export default class Mouse extends Rigidbody {
   constructor(game) {
@@ -14,7 +14,7 @@ export default class Mouse extends Rigidbody {
       model: new Model(
         // prettier-ignore
         [new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0), spriteID: null, mass: 1e-10 })],
-        Model.COPY_MODE.PRESERVE,
+        Model.COPY_MODE.PRESERVE
       ),
       x: 0,
       y: 0,

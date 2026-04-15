@@ -1,9 +1,9 @@
-import Collidable from "../Collidable.js";
-import Collider from "../Collider.js";
-import Grid from "../Grid.js";
-import Rigidbody from "../Rigidbody.js";
-import * as vec2 from "../../common/vec2.js";
-import * as vec3 from "../../common/vec3.js";
+import Collidable from "/game/Collidable.js";
+import Collider from "/game/Collider.js";
+import Grid from "/game/Grid.js";
+import Rigidbody from "/game/Rigidbody.js";
+import * as vec2 from "/common/vec2.js";
+import * as vec3 from "/common/vec3.js";
 
 export default class BC extends Collider {
   static DIRTY = Object.freeze({

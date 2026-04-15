@@ -1,4 +1,4 @@
-import { clamp, inCircle } from "../../common/common.js";
+import { clamp, inCircle } from "/common/common.js";
 
 export default class StarGenerator {
   constructor(noise, width, height) {

@@ -1,4 +1,4 @@
-import * as UI from "../../UI.js";
+import * as UI from "/ui/UI.js";
 
 export default class AutopilotToggle extends HTMLElement {
   constructor() {
@@ -33,7 +33,7 @@ export default class AutopilotToggle extends HTMLElement {
           },
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     });
 

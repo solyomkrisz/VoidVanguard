@@ -1,5 +1,5 @@
-import Canvas from "./Canvas.js";
-import * as vec2 from "../common/vec2.js";
+import Canvas from "/game/Canvas.js";
+import * as vec2 from "/common/vec2.js";
 
 export default class DebugOverlay extends Canvas {
   constructor() {

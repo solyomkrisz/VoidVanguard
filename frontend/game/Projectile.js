@@ -1,9 +1,9 @@
-import Block from "./Block.js";
-import Rigidbody from "./Rigidbody.js";
-import { SpriteID } from "./texture/Texture.js";
-import * as vec2 from "../common/vec2.js";
-import Model from "./Model.js";
-import Shape from "./Shape.js";
+import Block from "/game/Block.js";
+import Rigidbody from "/game/Rigidbody.js";
+import { SpriteID } from "/game/texture/Texture.js";
+import * as vec2 from "/common/vec2.js";
+import Model from "/game/Model.js";
+import Shape from "/game/Shape.js";
 
 export default class Projectile extends Rigidbody {
   // prettier-ignore

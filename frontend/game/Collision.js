@@ -1,5 +1,5 @@
-import * as vec2 from "../common/vec2.js";
-import * as Type from "./Type.js";
+import * as vec2 from "/common/vec2.js";
+import * as Type from "/game/Type.js";
 
 export default class Collision {
   static EPSILON = 0.001;

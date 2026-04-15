@@ -1,12 +1,12 @@
-import * as vec2 from "../common/vec2.js";
-import * as vec3 from "../common/vec3.js";
-import * as mat2 from "../common/mat2.js";
-import { LERP } from "../common/common.js";
-import Collidable from "./Collidable.js";
-import BC from "./collider/BC.js";
-import CompositeCollider from "./collider/CompositeCollider.js";
-import Force from "./Force.js";
-import * as Type from "./Type.js";
+import * as vec2 from "/common/vec2.js";
+import * as vec3 from "/common/vec3.js";
+import * as mat2 from "/common/mat2.js";
+import { LERP } from "/common/common.js";
+import Collidable from "/game/Collidable.js";
+import BC from "/game/collider/BC.js";
+import CompositeCollider from "/game/collider/CompositeCollider.js";
+import Force from "/game/Force.js";
+import * as Type from "/game/Type.js";
 
 export default class Rigidbody extends Collidable {
   // prettier-ignore

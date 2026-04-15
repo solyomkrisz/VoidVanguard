@@ -1,5 +1,5 @@
-import _ from "./ContextMenuItem.js";
-import * as UI from "../../UI.js";
+import _ from "/ui/component/game/ContextMenuItem.js";
+import * as UI from "/ui/UI.js";
 
 export default class ContextMenu extends HTMLElement {
   constructor() {
@@ -81,7 +81,7 @@ export default class ContextMenu extends HTMLElement {
       new CustomEvent("context-menu-active", {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -95,7 +95,7 @@ export default class ContextMenu extends HTMLElement {
       new CustomEvent("context-menu-inactive", {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
 
     this.source = null;

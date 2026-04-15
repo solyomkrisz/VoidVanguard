@@ -1,8 +1,8 @@
-import * as vec2 from "../common/vec2.js";
-import * as vec3 from "../common/vec3.js";
-import ObjectCollection from "./ObjectCollection.js";
-import DecorationBlock from "./DecorationBlock.js";
-import * as Type from "./Type.js";
+import * as vec2 from "/common/vec2.js";
+import * as vec3 from "/common/vec3.js";
+import ObjectCollection from "/game/ObjectCollection.js";
+import DecorationBlock from "/game/DecorationBlock.js";
+import * as Type from "/game/Type.js";
 
 export default class Chunk {
   constructor(id, game, x, y) {

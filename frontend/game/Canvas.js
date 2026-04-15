@@ -1,5 +1,5 @@
-import ContextMenu from "../ui/component/game/ContextMenu.js";
-import * as UI from "../ui/UI.js";
+import ContextMenu from "/ui/component/game/ContextMenu.js";
+import * as UI from "/ui/UI.js";
 
 export default class Canvas {
   constructor() {
@@ -66,7 +66,7 @@ export default class Canvas {
 
     if (!(element instanceof HTMLCanvasElement)) {
       throw new Error(
-        `CANVAS-setCanvas: The given selector (${selector}) is not pointing to a HTMLCanvasElement!`,
+        `CANVAS-setCanvas: The given selector (${selector}) is not pointing to a HTMLCanvasElement!`
       );
     }
 
@@ -90,7 +90,7 @@ export default class Canvas {
   canvasToResponsiveFullWindow() {
     if (!this.hasCanvas()) {
       throw new Error(
-        "CANVAS-canvasToResponsiveFullWindow: There is no canvas selected that could be made responsive!",
+        "CANVAS-canvasToResponsiveFullWindow: There is no canvas selected that could be made responsive!"
       );
     }
 
@@ -120,7 +120,7 @@ export default class Canvas {
   enablePointerLock() {
     if (!this.hasCanvas()) {
       console.error(
-        "CANVAS-enablePointerLock: There is no canvas selected that could have pointer locked to!",
+        "CANVAS-enablePointerLock: There is no canvas selected that could have pointer locked to!"
       );
     }
 
@@ -128,7 +128,7 @@ export default class Canvas {
 
     document.addEventListener(
       "pointerlockchange",
-      this.pointerLockChangeHandler,
+      this.pointerLockChangeHandler
     );
 
     document.addEventListener("pointerlockerror", this.pointerLockErrorHandler);
@@ -138,11 +138,11 @@ export default class Canvas {
     this.canvas.removeEventListener("click", this.pointerLockRequestHandler);
     document.removeEventListener(
       "pointerlockchange",
-      this.pointerLockChangeHandler,
+      this.pointerLockChangeHandler
     );
     document.removeEventListener(
       "pointerlockerror",
-      this.pointerLockErrorHandler,
+      this.pointerLockErrorHandler
     );
   }
 }

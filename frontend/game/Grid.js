@@ -1,6 +1,6 @@
-import * as vec2 from "../common/vec2.js";
-import * as vec3 from "../common/vec3.js";
-import CollisionCollection from "./CollisionCollection.js";
+import * as vec2 from "/common/vec2.js";
+import * as vec3 from "/common/vec3.js";
+import CollisionCollection from "/game/CollisionCollection.js";
 
 export default class Grid {
   static TO_CELL(n, cellSize) {

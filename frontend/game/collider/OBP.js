@@ -1,10 +1,10 @@
-import Collider from "../Collider.js";
-import * as vec from "../../common/vec.js";
-import * as vec2 from "../../common/vec2.js";
-import * as vec3 from "../../common/vec3.js";
-import Shape from "../Shape.js";
-import Collision from "../Collision.js";
-import * as Type from "../Type.js";
+import Collider from "/game/Collider.js";
+import * as vec from "/common/vec.js";
+import * as vec2 from "/common/vec2.js";
+import * as vec3 from "/common/vec3.js";
+import Shape from "/game/Shape.js";
+import Collision from "/game/Collision.js";
+import * as Type from "/game/Type.js";
 
 export default class OBP extends Collider {
   static DIRTY = Object.freeze({

@@ -1,5 +1,6 @@
-import Canvas from "./Canvas.js";
+import Canvas from "/game/Canvas.js";
 
+// prettier-ignore
 export default class BlockStyle extends Canvas {
   constructor() {
     super();

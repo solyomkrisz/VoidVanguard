@@ -1,5 +1,5 @@
-import * as UI from "../../UI.js";
-import _ from "./TooltipTemplate.js";
+import * as UI from "/ui/UI.js";
+import _ from "/ui/component/game/TooltipTemplate.js";
 
 export default class DynamicTooltip extends HTMLElement {
   static DIRTY = Object.freeze({
