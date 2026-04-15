@@ -1,7 +1,7 @@
-import Canvas from "./Canvas.js";
-import WebGL from "./WebGL.js";
-import * as MATRIX from "../common/common.js";
-import * as vec from "../common/vec.js";
+import Canvas from "/game/Canvas.js";
+import WebGL from "/game/WebGL.js";
+import * as MATRIX from "/common/common.js";
+import * as vec from "/common/vec.js";
 
 export default class WebGLCanvas extends Canvas {
   constructor() {
@@ -16,7 +16,7 @@ export default class WebGLCanvas extends Canvas {
     this.instanceCapacity = 128;
     this.floatPerInstance = 0;
     this.instanceData = new MATRIX.DATA_STRUCTURE(
-      this.instanceCapacity * this.floatPerInstance,
+      this.instanceCapacity * this.floatPerInstance
     );
     this.clearColor = vec.fromValues(0.0, 0.0, 0.0, 1.0);
   }
@@ -44,7 +44,7 @@ export default class WebGLCanvas extends Canvas {
   initWebGL() {
     if (!this.hasCanvas()) {
       throw new Error(
-        "WEBGLCANVAS-initWebGL: Couldn't initialize WebGL: there is no canvas selector for this WebGLCanvas instance.",
+        "WEBGLCANVAS-initWebGL: Couldn't initialize WebGL: there is no canvas selector for this WebGLCanvas instance."
       );
     }
 
@@ -52,7 +52,7 @@ export default class WebGLCanvas extends Canvas {
 
     if (!this.gl) {
       throw new Error(
-        "WEBGLCANVAS-initWebGL: Your browser does not support WebGL or it is disabled! Also you might have already requested another context for this canvas!",
+        "WEBGLCANVAS-initWebGL: Your browser does not support WebGL or it is disabled! Also you might have already requested another context for this canvas!"
       );
     }
 

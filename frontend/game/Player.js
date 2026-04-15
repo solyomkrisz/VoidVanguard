@@ -1,15 +1,15 @@
-import Keyboard from "./Keyboard.js";
-import Spaceship from "./Spaceship.js";
-import Block from "./Block.js";
-import BlockStyle from "./BlockStyle.js";
-import * as vec2 from "../common/vec2.js";
-import Projectile from "./Projectile.js";
-import Model from "./Model.js";
-import * as Type from "./Type.js";
-import * as UI from "../ui/UI.js";
-import _ from "../ui/component/game/ShipPropulsionPanel.js";
-import _1 from "../ui/component/game/FlightComputer.js";
-import BuildingBlock from "./BuildingBlock.js";
+import Keyboard from "/game/Keyboard.js";
+import Spaceship from "/game/Spaceship.js";
+import Block from "/game/Block.js";
+import BlockStyle from "/game/BlockStyle.js";
+import * as vec2 from "/common/vec2.js";
+import Projectile from "/game/Projectile.js";
+import Model from "/game/Model.js";
+import * as Type from "/game/Type.js";
+import * as UI from "/ui/UI.js";
+import _ from "/ui/component/game/ShipPropulsionPanel.js";
+import _1 from "/ui/component/game/FlightComputer.js";
+import BuildingBlock from "/game/BuildingBlock.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
@@ -110,10 +110,10 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation,
+            this.rotation
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
           );
           T += thruster.getTorque(this);
         }
@@ -146,10 +146,10 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation,
+            this.rotation
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
           );
           T += thruster.getTorque(this);
         }

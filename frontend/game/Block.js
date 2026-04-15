@@ -1,8 +1,9 @@
-import * as vec2 from "../common/vec2.js";
-import WebGL from "./WebGL.js";
-import * as MATRIX from "../common/common.js";
-import * as vec from "../common/vec.js";
-import Shape from "./Shape.js";
+import * as vec2 from "/common/vec2.js";
+import WebGL from "/game/WebGL.js";
+import * as MATRIX from "/common/common.js";
+import * as vec from "/common/vec.js";
+import DynamicTooltip from "/ui/component/game/DynamicTooltip.js";
+import Shape from "/game/Shape.js";
 
 export default class Block {
   // prettier-ignore
@@ -223,7 +224,7 @@ export default class Block {
     this.shape = new Shape(
       savedState.shape.mergeable,
       savedState.shape.mergeModeRequest,
-      ...savedState.shape.vertices,
+      ...savedState.shape.vertices
     );
     this.spriteID = savedState.spriteID;
     this.gradeID = savedState.gradeID;

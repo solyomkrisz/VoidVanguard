@@ -1,5 +1,5 @@
-import { getMinMaxXY } from "../../common/common.js";
-import Collider from "../Collider.js";
+import { getMinMaxXY } from "/common/common.js";
+import Collider from "/game/Collider.js";
 
 export default class AABB extends Collider {
   static DIRTY = Object.freeze({

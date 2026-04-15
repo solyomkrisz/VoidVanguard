@@ -1,4 +1,4 @@
-import { GlobalState } from "./State.js";
+import { GlobalState } from "/game/State.js";
 
 export default class ObjectCollection {
   constructor(game) {

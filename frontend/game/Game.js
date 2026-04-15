@@ -1,27 +1,26 @@
-import WebGLCanvas from "./WebGLCanvas.js";
-import DebugPanel from "./DebugPanel.js";
-import Buffer from "./Buffer.js";
-import * as mat3 from "../common/mat3.js";
-import Player from "./Player.js";
-import TextureManager from "./TextureManager.js";
-import Grid from "./Grid.js";
-import DebugOverlay from "./DebugOverlay.js";
-import BlockStyle from "./BlockStyle.js";
-import IDManager from "./IDManager.js";
-import ObjectCollection from "./ObjectCollection.js";
-import * as UI from "../ui/UI.js";
-import _ from "../ui/component/game/DynamicTooltip.js";
-import { ValueNoise, PerlinNoise } from "../common/noise.js";
-import ChunkManager from "./ChunkManager.js";
-import * as vec2 from "../common/vec2.js";
-import NebulaGenerator from "./texture/NebulaGenerator.js";
-import DecorationBlock from "./DecorationBlock.js";
-import StarGenerator from "./texture/StarGenerator.js";
-import Model from "./Model.js";
-import "../ui/component/game/PauseMenu.js";
-
-import { isLoggedIn } from "../common/common.js";
-import * as net from "../common/network.js";
+import WebGLCanvas from "/game/WebGLCanvas.js";
+import DebugPanel from "/game/DebugPanel.js";
+import Buffer from "/game/Buffer.js";
+import * as mat3 from "/common/mat3.js";
+import Player from "/game/Player.js";
+import TextureManager from "/game/TextureManager.js";
+import Grid from "/game/Grid.js";
+import DebugOverlay from "/game/DebugOverlay.js";
+import BlockStyle from "/game/BlockStyle.js";
+import IDManager from "/game/IDManager.js";
+import ObjectCollection from "/game/ObjectCollection.js";
+import * as UI from "/ui/UI.js";
+import _ from "/ui/component/game/DynamicTooltip.js";
+import { ValueNoise, PerlinNoise } from "/common/noise.js";
+import ChunkManager from "/game/ChunkManager.js";
+import * as vec2 from "/common/vec2.js";
+import NebulaGenerator from "/game/texture/NebulaGenerator.js";
+import DecorationBlock from "/game/DecorationBlock.js";
+import StarGenerator from "/game/texture/StarGenerator.js";
+import Model from "/game/Model.js";
+import "/ui/component/game/PauseMenu.js";
+import { isLoggedIn } from "/common/common.js";
+import * as net from "/common/network.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
@@ -166,13 +165,13 @@ export default class Game extends WebGLCanvas {
 
     if (!response?.success) {
       console.error(
-        `Unable to save game: ${response?.message ? response.message : ""}`,
+        `Unable to save game: ${response?.message ? response.message : ""}`
       );
       return;
     }
 
     console.log(
-      `GAME-saveCurrentStateAs: ${response?.message ? response.message : ""}`,
+      `GAME-saveCurrentStateAs: ${response?.message ? response.message : ""}`
     );
   }
 
@@ -203,7 +202,7 @@ export default class Game extends WebGLCanvas {
   start() {
     if (!this.gl) {
       throw new Error(
-        "GAME-start: Couldn't start game: WebGL hasn't been initalized!",
+        "GAME-start: Couldn't start game: WebGL hasn't been initalized!"
       );
     }
     if (!this.player) {
@@ -278,7 +277,7 @@ export default class Game extends WebGLCanvas {
 
     this.unprocessed = Math.min(
       this.unprocessed,
-      this.maxUpdates * this.timestep,
+      this.maxUpdates * this.timestep
     );
 
     while (this.unprocessed >= this.timestep) {
@@ -417,7 +416,7 @@ export default class Game extends WebGLCanvas {
   addTextureManager(textureManager) {
     if (!(textureManager instanceof TextureManager)) {
       console.warn(
-        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!",
+        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!"
       );
       return;
     }
@@ -431,7 +430,7 @@ export default class Game extends WebGLCanvas {
   setDebugPanel(debugPanel) {
     if (!(debugPanel instanceof DebugPanel)) {
       throw new Error(
-        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class.",
+        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class."
       );
     }
 
@@ -441,7 +440,7 @@ export default class Game extends WebGLCanvas {
   setDebugOverlay(debugOverlay) {
     if (!(debugOverlay instanceof DebugOverlay)) {
       throw new Error(
-        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class.",
+        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class."
       );
     }
 
@@ -451,7 +450,7 @@ export default class Game extends WebGLCanvas {
   setBlockStyle(blockStyle) {
     if (!(blockStyle instanceof BlockStyle)) {
       throw new Error(
-        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class.",
+        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class."
       );
     }
 
@@ -461,7 +460,7 @@ export default class Game extends WebGLCanvas {
   startDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
       );
       return;
     }
@@ -473,7 +472,7 @@ export default class Game extends WebGLCanvas {
   stopDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
       );
       return;
     }

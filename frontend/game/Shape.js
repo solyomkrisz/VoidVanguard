@@ -1,6 +1,6 @@
-import { getMinMaxXY } from "../common/common.js";
-import * as vec from "../common/vec.js";
-import * as vec2 from "../common/vec2.js";
+import { getMinMaxXY } from "/common/common.js";
+import * as vec from "/common/vec.js";
+import * as vec2 from "/common/vec2.js";
 
 export default class Shape {
   static MERGE_MODE = Object.freeze({

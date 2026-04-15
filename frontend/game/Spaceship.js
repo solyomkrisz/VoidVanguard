@@ -1,7 +1,7 @@
-import Rigidbody from "./Rigidbody.js";
-import * as Type from "./Type.js";
-import IDManager from "./IDManager.js";
-import * as vec2 from "../common/vec2.js";
+import Rigidbody from "/game/Rigidbody.js";
+import * as Type from "/game/Type.js";
+import IDManager from "/game/IDManager.js";
+import * as vec2 from "/common/vec2.js";
 
 export default class Spaceship extends Rigidbody {
   // prettier-ignore

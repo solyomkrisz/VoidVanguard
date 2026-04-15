@@ -1,9 +1,9 @@
-import Projectile from "./Projectile.js";
-import Spaceship from "./Spaceship.js";
-import * as vec2 from "../common/vec2.js";
-import { getAngleDiff } from "../common/common.js";
-import * as mat2 from "../common/mat2.js";
-import * as Type from "./Type.js";
+import Projectile from "/game/Projectile.js";
+import Spaceship from "/game/Spaceship.js";
+import * as vec2 from "/common/vec2.js";
+import { getAngleDiff } from "/common/common.js";
+import * as mat2 from "/common/mat2.js";
+import * as Type from "/game/Type.js";
 
 export default class Enemy extends Spaceship {
   // prettier-ignore

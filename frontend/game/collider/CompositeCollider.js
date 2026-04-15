@@ -1,11 +1,11 @@
-import Collider from "../Collider.js";
-import Rigidbody from "../Rigidbody.js";
-import AABB from "./AABB.js";
-import OBP from "./OBP.js";
-import Shape from "../Shape.js";
-import * as vec2 from "../../common/vec2.js";
-import Model from "../Model.js";
-import Collision from "../Collision.js";
+import Collider from "/game/Collider.js";
+import Rigidbody from "/game/Rigidbody.js";
+import AABB from "/game/collider/AABB.js";
+import OBP from "/game/collider/OBP.js";
+import Shape from "/game/Shape.js";
+import * as vec2 from "/common/vec2.js";
+import Model from "/game/Model.js";
+import Collision from "/game/Collision.js";
 
 export default class CompositeCollider extends Collider {
   static DIRTY = Object.freeze({
