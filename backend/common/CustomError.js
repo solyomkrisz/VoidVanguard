@@ -180,6 +180,15 @@ export const FORBIDDEN = new CustomError({
   },
 });
 
+export const SAVE_ERROR = new CustomError({
+  statusCode: 403,
+  definition: {
+    name: "SaveErro",
+    code: "ER_SAVE",
+    message: "Unable to save game state",
+  },
+});
+
 export function isCustomError(error) {
   return error instanceof CustomError;
 }

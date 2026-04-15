@@ -10,6 +10,16 @@ export function create(size) {
   return res;
 }
 
+export function clone(source) {
+  const res = new MATRIX.DATA_STRUCTURE(source.length);
+
+  for (let i = 0; i < source.length; i++) {
+    res[i] = source[i];
+  }
+
+  return res;
+}
+
 export function reset(target) {
   for (let i = 0; i < target.length; i++) target[i] = 0;
 

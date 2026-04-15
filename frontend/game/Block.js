@@ -2,7 +2,7 @@ import * as vec2 from "../common/vec2.js";
 import WebGL from "./WebGL.js";
 import * as MATRIX from "../common/common.js";
 import * as vec from "../common/vec.js";
-import DynamicTooltip from "../ui/component/game/DynamicTooltip.js";
+import Shape from "./Shape.js";
 
 export default class Block {
   // prettier-ignore
@@ -201,6 +201,37 @@ export default class Block {
     this.health = health;
     this.adjacencyRules = adjacencyRules;
     this.CoM = vec2.create();
+    this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
+  }
+
+  exportSave() {
+    return {
+      localPosition: [...this.localPosition],
+      shape: this.shape.exportSave(),
+      spriteID: this.spriteID,
+      gradeID: this.gradeID,
+      textureRotation: [...this.textureRotation],
+      mass: this.mass,
+      isRemovable: this.isRemovable,
+      health: this.health,
+      adjacencyRules: [...this.adjacencyRules],
+    };
+  }
+
+  from(savedState) {
+    this.localPosition = vec2.clone(savedState.localPosition);
+    this.shape = new Shape(
+      savedState.shape.mergeable,
+      savedState.shape.mergeModeRequest,
+      ...savedState.shape.vertices,
+    );
+    this.spriteID = savedState.spriteID;
+    this.gradeID = savedState.gradeID;
+    this.textureRotation = new Map(savedState.textureRotation);
+    this.mass = savedState.mass;
+    this.isRemovable = savedState.isRemovable;
+    this.health = savedState.health;
+    this.adjacencyRules = vec.clone(savedState.adjacencyRules);
     this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
   }
 

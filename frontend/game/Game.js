@@ -17,10 +17,14 @@ import * as vec2 from "../common/vec2.js";
 import NebulaGenerator from "./texture/NebulaGenerator.js";
 import DecorationBlock from "./DecorationBlock.js";
 import StarGenerator from "./texture/StarGenerator.js";
+import Model from "./Model.js";
+import "../ui/component/game/PauseMenu.js";
 
 export default class Game extends WebGLCanvas {
   constructor() {
     super();
+
+    this.UI = {};
 
     this.tooltip = UI.element("dynamic-tooltip");
     document.body.appendChild(this.tooltip);
@@ -96,6 +100,30 @@ export default class Game extends WebGLCanvas {
     this.showSpaceshipHitbox = false;
 
     this.update = this.update.bind(this);
+  }
+
+  buildUI() {
+    this.UI.pauseMenu = document.createElement("pause-menu");
+  }
+
+  exportSave() {
+    return {
+      seed: this.seed,
+      player: this.player.exportSave(),
+      // enemies: this.enemies,
+      // buildingBlocks: this.buildingBlocks,
+    };
+  }
+
+  fromSave(gameState) {
+    if (!gameState.player || !gameState.enemies) {
+      throw new Error("Invalid game state");
+    }
+
+    this.player = new Player(this, new Model([])).from(gameState.player);
+
+    for (const enemy of gameState.enemies) {
+    }
   }
 
   // prettier-ignore
@@ -183,6 +211,12 @@ export default class Game extends WebGLCanvas {
     if (!this.running) return;
     this.running = false;
     window.cancelAnimationFrame(this.frameId);
+    this.UI.pauseMenu.show();
+  }
+
+  resume() {
+    this.UI.pauseMenu.hide();
+    this.start();
   }
 
   update() {

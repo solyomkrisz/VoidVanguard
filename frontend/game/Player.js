@@ -24,6 +24,8 @@ export default class Player extends Spaceship {
       maxSpeed: 5,
     });
 
+    this.score = 0;
+
     this.chunk = vec2.create();
     this.setCurrentChunk();
 
@@ -39,6 +41,27 @@ export default class Player extends Spaceship {
     this.updatePropulsion = this.manualPropulsionUpdate;
 
     this.model.init(this);
+  }
+
+  exportSave() {
+    return {
+      score: this.score,
+      state: [...this.state],
+      position: [...this.position],
+      rotation: this.rotation,
+      model: this.model.exportSave(),
+    };
+  }
+
+  from(savedState) {
+    this.score = savedState.score;
+    this.state = new Uint32Array(savedState.state);
+    this.position = vec2.clone(savedState.position);
+    this.rotation = savedState.rotation;
+    this.model.from(savedState.model);
+
+    this.setMassAndCoM();
+    this.setMomentOfInertia();
   }
 
   // prettier-ignore

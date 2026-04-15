@@ -9,6 +9,7 @@ export default class Enemy extends Spaceship {
   // prettier-ignore
   constructor({ game, model, x, y, maxSpeed } = {}) {
     super({ type: Type.ENEMY, game, model, x, y, vx: 0, vy: 0, maxSpeed });
+    this.species = "REGULAR";
   }
 
   aim(targetPosition) {

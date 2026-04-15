@@ -24,7 +24,7 @@ export default class Shape {
         maxX + b[4],
         minY + b[5],
         minX + b[6],
-        minY + b[7]
+        minY + b[7],
       );
 
       return target;
@@ -64,6 +64,14 @@ export default class Shape {
     this.mergeModeRequest = mergeModeRequest;
     this.vertices = vec.create(vertices.length);
     for (let i = 0; i < vertices.length; i++) this.vertices[i] = vertices[i];
+  }
+
+  exportSave() {
+    return {
+      mergeable: this.mergeable,
+      mergeModeRequest: this.mergeModeRequest,
+      vertices: [...this.vertices],
+    };
   }
 
   getMomentOfInertiaAndCoM(m, target) {

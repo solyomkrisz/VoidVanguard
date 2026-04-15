@@ -23,15 +23,21 @@ import * as jwt from "./common/jwt.js";
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 settingsBtn.addEventListener("click", () => {
-  const isOpen = settingsPanel.style.display === "flex" && !settingsPanel.classList.contains("closing");
+  const isOpen =
+    settingsPanel.style.display === "flex" &&
+    !settingsPanel.classList.contains("closing");
 
   if (isOpen) {
     settingsPanel.classList.remove("open");
     settingsPanel.classList.add("closing");
-    settingsPanel.addEventListener("animationend", () => {
-      settingsPanel.style.display = "none";
-      settingsPanel.classList.remove("closing");
-    }, { once: true });
+    settingsPanel.addEventListener(
+      "animationend",
+      () => {
+        settingsPanel.style.display = "none";
+        settingsPanel.classList.remove("closing");
+      },
+      { once: true },
+    );
   } else {
     settingsPanel.style.display = "flex";
     settingsPanel.classList.remove("closing");
@@ -147,6 +153,7 @@ function initializeGame() {
 
   game.createPlayer(Models.PLAYER);
   game.start();
+  console.log(game.exportSave());
   // game.enablePointerLock();
 
   const enemy = new Enemy({
@@ -229,17 +236,21 @@ function initializeGame() {
   game.startDebugging();
 
   // Wire up game flags from checkbox states (HTML is the single source of truth)
-  const toggleNebula      = document.getElementById("toggleNebula");
-  const toggleChunkDebug  = document.getElementById("toggleChunkDebug");
-  const toggleGridCells   = document.getElementById("toggleGridCells");
-  const toggleEntityIds   = document.getElementById("toggleEntityIds");
-  const toggleSpaceshipCircle = document.getElementById("toggleSpaceshipCircle");
-  const toggleSpaceshipHitbox = document.getElementById("toggleSpaceshipHitbox");
+  const toggleNebula = document.getElementById("toggleNebula");
+  const toggleChunkDebug = document.getElementById("toggleChunkDebug");
+  const toggleGridCells = document.getElementById("toggleGridCells");
+  const toggleEntityIds = document.getElementById("toggleEntityIds");
+  const toggleSpaceshipCircle = document.getElementById(
+    "toggleSpaceshipCircle",
+  );
+  const toggleSpaceshipHitbox = document.getElementById(
+    "toggleSpaceshipHitbox",
+  );
 
-  game.showNebula      = toggleNebula.checked;
-  game.showChunkDebug  = toggleChunkDebug.checked;
-  game.showGridCells   = toggleGridCells.checked;
-  game.showEntityIds   = toggleEntityIds.checked;
+  game.showNebula = toggleNebula.checked;
+  game.showChunkDebug = toggleChunkDebug.checked;
+  game.showGridCells = toggleGridCells.checked;
+  game.showEntityIds = toggleEntityIds.checked;
   game.showSpaceshipCircle = toggleSpaceshipCircle.checked;
   game.showSpaceshipHitbox = toggleSpaceshipHitbox.checked;
 
@@ -272,17 +283,19 @@ function initializeGame() {
 const token = sessionStorage.getItem("access_token");
 if (token) {
   console.log("Talalt meglévő token:", token);
-  
+
   // Check if real JWT is expired
   const isExpired = jwt.isExpired(token);
   console.log("JWT token lejárt?", isExpired);
-  
+
   if (!isExpired) {
     console.log("Érvényes JWT találva, játék indítása...");
     document.getElementById("authContainer").classList.add("hidden");
     initializeGame();
   } else {
-    console.log("Token lejárt, törlés és bejelentkező képernyő megjelenítése...");
+    console.log(
+      "Token lejárt, törlés és bejelentkező képernyő megjelenítése...",
+    );
     sessionStorage.removeItem("access_token");
     sessionStorage.removeItem("access_token_decoded");
   }
