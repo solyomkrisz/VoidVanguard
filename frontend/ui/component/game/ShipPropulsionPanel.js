@@ -1,5 +1,5 @@
-import _ from "./ThrusterController.js";
-import * as UI from "../../UI.js";
+import _ from "/ui/component/game/ThrusterController.js";
+import * as UI from "/ui/UI.js";
 
 export default class ShipPropulsionPanel extends HTMLElement {
   constructor() {

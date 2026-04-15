@@ -1,9 +1,9 @@
-import Block from "./Block.js";
-import * as vec from "../common/vec.js";
-import * as vec2 from "../common/vec2.js";
-import * as Type from "./Type.js";
-import * as UI from "../ui/UI.js";
-import _ from "../ui/component/game/ThrusterController.js";
+import Block from "/game/Block.js";
+import * as vec from "/common/vec.js";
+import * as vec2 from "/common/vec2.js";
+import * as Type from "/game/Type.js";
+import * as UI from "/ui/UI.js";
+import _ from "/ui/component/game/ThrusterController.js";
 
 export default class Thruster extends Block {
   static g0 = 9.81;
@@ -107,7 +107,7 @@ export default class Thruster extends Block {
 
     this._gimbal = Math.max(
       -this.gimbalRange,
-      Math.min(this.gimbalRange, (this._gimbal += da)),
+      Math.min(this.gimbalRange, (this._gimbal += da))
     );
 
     if (this._gimbal === this.previousGimbal) return;

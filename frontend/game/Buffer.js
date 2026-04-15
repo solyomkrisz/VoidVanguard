@@ -1,9 +1,9 @@
-import * as vec2 from "../common/vec2.js";
-import * as vec3 from "../common/vec3.js";
-import * as mat2 from "../common/mat2.js";
-import * as mat3 from "../common/mat3.js";
-import Collision from "./Collision.js";
-import Force from "./Force.js";
+import * as vec2 from "/common/vec2.js";
+import * as vec3 from "/common/vec3.js";
+import * as mat2 from "/common/mat2.js";
+import * as mat3 from "/common/mat3.js";
+import Collision from "/game/Collision.js";
+import Force from "/game/Force.js";
 
 export default class Buffer {
   constructor() {

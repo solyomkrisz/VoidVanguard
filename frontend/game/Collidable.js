@@ -1,4 +1,4 @@
-import * as vec2 from "../common/vec2.js";
+import * as vec2 from "/common/vec2.js";
 
 export default class Collidable {
   static MODEL_CENTER = vec2.create();

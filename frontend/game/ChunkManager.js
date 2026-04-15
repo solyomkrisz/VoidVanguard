@@ -1,4 +1,4 @@
-import Chunk from "./Chunk.js";
+import Chunk from "/game/Chunk.js";
 
 export default class ChunkManager {
   // ! Chunk id range is [-32768, 32767]

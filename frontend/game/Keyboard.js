@@ -1,4 +1,4 @@
-import Game from "./Game.js";
+import Game from "/game/Game.js";
 
 export default class Keyboard {
   static KeyW = "KeyW";

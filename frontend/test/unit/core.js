@@ -1,5 +1,5 @@
-import { results, describe, it, expect } from "../common/unittest.js";
-import { LERP, clamp } from "../common/common.js"; // Function to test
+import { results, describe, it, expect } from "../../common/unittest.js";
+import { LERP, clamp } from "../../common/common.js"; // Function to test
 
 results.init(); // Must call to reset it
 

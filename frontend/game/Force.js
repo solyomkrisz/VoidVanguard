@@ -1,4 +1,4 @@
-import * as vec2 from "../common/vec2.js";
+import * as vec2 from "/common/vec2.js";
 
 export default class Force {
   static DIRTY = Object.freeze({

@@ -1,6 +1,6 @@
-import Block from "./Block.js";
-import { SpriteID } from "./texture/Texture.js";
-import Shape from "./Shape.js";
+import Block from "/game/Block.js";
+import { SpriteID } from "/game/texture/Texture.js";
+import Shape from "/game/Shape.js";
 
 // #region SHAPE COLLIDERS
 // BLOCK COLLIDERS

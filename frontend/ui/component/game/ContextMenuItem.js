@@ -1,4 +1,4 @@
-import * as UI from "../../UI.js";
+import * as UI from "/ui/UI.js";
 
 export default class ContextMenuItem extends HTMLElement {
   constructor() {
@@ -37,7 +37,7 @@ export default class ContextMenuItem extends HTMLElement {
           },
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     });
   }

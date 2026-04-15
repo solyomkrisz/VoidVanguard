@@ -1,10 +1,10 @@
-import * as vec2 from "../common/vec2.js";
-import Collidable from "./Collidable.js";
-import Player from "./Player.js";
-import Rigidbody from "./Rigidbody.js";
-import { getAngleDiff, isAdjacent } from "../common/common.js";
-import * as Type from "./Type.js";
-import { GlobalState } from "./State.js";
+import * as vec2 from "/common/vec2.js";
+import Collidable from "/game/Collidable.js";
+import Player from "/game/Player.js";
+import Rigidbody from "/game/Rigidbody.js";
+import { getAngleDiff, isAdjacent } from "/common/common.js";
+import * as Type from "/game/Type.js";
+import { GlobalState } from "/game/State.js";
 
 export default class BuildingBlock extends Rigidbody {
   // prettier-ignore
