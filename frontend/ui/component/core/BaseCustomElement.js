@@ -11,7 +11,15 @@ export default class BaseCustomElement extends HTMLElement {
 
     this._stylesLoaded = Promise.all(
       paths.map((path) => this._loadStyle(path)),
-    );
+    ).then((sheets) => {
+      // Apply styles in the correct order after all are loaded
+      if (!this.isConnected) return;
+
+      this.shadowRoot.adoptedStyleSheets = [
+        ...this.shadowRoot.adoptedStyleSheets,
+        ...sheets.filter(Boolean),
+      ];
+    });
 
     // for (const path of paths) {
     //   if (BaseCustomElement.STYLE_CACHE.has(path)) {
@@ -65,9 +73,6 @@ export default class BaseCustomElement extends HTMLElement {
   async _loadStyle(path) {
     if (BaseCustomElement.STYLE_CACHE.has(path)) {
       // console.log(`BASECUSTOMELEMENT-constructor: Found in cache: ${path}`);
-      this.shadowRoot.adoptedStyleSheets.push(
-        BaseCustomElement.STYLE_CACHE.get(path),
-      );
       return BaseCustomElement.STYLE_CACHE.get(path);
     }
 
@@ -75,17 +80,7 @@ export default class BaseCustomElement extends HTMLElement {
       // console.log(
       //   `BASECUSTOMELEMENT-constructor: Found a pending fetch for: ${path}`,
       // );
-
-      const sheet = await BaseCustomElement.PENDING_FETCHES.get(path);
-
-      if (sheet instanceof CSSStyleSheet) {
-        this.shadowRoot.adoptedStyleSheets = [
-          ...this.shadowRoot.adoptedStyleSheets,
-          sheet,
-        ];
-      }
-
-      return sheet;
+      return await BaseCustomElement.PENDING_FETCHES.get(path);
     }
 
     // console.log(
@@ -101,13 +96,12 @@ export default class BaseCustomElement extends HTMLElement {
         BaseCustomElement.STYLE_CACHE.set(path, sheet);
         BaseCustomElement.PENDING_FETCHES.delete(path);
 
-        this.shadowRoot.adoptedStyleSheets.push(sheet);
-
         return sheet;
       })
       .catch((error) => {
         console.error(error);
         BaseCustomElement.PENDING_FETCHES.delete(path);
+        return null;
       });
 
     BaseCustomElement.PENDING_FETCHES.set(path, promise);

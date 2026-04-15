@@ -1,6 +1,6 @@
-import Block from "./Block";
-import Shape from "./Shape";
-import * as vec from "./common/vec.js";
+import Block from "./Block.js";
+import Shape from "./Shape.js";
+import * as vec from "../common/vec.js";
 
 export default class Model {
   static COPY_MODE = Object.freeze({

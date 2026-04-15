@@ -20,11 +20,17 @@ import StarGenerator from "./texture/StarGenerator.js";
 import Model from "./Model.js";
 import "../ui/component/game/PauseMenu.js";
 
+import { isLoggedIn } from "../common/common.js";
+import * as net from "../common/network.js";
+
 export default class Game extends WebGLCanvas {
   constructor() {
     super();
 
+    this.inSavingProcess = false;
+
     this.UI = {};
+    this.buildUI();
 
     this.tooltip = UI.element("dynamic-tooltip");
     document.body.appendChild(this.tooltip);
@@ -104,6 +110,8 @@ export default class Game extends WebGLCanvas {
 
   buildUI() {
     this.UI.pauseMenu = document.createElement("pause-menu");
+    this.UI.pauseMenu.game = this;
+    document.body.appendChild(this.UI.pauseMenu);
   }
 
   exportSave() {
@@ -124,6 +132,48 @@ export default class Game extends WebGLCanvas {
 
     for (const enemy of gameState.enemies) {
     }
+  }
+
+  async saveCurrentStateAs(formData) {
+    if (this.inSavingProcess) return;
+
+    const slotName = formData.get("slotName");
+
+    if (!slotName) {
+      console.error("Unable to save game: no slot name provided");
+      return;
+    }
+
+    this.inSavingProcess = true;
+
+    if (!isLoggedIn()) {
+      window.localStorage.setItem(slotName, JSON.stringify(this.exportSave()));
+      console.log("Game state has been saved locally as " + slotName);
+      this.inSavingProcess = false;
+
+      return;
+    }
+
+    // if logged in
+    formData.append("gameState", this.exportSave());
+
+    const response = await net.send("/api/saves", {
+      method: "POST",
+      body: formData,
+    });
+
+    this.inSavingProcess = false;
+
+    if (!response?.success) {
+      console.error(
+        `Unable to save game: ${response?.message ? response.message : ""}`,
+      );
+      return;
+    }
+
+    console.log(
+      `GAME-saveCurrentStateAs: ${response?.message ? response.message : ""}`,
+    );
   }
 
   // prettier-ignore
@@ -211,7 +261,7 @@ export default class Game extends WebGLCanvas {
     if (!this.running) return;
     this.running = false;
     window.cancelAnimationFrame(this.frameId);
-    this.UI.pauseMenu.show();
+    this.UI.pauseMenu?.show();
   }
 
   resume() {
