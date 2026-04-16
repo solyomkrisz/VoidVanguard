@@ -2,6 +2,8 @@ import Game from "/game/Game.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
+import { setupGame } from "/game/setup/default.js";
+import { on, off } from "/common/eventhub.js";
 import "/ui/component/layout/DrilldownMenu.js";
 import "/ui/component/game/SaveBrowserLauncher.js";
 import "/ui/component/game/RemoteSaveList.js";
@@ -14,15 +16,23 @@ export default class MainMenu extends BaseCustomElement {
       path.join(dir, "drilldownMenu.css"),
     ]);
 
+    this._startedGame = null;
     this._built = false;
     this._elements = {};
 
     this.onGameStart = this.onGameStart.bind(this);
+    this.onGameExit = this.onGameExit.bind(this);
     this.onSaveLoadRequest = this.onSaveLoadRequest.bind(this);
   }
 
   connectedCallback() {
     this.build();
+
+    on("exit-game", this.onGameExit);
+  }
+
+  disconnectedCallback() {
+    off("exit-game", this.onGameExit);
   }
 
   preInitGame() {
@@ -30,10 +40,10 @@ export default class MainMenu extends BaseCustomElement {
       window.VoidVanguard = {};
     }
 
-    if (
-      !window.VoidVanguard?.game ||
-      !(window.VoidVanguard.game instanceof Game)
-    ) {
+    const hasGame =
+      !window.VoidVanguard?.game || !(window.VoidVanguard.game instanceof Game);
+
+    if (hasGame) {
       window.VoidVanguard.game = new Game();
     }
 
@@ -50,7 +60,22 @@ export default class MainMenu extends BaseCustomElement {
   }
 
   onGameStart() {
-    this.preInitGame();
+    const game = this.preInitGame();
+    this._startedGame = game;
+    setupGame(game);
+    game.start();
+    this.hidden = true;
+  }
+
+  onGameExit(e) {
+    const exitedGame = e?.detail?.game;
+    if (!exitedGame) return;
+
+    if (this._startedGame === exitedGame) {
+      this.hidden = false;
+      this._startedGame = null;
+      window.VoidVanguard.game = null;
+    }
   }
 
   build() {

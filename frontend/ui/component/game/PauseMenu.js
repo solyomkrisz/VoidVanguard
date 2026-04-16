@@ -1,8 +1,11 @@
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import { on, off } from "/common/eventhub.js";
 import "/ui/component/layout/DrilldownMenu.js";
 import "/ui/component/game/SaveForm.js";
+import "/ui/component/game/ResumeButton.js";
+import "/ui/component/game/ExitButton.js";
 
 export default class PauseMenu extends BaseCustomElement {
   set game(value) {
@@ -25,24 +28,36 @@ export default class PauseMenu extends BaseCustomElement {
     this._built = false;
 
     this.onResume = this.onResume.bind(this);
+    this.onExit = this.onExit.bind(this);
     this.onViewChange = this.onViewChange.bind(this);
     this.onSaveRequest = this.onSaveRequest.bind(this);
   }
 
-  onResume() {
+  onResume(e) {
+    e.stopPropagation();
+
     if (!this.game) return;
     this.game.resume();
+
+    document.dispatchEvent(
+      new CustomEvent("resume-game", { detail: { game: this } }),
+    );
+  }
+
+  onExit(e) {
+    e.stopPropagation();
+
+    if (!this.game) return;
+    this.game.destroy();
+
+    document.dispatchEvent(
+      new CustomEvent("exit-game", { detail: { game: this._game } }),
+    );
   }
 
   onViewChange(e) {
     const currentView = e?.detail?.currentView;
     if (!currentView) return;
-
-    if (currentView === "root-level") {
-      this._elements.resumeButton.hidden = false;
-    } else {
-      this._elements.resumeButton.hidden = true;
-    }
   }
 
   async onSaveRequest(e) {
@@ -68,21 +83,20 @@ export default class PauseMenu extends BaseCustomElement {
 
     this.setShadowInnerHTML(`
         <h1 class="title">Játék megállítva</h1>
-        <button id="resume">Folytatás</button>
         <drilldown-menu initial="root-level">
           <template id="save-game" data-name="Játékmenet mentése">
             <save-form></save-form>
           </template>
           <template id="root-level">
+            <resume-button></resume-button>
             <button data-target="save-game">Játékmenet mentése</button>
+            <exit-button></exit-button>
           </template>
         </drilldown-menu>
     `);
 
-    const resumeButton = this.queryShadowSelector("#resume");
-    resumeButton.addEventListener("click", this.onResume);
-    this._elements.resumeButton = resumeButton;
-
+    this.addEventListener("resume-game", this.onResume);
+    this.addEventListener("exit-game", this.onExit);
     this.addEventListener("save-request", this.onSaveRequest);
     this.addEventListener("view-change", this.onViewChange);
 

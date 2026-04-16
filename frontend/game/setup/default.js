@@ -5,6 +5,10 @@ import DebugOverlay from "/game/DebugOverlay.js";
 import DebugPanel from "/game/DebugPanel.js";
 import Models from "/game/SpaceShipModels.js";
 import TextureManager from "/game/TextureManager.js";
+import * as UI from "/ui/UI.js";
+import Sprite from "/game/Sprite.js";
+import { TextureID, SpriteID } from "/game/texture/Texture.js";
+import "/ui/component/game/ContextMenuTemplate.js";
 
 export function setupGame(game) {
   if (game.running) return;
@@ -35,6 +39,7 @@ export function setupGame(game) {
     ["Throttle: ", "throttle"],
   ]);
 
+  game.createCanvas(); // must be before createContextMenu
   game.createContextMenu();
 
   //#region initializing context menus
@@ -54,7 +59,6 @@ export function setupGame(game) {
   game.contextMenu.addTemplate("ENEMY_CONTEXT_MENU", enemyContextMenu);
 
   //#region init webgl
-  game.createCanvas();
   game.canvasToResponsiveFullWindow();
   game.initWebGL();
   game.setProgram(Block.VERTEX_SHADER_SOURCE, Block.FRAGMENT_SHADER_SOURCE);

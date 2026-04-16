@@ -23,7 +23,7 @@ import { isLoggedIn } from "/common/common.js";
 import * as net from "/common/network.js";
 
 export default class Game extends WebGLCanvas {
-  constructor() {
+  constructor(seed = null) {
     super();
 
     this.dirty = true;
@@ -56,8 +56,8 @@ export default class Game extends WebGLCanvas {
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
-    this.seed = Math.floor(Math.random() * 100000); // 555 is nice, 46008, 676
-    this.seed = 555;
+    this.seed = seed ?? Math.floor(Math.random() * 100000); // 555 is nice, 46008, 676
+    // this.seed = 555;
     this.noise = new ValueNoise(this.seed);
     this.noiseScale = 1 / 10;
     // prettier-ignore
@@ -117,7 +117,7 @@ export default class Game extends WebGLCanvas {
 
     // own
     {
-      for (const key of Object.key(this.UI)) {
+      for (const key of Object.keys(this.UI)) {
         this.UI[key].remove?.();
       }
 

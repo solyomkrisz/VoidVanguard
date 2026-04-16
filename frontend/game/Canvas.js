@@ -23,7 +23,11 @@ export default class Canvas {
   }
 
   createContextMenu() {
-    if (this.contextMenu instanceof ContextMenu || !this.hasCanvas()) return;
+    if (this.contextMenu instanceof ContextMenu || !this.hasCanvas()) {
+      throw new Error(
+        "Unable to create context menu: it already exists or no canvas is provided",
+      );
+    }
 
     this.contextMenu = UI.element("context-menu");
     document.body.appendChild(this.contextMenu);
@@ -66,7 +70,7 @@ export default class Canvas {
 
     if (!(element instanceof HTMLCanvasElement)) {
       throw new Error(
-        `CANVAS-setCanvas: The given selector (${selector}) is not pointing to a HTMLCanvasElement!`
+        `CANVAS-setCanvas: The given selector (${selector}) is not pointing to a HTMLCanvasElement!`,
       );
     }
 
@@ -90,7 +94,7 @@ export default class Canvas {
   canvasToResponsiveFullWindow() {
     if (!this.hasCanvas()) {
       throw new Error(
-        "CANVAS-canvasToResponsiveFullWindow: There is no canvas selected that could be made responsive!"
+        "CANVAS-canvasToResponsiveFullWindow: There is no canvas selected that could be made responsive!",
       );
     }
 
@@ -120,7 +124,7 @@ export default class Canvas {
   enablePointerLock() {
     if (!this.hasCanvas()) {
       console.error(
-        "CANVAS-enablePointerLock: There is no canvas selected that could have pointer locked to!"
+        "CANVAS-enablePointerLock: There is no canvas selected that could have pointer locked to!",
       );
     }
 
@@ -128,7 +132,7 @@ export default class Canvas {
 
     document.addEventListener(
       "pointerlockchange",
-      this.pointerLockChangeHandler
+      this.pointerLockChangeHandler,
     );
 
     document.addEventListener("pointerlockerror", this.pointerLockErrorHandler);
@@ -138,11 +142,11 @@ export default class Canvas {
     this.canvas.removeEventListener("click", this.pointerLockRequestHandler);
     document.removeEventListener(
       "pointerlockchange",
-      this.pointerLockChangeHandler
+      this.pointerLockChangeHandler,
     );
     document.removeEventListener(
       "pointerlockerror",
-      this.pointerLockErrorHandler
+      this.pointerLockErrorHandler,
     );
   }
 }
