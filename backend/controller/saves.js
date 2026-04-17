@@ -41,13 +41,44 @@ export async function saveGame(request, response) {
   try {
     const saveId = await service.save({
       userId: request.targetUser.id,
-      slotName: request.body.slotName,
-      gameState: request.body.gameState,
+      slotName: request.body.slot_name,
+      gameState: request.body.game_state,
     });
 
     response
       .status(200)
       .json(createResponse(true, saveId, "Game successfully saved"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function updateSave(request, response) {
+  try {
+    const result = await service.updateSave({
+      userId: request.targetUser.id,
+      role: request.targetUser.role || -1,
+      body: request.body,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, null, "Save successfully updated"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function deleteSave(request, response) {
+  try {
+    const result = await service.deleteSave({
+      saveId: request.body.saveId,
+      userId: request.targetUser.id,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, null, "Save successfully deleted"));
   } catch (error) {
     handleCaughtError(response, error);
   }

@@ -23,4 +23,20 @@ router.post(
   controller.saveGame,
 );
 
+router.patch(
+  "/",
+  authenticate(),
+  upload.none(),
+  checkSchema(validator.PATCH),
+  controller.updateSave,
+);
+
+router.delete(
+  "/",
+  authenticate(),
+  upload.none(),
+  checkSchema(validator.DELETE),
+  controller.deleteSave,
+);
+
 export default router;

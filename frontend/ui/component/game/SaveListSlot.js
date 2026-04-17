@@ -4,6 +4,10 @@ import { path } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 
 export default class SaveListSlot extends BaseCustomElement {
+  get interactive() {
+    return this.hasAttribute("interactive");
+  }
+
   set data(value) {
     this._data = value;
     this.update();
@@ -21,6 +25,8 @@ export default class SaveListSlot extends BaseCustomElement {
     this._data = null;
 
     this.onLoadSaveButtonClick = this.onLoadSaveButtonClick.bind(this);
+    this.onDelete = this.onDelete.bind(this);
+    this.onSelect = this.onSelect.bind(this);
   }
 
   connectedCallback() {
@@ -29,7 +35,33 @@ export default class SaveListSlot extends BaseCustomElement {
   }
 
   onLoadSaveButtonClick(e) {
-    console.log(this.data.game_state);
+    this.dispatchEvent(
+      new CustomEvent("save-load-request", {
+        detail: { gameState: this.data.game_state },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  onDelete(e) {
+    this.dispatchEvent(
+      new CustomEvent("save-delete", {
+        detail: { saveId: this.data.id },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  onSelect(e) {
+    this.dispatchEvent(
+      new CustomEvent("slot-select", {
+        detail: { slotData: { id: this.data.id, name: this.data.slot_name } },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   build() {
@@ -45,11 +77,24 @@ export default class SaveListSlot extends BaseCustomElement {
       { onClick: this.onLoadSaveButtonClick },
       ["Mentés betöltése"],
     );
+    elements.deleteButton = el("button", { onClick: this.onDelete }, [
+      "Mentés törlése",
+    ]);
 
     this.appendShadowChild(elements.slotName);
     this.appendShadowChild(elements.createdAtDate);
     this.appendShadowChild(elements.updatedAtDate);
+
     this.appendShadowChild(elements.loadSaveButton);
+
+    if (this.interactive) {
+      elements.selectButton = el("button", { onClick: this.onSelect }, [
+        "Módosítás",
+      ]);
+      this.appendShadowChild(elements.selectButton);
+    }
+
+    this.appendShadowChild(elements.deleteButton);
 
     this._built = true;
   }

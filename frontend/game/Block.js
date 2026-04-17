@@ -189,8 +189,31 @@ export default class Block {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
+  static from(blockState) {
+    const [x, y] = blockState.localPosition;
+    const shape = Shape.from(blockState.shape);
+
+    const block = new Block({
+      x,
+      y,
+      shape,
+      spriteID: blockState.spriteID,
+      gradeID: blockState.gradeID,
+      mass: blockState.mass,
+      health: blockState.health,
+      adjacencyRules: vec.clone(blockState.adjacencyRules),
+    });
+
+    block.type = blockState.type;
+    block.textureRotation = new Map(blockState.textureRotation);
+    block.isRemovable = blockState.isRemovable;
+
+    return block;
+  }
+
   // prettier-ignore
   constructor({ x, y, shape, spriteID, gradeID = 0, mass = 1, health = 100, adjacencyRules = vec.create(0) } = {}) {
+    this.type = 0;
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
     this.spriteID = spriteID;
@@ -207,6 +230,7 @@ export default class Block {
 
   exportSave() {
     return {
+      type: this.type,
       localPosition: [...this.localPosition],
       shape: this.shape.exportSave(),
       spriteID: this.spriteID,
@@ -217,23 +241,6 @@ export default class Block {
       health: this.health,
       adjacencyRules: [...this.adjacencyRules],
     };
-  }
-
-  from(savedState) {
-    this.localPosition = vec2.clone(savedState.localPosition);
-    this.shape = new Shape(
-      savedState.shape.mergeable,
-      savedState.shape.mergeModeRequest,
-      ...savedState.shape.vertices
-    );
-    this.spriteID = savedState.spriteID;
-    this.gradeID = savedState.gradeID;
-    this.textureRotation = new Map(savedState.textureRotation);
-    this.mass = savedState.mass;
-    this.isRemovable = savedState.isRemovable;
-    this.health = savedState.health;
-    this.adjacencyRules = vec.clone(savedState.adjacencyRules);
-    this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
   }
 
   rotateTexture(textureName, rad) {

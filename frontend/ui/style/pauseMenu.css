@@ -13,12 +13,6 @@
   color: #fff;
 }
 
-:host > *:not(.title, drilldown-menu),
-.drilldown-menu-nav > *,
-.drilldown-menu-go-back-button {
-  background-color: #444;
-  color: #fff;
-  border-radius: 8px;
-  border: none;
-  padding: 8px;
+remote-save-list > * {
+  margin-bottom: 10px;
 }

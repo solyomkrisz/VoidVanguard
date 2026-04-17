@@ -39,6 +39,42 @@ export async function save({ userId, slotName, gameState }) {
   return id;
 }
 
+export async function updateSave({ userId, role, body }) {
+  const saveId = body.save_id;
+  if (!saveId) throw CustomError.INVALID_REQUEST;
+
+  const save = await selectUserSave(saveId, userId);
+  const updates = {};
+
+  // slot_name and game_state can be in the body
+  for (const column in body) {
+    if (
+      !Saves.hasPermission(column, role, Permission.W) ||
+      !Saves.columnExists(column)
+    ) {
+      continue;
+    }
+
+    if (body[column] === save[column]) {
+      continue;
+    }
+
+    updates[column] = body[column];
+  }
+
+  if (!Object.keys(updates).length) {
+    throw CustomError.NO_DATA_CHANGE;
+  }
+
+  const result = await Saves.update(userId, saveId, updates);
+
+  if (!result) {
+    throw CustomError.TEST;
+  }
+
+  return result;
+}
+
 export async function lazySelectByUserId({ userId, page = 1, limit = 20 }) {
   const offset = (page - 1) * limit;
 
@@ -52,4 +88,11 @@ export async function lazySelectByUserId({ userId, page = 1, limit = 20 }) {
     total,
     hasNext: offset + saves.length < total,
   };
+}
+
+export async function deleteSave({ saveId, userId }) {
+  if ((await Saves.delete(userId, saveId)).affectedRows === 0) {
+    throw CustomError.TEST;
+  }
+  return null;
 }

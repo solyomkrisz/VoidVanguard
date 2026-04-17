@@ -2,7 +2,6 @@ import Game from "/game/Game.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
-import { setupGame } from "/game/setup/default.js";
 import { on, off } from "/common/eventhub.js";
 import "/ui/component/layout/DrilldownMenu.js";
 import "/ui/component/game/SaveBrowserLauncher.js";
@@ -35,7 +34,7 @@ export default class MainMenu extends BaseCustomElement {
     off("exit-game", this.onGameExit);
   }
 
-  preInitGame() {
+  preInitGame(savedState = null) {
     if (!window?.VoidVanguard) {
       window.VoidVanguard = {};
     }
@@ -44,25 +43,27 @@ export default class MainMenu extends BaseCustomElement {
       !window.VoidVanguard?.game || !(window.VoidVanguard.game instanceof Game);
 
     if (hasGame) {
-      window.VoidVanguard.game = new Game();
+      window.VoidVanguard.game = Game.from(savedState);
     }
 
     return window.VoidVanguard.game;
   }
 
   onSaveLoadRequest(e) {
+    e.stopPropagation();
+
     const gameState = e?.detail?.gameState;
     if (!gameState) return;
 
-    const game = this.preInitGame();
-
-    game.from(gameState);
+    const game = this.preInitGame(gameState);
+    this._startedGame = game;
+    game.start();
+    this.hidden = true;
   }
 
   onGameStart() {
     const game = this.preInitGame();
     this._startedGame = game;
-    setupGame(game);
     game.start();
     this.hidden = true;
   }
@@ -105,6 +106,8 @@ export default class MainMenu extends BaseCustomElement {
     const startButton = this.queryShadowSelector("#start");
     startButton.addEventListener("click", this.onGameStart);
     this._elements.startButton = startButton;
+
+    this.addEventListener("save-load-request", this.onSaveLoadRequest);
 
     this._built = true;
   }

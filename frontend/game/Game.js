@@ -21,8 +21,30 @@ import Model from "/game/Model.js";
 import "/ui/component/game/PauseMenu.js";
 import { isLoggedIn } from "/common/common.js";
 import * as net from "/common/network.js";
+import Save from "/game/Save.js";
+import { setupGame } from "/game/setup/default.js";
+import Models from "/game/SpaceShipModels.js";
 
 export default class Game extends WebGLCanvas {
+  static from(gameState = null) {
+    if (gameState === null) {
+      const game = new Game();
+      setupGame(game);
+      return game;
+    }
+
+    let parsed;
+    if (typeof gameState === "string") parsed = Save.parse(gameState);
+    else parsed = gameState;
+
+    const game = new Game(parsed.seed);
+    setupGame(game, new Model(Save.recoverPlayerModel(parsed.player.model)));
+
+    game.player.teleportTo(...parsed.player.position);
+
+    return game;
+  }
+
   constructor(seed = null) {
     super();
 
@@ -145,17 +167,6 @@ export default class Game extends WebGLCanvas {
     };
   }
 
-  from(gameState) {
-    if (!gameState.player || !gameState.enemies) {
-      throw new Error("Invalid game state");
-    }
-
-    this.player = new Player(this, new Model([])).from(gameState.player);
-
-    for (const enemy of gameState.enemies) {
-    }
-  }
-
   async saveCurrentStateAs(formData) {
     if (this.inSavingProcess || !this.dirty) {
       console.warn(
@@ -164,7 +175,7 @@ export default class Game extends WebGLCanvas {
       return;
     }
 
-    const slotName = formData.get("slotName");
+    const slotName = formData.get("slot_name");
 
     if (!slotName) {
       console.error("Unable to save game: no slot name provided");
@@ -194,10 +205,10 @@ export default class Game extends WebGLCanvas {
     }
 
     // if logged in
-    formData.append("gameState", JSON.stringify(savedState));
+    formData.append("game_state", JSON.stringify(savedState));
 
     const response = await net.send("/api/saves", {
-      method: "POST",
+      method: formData.get("save_id") ? "PATCH" : "POST",
       body: formData,
     });
 
@@ -453,6 +464,12 @@ export default class Game extends WebGLCanvas {
   }
 
   createPlayer(model) {
+    if (!(model instanceof Model)) {
+      throw new Error(
+        "Unable to create player: the provided argument is not a Model",
+      );
+    }
+
     this.player = new Player(this, model);
     this.coreObjects.add(this.player);
   }

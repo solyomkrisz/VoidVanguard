@@ -3,6 +3,7 @@ import { path } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { on, off } from "/common/eventhub.js";
 import "/ui/component/layout/DrilldownMenu.js";
+import "/ui/component/game/RemoteSaveList.js";
 import "/ui/component/game/SaveForm.js";
 import "/ui/component/game/ResumeButton.js";
 import "/ui/component/game/ExitButton.js";
@@ -83,11 +84,16 @@ export default class PauseMenu extends BaseCustomElement {
 
     this.setShadowInnerHTML(`
         <h1 class="title">Játék megállítva</h1>
-        <drilldown-menu initial="root-level">
+        <drilldown-menu initial="root">
           <template id="save-game" data-name="Játékmenet mentése">
-            <save-form></save-form>
+            <remote-save-list
+              src="/api/saves"
+              controls="pagination"
+              selection-enabled
+              with-form
+            ></remote-save-list>
           </template>
-          <template id="root-level">
+          <template id="root">
             <resume-button></resume-button>
             <button data-target="save-game">Játékmenet mentése</button>
             <exit-button></exit-button>

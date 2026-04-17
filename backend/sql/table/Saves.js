@@ -73,6 +73,30 @@ class Saves extends Table {
       offset,
     });
   }
+
+  async delete(userId, saveId) {
+    const [result] = await execute(
+      "DELETE FROM saves WHERE id = ? AND user_id = ?",
+      [saveId, userId],
+    );
+    return result;
+  }
+
+  async update(userId, saveId, updates) {
+    const columns = Object.keys(updates);
+
+    if (!columns.length) return false;
+
+    const set = columns.map((i) => `${i} = ?`).join(",");
+    const values = [...Object.values(updates), saveId, userId];
+
+    const [result] = await execute(
+      `UPDATE saves SET ${set} WHERE id = ? AND user_id = ?`,
+      values,
+    );
+
+    return result.affectedRows > 0;
+  }
 }
 
 export default new Saves();

@@ -59,6 +59,15 @@ export default class Shape {
     return j >= a.vertices.length;
   }
 
+  static from(shapeState) {
+    const shape = new Shape(
+      shapeState.mergeable,
+      shapeState.mergeModeRequest,
+      ...shapeState.vertices,
+    );
+    return shape;
+  }
+
   constructor(mergeable, mergeModeRequest, ...vertices) {
     this.mergeable = mergeable;
     this.mergeModeRequest = mergeModeRequest;

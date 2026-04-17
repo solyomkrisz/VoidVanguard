@@ -1,4 +1,5 @@
 import Block from "/game/Block.js";
+import Shape from "/game/Shape.js";
 import * as vec from "/common/vec.js";
 import * as vec2 from "/common/vec2.js";
 import * as Type from "/game/Type.js";
@@ -11,6 +12,29 @@ export default class Thruster extends Block {
   // prettier-ignore
   static LISTED_PROPERTIES = ["localPosition", "exhaustDirection", "_gimbal", "throttle", "Isp"];
 
+  static from(thrusterState) {
+    const [x, y] = thrusterState.localPosition;
+    const shape = Shape.from(thrusterState.shape);
+
+    const thruster = new Thruster({
+      x,
+      y,
+      shape,
+      spriteID: thrusterState.spriteID,
+      mass: thrusterState.mass,
+      health: thrusterState.health,
+      adjacencyRules: vec.clone(thrusterState.adjacencyRules),
+      description: thrusterState.description,
+      fuelType: thrusterState.fuelType,
+      Isp: thrusterState.Isp,
+      massFlowRate: thrusterState.massFlowRate,
+      hasGimbal: thrusterState.hasGimbal,
+      gimbalRange: thrusterState.gimbalRange,
+    });
+
+    return thruster;
+  }
+
   constructor({
     x,
     y,
@@ -20,13 +44,14 @@ export default class Thruster extends Block {
     health = 100,
     adjacencyRules = vec.create(0),
     description = null,
-    fuelType,
+    fuelType = null,
     Isp,
     massFlowRate,
     hasGimbal = false,
     gimbalRange = 0,
   } = {}) {
     super({ x, y, shape, spriteID, mass, health, adjacencyRules });
+    this.type = 1; // for recovery from saves
 
     this.id = null;
     this.description = description;
@@ -45,6 +70,19 @@ export default class Thruster extends Block {
     this.torque = 0;
     this.dirty = true;
     this.controller = null;
+  }
+
+  exportSave() {
+    return {
+      ...super.exportSave(),
+      // id: this.id,
+      description: this.description,
+      fuelType: this.fuelType,
+      Isp: this.Isp,
+      massFlowRate: this.massFlowRate,
+      hasGimbal: this.hasGimbal,
+      gimbalRange: this.gimbalRange,
+    };
   }
 
   onRemove(parent) {
@@ -107,7 +145,7 @@ export default class Thruster extends Block {
 
     this._gimbal = Math.max(
       -this.gimbalRange,
-      Math.min(this.gimbalRange, (this._gimbal += da))
+      Math.min(this.gimbalRange, (this._gimbal += da)),
     );
 
     if (this._gimbal === this.previousGimbal) return;

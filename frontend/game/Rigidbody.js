@@ -44,6 +44,14 @@ export default class Rigidbody extends Collidable {
     this.setMomentOfInertia();
   }
 
+  teleportTo(x, y) {
+    this.position[0] = x;
+    this.position[1] = y;
+
+    this.previousPosition[0] = x;
+    this.previousPosition[1] = x;
+  }
+
   setState(state) {
     const i = Math.floor(state / 32);
     const b = state % 32;

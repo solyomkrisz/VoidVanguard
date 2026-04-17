@@ -10,7 +10,7 @@ import Sprite from "/game/Sprite.js";
 import { TextureID, SpriteID } from "/game/texture/Texture.js";
 import "/ui/component/game/ContextMenuTemplate.js";
 
-export function setupGame(game) {
+export function setupGame(game, playerModel = Models.PLAYER) {
   if (game.running) return;
 
   //#region setup tooltip templates
@@ -82,6 +82,8 @@ export function setupGame(game) {
   keyboard.observeKey(Keyboard.LShift);
   keyboard.observeKey(Keyboard.KeyR);
   keyboard.enableListening();
+
+  game.createPlayer(playerModel); // Must be added after mouse or dragging wont work
 
   //#region debug
   const debugOverlay = new DebugOverlay();
@@ -170,7 +172,4 @@ export function setupGame(game) {
     turretSprite.addFrame(TextureID[`TURRET${i === 1 ? "" : i}`], 2);
     tm.addSprite(SpriteID[`TURRET${i === 1 ? "" : i}`], turretSprite);
   }
-
-  //#region finishing up
-  game.createPlayer(Models.PLAYER);
 }
