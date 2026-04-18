@@ -19,7 +19,7 @@ import DecorationBlock from "/game/DecorationBlock.js";
 import StarGenerator from "/game/texture/StarGenerator.js";
 import Model from "/game/Model.js";
 import "/ui/component/game/PauseMenu.js";
-import { isLoggedIn } from "/common/common.js";
+import { isLoggedIn, isLoggedInAsync } from "/common/common.js";
 import * as net from "/common/network.js";
 import Save from "/game/Save.js";
 import { setupGame } from "/game/setup/default.js";
@@ -172,20 +172,22 @@ export default class Game extends WebGLCanvas {
       console.warn(
         "Unable to save game: it is already being saved or hasn't changed since last save",
       );
-      return;
+      return false;
     }
 
     const slotName = formData.get("slot_name");
 
     if (!slotName) {
       console.error("Unable to save game: no slot name provided");
-      return;
+      return false;
     }
 
     this.inSavingProcess = true;
     const savedState = this.exportSave();
 
-    if (!isLoggedIn()) {
+    const loggedIn = await isLoggedInAsync();
+
+    if (!loggedIn) {
       const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
       let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
 
@@ -201,7 +203,7 @@ export default class Game extends WebGLCanvas {
       this.inSavingProcess = false;
       this.dirty = false;
 
-      return;
+      return true;
     }
 
     // if logged in
@@ -218,12 +220,14 @@ export default class Game extends WebGLCanvas {
       console.error(
         `Unable to save game: ${response?.message ? response.message : ""}`,
       );
-      return;
+      return false;
     }
 
     this.dirty = false;
 
     console.log("Game state has been saved remotely as " + slotName);
+
+    return true;
   }
 
   // prettier-ignore

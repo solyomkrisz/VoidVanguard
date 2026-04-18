@@ -1,9 +1,14 @@
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import "/ui/component/game/SaveListSlot.js";
 import * as net from "/common/network.js";
 import { el } from "/ui/UI.js";
 
 export default class RemoteSaveList extends LazyItemList {
+  get itemControls() {
+    return this.getAttribute("item-controls");
+  }
+
   get selectionEnabled() {
     return this.hasAttribute("selection-enabled");
   }
@@ -21,6 +26,8 @@ export default class RemoteSaveList extends LazyItemList {
 
     this.onSaveDelete = this.onSaveDelete.bind(this);
     this.onSlotSelect = this.onSlotSelect.bind(this);
+    this.onSaveSuccess = this.onSaveSuccess.bind(this);
+    this.onSaveFailure = this.onSaveFailure.bind(this);
   }
 
   async onSaveDelete(e) {
@@ -37,10 +44,13 @@ export default class RemoteSaveList extends LazyItemList {
 
     if (response?.message) {
       console.log(response.message);
+      ToastManager.REQUEST(response.message);
     }
 
     if (!response?.success) {
       console.error("Unable to delete save.");
+      ToastManager.REQUEST("Unable to delete save");
+
       return;
     }
 
@@ -52,17 +62,53 @@ export default class RemoteSaveList extends LazyItemList {
     }
   }
 
+  toggleSelectedSlotHighlight(id) {
+    if (this._selectedSlotData && this._selectedSlotData.id) {
+      const element = this._byId.get(this._selectedSlotData.id);
+      element && element?.toggleSelection();
+    }
+  }
+
+  removeSelection() {
+    this.toggleSelectedSlotHighlight();
+    this._elements.saveForm.reset?.();
+    this._selectedSlotData = null;
+  }
+
   onSlotSelect(e) {
     e.stopPropagation();
 
     const slotData = e?.detail?.slotData;
-    if (!slotData || !this.withForm || !this.selectionEnabled) return;
+    if (!slotData || !this.withForm || !this.selectionEnabled || !slotData?.id)
+      return;
 
+    // Ha ugyanaz az id levesszük a kiválasztást
+    if (this._selectedSlotData?.id === slotData?.id) {
+      this.removeSelection();
+      return;
+    }
+
+    this.toggleSelectedSlotHighlight(); // leszedjük a régiről a kiválasztást
     this._selectedSlotData = slotData;
+    this.toggleSelectedSlotHighlight(); // rárakjuk az újra
 
     if (!this._elements.saveForm) return;
 
     this._elements.saveForm.from?.(this._selectedSlotData);
+  }
+
+  onSaveSuccess(e) {
+    e.stopPropagation();
+
+    this._byId.clear();
+    this.removeSelection(); // ha nem vesszük le akkor mentés után mivel újratölti az oldalt a kijelölés megmarad, de a this._selectedSlotData-ban még az id-ja a mentésenek benne marad, így ha kövinek kiválasztunk egy másik mentést, a régi (mentés előtti) id bejelölődik az újjal együtt
+    this.reloadCurrentPage();
+  }
+
+  onSaveFailure(e) {
+    e.stopPropagation();
+
+    this.removeSelection();
   }
 
   connectedCallback() {
@@ -74,6 +120,8 @@ export default class RemoteSaveList extends LazyItemList {
 
     this.addEventListener("save-delete", this.onSaveDelete);
     this.addEventListener("slot-select", this.onSlotSelect);
+    this.addEventListener("save-success", this.onSaveSuccess);
+    this.addEventListener("save-failure", this.onSaveFailure);
   }
 
   disconnectedCallback() {
@@ -81,14 +129,16 @@ export default class RemoteSaveList extends LazyItemList {
 
     this.removeEventListener("save-delete", this.onSaveDelete);
     this.removeEventListener("slot-select", this.onSlotSelect);
+    this.removeEventListener("save-success", this.onSaveSuccess);
+    this.removeEventListener("save-failure", this.onSaveFailure);
   }
 
   renderItem(item) {
     const el = document.createElement("save-list-slot");
 
     el.data = item;
-    if (this.selectionEnabled) {
-      el.setAttribute("interactive", "");
+    if (this.itemControls) {
+      el.setAttribute("controls", this.itemControls);
     }
 
     this._byId.set(item.id, el);

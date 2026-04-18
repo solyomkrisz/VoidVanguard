@@ -46,7 +46,7 @@ class Saves extends Table {
       "SELECT * FROM saves WHERE id = ? AND user_id = ?",
       [saveId, userId],
     );
-    return rows.length ? rows : null;
+    return rows.length ? rows[0] : null;
   }
 
   async countSavesForUserId(userId) {

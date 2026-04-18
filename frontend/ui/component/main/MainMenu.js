@@ -98,7 +98,7 @@ export default class MainMenu extends BaseCustomElement {
             </template>
             <template id="remote-save-menu">
                 <h1>Távoli mentések</h1>
-                <remote-save-list src="/api/saves" controls="pagination" page-size="6"></remote-save-list>
+                <remote-save-list src="/api/saves" controls="pagination" item-controls="load delete" page-size="6"></remote-save-list>
             </template>
         </drilldown-menu>
     `);

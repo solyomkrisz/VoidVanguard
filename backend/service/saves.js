@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import * as CustomError from "../common/CustomError.js";
 import Saves from "../sql/table/Saves.js";
+import Permission from "../common/Permission.js";
 import crypto from "crypto";
 import stableStringify from "fast-json-stable-stringify";
 
@@ -43,7 +44,7 @@ export async function updateSave({ userId, role, body }) {
   const saveId = body.save_id;
   if (!saveId) throw CustomError.INVALID_REQUEST;
 
-  const save = await selectUserSave(saveId, userId);
+  const save = await selectUserSave({ saveId, userId });
   const updates = {};
 
   // slot_name and game_state can be in the body
@@ -62,8 +63,28 @@ export async function updateSave({ userId, role, body }) {
     updates[column] = body[column];
   }
 
-  if (!Object.keys(updates).length) {
+  const changedColumns = Object.keys(updates);
+
+  if (!changedColumns.length) {
     throw CustomError.NO_DATA_CHANGE;
+  }
+
+  if (updates.game_state) {
+    const parsedState =
+      typeof updates.game_state === "string"
+        ? JSON.parse(updates.game_state)
+        : updates.game_state;
+
+    const newStateHash = hashGameState(parsedState);
+
+    // Ha csak a játékállást módosítjuk és a hashe ugyan az mint az előző mentésé
+    if (changedColumns.length === 1 && changedColumns.includes("game_state")) {
+      if (save["state_hash"] === newStateHash) {
+        throw CustomError.NO_DATA_CHANGE;
+      }
+    }
+
+    updates["state_hash"] = newStateHash;
   }
 
   const result = await Saves.update(userId, saveId, updates);

@@ -57,7 +57,7 @@ export async function updateSave(request, response) {
   try {
     const result = await service.updateSave({
       userId: request.targetUser.id,
-      role: request.targetUser.role || -1,
+      role: request.targetUser.role ?? -1,
       body: request.body,
     });
 

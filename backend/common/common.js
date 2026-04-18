@@ -166,7 +166,7 @@ export function handleValidation(request, response, next) {
   next();
 }
 
-export const accessTokenLifetimeMin = 15;
+export const accessTokenLifetimeMin = 0.5;
 
 export async function runQueryWithPagination(
   sql,

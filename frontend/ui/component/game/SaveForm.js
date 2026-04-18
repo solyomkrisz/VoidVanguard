@@ -11,6 +11,7 @@ export default class SaveForm extends BaseCustomElement {
     this._built = false;
 
     this.onSubmit = this.onSubmit.bind(this);
+    this.onDone = this.onDone.bind(this);
   }
 
   connectedCallback() {
@@ -22,9 +23,10 @@ export default class SaveForm extends BaseCustomElement {
 
     const formData = new FormData(e.target);
 
+    // <pause-menu> captures it
     this.dispatchEvent(
       new CustomEvent("save-request", {
-        detail: { formData, onDone: () => this.enable() },
+        detail: { formData, onDone: this.onDone },
         bubbles: true,
         composed: true,
       }),
@@ -33,11 +35,21 @@ export default class SaveForm extends BaseCustomElement {
     this._elements.submitButton.disabled = true;
   }
 
-  enable() {
+  onDone(isSuccess) {
     if (!this._built) return;
 
     this._elements.submitButton.disabled = false;
-    this.reset();
+
+    if (isSuccess) {
+      this.reset();
+      this.dispatchEvent(
+        new CustomEvent("save-success", { bubbles: true, composed: true }),
+      );
+    } else {
+      this.dispatchEvent(
+        new CustomEvent("save-failure", { bubbles: true, composed: true }),
+      );
+    }
   }
 
   build() {

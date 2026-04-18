@@ -4,8 +4,11 @@ import { path } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 
 export default class SaveListSlot extends BaseCustomElement {
-  get interactive() {
-    return this.hasAttribute("interactive");
+  get controlsConfig() {
+    const value = this.getAttribute("controls");
+    if (!value) return [];
+
+    return value.trim().split(/\s+/); // ["accept", "delete", "block"]
   }
 
   set data(value) {
@@ -23,10 +26,17 @@ export default class SaveListSlot extends BaseCustomElement {
     this._elements = {};
     this._built = false;
     this._data = null;
+    this._selected = false;
 
     this.onLoadSaveButtonClick = this.onLoadSaveButtonClick.bind(this);
     this.onDelete = this.onDelete.bind(this);
     this.onSelect = this.onSelect.bind(this);
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "controls" && oldValue !== newValue) {
+      this.rebuild();
+    }
   }
 
   connectedCallback() {
@@ -64,6 +74,53 @@ export default class SaveListSlot extends BaseCustomElement {
     );
   }
 
+  toggleSelection() {
+    const selectButton = this._elements.selectButton;
+    if (!this.controlsConfig.includes("select") || !selectButton) return;
+
+    this._selected = !this._selected;
+
+    if (this._selected) {
+      this.classList.add("selected");
+      this._elements.selectButton.textContent = "Kijelölés törlése";
+    } else {
+      this.classList.remove("selected");
+      this._elements.selectButton.textContent = "Kijelölés";
+    }
+  }
+
+  generateControls(config, all = false) {
+    if (this._built) return;
+
+    const elements = this._elements;
+
+    if (config.includes("load") || all) {
+      elements.loadSaveButton = el(
+        "button",
+        { onClick: this.onLoadSaveButtonClick },
+        ["Mentés betöltése"],
+      );
+
+      this.appendShadowChild(elements.loadSaveButton);
+    }
+
+    if (config.includes("select") || all) {
+      elements.selectButton = el("button", { onClick: this.onSelect }, [
+        "Kijelölés",
+      ]);
+
+      this.appendShadowChild(elements.selectButton);
+    }
+
+    if (config.includes("delete") || all) {
+      elements.deleteButton = el("button", { onClick: this.onDelete }, [
+        "Mentés törlése",
+      ]);
+
+      this.appendShadowChild(elements.deleteButton);
+    }
+  }
+
   build() {
     if (this._built) return;
 
@@ -72,31 +129,21 @@ export default class SaveListSlot extends BaseCustomElement {
     elements.slotName = el("div", { class: "slot-name" });
     elements.createdAtDate = el("div", { class: "created-at" });
     elements.updatedAtDate = el("div", { class: "updated-at" });
-    elements.loadSaveButton = el(
-      "button",
-      { onClick: this.onLoadSaveButtonClick },
-      ["Mentés betöltése"],
-    );
-    elements.deleteButton = el("button", { onClick: this.onDelete }, [
-      "Mentés törlése",
-    ]);
 
     this.appendShadowChild(elements.slotName);
     this.appendShadowChild(elements.createdAtDate);
     this.appendShadowChild(elements.updatedAtDate);
 
-    this.appendShadowChild(elements.loadSaveButton);
-
-    if (this.interactive) {
-      elements.selectButton = el("button", { onClick: this.onSelect }, [
-        "Módosítás",
-      ]);
-      this.appendShadowChild(elements.selectButton);
-    }
-
-    this.appendShadowChild(elements.deleteButton);
+    const controlsConfig = this.controlsConfig;
+    this.generateControls(controlsConfig, controlsConfig.length ? false : true);
 
     this._built = true;
+  }
+
+  rebuild() {
+    this.innerHTML = "";
+    this._built = false;
+    this.build();
   }
 
   update() {

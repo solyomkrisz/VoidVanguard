@@ -25,14 +25,19 @@ export const POST = {
     in: ["body"],
     custom: {
       options: (value) => {
-        // check if valid json object
-        // no need to JSON.stringify anywhere because the db table column type is JSON
-        if (
-          typeof value !== "object" ||
-          value === null ||
-          Array.isArray(value)
-        ) {
-          throw new Error("Game state must be a JSON object");
+        try {
+          const parsed = JSON.parse(value);
+
+          if (
+            typeof value !== "string" ||
+            typeof parsed !== "object" ||
+            parsed === null ||
+            Array.isArray(parsed)
+          ) {
+            throw {};
+          }
+        } catch (error) {
+          throw new Error("Invalid game state");
         }
         return true;
       },
@@ -72,12 +77,19 @@ export const PATCH = {
     optional: { options: { nullable: true } },
     custom: {
       options: (value) => {
-        if (
-          typeof value !== "object" ||
-          value === null ||
-          Array.isArray(value)
-        ) {
-          throw new Error("Game state must be a JSON object");
+        try {
+          const parsed = JSON.parse(value);
+
+          if (
+            typeof value !== "string" ||
+            typeof parsed !== "object" ||
+            parsed === null ||
+            Array.isArray(parsed)
+          ) {
+            throw {};
+          }
+        } catch (error) {
+          throw new Error("Invalid game state");
         }
         return true;
       },

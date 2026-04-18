@@ -116,6 +116,43 @@ export async function onDOMContentLoaded() {
   }
 }
 
+export async function logout() {
+  if (!localStorage.getItem("access_token")) return;
+
+  localStorage.removeItem("access_token");
+
+  try {
+    const response = await fetch("/api/sessions", {
+      method: "DELETE",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.success) {
+      throw new Error(`Logout failed: ${data.message}`);
+    }
+  } catch (error) {
+    console.error("Logout error:", error);
+    return false;
+  }
+
+  let detail = { oldId: null, newId: null };
+
+  if (window?.VoidVanguard?.user) {
+    const oldId = window.VoidVanguard.user?.id;
+
+    if (oldId) {
+      detail.oldId = oldId;
+    }
+
+    window.VoidVanguard.user = {};
+  }
+
+  document.dispatchEvent(new CustomEvent("logout", { detail }));
+
+  return true;
+}
+
 export function debounce(fn, delay) {
   let timerId;
 
@@ -162,6 +199,16 @@ export function isEqual(obja, objb, path = "") {
 
 export function isLoggedIn() {
   return Boolean(window.VoidVanguard?.user?.id);
+}
+
+export async function isLoggedInAsync() {
+  const response = await net.send("/api/sessions", { method: "POST" });
+
+  if (response?.success && response?.result) {
+    return true;
+  }
+
+  return false;
 }
 
 export function isAdmin() {

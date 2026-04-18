@@ -68,9 +68,9 @@ export default class PauseMenu extends BaseCustomElement {
       return;
     }
 
-    await this.game.saveCurrentStateAs(formData);
+    const success = await this.game.saveCurrentStateAs(formData);
 
-    e?.detail?.onDone?.();
+    e?.detail?.onDone?.(success);
   }
 
   connectedCallback() {
@@ -89,6 +89,7 @@ export default class PauseMenu extends BaseCustomElement {
             <remote-save-list
               src="/api/saves"
               controls="pagination"
+              item-controls="select delete"
               selection-enabled
               with-form
             ></remote-save-list>

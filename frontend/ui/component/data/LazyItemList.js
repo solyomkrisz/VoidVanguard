@@ -341,7 +341,7 @@ export default class LazyItemList extends HTMLElement {
   }
 
   reloadCurrentPage() {
-    if (!this.controls !== "pagination") return;
+    if (this.controls !== "pagination") return;
 
     this.clearPages(true);
     this._container.textContent = "";

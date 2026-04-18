@@ -20,6 +20,7 @@ router.post(
   authenticate(),
   upload.none(),
   checkSchema(validator.POST),
+  handleValidation,
   controller.saveGame,
 );
 
@@ -28,6 +29,7 @@ router.patch(
   authenticate(),
   upload.none(),
   checkSchema(validator.PATCH),
+  handleValidation,
   controller.updateSave,
 );
 
@@ -36,6 +38,7 @@ router.delete(
   authenticate(),
   upload.none(),
   checkSchema(validator.DELETE),
+  handleValidation,
   controller.deleteSave,
 );
 
