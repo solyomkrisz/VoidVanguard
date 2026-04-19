@@ -206,7 +206,7 @@ export default class LazyItemList extends HTMLElement {
 
   async loadNextPage() {
     if (
-      !this.src ||
+      (!this.src && !this.hasAttribute("local")) ||
       this._loading ||
       (!this._hasNext && this.controls !== "pagination")
     ) {
@@ -216,12 +216,7 @@ export default class LazyItemList extends HTMLElement {
     this._loading = true;
 
     try {
-      const url = this.getURL();
-
-      url.searchParams.set("page", this._page);
-      url.searchParams.set("limit", this.pageSize);
-
-      const response = await this.executeRequest(url);
+      const response = await this.getResponse();
       this._lastResponse = response;
 
       if (!this.isValidResponse(response)) {
@@ -381,6 +376,15 @@ export default class LazyItemList extends HTMLElement {
 
   getURL() {
     return new URL(this.src, window.location.origin);
+  }
+
+  async getResponse() {
+    const url = this.getURL();
+
+    url.searchParams.set("page", this._page);
+    url.searchParams.set("limit", this.pageSize);
+
+    return await this.executeRequest(url);
   }
 }
 

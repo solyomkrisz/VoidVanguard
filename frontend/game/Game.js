@@ -167,54 +167,74 @@ export default class Game extends WebGLCanvas {
     };
   }
 
-  async saveCurrentStateAs(formData) {
-    if (this.inSavingProcess || !this.dirty) {
-      console.warn(
-        "Unable to save game: it is already being saved or hasn't changed since last save",
-      );
-      return false;
-    }
+  localSave(formData) {
+    if (this.inSavingProcess) return;
+    this.inSavingProcess = true;
 
+    const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
+    let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
+
+    const saveId = formData.get("save_id");
     const slotName = formData.get("slot_name");
 
-    if (!slotName) {
-      console.error("Unable to save game: no slot name provided");
-      return false;
+    // felülírunk egy már meglévőt
+    if (saveId) {
+      const save = localSaves.get(saveId);
+      if (!save) {
+        console.error(
+          "Unable to overwrite save: there is no save with the requested id",
+        );
+        this.inSavingProcess = false;
+        return false;
+      }
+
+      const newSave = { ...save };
+      slotName && (newSave.slot_name = slotName);
+
+      if (window?.VoidVanguard?.user?.id) {
+        newSave.user_id = window.VoidVanguard.user.id;
+      }
+
+      newSave.game_state = this.exportSave();
+
+      localSaves.set(saveId, newSave);
+
+      // Új mentés
+    } else {
+      if (!slotName) {
+        console.error("Unable to save game: no slot name provided");
+        this.inSavingProcess = false;
+        return false;
+      }
+
+      localSaves.set(crypto.randomUUID(), {
+        id: crypto.randomUUID(),
+        user_id: window?.VoidVanguard?.user?.id || null,
+        slot_name: slotName,
+        game_state: this.exportSave(),
+      });
     }
 
+    window.localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
+
+    console.log("Game state has been saved locally as " + slotName);
+
+    this.inSavingProcess = false;
+    this.dirty = false;
+
+    return true;
+  }
+
+  async remoteSave(formData) {
+    if (this.inSavingProcess) return;
     this.inSavingProcess = true;
-    const savedState = this.exportSave();
 
-    const loggedIn = await isLoggedInAsync();
-
-    if (!loggedIn) {
-      const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
-      let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
-
-      localSaves.set(slotName, savedState);
-
-      window.localStorage.setItem(
-        "localSaves",
-        JSON.stringify([...localSaves]),
-      );
-
-      console.log("Game state has been saved locally as " + slotName);
-
-      this.inSavingProcess = false;
-      this.dirty = false;
-
-      return true;
-    }
-
-    // if logged in
-    formData.append("game_state", JSON.stringify(savedState));
+    formData.append("game_state", JSON.stringify(this.exportSave()));
 
     const response = await net.send("/api/saves", {
       method: formData.get("save_id") ? "PATCH" : "POST",
       body: formData,
     });
-
-    this.inSavingProcess = false;
 
     if (!response?.success) {
       console.error(
@@ -225,9 +245,44 @@ export default class Game extends WebGLCanvas {
 
     this.dirty = false;
 
-    console.log("Game state has been saved remotely as " + slotName);
+    console.log(
+      "Game state has been saved remotely as " + formData.get("slot_name"),
+    );
+
+    this.inSavingProcess = false;
 
     return true;
+  }
+
+  async save(data) {
+    console.log(this.inSavingProcess, this.dirty);
+    if (this.inSavingProcess || !this.dirty) {
+      console.warn(
+        "Unable to save game: it is already being saved or hasn't changed since last save",
+      );
+      return false;
+    }
+
+    const formData = data?.formData;
+    const type = data?.type;
+
+    if (!formData || !type) {
+      console.error("Unable to save game: invalid format");
+      return false;
+    }
+
+    let success;
+
+    if (type === "local") {
+      success = this.localSave(formData);
+    } else if (type === "remote") {
+      success = await this.remoteSave(formData);
+    } else {
+      console.error("Unable to save game: invalid save location");
+      return false;
+    }
+
+    return success;
   }
 
   // prettier-ignore

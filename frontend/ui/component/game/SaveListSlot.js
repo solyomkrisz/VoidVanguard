@@ -89,6 +89,26 @@ export default class SaveListSlot extends BaseCustomElement {
     }
   }
 
+  addSelection() {
+    const selectButton = this._elements.selectButton;
+    if (!this.controlsConfig.includes("select") || !selectButton) return;
+
+    this._selected = true;
+
+    this.classList.add("selected");
+    this._elements.selectButton.textContent = "Kijelölés törlése";
+  }
+
+  removeSelection() {
+    const selectButton = this._elements.selectButton;
+    if (!this.controlsConfig.includes("select") || !selectButton) return;
+
+    this._selected = false;
+
+    this.classList.remove("selected");
+    this._elements.selectButton.textContent = "Kijelölés";
+  }
+
   generateControls(config, all = false) {
     if (this._built) return;
 

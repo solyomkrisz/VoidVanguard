@@ -1,12 +1,11 @@
 import { dir } from "/ui/UI.js";
-import { path } from "/common/common.js";
+import { path, isLoggedIn } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { on, off } from "/common/eventhub.js";
 import "/ui/component/layout/DrilldownMenu.js";
-import "/ui/component/game/RemoteSaveList.js";
-import "/ui/component/game/SaveForm.js";
 import "/ui/component/game/ResumeButton.js";
 import "/ui/component/game/ExitButton.js";
+import "/ui/component/game/SaveMenu.js";
 
 export default class PauseMenu extends BaseCustomElement {
   set game(value) {
@@ -68,7 +67,10 @@ export default class PauseMenu extends BaseCustomElement {
       return;
     }
 
-    const success = await this.game.saveCurrentStateAs(formData);
+    const success = await this.game.save({
+      formData,
+      type: isLoggedIn() ? "remote" : "local",
+    });
 
     e?.detail?.onDone?.(success);
   }
@@ -86,13 +88,7 @@ export default class PauseMenu extends BaseCustomElement {
         <h1 class="title">Játék megállítva</h1>
         <drilldown-menu initial="root">
           <template id="save-game" data-name="Játékmenet mentése">
-            <remote-save-list
-              src="/api/saves"
-              controls="pagination"
-              item-controls="select delete"
-              selection-enabled
-              with-form
-            ></remote-save-list>
+            <save-menu with-form></save-menu>
           </template>
           <template id="root">
             <resume-button></resume-button>

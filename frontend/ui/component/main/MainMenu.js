@@ -6,6 +6,7 @@ import { on, off } from "/common/eventhub.js";
 import "/ui/component/layout/DrilldownMenu.js";
 import "/ui/component/game/SaveBrowserLauncher.js";
 import "/ui/component/game/RemoteSaveList.js";
+import "/ui/component/game/SaveMenu.js";
 
 export default class MainMenu extends BaseCustomElement {
   constructor() {
@@ -87,18 +88,10 @@ export default class MainMenu extends BaseCustomElement {
         <drilldown-menu initial="root">
             <template id="root">
                 <button id="start">Új játék indítása</button>
-                <button data-target="save-browser-launcher">Játékmenet betöltése</button>
+                <button data-target="save-menu">Játékmenet betöltése</button>
             </template>
-            <template id="save-browser-launcher">
-                <save-browser-launcher></save-browser-launcher>
-            </template>
-            <template id="local-save-menu">
-                <h1>Helyi mentések</h1>
-                <local-save-list></local-save-list>
-            </template>
-            <template id="remote-save-menu">
-                <h1>Távoli mentések</h1>
-                <remote-save-list src="/api/saves" controls="pagination" item-controls="load delete" page-size="6"></remote-save-list>
+            <template id="save-menu">
+              <save-menu remote-save-list-controls="load delete"></save-menu>
             </template>
         </drilldown-menu>
     `);
