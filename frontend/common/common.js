@@ -1,4 +1,5 @@
 import * as net from "./network.js";
+import { isExpired, decode } from "./jwt.js";
 
 export const DATA_STRUCTURE =
   typeof Float32Array !== "undefined" ? Float32Array : Array;
@@ -88,54 +89,137 @@ export const path = Object.freeze({
   },
 });
 
-export async function onDOMContentLoaded() {
+//#region login stuff start
+export function isLoggedIn() {
+  // return Boolean(window.VoidVanguard?.user?.id);
+  return Boolean(localStorage.getItem("access_token"));
+  // const token = localStorage.getItem("access_token");
+  // return token && !isExpired(token, 10);
+}
+
+export function isUserSet() {
+  return Boolean(window.VoidVanguard?.user);
+}
+
+export async function isLoggedInAsync() {
+  const response = await net.send("/api/sessions", { method: "POST" });
+
+  if (response?.success && response?.result) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isAdmin() {
+  return isLoggedIn() && window.VoidVanguard.user?.role >= 1;
+}
+
+// auto login
+window.addEventListener("storage", (event) => {
+  if (event.key !== "access_token") return;
+
+  const hadToken = !!event.oldValue;
+  const hasToken = !!event.newValue;
+
+  // login sync (another tab)
+  if (!hadToken && hasToken) {
+    setUser(decode(event.newValue), { source: "storage" });
+  }
+
+  // logout sync (another tab)
+  if (hadToken && !hasToken) {
+    dispatchLogoutEvent();
+  }
+});
+
+export async function setUser(userdata, { origin = "unknown" } = {}) {
+  if (!window.VoidVanguard) {
+    window.VoidVanguard = {};
+  }
+
+  const current = window.VoidVanguard?.user;
+
+  // prevent duplicate login events
+  if (current?.id === userdata?.id) return;
+
+  window.VoidVanguard.user = { ...userdata };
+
+  console.log("User set and login event fired with origin:", origin);
+  document.dispatchEvent(
+    new CustomEvent("login", {
+      detail: {
+        user: { ...userdata },
+        origin,
+      },
+      bubbles: true,
+      composed: true,
+    }),
+  );
+}
+
+export async function autologin() {
   try {
     const response = await net.send("/api/sessions", { method: "POST" });
 
     if (response.success) {
-      if (!window.VoidVanguard) {
-        window.VoidVanguard = {};
-      }
-
-      window.VoidVanguard.user = {
-        ...response.result,
-      };
-
-      document.dispatchEvent(
-        new CustomEvent("login", {
-          detail: {
-            user: response.result,
-          },
-          bubbles: true,
-          composed: true,
-        }),
-      );
+      setUser(response.result, { origin: "autologin" });
     }
   } catch (error) {
     return;
   }
 }
 
-export async function logout() {
-  if (!localStorage.getItem("access_token")) return;
+export async function onDOMContentLoaded() {
+  await autologin();
+}
 
-  localStorage.removeItem("access_token");
+export async function logout() {
+  if (!isLoggedIn()) return;
+
+  const token = localStorage.getItem("access_token");
 
   try {
-    const response = await fetch("/api/sessions", {
-      method: "DELETE",
-    });
+    if (token) {
+      const response = await fetch("/api/sessions", {
+        method: "DELETE",
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok || !data?.success) {
-      throw new Error(`Logout failed: ${data.message}`);
+      if (!response.ok || !data?.success) {
+        throw new Error(`Logout failed: ${data.message}`);
+      }
+
+      /**
+       * we must remove the access_token from localStorage after the server finishes with its part of logging out
+       * if we don't do this, then the above event listener for the storage event completely runs in all other tabs
+       * in which we still have a refresh token since this function's refresh token deletion part (fetch) didn't run yet
+       * so they do their onLogout tasks which probably include fetching. If they do, then since we still have valid
+       * refresh token, they succeed, get a new access_token and save it in localStorage. Then we come back here
+       * where the server part of logout runs -> deletes refresh token and dispatches logout event.
+       *
+       * When this event is dispatched what we have is:
+       * - no refresh token
+       * - probably access token because we deleted that before deleting refresh token and so other pages renewed them
+       *
+       * so we are left with an access token that cannot be refreshed and the page shows that we are logged in.
+       *
+       * the solution is that we must delete the access token from localstorage after clearing refresh token
+       * so when the storage event runs the other tabs cannot refresh the access token and put it back
+       */
+      localStorage.removeItem("access_token");
     }
   } catch (error) {
     console.error("Logout error:", error);
-    return false;
   }
 
+  dispatchLogoutEvent();
+
+  return true;
+}
+
+export function dispatchLogoutEvent() {
   let detail = { oldId: null, newId: null };
 
   if (window?.VoidVanguard?.user) {
@@ -149,9 +233,8 @@ export async function logout() {
   }
 
   document.dispatchEvent(new CustomEvent("logout", { detail }));
-
-  return true;
 }
+//#region login stuff end
 
 export function debounce(fn, delay) {
   let timerId;
@@ -197,24 +280,6 @@ export function isEqual(obja, objb, path = "") {
   return Object.is(vala, valb);
 }
 
-export function isLoggedIn() {
-  return Boolean(window.VoidVanguard?.user?.id);
-}
-
-export async function isLoggedInAsync() {
-  const response = await net.send("/api/sessions", { method: "POST" });
-
-  if (response?.success && response?.result) {
-    return true;
-  }
-
-  return false;
-}
-
-export function isAdmin() {
-  return isLoggedIn() && window.VoidVanguard.user?.role >= 1;
-}
-
 export function setFieldValue(field, value) {
   if (field instanceof RadioNodeList) {
     Array.from(field).forEach((input) => {
@@ -236,4 +301,15 @@ export function setFieldValue(field, value) {
   } else {
     field.value = value ?? "";
   }
+}
+
+export function formatDate(ts) {
+  const date = new Date(ts);
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+  );
 }

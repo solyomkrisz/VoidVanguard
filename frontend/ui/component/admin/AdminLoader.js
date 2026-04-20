@@ -7,7 +7,7 @@ export default class AdminLoader extends HTMLElement {
 
   async connectedCallback() {
     try {
-      const success = await refreshAccessToken();
+      const { success, refreshed } = await refreshAccessToken();
 
       if (!success) {
         window.location.href = "/";

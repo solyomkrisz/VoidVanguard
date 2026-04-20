@@ -66,7 +66,16 @@ export async function getSummary({ userId, requesterId, include = [] }) {
   }
 
   if (include.includes("preview")) {
-    result.preview = await list({ userId, limit: 6 });
+    try {
+      await block.checkBlockStatus({
+        initiatorId: requesterId,
+        recipientId: targetId,
+      });
+
+      result.preview = await list({ userId, limit: 6 });
+    } catch {
+      result.preview = [];
+    }
   }
 
   if (include.includes("status")) {

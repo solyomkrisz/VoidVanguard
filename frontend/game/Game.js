@@ -167,37 +167,64 @@ export default class Game extends WebGLCanvas {
     };
   }
 
-  localSave(formData) {
+  localSave(formData, gameState, isSaveRelocation) {
     if (this.inSavingProcess) return;
     this.inSavingProcess = true;
 
     const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
     let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
 
+    console.log(formData);
+
     const saveId = formData.get("save_id");
     const slotName = formData.get("slot_name");
 
-    // felülírunk egy már meglévőt
+    // felülírunk egy már meglévőt vagy lementünk egyet
     if (saveId) {
+      console.log(
+        "Felülírunk egy már meglévő helyi mentést, melynek id-je a következő: ",
+        saveId,
+      );
+
       const save = localSaves.get(saveId);
+
       if (!save) {
-        console.error(
-          "Unable to overwrite save: there is no save with the requested id",
+        // console.error(
+        //   "Unable to overwrite save: there is no save with the requested id",
+        // );
+        // this.inSavingProcess = false;
+        // return false;
+
+        console.log(
+          "Lementünk egy már meglévő távoli mentést, de az id-jével nincs helyi mentés, így újat hozunk létre. ID: ",
+          saveId,
         );
-        this.inSavingProcess = false;
-        return false;
+
+        localSaves.set(saveId, {
+          id: saveId,
+          user_id: window?.VoidVanguard?.user?.id || null,
+          slot_name: slotName,
+          game_state: gameState,
+          created_at: Date.now(),
+          updated_at: Date.now(),
+        });
+      } else {
+        console.log(
+          "Lementünk egy már meglévő távoli mentést, de az id-je helyileg is létezik, így felülírjuk a helyi mentést. ID: ",
+          saveId,
+        );
+
+        const newSave = { ...save };
+        slotName && (newSave.slot_name = slotName);
+
+        if (window?.VoidVanguard?.user?.id) {
+          newSave.user_id = window.VoidVanguard.user.id;
+        }
+
+        newSave.game_state = gameState;
+
+        localSaves.set(saveId, newSave);
       }
-
-      const newSave = { ...save };
-      slotName && (newSave.slot_name = slotName);
-
-      if (window?.VoidVanguard?.user?.id) {
-        newSave.user_id = window.VoidVanguard.user.id;
-      }
-
-      newSave.game_state = this.exportSave();
-
-      localSaves.set(saveId, newSave);
 
       // Új mentés
     } else {
@@ -207,11 +234,19 @@ export default class Game extends WebGLCanvas {
         return false;
       }
 
-      localSaves.set(crypto.randomUUID(), {
-        id: crypto.randomUUID(),
+      const saveId = crypto.randomUUID();
+      console.log(
+        "Létrehozunk egy új helyi mentést, a következő id-vel: ",
+        saveId,
+      );
+
+      localSaves.set(saveId, {
+        id: saveId,
         user_id: window?.VoidVanguard?.user?.id || null,
         slot_name: slotName,
-        game_state: this.exportSave(),
+        game_state: gameState,
+        created_at: Date.now(),
+        updated_at: Date.now(),
       });
     }
 
@@ -220,16 +255,22 @@ export default class Game extends WebGLCanvas {
     console.log("Game state has been saved locally as " + slotName);
 
     this.inSavingProcess = false;
-    this.dirty = false;
+    if (!isSaveRelocation) {
+      this.dirty = false;
+    }
 
     return true;
   }
 
-  async remoteSave(formData) {
+  async remoteSave(formData, gameState, isSaveRelocation) {
     if (this.inSavingProcess) return;
     this.inSavingProcess = true;
 
-    formData.append("game_state", JSON.stringify(this.exportSave()));
+    // Ha eventből jön (helyi mentést akarunk feltölteni, akkor alapból string)
+    const stringifiedGameState =
+      typeof gameState === "string" ? gameState : JSON.stringify(gameState);
+
+    formData.append("game_state", stringifiedGameState); // ha a konzolon azt mutatja hogy a formData-ban egy adott ponton van game_state akkor az azért van mert itt tényleg hozzáadjuk és a js működése miatt visszamenőleg lefrissíti a consoleon
 
     const response = await net.send("/api/saves", {
       method: formData.get("save_id") ? "PATCH" : "POST",
@@ -240,10 +281,13 @@ export default class Game extends WebGLCanvas {
       console.error(
         `Unable to save game: ${response?.message ? response.message : ""}`,
       );
+      this.inSavingProcess = false;
       return false;
     }
 
-    this.dirty = false;
+    if (!isSaveRelocation) {
+      this.dirty = false;
+    }
 
     console.log(
       "Game state has been saved remotely as " + formData.get("slot_name"),
@@ -256,33 +300,62 @@ export default class Game extends WebGLCanvas {
 
   async save(data) {
     console.log(this.inSavingProcess, this.dirty);
-    if (this.inSavingProcess || !this.dirty) {
-      console.warn(
-        "Unable to save game: it is already being saved or hasn't changed since last save",
-      );
-      return false;
-    }
 
     const formData = data?.formData;
     const type = data?.type;
 
     if (!formData || !type) {
       console.error("Unable to save game: invalid format");
-      return false;
+      return [false, data];
+    }
+
+    let isSaveRelocation;
+
+    if (
+      ["local", "remote"].includes(data?.currentType) &&
+      data.currentType !== type
+    ) {
+      isSaveRelocation = true;
+    } else {
+      isSaveRelocation = false;
+    }
+
+    if (this.inSavingProcess || (!isSaveRelocation && !this.dirty)) {
+      console.warn(
+        "Unable to save game: it is already being saved or hasn't changed since last save",
+      );
+      return [false, data];
+    }
+
+    let gameState;
+
+    // A mentés vagy csak helyileg van vagy csak távoliag így az id-je oda ahova menteni akarjuk nem létezik
+    // ha nem töröljük ki azt hiszi a rendszer hogy PATCH-elni akarunk és hibát ad
+    if (isSaveRelocation) {
+      // formData.delete("save_id");
+
+      if (!data?.game_state) {
+        console.error("Unable to relocate save: no game state available");
+        return [false, data];
+      }
+
+      gameState = data.game_state;
+    } else {
+      gameState = this.exportSave();
     }
 
     let success;
 
     if (type === "local") {
-      success = this.localSave(formData);
+      success = this.localSave(formData, gameState, isSaveRelocation);
     } else if (type === "remote") {
-      success = await this.remoteSave(formData);
+      success = await this.remoteSave(formData, gameState, isSaveRelocation);
     } else {
       console.error("Unable to save game: invalid save location");
-      return false;
+      return [false, data];
     }
 
-    return success;
+    return [success, data];
   }
 
   // prettier-ignore
@@ -291,7 +364,34 @@ export default class Game extends WebGLCanvas {
 
     this.textureArray = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textureArray);
-    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.maxLayers);
+    gl.texStorage3D(
+      gl.TEXTURE_2D_ARRAY,
+      1,
+      gl.RGBA8,
+      DecorationBlock.TEXTURE_WIDTH,
+      DecorationBlock.TEXTURE_HEIGHT,
+      this.maxLayers,
+    );
+
+    const initialTexture = new Uint8Array(
+      DecorationBlock.TEXTURE_WIDTH *
+      DecorationBlock.TEXTURE_HEIGHT *
+      4 *
+      this.maxLayers,
+    );
+    //
+    gl.texSubImage3D(
+      gl.TEXTURE_2D_ARRAY,
+      0,
+      0, 0, 0,
+      DecorationBlock.TEXTURE_WIDTH,
+      DecorationBlock.TEXTURE_HEIGHT,
+      this.maxLayers,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      initialTexture,
+    );
+    //
 
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

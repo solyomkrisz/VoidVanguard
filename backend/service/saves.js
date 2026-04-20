@@ -19,8 +19,8 @@ export async function selectUserSave({ saveId, userId }) {
   return result;
 }
 
-export async function save({ userId, slotName, gameState }) {
-  const id = uuidv4();
+export async function save({ userId, slotName, gameState, saveId = null }) {
+  const id = saveId ?? uuidv4();
 
   const parsedState =
     typeof gameState === "string" ? JSON.parse(gameState) : gameState;
@@ -42,9 +42,23 @@ export async function save({ userId, slotName, gameState }) {
 
 export async function updateSave({ userId, role, body }) {
   const saveId = body.save_id;
-  if (!saveId) throw CustomError.INVALID_REQUEST;
 
-  const save = await selectUserSave({ saveId, userId });
+  const saveFromDb = await selectUserSave({ saveId, userId });
+  // if (!save) throw CustomError.TEST;
+
+  if (!saveFromDb) {
+    console.log("PATCH de nincs ilyen " + saveId + "save id-vel mentés.");
+
+    const slotName = body.slot_name;
+    const gameState = body.game_state;
+
+    if (!slotName || !gameState) {
+      throw CustomError.TEST;
+    }
+
+    return await save({ userId, slotName, gameState, saveId });
+  }
+
   const updates = {};
 
   // slot_name and game_state can be in the body
@@ -56,7 +70,7 @@ export async function updateSave({ userId, role, body }) {
       continue;
     }
 
-    if (body[column] === save[column]) {
+    if (body[column] === saveFromDb[column]) {
       continue;
     }
 
@@ -79,7 +93,7 @@ export async function updateSave({ userId, role, body }) {
 
     // Ha csak a játékállást módosítjuk és a hashe ugyan az mint az előző mentésé
     if (changedColumns.length === 1 && changedColumns.includes("game_state")) {
-      if (save["state_hash"] === newStateHash) {
+      if (saveFromDb["state_hash"] === newStateHash) {
         throw CustomError.NO_DATA_CHANGE;
       }
     }

@@ -2,34 +2,37 @@ export function decode(token) {
   if (!token) return null;
 
   const parts = token.split(".");
-  if (parts.length !== 3) return null; 
-  
+  if (parts.length !== 3) return null;
+
   const base64Url = parts[1];
   if (!base64Url) return null;
-  
+
   try {
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+
     const payload = decodeURIComponent(
-      atob(base64)
+      atob(padded)
         .split("")
-        .map((c) => {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-        })
+        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
         .join(""),
     );
 
     return JSON.parse(payload);
   } catch (error) {
-    return null; 
+    return null;
   }
 }
 
-export function isExpired(token) {
+export function isExpired(token, bufferSeconds = 0) {
   const payload = decode(token);
 
   if (!payload?.exp) {
     return true;
   }
 
-  return payload.exp < Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000);
+
+  return now >= payload.exp - bufferSeconds;
 }

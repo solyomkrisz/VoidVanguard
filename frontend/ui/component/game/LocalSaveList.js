@@ -1,5 +1,6 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import "/ui/component/game/SaveListSlot.js";
+import { formatDate } from "/common/common.js";
 
 export default class LocalSaveList extends LazyItemList {
   get itemControls() {
@@ -20,7 +21,19 @@ export default class LocalSaveList extends LazyItemList {
     this.addSelection = this.addSelection.bind(this);
   }
 
-  onSaveDelete() {}
+  onSaveDelete(e) {
+    const saveId = e?.detail?.saveId;
+    if (!saveId) return;
+
+    console.log(saveId, this._data);
+    this._data.delete(saveId);
+
+    window.localStorage.setItem("localSaves", JSON.stringify([...this._data]));
+
+    this.parseSaves();
+    this._byId.clear();
+    this.reloadCurrentPage();
+  }
 
   toggleSelectedSlotHighlight(id) {
     const element = this._byId.get(id);
@@ -77,9 +90,14 @@ export default class LocalSaveList extends LazyItemList {
   }
 
   parseSaves() {
-    const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
-    let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
-    this._data = localSaves;
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
+      let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
+      this._data = localSaves;
+    } catch (error) {
+      console.error("Unable to load local saves");
+      this._data = new Map();
+    }
   }
 
   extractItems(response) {
@@ -114,10 +132,13 @@ export default class LocalSaveList extends LazyItemList {
   }
 
   renderItem(item) {
-    console.log(item);
     const el = document.createElement("save-list-slot");
 
-    el.data = item;
+    el.data = {
+      ...item,
+      created_at: formatDate(item.created_at),
+      updated_at: formatDate(item.updated_at),
+    };
     if (this.itemControls) {
       el.setAttribute("controls", this.itemControls);
     }

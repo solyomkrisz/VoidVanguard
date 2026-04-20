@@ -1,6 +1,6 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { on, off } from "/common/eventhub.js";
-import { isLoggedIn } from "/common/common.js";
+import { isLoggedIn, isUserSet } from "/common/common.js";
 import * as net from "/common/network.js";
 import "/ui/component/profile/FriendListItem.js";
 
@@ -235,7 +235,7 @@ export default class FriendListFull extends LazyItemList {
     on("login", this.onLogin);
     on("logout", this.onLogout);
 
-    if (isLoggedIn() && this.hasAttribute("auto")) {
+    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto")) {
       this.setAttribute("user-id", window.VoidVanguard.user.id);
     }
   }

@@ -8,6 +8,9 @@
     <title>VoidVanguard</title>
   </head>
   <body>
+    <logout-button
+      style="position: absolute; left: 0; top: 0; z-index: 2002"
+    ></logout-button>
     <main-menu></main-menu>
     <toast-manager event-controlled></toast-manager>
 
@@ -15,6 +18,7 @@
       import { onDOMContentLoaded } from "/common/common.js";
       import "/ui/component/main/MainMenu.js";
       import "/ui/component/feedback/ToastManager.js";
+      import "/ui/component/auth/LogoutButton.js";
 
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
     </script>

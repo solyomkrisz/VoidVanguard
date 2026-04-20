@@ -1,4 +1,4 @@
-import { isLoggedIn, isLoggedInAsync, logout } from "/common/common.js";
+import { isLoggedIn, logout } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import { element, text } from "/ui/UI.js";
 
@@ -15,7 +15,10 @@ export default class LogoutButton extends HTMLElement {
 
   async connectedCallback() {
     if (this._built) return;
-    await this.build();
+    this.build();
+
+    on("login", this.onLogin);
+    on("logout", this.onLogout);
   }
 
   disconnectedCallback() {
@@ -37,20 +40,16 @@ export default class LogoutButton extends HTMLElement {
     button.hidden = true;
   }
 
-  async build() {
+  build() {
     const button = this.appendChild(element("button", text("Kijelentkezés")));
 
     button.addEventListener("click", async () => {
       await logout();
     });
 
-    // if (!isLoggedIn()) button.hidden = true;
-    if (!(await isLoggedInAsync())) button.hidden = true;
+    if (!isLoggedIn()) button.hidden = true;
 
     this._elements.button = button;
-
-    on("login", this.onLogin);
-    on("logout", this.onLogout);
 
     this._built = true;
   }

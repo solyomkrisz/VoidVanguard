@@ -67,7 +67,13 @@ export default class SaveListSlot extends BaseCustomElement {
   onSelect(e) {
     this.dispatchEvent(
       new CustomEvent("slot-select", {
-        detail: { slotData: { id: this.data.id, name: this.data.slot_name } },
+        detail: {
+          slotData: {
+            id: this.data.id,
+            name: this.data.slot_name,
+            game_state: this.data.game_state,
+          },
+        },
         bubbles: true,
         composed: true,
       }),

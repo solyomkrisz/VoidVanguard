@@ -58,6 +58,7 @@ export default class LazyItemList extends HTMLElement {
     this.loadMore = this.loadMore.bind(this);
 
     this._deferredAttributes = new Map();
+    this._activeLoadToken = null;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -213,10 +214,17 @@ export default class LazyItemList extends HTMLElement {
       return;
     }
 
+    const token = Symbol();
+    this._activeLoadToken = token;
+
     this._loading = true;
 
     try {
       const response = await this.getResponse();
+      if (this._activeLoadToken !== token) {
+        return;
+      }
+
       this._lastResponse = response;
 
       if (!this.isValidResponse(response)) {
@@ -236,10 +244,15 @@ export default class LazyItemList extends HTMLElement {
         this.reobserve();
       }
     } catch (error) {
-      console.error(error);
+      // console.error(error);
+      console.error(error.message);
     } finally {
-      this._loading = false;
-      this.onLoadFinish();
+      // this._loading = false;
+      // this.onLoadFinish();
+      if (this._activeLoadToken === token) {
+        this._loading = false;
+        this.onLoadFinish();
+      }
     }
   }
 

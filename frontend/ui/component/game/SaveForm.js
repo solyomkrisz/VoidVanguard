@@ -1,7 +1,8 @@
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import "/ui/component/form/InputGroup.js";
 import { dir } from "/ui/UI.js";
-import { path } from "/common/common.js";
+import { path, isLoggedIn } from "/common/common.js";
+import { on, off } from "/common/eventhub.js";
 
 export default class SaveForm extends BaseCustomElement {
   constructor() {
@@ -12,21 +13,42 @@ export default class SaveForm extends BaseCustomElement {
 
     this.onSubmit = this.onSubmit.bind(this);
     this.onDone = this.onDone.bind(this);
+    this.onLogin = this.onLogin.bind(this);
+    this.onLogout = this.onLogout.bind(this);
+  }
+
+  onLogin(e) {
+    if (!this._built) return;
+    this._elements.selectInput.value = "remote";
+  }
+
+  onLogout(e) {
+    if (!this._built) return;
+    this._elements.selectInput.value = "local";
   }
 
   connectedCallback() {
     this.build();
+
+    on("login", this.onLogin);
+    on("logout", this.onLogout);
+  }
+
+  disconnectedCallback() {
+    off("login", this.onLogin);
+    off("logout", this.onLogout);
   }
 
   onSubmit(e) {
     e.preventDefault();
 
     const formData = new FormData(e.target);
+    const type = this._elements.selectInput.value || "local";
 
     // <pause-menu> captures it
     this.dispatchEvent(
       new CustomEvent("save-request", {
-        detail: { formData, onDone: this.onDone },
+        detail: { formData, type, onDone: this.onDone },
         bubbles: true,
         composed: true,
       }),
@@ -35,7 +57,7 @@ export default class SaveForm extends BaseCustomElement {
     this._elements.submitButton.disabled = true;
   }
 
-  onDone(isSuccess) {
+  onDone(isSuccess, data) {
     if (!this._built) return;
 
     this._elements.submitButton.disabled = false;
@@ -43,11 +65,19 @@ export default class SaveForm extends BaseCustomElement {
     if (isSuccess) {
       this.reset();
       this.dispatchEvent(
-        new CustomEvent("save-success", { bubbles: true, composed: true }),
+        new CustomEvent("save-success", {
+          detail: data,
+          bubbles: true,
+          composed: true,
+        }),
       );
     } else {
       this.dispatchEvent(
-        new CustomEvent("save-failure", { bubbles: true, composed: true }),
+        new CustomEvent("save-failure", {
+          detail: data,
+          bubbles: true,
+          composed: true,
+        }),
       );
     }
   }
@@ -61,6 +91,10 @@ export default class SaveForm extends BaseCustomElement {
                 <label>Mentés neve</label>
                 <input type="hidden" name="save_id" />
                 <input type="text" name="slot_name" />
+                <select>
+                  <option value="local">Helyi</option>
+                  <option value="remote">Távoli</option>
+                </select>
             </input-group>
             <button>Mentése</button>
         </form>
@@ -73,8 +107,13 @@ export default class SaveForm extends BaseCustomElement {
     this._elements.slotNameInput = this.queryShadowSelector(
       "input[name='slot_name']",
     );
+    this._elements.selectInput = this.queryShadowSelector("select");
     this._elements.form = this.queryShadowSelector("form");
     this._elements.form.addEventListener("submit", this.onSubmit);
+
+    if (isLoggedIn()) {
+      this._elements.selectInput.value = "remote";
+    }
 
     this._built = true;
   }

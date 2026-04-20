@@ -67,12 +67,11 @@ export default class PauseMenu extends BaseCustomElement {
       return;
     }
 
-    const success = await this.game.save({
-      formData,
-      type: isLoggedIn() ? "remote" : "local",
-    });
+    const type = e?.detail?.type || "local";
 
-    e?.detail?.onDone?.(success);
+    const [success, data] = await this.game.save(e.detail);
+
+    e?.detail?.onDone?.(success, data);
   }
 
   connectedCallback() {

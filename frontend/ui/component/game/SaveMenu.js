@@ -46,7 +46,9 @@ export default class SaveMenu extends HTMLElement {
       new CustomEvent("save-request", {
         detail: {
           ...e.detail,
+          currentType: this._selectedSlot?.type, // megkülönböztetjük, hogy jelenleg hol van (helyi/távoli)
           formData,
+          game_state: this._selectedSlot?.slotData?.game_state || null,
         }, // megtartjuk a SaveForm által belerakott onDone függvényt
         bubbles: true,
         composed: true,
@@ -64,6 +66,7 @@ export default class SaveMenu extends HTMLElement {
       this._selectedSlot?.type === "local" &&
       this._elements.localSaveSectionList
     ) {
+      this._elements.localSaveSectionList.removeSelection(this._selectedSlot);
     }
 
     this._selectedSlot = null;
@@ -107,7 +110,17 @@ export default class SaveMenu extends HTMLElement {
 
   onSaveSuccess(e) {
     e.stopPropagation();
-    this._elements?.remoteSaveSectionList?.reloadCurrentPage?.();
+
+    const type = e?.detail?.type;
+
+    if (!type || type === "remote") {
+      this._elements?.remoteSaveSectionList?.reloadCurrentPage?.();
+    }
+    if (!type || type === "local") {
+      this._elements?.localSaveSectionList?.parseSaves?.();
+      this._elements?.localSaveSectionList?.reloadCurrentPage?.();
+    }
+
     this.removeCurrentSelection();
   }
 
@@ -124,6 +137,10 @@ export default class SaveMenu extends HTMLElement {
   }
 
   connectedCallback() {
+    if (this._built) {
+      this.rebuild();
+    }
+
     this.build();
 
     on("login", this.onLogin);
@@ -143,6 +160,8 @@ export default class SaveMenu extends HTMLElement {
 
     container.textContent = "";
     container.hidden = false;
+    this._elements.saveFormTitle = null;
+    this._elements.saveForm = null;
 
     const title = el("h1", {}, ["Jelenlegi állás mentése"]);
     this._elements.saveFormTitle = title;
@@ -160,6 +179,8 @@ export default class SaveMenu extends HTMLElement {
 
     container.textContent = "";
     container.hidden = false;
+    this._elements.localSaveSectionTitle = null;
+    this._elements.localSaveSectionList = null;
 
     const title = el("h1", {}, ["Helyi mentések"]);
     this._elements.localSaveSectionTitle = title;
@@ -182,13 +203,16 @@ export default class SaveMenu extends HTMLElement {
 
     container.textContent = "";
     container.hidden = false;
+    this._elements.remoteSaveSectionNotification = null;
+    this._elements.remoteSaveSectionTitle = null;
+    this._elements.remoteSaveSectionList = null;
 
     if (!isLoggedIn()) {
       const notification = el("h3", {}, [
         "A távoli mentések eléréséhez bejelentkezés szükséges",
       ]);
       this._elements.remoteSaveSectionNotification = notification;
-      this.appendChild(notification);
+      container.appendChild(notification);
 
       return;
     }
@@ -236,6 +260,12 @@ export default class SaveMenu extends HTMLElement {
     );
 
     this._built = true;
+  }
+
+  rebuild() {
+    this.createSaveForm();
+    this.createLocalSaveSection();
+    this.createRemoteSaveSection();
   }
 }
 

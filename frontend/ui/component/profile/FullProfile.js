@@ -496,6 +496,8 @@ export default class FullProfile extends HTMLElement {
   async update(meta) {
     if (!this._built) this.build();
 
+    console.log("UPDATE META: ", meta);
+
     const currentUserId = this.userId;
     const response = await net.send("/api/profiles/" + currentUserId);
     if (currentUserId !== this.userId) return;
@@ -523,7 +525,6 @@ export default class FullProfile extends HTMLElement {
     const prevState = this._previousProfileData;
 
     this.updateProfileHeaderDetailsDOM();
-    console.log(meta, isLoggedIn());
     this.updateProfileHeaderActions();
 
     this.renderActions(state, prevState);
@@ -540,9 +541,14 @@ export default class FullProfile extends HTMLElement {
     }
 
     if (
+      true ||
       meta?.origin === "friendshipStatusChangeHandler" ||
-      meta?.origin === "blockStatusChangeHandler"
+      meta?.origin === "blockStatusChangeHandler" ||
+      meta?.origin === "onLogin" ||
+      meta?.origin === "onLogout" ||
+      meta?.origin === "attributeChangedCallback"
     ) {
+      console.error("FriendListFull refreshed");
       elements.friendListFull.refresh?.(); // if someone friend the user, it must show up on that list.
       elements.friendList.refresh?.();
     }

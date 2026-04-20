@@ -94,8 +94,6 @@
           <div id="logFormMsg"></div>
         </form>
       </div>
-
-      <logout-button></logout-button>
     </div>
 
     <form id="reqDataForm">
@@ -108,25 +106,12 @@
       import * as jwt from "./common/jwt.js";
       import { extractForm, onDOMContentLoaded } from "./common/common.js";
       import * as UI from "./ui/UI.js";
-      import userState from "./state/user.js";
 
-      //
-      // const rsp2 = document.querySelector("state-provider[as='profile']");
-      // console.log(rsp2);
-      // rsp2.src = "/api/profiles/1ac13e29-01d7-437a-93bd-d633304b482a";
-      //
+      // document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
 
-      document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
-
-      setTimeout(() => {
-        document.body.appendChild(UI.element("account-quick-manager"));
-      }, 1000);
-
-      console.log(
-        jwt.isExpired(
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZWVlMTY4YS1hZjFkLTQxMzYtYTBmNi00ZGE1M2QxODlmMmQiLCJ1c2VybmFtZSI6ImFhYSIsInJvbGVzIjpbbnVsbF0sImlhdCI6MTc3MDUxMjEwNCwiZXhwIjoxNzcwNTEzMDA0fQ.AF9V4axelZ0FTR-zP3wmgsORWEYdqQytrHIFj7n6agg",
-        ),
-      );
+      // setTimeout(() => {
+      //   document.body.appendChild(UI.element("account-quick-manager"));
+      // }, 1000);
 
       document
         .querySelector("#regForm")
@@ -174,12 +159,6 @@
                   result.result.access_token,
                 );
 
-                for (const state of Array.from(
-                  document.querySelectorAll("state-provider[as='user']"),
-                )) {
-                  state.refresh();
-                }
-
                 const decoded = jwt.decode(result?.result?.access_token);
 
                 console.log(
@@ -188,18 +167,11 @@
                 );
 
                 // document.dispatchEvent(new CustomEvent("login"));
-                userState.from(decoded);
               }
             }
             regFormMsg.textContent = result.message;
           }
         });
-    </script>
-
-    <script>
-      // const rsp = document.querySelector("state-provider");
-      // console.log(rsp);
-      // rsp.src = "/api/sessions";
     </script>
   </body>
 </html>
