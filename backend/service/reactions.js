@@ -12,18 +12,44 @@ export async function getUserReaction({ userId, targetId }) {
   return result;
 }
 
+// export async function createUserReaction({ userId, targetId, reactionType }) {
+//   if (
+//     (await Reactions.delete(userId, targetId, reactionType)).affectedRows > 0
+//   ) {
+//     return {
+//       type: reactionType,
+//     };
+//   }
+
+//   await Reactions.upsert(userId, targetId, reactionType);
+
+//   return {
+//     type: reactionType,
+//   };
+// }
+
 export async function createUserReaction({ userId, targetId, reactionType }) {
-  if (
-    (await Reactions.delete(userId, targetId, reactionType)).affectedRows > 0
-  ) {
-    return {
-      type: reactionType,
-    };
+  const existing = await Reactions.select(userId, targetId);
+
+  let nextState = null;
+
+  if (!existing) {
+    nextState = reactionType;
+  } else if (existing.type === reactionType) {
+    nextState = null;
+  } else {
+    nextState = reactionType;
   }
 
-  await Reactions.upsert(userId, targetId, reactionType);
+  if (nextState === null) {
+    await Reactions.deleteByUserAndTarget(userId, targetId);
+  } else if (!existing) {
+    await Reactions.create(userId, targetId, nextState);
+  } else {
+    await Reactions.update(userId, targetId, nextState);
+  }
 
   return {
-    type: reactionType,
+    type: nextState,
   };
 }

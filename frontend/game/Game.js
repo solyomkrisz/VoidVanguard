@@ -310,8 +310,6 @@ export default class Game extends WebGLCanvas {
   }
 
   async save(data) {
-    console.log(this.inSavingProcess, this.dirty);
-
     const formData = data?.formData;
     const type = data?.type;
 
@@ -332,6 +330,8 @@ export default class Game extends WebGLCanvas {
     } else {
       isSaveRelocation = false;
     }
+
+    console.log(this.inSavingProcess, isSaveRelocation, this.dirty);
 
     if (this.inSavingProcess || (!isSaveRelocation && !this.dirty)) {
       console.warn(

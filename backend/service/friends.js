@@ -69,7 +69,7 @@ export async function getSummary({ userId, requesterId, include = [] }) {
     try {
       await block.checkBlockStatus({
         initiatorId: requesterId,
-        recipientId: targetId,
+        recipientId: userId,
       });
 
       result.preview = await list({ userId, limit: 6 });
