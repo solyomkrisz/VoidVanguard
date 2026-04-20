@@ -24,6 +24,7 @@ import * as net from "/common/network.js";
 import Save from "/game/Save.js";
 import { setupGame } from "/game/setup/default.js";
 import Models from "/game/SpaceShipModels.js";
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 export default class Game extends WebGLCanvas {
   static from(gameState = null) {
@@ -230,6 +231,8 @@ export default class Game extends WebGLCanvas {
     } else {
       if (!slotName) {
         console.error("Unable to save game: no slot name provided");
+        ToastManager.REQUEST("Unable to save game: no slot name provided");
+
         this.inSavingProcess = false;
         return false;
       }
@@ -253,6 +256,7 @@ export default class Game extends WebGLCanvas {
     window.localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
 
     console.log("Game state has been saved locally as " + slotName);
+    ToastManager.REQUEST("Game state has been saved locally as " + slotName);
 
     this.inSavingProcess = false;
     if (!isSaveRelocation) {
@@ -281,6 +285,10 @@ export default class Game extends WebGLCanvas {
       console.error(
         `Unable to save game: ${response?.message ? response.message : ""}`,
       );
+      ToastManager.REQUEST(
+        `Unable to save game: ${response?.message ? response.message : ""}`,
+      );
+
       this.inSavingProcess = false;
       return false;
     }
@@ -290,6 +298,9 @@ export default class Game extends WebGLCanvas {
     }
 
     console.log(
+      "Game state has been saved remotely as " + formData.get("slot_name"),
+    );
+    ToastManager.REQUEST(
       "Game state has been saved remotely as " + formData.get("slot_name"),
     );
 
@@ -306,6 +317,8 @@ export default class Game extends WebGLCanvas {
 
     if (!formData || !type) {
       console.error("Unable to save game: invalid format");
+      ToastManager.REQUEST("Unable to save game: invalid format");
+
       return [false, data];
     }
 
@@ -324,6 +337,10 @@ export default class Game extends WebGLCanvas {
       console.warn(
         "Unable to save game: it is already being saved or hasn't changed since last save",
       );
+      ToastManager.REQUEST(
+        "Unable to save game: it is already being saved or hasn't changed since last save",
+      );
+
       return [false, data];
     }
 
@@ -336,6 +353,10 @@ export default class Game extends WebGLCanvas {
 
       if (!data?.game_state) {
         console.error("Unable to relocate save: no game state available");
+        ToastManager.REQUEST(
+          "Unable to relocate save: no game state available",
+        );
+
         return [false, data];
       }
 
@@ -352,6 +373,8 @@ export default class Game extends WebGLCanvas {
       success = await this.remoteSave(formData, gameState, isSaveRelocation);
     } else {
       console.error("Unable to save game: invalid save location");
+      ToastManager.REQUEST("Unable to save game: invalid save location");
+
       return [false, data];
     }
 

@@ -6,6 +6,7 @@ import "/ui/component/layout/DrilldownMenu.js";
 import "/ui/component/game/ResumeButton.js";
 import "/ui/component/game/ExitButton.js";
 import "/ui/component/game/SaveMenu.js";
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 export default class PauseMenu extends BaseCustomElement {
   set game(value) {
@@ -63,7 +64,11 @@ export default class PauseMenu extends BaseCustomElement {
   async onSaveRequest(e) {
     const formData = e?.detail?.formData;
     if (!formData) {
-      console.error("Unable to process save request");
+      console.error("Unable to process save request: no form data provided");
+      ToastManager.REQUEST(
+        "Unable to process save request: no form data provided",
+      );
+
       return;
     }
 
