@@ -8,6 +8,10 @@ class Table {
   hasPermission(column, role, permission, inherit = true) {
     return this.columns.hasPermission(column, role, permission, inherit);
   }
+
+  columnExists(column) {
+    return this.columns.exists(column);
+  }
 }
 
 export default Table;

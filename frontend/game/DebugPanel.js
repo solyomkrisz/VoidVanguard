@@ -30,6 +30,10 @@ export default class DebugPanel {
     this.intervalId = null;
   }
 
+  destroy() {
+    this.container?.remove();
+  }
+
   show() {
     this.container.style.display = this.ogDisplayValue;
   }
@@ -109,7 +113,7 @@ export default class DebugPanel {
 
     if (this.src[property] === undefined) {
       console.warn(
-        `DEBUGPANEL-bindSource: Couldn't bind the property [${property}] from [${this.src}] to [${name}]!`
+        `DEBUGPANEL-bindSource: Couldn't bind the property [${property}] from [${this.src}] to [${name}]!`,
       );
     }
 

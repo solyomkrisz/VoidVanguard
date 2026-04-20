@@ -7,6 +7,10 @@ export default class DebugOverlay extends Canvas {
     this.ctx = null;
   }
 
+  destroy() {
+    this.canvas?.remove?.();
+  }
+
   init() {
     this.createCanvas();
 

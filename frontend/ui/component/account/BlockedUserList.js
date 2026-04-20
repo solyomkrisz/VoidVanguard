@@ -1,5 +1,5 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
-import { isLoggedIn } from "/common/common.js";
+import { isLoggedIn, isUserSet } from "/common/common.js";
 
 export default class BlockedUserList extends LazyItemList {
   static get observedAttributes() {
@@ -40,7 +40,7 @@ export default class BlockedUserList extends LazyItemList {
   connectedCallback() {
     super.connectedCallback?.();
 
-    if (isLoggedIn() && this.hasAttribute("auto")) {
+    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto")) {
       this.setAttribute("user-id", window.VoidVanguard.user.id);
     }
   }

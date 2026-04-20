@@ -39,6 +39,8 @@ export default class CommentSection extends LazyItemList {
     this.onCommentUpdate = this.onCommentUpdate.bind(this);
     this.onCommentDelete = this.onCommentDelete.bind(this);
     this.onCommentReaction = this.onCommentReaction.bind(this);
+
+    this._reactionStates = new Map();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -67,6 +69,7 @@ export default class CommentSection extends LazyItemList {
     }
 
     this._byId.delete(commentId);
+    this._reactionStates.delete(commentId);
   }
 
   onNodeDeletion(node) {
@@ -112,21 +115,51 @@ export default class CommentSection extends LazyItemList {
     off("logout", this.onLogout);
   }
 
-  onLogin(e) {
+  async onLogin(e) {
     this.changeCommentFormVisibility();
+    await this.refreshAllComments();
   }
 
-  onLogout(e) {
+  async onLogout(e) {
     this.changeCommentFormVisibility();
+    await this.refreshAllComments();
   }
 
-  async onCommentReaction(e) {
-    e.stopPropagation();
+  async refreshAllComments() {
+    for (const entry of this._byId.values()) {
+      await this.refreshComment(entry.comment.id);
+    }
+  }
 
-    const commentId = e.detail?.commentId;
-    const type = e.detail?.type;
-    if (!commentId || !type) return;
+  async refreshComment(commentId) {
+    let url = "/api/comments/" + commentId;
 
+    /** admin */
+    if (this.admin && isAdmin()) {
+      const targetUserId =
+        this.closest("admin-module")?.getAttribute("target-user-id");
+
+      if (targetUserId) {
+        url += "?targetUserId=" + targetUserId;
+      }
+    }
+
+    const response = await net.send(url);
+
+    const { success, result } = response;
+
+    if (!success) {
+      console.error("Unable to refresh comment.");
+      return;
+    }
+
+    const entry = this._byId.get(commentId);
+    if (!entry) return;
+
+    entry.element.comment = result;
+  }
+
+  async sendReaction(commentId, type) {
     const formData = new FormData();
     formData.append("targetId", commentId);
     formData.append("type", type);
@@ -141,41 +174,46 @@ export default class CommentSection extends LazyItemList {
       }
     }
 
-    let response = await net.send("/api/reactions", {
+    const response = await net.send("/api/reactions", {
       method: "POST",
       body: formData,
     });
 
-    let { success, result } = response;
+    if (!response.success) {
+      console.warn("Reaction failed");
+    }
+  }
 
-    if (!success) {
-      console.log("Unable to send reaction.");
-      return;
+  async onCommentReaction(e) {
+    e.stopPropagation();
+
+    const { commentId, type } = e.detail || {};
+    if (!commentId || !type) return;
+
+    if (!this._reactionStates.has(commentId)) {
+      this._reactionStates.set(commentId, {
+        pending: false,
+        nextType: null,
+      });
     }
 
-    // refresh comment
-    let url = "/api/comments/" + commentId;
+    const state = this._reactionStates.get(commentId);
 
-    /** admin */
-    if (this.admin && isAdmin()) {
-      const targetUserId =
-        this.closest("admin-module")?.getAttribute("target-user-id");
+    state.nextType = type;
 
-      if (targetUserId) {
-        url += "?targetUserId=" + targetUserId;
-      }
+    if (state.pending) return;
+    state.pending = true;
+
+    while (state.nextType) {
+      const current = state.nextType;
+      state.nextType = null;
+
+      await this.sendReaction(commentId, current);
     }
 
-    response = await net.send(url);
+    await this.refreshComment(commentId);
 
-    ({ success, result } = response);
-
-    if (!success) {
-      console.error("Unable to refresh comment.");
-      return;
-    }
-
-    e.target.comment = result;
+    state.pending = false;
   }
 
   onCommentPost(e) {

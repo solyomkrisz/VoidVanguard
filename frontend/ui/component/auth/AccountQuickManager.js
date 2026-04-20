@@ -119,7 +119,7 @@ export default class AccountQuickManager extends HTMLElement {
 
     this.toggleActive(loggedIn);
 
-    if (loggedIn) {
+    if (loggedIn && window?.VoidVanguard?.user) {
       const user = window.VoidVanguard.user;
 
       elements.username.textContent = user.username;

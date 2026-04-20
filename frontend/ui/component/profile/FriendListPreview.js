@@ -1,4 +1,5 @@
 import * as net from "/common/network.js";
+import { on, off } from "/common/eventhub.js";
 
 export default class FriendListPreview extends HTMLElement {
   static get observedAttributes() {
@@ -33,11 +34,19 @@ export default class FriendListPreview extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this._built) return;
     this.build();
+
+    // on("login", this.onLogin);
+    // on("logout", this.onLogout);
+  }
+
+  disconnectedCallback() {
+    // off("login", this.onLogin);
+    // off("logout", this.onLogout);
   }
 
   build() {
+    if (this._built) return;
     this._container = this.appendChild(document.createElement("div"));
     this._built = true;
   }
@@ -55,12 +64,16 @@ export default class FriendListPreview extends HTMLElement {
 
     if (!success || !result) {
       console.error(message);
+      this.reset();
       return;
     }
 
     const data = result.preview;
 
-    if (!data) return;
+    if (!data) {
+      this.reset();
+      return;
+    }
 
     this.data = data;
   }
@@ -79,6 +92,7 @@ export default class FriendListPreview extends HTMLElement {
       .querySelector(".friend-list-item")
       ?.addEventListener("click", () => {
         this.closest("full-profile")?.setAttribute("user-id", item.user_id);
+        window.history.replaceState({}, "", item.user_id);
       });
 
     return el.content;
@@ -97,6 +111,11 @@ export default class FriendListPreview extends HTMLElement {
     for (const item of this.data) {
       this._container.appendChild(this.renderItem(item));
     }
+  }
+
+  reset() {
+    if (!this._built) return;
+    this._container.textContent = "";
   }
 }
 

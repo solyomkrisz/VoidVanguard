@@ -13,7 +13,7 @@
         const params = new URLSearchParams(window.location.search);
         const original = params.get("original") || "/";
 
-        const success = await refreshAccessToken();
+        const { success, refreshed } = await refreshAccessToken();
 
         if (!success) {
           window.location.href = "/";

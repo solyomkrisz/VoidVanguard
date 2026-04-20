@@ -3,6 +3,7 @@ import WebGL from "/game/WebGL.js";
 import * as MATRIX from "/common/common.js";
 import * as vec from "/common/vec.js";
 import DynamicTooltip from "/ui/component/game/DynamicTooltip.js";
+import Shape from "/game/Shape.js";
 
 export default class Block {
   // prettier-ignore
@@ -188,8 +189,31 @@ export default class Block {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
+  static from(blockState) {
+    const [x, y] = blockState.localPosition;
+    const shape = Shape.from(blockState.shape);
+
+    const block = new Block({
+      x,
+      y,
+      shape,
+      spriteID: blockState.spriteID,
+      gradeID: blockState.gradeID,
+      mass: blockState.mass,
+      health: blockState.health,
+      adjacencyRules: vec.clone(blockState.adjacencyRules),
+    });
+
+    block.type = blockState.type;
+    block.textureRotation = new Map(blockState.textureRotation);
+    block.isRemovable = blockState.isRemovable;
+
+    return block;
+  }
+
   // prettier-ignore
   constructor({ x, y, shape, spriteID, gradeID = 0, mass = 1, health = 100, adjacencyRules = vec.create(0) } = {}) {
+    this.type = 0;
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
     this.spriteID = spriteID;
@@ -202,6 +226,21 @@ export default class Block {
     this.adjacencyRules = adjacencyRules;
     this.CoM = vec2.create();
     this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
+  }
+
+  exportSave() {
+    return {
+      type: this.type,
+      localPosition: [...this.localPosition],
+      shape: this.shape.exportSave(),
+      spriteID: this.spriteID,
+      gradeID: this.gradeID,
+      textureRotation: [...this.textureRotation],
+      mass: this.mass,
+      isRemovable: this.isRemovable,
+      health: this.health,
+      adjacencyRules: [...this.adjacencyRules],
+    };
   }
 
   rotateTexture(textureName, rad) {

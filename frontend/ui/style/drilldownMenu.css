@@ -1,0 +1,13 @@
+drilldown-menu {
+  display: block;
+}
+
+.drilldown-menu-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drilldown-menu-go-back-button {
+  width: 100%;
+}

@@ -11,6 +11,8 @@ export default class Enemy extends Spaceship {
     super({ type: Type.ENEMY, game, model, x, y, vx: 0, vy: 0, maxSpeed });
   }
 
+  exportSave() {}
+
   aim(targetPosition) {
     const _b = this.game.buffer;
 

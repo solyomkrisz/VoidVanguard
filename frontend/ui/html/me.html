@@ -64,7 +64,11 @@
       import "/ui/component/account/BlockedUserList.js";
       import "/ui/component/account/AccountFormRestorer.js";
       import "/ui/component/account/AccountForm.js";
-      import { onDOMContentLoaded, isLoggedIn } from "/common/common.js";
+      import {
+        onDOMContentLoaded,
+        isLoggedIn,
+        isUserSet,
+      } from "/common/common.js";
       import { on, off } from "/common/eventhub.js";
 
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
@@ -78,6 +82,10 @@
       on("logout", () => {
         window.location.href = "/";
       });
+
+      if (!isLoggedIn()) {
+        window.location.href = "/";
+      }
 
       const url = new URL(window.location.href);
       const active = new URLSearchParams(url.searchParams).get("active");

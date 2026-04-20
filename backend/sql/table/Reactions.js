@@ -29,6 +29,22 @@ class Reactions extends Table {
     return result;
   }
 
+  async update(userId, targetId, reactionType) {
+    const [result] = await execute(
+      "UPDATE reactions SET type = ? WHERE user_id = ? AND target_id = ?",
+      [reactionType, userId, targetId],
+    );
+    return result;
+  }
+
+  async deleteByUserAndTarget(userId, targetId) {
+    const [result] = await execute(
+      "DELETE FROM reactions WHERE user_id = ? AND target_id = ?",
+      [userId, targetId],
+    );
+    return result;
+  }
+
   async delete(userId, targetId, reactionType) {
     const [result] = await execute(
       "DELETE FROM reactions WHERE user_id = ? AND target_id = ? AND type = ?",

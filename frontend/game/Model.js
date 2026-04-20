@@ -1,3 +1,7 @@
+import Block from "./Block.js";
+import Shape from "./Shape.js";
+import * as vec from "../common/vec.js";
+
 export default class Model {
   static COPY_MODE = Object.freeze({
     COPY: 0,
@@ -23,6 +27,44 @@ export default class Model {
 
       throw new Error("MODEL-constructor: Invalid mode!");
 
+    }
+  }
+
+  exportSave() {
+    const objects = [];
+
+    for (const object of this.objects) {
+      objects.push(object.exportSave());
+    }
+
+    return { objects };
+  }
+
+  from(savedState) {
+    if (!this.parent) {
+      throw new Error(
+        "Unable to restore model from save: no parent is provided",
+      );
+    }
+
+    for (const object of savedState.objects) {
+      this.add(
+        this.parent,
+        new Block({
+          x: object.localPosition[0],
+          y: object.localPosition[1],
+          shape: new Shape(
+            object.shape.mergeable,
+            object.shape.mergeModeRequest,
+            ...object.shape.vertices,
+          ),
+          spriteID: object.spriteID,
+          gradeID: object.gradeID,
+          mass: object.mass,
+          health: object.health,
+          adjacencyRules: vec.clone(object.adjacencyRules),
+        }),
+      );
     }
   }
 

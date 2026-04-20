@@ -1,4 +1,4 @@
-import { isLoggedIn } from "/common/common.js";
+import { isLoggedIn, isUserSet } from "/common/common.js";
 import FormRestorer from "/ui/component/form/FormRestorer.js";
 import "/ui/component/account/AccountForm.js";
 
@@ -14,7 +14,7 @@ export default class AccountFormRestorer extends FormRestorer {
   connectedCallback() {
     super.connectedCallback?.();
 
-    if (isLoggedIn() && this.hasAttribute("auto")) {
+    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto")) {
       this.setAttribute("user-id", window.VoidVanguard.user.id);
     }
   }

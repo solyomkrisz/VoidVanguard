@@ -17,10 +17,43 @@ import * as vec2 from "/common/vec2.js";
 import NebulaGenerator from "/game/texture/NebulaGenerator.js";
 import DecorationBlock from "/game/DecorationBlock.js";
 import StarGenerator from "/game/texture/StarGenerator.js";
+import Model from "/game/Model.js";
+import "/ui/component/game/PauseMenu.js";
+import { isLoggedIn, isLoggedInAsync } from "/common/common.js";
+import * as net from "/common/network.js";
+import Save from "/game/Save.js";
+import { setupGame } from "/game/setup/default.js";
+import Models from "/game/SpaceShipModels.js";
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 export default class Game extends WebGLCanvas {
-  constructor() {
+  static from(gameState = null) {
+    if (gameState === null) {
+      const game = new Game();
+      setupGame(game);
+      return game;
+    }
+
+    let parsed;
+    if (typeof gameState === "string") parsed = Save.parse(gameState);
+    else parsed = gameState;
+
+    const game = new Game(parsed.seed);
+    setupGame(game, new Model(Save.recoverPlayerModel(parsed.player.model)));
+
+    game.player.teleportTo(...parsed.player.position);
+
+    return game;
+  }
+
+  constructor(seed = null) {
     super();
+
+    this.dirty = true;
+    this.inSavingProcess = false;
+
+    this.UI = {};
+    this.buildUI();
 
     this.tooltip = UI.element("dynamic-tooltip");
     document.body.appendChild(this.tooltip);
@@ -46,8 +79,8 @@ export default class Game extends WebGLCanvas {
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
-    this.seed = Math.floor(Math.random() * 100000); // 555 is nice, 46008, 676
-    this.seed = 555;
+    this.seed = seed ?? Math.floor(Math.random() * 100000); // 555 is nice, 46008, 676
+    // this.seed = 555;
     this.noise = new ValueNoise(this.seed);
     this.noiseScale = 1 / 10;
     // prettier-ignore
@@ -98,13 +131,270 @@ export default class Game extends WebGLCanvas {
     this.update = this.update.bind(this);
   }
 
+  destroy() {
+    // from Canvas class
+    {
+      this.canvas.remove?.();
+      this.contextMenu?.remove();
+    }
+
+    // own
+    {
+      for (const key of Object.keys(this.UI)) {
+        this.UI[key].remove?.();
+      }
+
+      this.tooltip?.remove?.();
+
+      this.debugPanel?.destroy();
+      this.debugOverlay?.destroy();
+    }
+
+    this.player?.destroy();
+  }
+
+  buildUI() {
+    this.UI.pauseMenu = document.createElement("pause-menu");
+    this.UI.pauseMenu.game = this;
+    document.body.appendChild(this.UI.pauseMenu);
+  }
+
+  exportSave() {
+    return {
+      seed: this.seed,
+      player: this.player.exportSave(),
+      // enemies: this.enemies,
+      // buildingBlocks: this.buildingBlocks,
+    };
+  }
+
+  localSave(formData, gameState, isSaveRelocation) {
+    if (this.inSavingProcess) return;
+    this.inSavingProcess = true;
+
+    const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
+    let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
+
+    console.log(formData);
+
+    const slotName = formData.get("slot_name"); // slot_name amit a form ad
+    const renameOnly = formData.get("rename_only") === "on";
+    const oldSlotName = formData.get("save_id");
+    console.log("OLDSLOTNAME: ", oldSlotName);
+
+    if (!slotName) {
+      console.error("Unable to save game: no slot name provided");
+      ToastManager.REQUEST("Unable to save game: no slot name provided");
+
+      this.inSavingProcess = false;
+      return false;
+    }
+
+    if (renameOnly) {
+      if (!oldSlotName || !localSaves.has(oldSlotName)) {
+        console.error("Cannot rename: no existing save selected");
+        ToastManager.REQUEST("Cannot rename: no existing save selected");
+        this.inSavingProcess = false;
+        return false;
+      }
+      const existing = localSaves.get(oldSlotName);
+      localSaves.delete(oldSlotName);
+      localSaves.set(slotName, {
+        ...existing,
+        slot_name: slotName,
+        updated_at: Date.now(),
+      });
+    } else {
+      console.log("Saving local save with slot name: ", slotName);
+
+      const existing = localSaves.get(slotName);
+      const now = Date.now();
+
+      localSaves.set(slotName, {
+        user_id: window?.VoidVanguard?.user?.id || null,
+        slot_name: slotName,
+        game_state: gameState,
+        created_at: existing?.created_at || now,
+        updated_at: now,
+      });
+    }
+
+    window.localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
+
+    console.log("Game state has been saved locally as " + slotName);
+    ToastManager.REQUEST("Game state has been saved locally as " + slotName);
+
+    this.inSavingProcess = false;
+    if (!isSaveRelocation) {
+      this.dirty = false;
+    }
+
+    return true;
+  }
+
+  async remoteSave(formData, gameState, isSaveRelocation) {
+    if (this.inSavingProcess) return;
+    this.inSavingProcess = true;
+
+    const saveId = formData.get("save_id");
+    const renameOnly = formData.get("rename_only") === "on";
+
+    if (renameOnly && !saveId) {
+      console.error("Cannot rename without selecting a save");
+      ToastManager.REQUEST("Cannot rename without selecting a save");
+      this.inSavingProcess = false;
+      return false;
+    }
+
+    // Ha eventből jön (helyi mentést akarunk feltölteni, akkor alapból string)
+    const stringifiedGameState =
+      typeof gameState === "string" ? gameState : JSON.stringify(gameState);
+
+    if (!renameOnly) {
+      formData.append("game_state", stringifiedGameState); // ha a konzolon azt mutatja hogy a formData-ban egy adott ponton van game_state akkor az azért van mert itt tényleg hozzáadjuk és a js működése miatt visszamenőleg lefrissíti a consoleon
+    }
+
+    const response = await net.send("/api/saves", {
+      method: saveId ? "PATCH" : "POST",
+      body: formData,
+    });
+
+    if (!response?.success) {
+      console.error(
+        `Unable to save game: ${response?.message ? response.message : ""}`,
+      );
+      ToastManager.REQUEST(
+        `Unable to save game: ${response?.message ? response.message : ""}`,
+      );
+
+      this.inSavingProcess = false;
+      return false;
+    }
+
+    if (!isSaveRelocation) {
+      this.dirty = false;
+    }
+
+    console.log(
+      "Game state has been saved remotely as " + formData.get("slot_name"),
+    );
+    ToastManager.REQUEST(
+      "Game state has been saved remotely as " + formData.get("slot_name"),
+    );
+
+    this.inSavingProcess = false;
+
+    return true;
+  }
+
+  async save(data) {
+    const formData = data?.formData;
+    const type = data?.type;
+
+    if (!formData || !type) {
+      console.error("Unable to save game: invalid format");
+      ToastManager.REQUEST("Unable to save game: invalid format");
+
+      return [false, data];
+    }
+
+    let isSaveRelocation;
+
+    if (
+      ["local", "remote"].includes(data?.currentType) &&
+      data.currentType !== type
+    ) {
+      isSaveRelocation = true;
+    } else {
+      isSaveRelocation = false;
+    }
+
+    console.log(this.inSavingProcess, isSaveRelocation, this.dirty);
+    const renameOnly = formData.get("rename_only") === "on";
+
+    // || (!isSaveRelocation && !this.dirty && !renameOnly)
+    if (this.inSavingProcess) {
+      console.warn(
+        "Unable to save game: it is already being saved or hasn't changed since last save",
+      );
+      ToastManager.REQUEST(
+        "Unable to save game: it is already being saved or hasn't changed since last save",
+      );
+
+      return [false, data];
+    }
+
+    let gameState;
+
+    // A mentés vagy csak helyileg van vagy csak távoliag így az id-je oda ahova menteni akarjuk nem létezik
+    // ha nem töröljük ki azt hiszi a rendszer hogy PATCH-elni akarunk és hibát ad
+    if (isSaveRelocation) {
+      formData.delete("save_id");
+
+      if (!data?.game_state) {
+        console.error("Unable to relocate save: no game state available");
+        ToastManager.REQUEST(
+          "Unable to relocate save: no game state available",
+        );
+
+        return [false, data];
+      }
+
+      gameState = data.game_state;
+    } else {
+      gameState = this.exportSave();
+    }
+
+    let success;
+
+    if (type === "local") {
+      success = this.localSave(formData, gameState, isSaveRelocation);
+    } else if (type === "remote") {
+      success = await this.remoteSave(formData, gameState, isSaveRelocation);
+    } else {
+      console.error("Unable to save game: invalid save location");
+      ToastManager.REQUEST("Unable to save game: invalid save location");
+
+      return [false, data];
+    }
+
+    return [success, data];
+  }
+
   // prettier-ignore
   initTextureArray() {
     const gl = this.gl;
 
     this.textureArray = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textureArray);
-    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, this.maxLayers);
+    gl.texStorage3D(
+      gl.TEXTURE_2D_ARRAY,
+      1,
+      gl.RGBA8,
+      DecorationBlock.TEXTURE_WIDTH,
+      DecorationBlock.TEXTURE_HEIGHT,
+      this.maxLayers,
+    );
+
+    const initialTexture = new Uint8Array(
+      DecorationBlock.TEXTURE_WIDTH *
+      DecorationBlock.TEXTURE_HEIGHT *
+      4 *
+      this.maxLayers,
+    );
+    //
+    gl.texSubImage3D(
+      gl.TEXTURE_2D_ARRAY,
+      0,
+      0, 0, 0,
+      DecorationBlock.TEXTURE_WIDTH,
+      DecorationBlock.TEXTURE_HEIGHT,
+      this.maxLayers,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      initialTexture,
+    );
+    //
 
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -125,7 +415,7 @@ export default class Game extends WebGLCanvas {
   start() {
     if (!this.gl) {
       throw new Error(
-        "GAME-start: Couldn't start game: WebGL hasn't been initalized!"
+        "GAME-start: Couldn't start game: WebGL hasn't been initalized!",
       );
     }
     if (!this.player) {
@@ -183,6 +473,17 @@ export default class Game extends WebGLCanvas {
     if (!this.running) return;
     this.running = false;
     window.cancelAnimationFrame(this.frameId);
+    this.tooltip.disable();
+    this.UI.pauseMenu?.show();
+  }
+
+  resume() {
+    this.tooltip.enable();
+    this.UI.pauseMenu.hide();
+
+    this.last = window.performance.now();
+    this.frameId = window.requestAnimationFrame(this.update);
+    this.running = true;
   }
 
   update() {
@@ -194,7 +495,7 @@ export default class Game extends WebGLCanvas {
 
     this.unprocessed = Math.min(
       this.unprocessed,
-      this.maxUpdates * this.timestep
+      this.maxUpdates * this.timestep,
     );
 
     while (this.unprocessed >= this.timestep) {
@@ -212,6 +513,8 @@ export default class Game extends WebGLCanvas {
   }
 
   tick() {
+    this.dirty = true;
+
     this.tooltip.hide();
     this.tooltip.displayed = false;
     this.contextMenu.hovered = null;
@@ -323,6 +626,12 @@ export default class Game extends WebGLCanvas {
   }
 
   createPlayer(model) {
+    if (!(model instanceof Model)) {
+      throw new Error(
+        "Unable to create player: the provided argument is not a Model",
+      );
+    }
+
     this.player = new Player(this, model);
     this.coreObjects.add(this.player);
   }
@@ -333,7 +642,7 @@ export default class Game extends WebGLCanvas {
   addTextureManager(textureManager) {
     if (!(textureManager instanceof TextureManager)) {
       console.warn(
-        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!"
+        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!",
       );
       return;
     }
@@ -347,7 +656,7 @@ export default class Game extends WebGLCanvas {
   setDebugPanel(debugPanel) {
     if (!(debugPanel instanceof DebugPanel)) {
       throw new Error(
-        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class."
+        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class.",
       );
     }
 
@@ -357,7 +666,7 @@ export default class Game extends WebGLCanvas {
   setDebugOverlay(debugOverlay) {
     if (!(debugOverlay instanceof DebugOverlay)) {
       throw new Error(
-        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class."
+        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class.",
       );
     }
 
@@ -367,7 +676,7 @@ export default class Game extends WebGLCanvas {
   setBlockStyle(blockStyle) {
     if (!(blockStyle instanceof BlockStyle)) {
       throw new Error(
-        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class."
+        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class.",
       );
     }
 
@@ -377,7 +686,7 @@ export default class Game extends WebGLCanvas {
   startDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
       );
       return;
     }
@@ -389,7 +698,7 @@ export default class Game extends WebGLCanvas {
   stopDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
       );
       return;
     }

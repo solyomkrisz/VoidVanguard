@@ -58,6 +58,7 @@ export default class LazyItemList extends HTMLElement {
     this.loadMore = this.loadMore.bind(this);
 
     this._deferredAttributes = new Map();
+    this._activeLoadToken = null;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -206,22 +207,24 @@ export default class LazyItemList extends HTMLElement {
 
   async loadNextPage() {
     if (
-      !this.src ||
+      (!this.src && !this.hasAttribute("local")) ||
       this._loading ||
       (!this._hasNext && this.controls !== "pagination")
     ) {
       return;
     }
 
+    const token = Symbol();
+    this._activeLoadToken = token;
+
     this._loading = true;
 
     try {
-      const url = this.getURL();
+      const response = await this.getResponse();
+      if (this._activeLoadToken !== token) {
+        return;
+      }
 
-      url.searchParams.set("page", this._page);
-      url.searchParams.set("limit", this.pageSize);
-
-      const response = await this.executeRequest(url);
       this._lastResponse = response;
 
       if (!this.isValidResponse(response)) {
@@ -241,10 +244,15 @@ export default class LazyItemList extends HTMLElement {
         this.reobserve();
       }
     } catch (error) {
-      console.error(error);
+      // console.error(error);
+      console.error(error.message);
     } finally {
-      this._loading = false;
-      this.onLoadFinish();
+      // this._loading = false;
+      // this.onLoadFinish();
+      if (this._activeLoadToken === token) {
+        this._loading = false;
+        this.onLoadFinish();
+      }
     }
   }
 
@@ -340,12 +348,24 @@ export default class LazyItemList extends HTMLElement {
     return response?.result?.total;
   }
 
-  reloadCurrentPage() {
-    if (!this.controls !== "pagination") return;
+  async reloadCurrentPage() {
+    if (this.controls !== "pagination") return;
 
     this.clearPages(true);
     this._container.textContent = "";
-    this.loadNextPage();
+    await this.loadNextPage();
+
+    // if current page is beyond total pages go to the last valid page
+    const totalItems = this.extractTotal(this._lastResponse);
+    const totalPages =
+      totalItems > 0 ? Math.ceil(totalItems / this.pageSize) : 1;
+
+    if (this._page > totalPages) {
+      this._page = totalPages;
+      this.clearPages(true);
+      this._container.textContent = "";
+      await this.loadNextPage();
+    }
   }
 
   reset() {
@@ -381,6 +401,15 @@ export default class LazyItemList extends HTMLElement {
 
   getURL() {
     return new URL(this.src, window.location.origin);
+  }
+
+  async getResponse() {
+    const url = this.getURL();
+
+    url.searchParams.set("page", this._page);
+    url.searchParams.set("limit", this.pageSize);
+
+    return await this.executeRequest(url);
   }
 }
 

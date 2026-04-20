@@ -8,6 +8,7 @@ import blocks from "./blocks.js";
 import comments from "./comments.js";
 import reactions from "./reactions.js";
 import admin from "./admin.js";
+import saves from "./saves.js";
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use("/blocks", blocks);
 router.use("/comments", comments);
 router.use("/reactions", reactions);
 router.use("/admin", admin);
+router.use("/saves", saves);
 
 export default router;

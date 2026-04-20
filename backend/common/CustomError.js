@@ -180,6 +180,24 @@ export const FORBIDDEN = new CustomError({
   },
 });
 
+export const SAVE_ERROR = new CustomError({
+  statusCode: 403,
+  definition: {
+    name: "SaveErro",
+    code: "ER_SAVE",
+    message: "Unable to save game state",
+  },
+});
+
+export const DUPLICATE_SAVE_STATE = new CustomError({
+  statusCode: 409,
+  definition: {
+    name: "DuplicateSaveStateError",
+    code: "ER_DUP_SAVE_STATE",
+    message: "A save with this game state already exists",
+  },
+});
+
 export function isCustomError(error) {
   return error instanceof CustomError;
 }

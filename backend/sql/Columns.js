@@ -5,11 +5,16 @@ class Columns {
       this.all.set(column.name, column);
     }
   }
+
   hasPermission(column, role, permission, inherit = true) {
     if (!this.all.has(column)) {
       return false;
     }
     return this.all.get(column).hasPermission(role, permission, inherit);
+  }
+
+  exists(column) {
+    return this.all.has(column);
   }
 }
 
