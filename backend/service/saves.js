@@ -25,13 +25,24 @@ export async function save({ userId, slotName, gameState, saveId = null }) {
   const parsedState =
     typeof gameState === "string" ? JSON.parse(gameState) : gameState;
 
-  const result = await Saves.insert({
-    id,
-    userId,
-    slotName,
-    gameState: JSON.stringify(parsedState),
-    stateHash: hashGameState(parsedState),
-  });
+  let result;
+  try {
+    result = await Saves.insert({
+      id,
+      userId,
+      slotName,
+      gameState: JSON.stringify(parsedState),
+      stateHash: hashGameState(parsedState),
+    });
+  } catch (error) {
+    if (
+      error.code === "ER_DUP_ENTRY" &&
+      error.sqlMessage.includes("unique_user_state")
+    ) {
+      throw CustomError.DUPLICATE_SAVE_STATE;
+    }
+    throw error;
+  }
 
   if (result.affectedRows < 1) {
     throw CustomError.SAVE_ERROR;
@@ -101,7 +112,19 @@ export async function updateSave({ userId, role, body }) {
     updates["state_hash"] = newStateHash;
   }
 
-  const result = await Saves.update(userId, saveId, updates);
+  let result;
+
+  try {
+    result = await Saves.update(userId, saveId, updates);
+  } catch (error) {
+    if (
+      error.code === "ER_DUP_ENTRY" &&
+      error.sqlMessage.includes("unique_user_state")
+    ) {
+      throw CustomError.DUPLICATE_SAVE_STATE;
+    }
+    throw error;
+  }
 
   if (!result) {
     throw CustomError.TEST;

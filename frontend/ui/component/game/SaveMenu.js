@@ -70,6 +70,7 @@ export default class SaveMenu extends HTMLElement {
     }
 
     this._selectedSlot = null;
+    this._elements.saveForm.reset();
   }
 
   onSlotSelectVerificationRequest(e) {
@@ -105,6 +106,7 @@ export default class SaveMenu extends HTMLElement {
 
     if (this._elements.saveForm) {
       this._elements.saveForm.from(this._selectedSlot.slotData);
+      this._elements.saveForm._elements.selectInput.value = this._selectedSlot.type;
     }
   }
 

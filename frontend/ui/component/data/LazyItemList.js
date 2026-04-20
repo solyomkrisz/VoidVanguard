@@ -348,12 +348,24 @@ export default class LazyItemList extends HTMLElement {
     return response?.result?.total;
   }
 
-  reloadCurrentPage() {
+  async reloadCurrentPage() {
     if (this.controls !== "pagination") return;
 
     this.clearPages(true);
     this._container.textContent = "";
-    this.loadNextPage();
+    await this.loadNextPage();
+
+    // if current page is beyond total pages go to the last valid page
+    const totalItems = this.extractTotal(this._lastResponse);
+    const totalPages =
+      totalItems > 0 ? Math.ceil(totalItems / this.pageSize) : 1;
+
+    if (this._page > totalPages) {
+      this._page = totalPages;
+      this.clearPages(true);
+      this._container.textContent = "";
+      await this.loadNextPage();
+    }
   }
 
   reset() {

@@ -95,6 +95,8 @@ export default class SaveForm extends BaseCustomElement {
                   <option value="local">Helyi</option>
                   <option value="remote">Távoli</option>
                 </select>
+                <input type="checkbox" name="rename_only" id="rename_only" />
+                <label for="rename_only">Csak átnevezés</label>
             </input-group>
             <button>Mentése</button>
         </form>
@@ -108,8 +110,17 @@ export default class SaveForm extends BaseCustomElement {
       "input[name='slot_name']",
     );
     this._elements.selectInput = this.queryShadowSelector("select");
+    this._elements.renameOnlyCheckbox = this.queryShadowSelector(
+      "input[name='rename_only']",
+    );
+    this._elements.renameOnlyLabel = this.queryShadowSelector(
+      "label[for='rename_only']",
+    );
     this._elements.form = this.queryShadowSelector("form");
     this._elements.form.addEventListener("submit", this.onSubmit);
+
+    this._elements.renameOnlyCheckbox.hidden = true;
+    this._elements.renameOnlyLabel.hidden = true;
 
     if (isLoggedIn()) {
       this._elements.selectInput.value = "remote";
@@ -125,15 +136,26 @@ export default class SaveForm extends BaseCustomElement {
 
     this._elements.saveIdInput.value = data.id;
     this._elements.slotNameInput.value = data.name;
+
+    this._elements.renameOnlyCheckbox.hidden = false;
+    this._elements.renameOnlyLabel.hidden = false;
   }
 
   reset() {
     if (!this._built) return;
 
-    // this._elements.saveIdInput.value = "";
-    // this._elements.slotNameInput.value = "";
+    this._elements.saveIdInput.value = "";
+    this._elements.slotNameInput.value = "";
+    this._elements.renameOnlyCheckbox.checked = false;
+
+    this._elements.renameOnlyCheckbox.hidden = true;
+    this._elements.renameOnlyLabel.hidden = true;
 
     this._elements.form.reset();
+
+    if (isLoggedIn()) {
+      this._elements.selectInput.value = "remote";
+    }
   }
 }
 

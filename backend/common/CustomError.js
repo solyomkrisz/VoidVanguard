@@ -189,6 +189,15 @@ export const SAVE_ERROR = new CustomError({
   },
 });
 
+export const DUPLICATE_SAVE_STATE = new CustomError({
+  statusCode: 409,
+  definition: {
+    name: "DuplicateSaveStateError",
+    code: "ER_DUP_SAVE_STATE",
+    message: "A save with this game state already exists",
+  },
+});
+
 export function isCustomError(error) {
   return error instanceof CustomError;
 }

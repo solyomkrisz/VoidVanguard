@@ -49,6 +49,12 @@ export async function saveGame(request, response) {
       .status(200)
       .json(createResponse(true, saveId, "Game successfully saved"));
   } catch (error) {
+    if (
+      error.code === "ER_DUP_ENTRY" &&
+      error.sqlMessage.includes("unique_user_state")
+    ) {
+      throw CustomError.DUPLICATE_SAVE_STATE;
+    }
     handleCaughtError(response, error);
   }
 }

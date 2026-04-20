@@ -177,79 +177,45 @@ export default class Game extends WebGLCanvas {
 
     console.log(formData);
 
-    const saveId = formData.get("save_id");
-    const slotName = formData.get("slot_name");
+    const slotName = formData.get("slot_name"); // slot_name amit a form ad
+    const renameOnly = formData.get("rename_only") === "on";
+    const oldSlotName = formData.get("save_id");
+    console.log("OLDSLOTNAME: ", oldSlotName);
 
-    // felülírunk egy már meglévőt vagy lementünk egyet
-    if (saveId) {
-      console.log(
-        "Felülírunk egy már meglévő helyi mentést, melynek id-je a következő: ",
-        saveId,
-      );
+    if (!slotName) {
+      console.error("Unable to save game: no slot name provided");
+      ToastManager.REQUEST("Unable to save game: no slot name provided");
 
-      const save = localSaves.get(saveId);
+      this.inSavingProcess = false;
+      return false;
+    }
 
-      if (!save) {
-        // console.error(
-        //   "Unable to overwrite save: there is no save with the requested id",
-        // );
-        // this.inSavingProcess = false;
-        // return false;
-
-        console.log(
-          "Lementünk egy már meglévő távoli mentést, de az id-jével nincs helyi mentés, így újat hozunk létre. ID: ",
-          saveId,
-        );
-
-        localSaves.set(saveId, {
-          id: saveId,
-          user_id: window?.VoidVanguard?.user?.id || null,
-          slot_name: slotName,
-          game_state: gameState,
-          created_at: Date.now(),
-          updated_at: Date.now(),
-        });
-      } else {
-        console.log(
-          "Lementünk egy már meglévő távoli mentést, de az id-je helyileg is létezik, így felülírjuk a helyi mentést. ID: ",
-          saveId,
-        );
-
-        const newSave = { ...save };
-        slotName && (newSave.slot_name = slotName);
-
-        if (window?.VoidVanguard?.user?.id) {
-          newSave.user_id = window.VoidVanguard.user.id;
-        }
-
-        newSave.game_state = gameState;
-
-        localSaves.set(saveId, newSave);
-      }
-
-      // Új mentés
-    } else {
-      if (!slotName) {
-        console.error("Unable to save game: no slot name provided");
-        ToastManager.REQUEST("Unable to save game: no slot name provided");
-
+    if (renameOnly) {
+      if (!oldSlotName || !localSaves.has(oldSlotName)) {
+        console.error("Cannot rename: no existing save selected");
+        ToastManager.REQUEST("Cannot rename: no existing save selected");
         this.inSavingProcess = false;
         return false;
       }
+      const existing = localSaves.get(oldSlotName);
+      localSaves.delete(oldSlotName);
+      localSaves.set(slotName, {
+        ...existing,
+        slot_name: slotName,
+        updated_at: Date.now(),
+      });
+    } else {
+      console.log("Saving local save with slot name: ", slotName);
 
-      const saveId = crypto.randomUUID();
-      console.log(
-        "Létrehozunk egy új helyi mentést, a következő id-vel: ",
-        saveId,
-      );
+      const existing = localSaves.get(slotName);
+      const now = Date.now();
 
-      localSaves.set(saveId, {
-        id: saveId,
+      localSaves.set(slotName, {
         user_id: window?.VoidVanguard?.user?.id || null,
         slot_name: slotName,
         game_state: gameState,
-        created_at: Date.now(),
-        updated_at: Date.now(),
+        created_at: existing?.created_at || now,
+        updated_at: now,
       });
     }
 
@@ -270,14 +236,26 @@ export default class Game extends WebGLCanvas {
     if (this.inSavingProcess) return;
     this.inSavingProcess = true;
 
+    const saveId = formData.get("save_id");
+    const renameOnly = formData.get("rename_only") === "on";
+
+    if (renameOnly && !saveId) {
+      console.error("Cannot rename without selecting a save");
+      ToastManager.REQUEST("Cannot rename without selecting a save");
+      this.inSavingProcess = false;
+      return false;
+    }
+
     // Ha eventből jön (helyi mentést akarunk feltölteni, akkor alapból string)
     const stringifiedGameState =
       typeof gameState === "string" ? gameState : JSON.stringify(gameState);
 
-    formData.append("game_state", stringifiedGameState); // ha a konzolon azt mutatja hogy a formData-ban egy adott ponton van game_state akkor az azért van mert itt tényleg hozzáadjuk és a js működése miatt visszamenőleg lefrissíti a consoleon
+    if (!renameOnly) {
+      formData.append("game_state", stringifiedGameState); // ha a konzolon azt mutatja hogy a formData-ban egy adott ponton van game_state akkor az azért van mert itt tényleg hozzáadjuk és a js működése miatt visszamenőleg lefrissíti a consoleon
+    }
 
     const response = await net.send("/api/saves", {
-      method: formData.get("save_id") ? "PATCH" : "POST",
+      method: saveId ? "PATCH" : "POST",
       body: formData,
     });
 
@@ -332,8 +310,10 @@ export default class Game extends WebGLCanvas {
     }
 
     console.log(this.inSavingProcess, isSaveRelocation, this.dirty);
+    const renameOnly = formData.get("rename_only") === "on";
 
-    if (this.inSavingProcess || (!isSaveRelocation && !this.dirty)) {
+    // || (!isSaveRelocation && !this.dirty && !renameOnly)
+    if (this.inSavingProcess) {
       console.warn(
         "Unable to save game: it is already being saved or hasn't changed since last save",
       );
@@ -349,7 +329,7 @@ export default class Game extends WebGLCanvas {
     // A mentés vagy csak helyileg van vagy csak távoliag így az id-je oda ahova menteni akarjuk nem létezik
     // ha nem töröljük ki azt hiszi a rendszer hogy PATCH-elni akarunk és hibát ad
     if (isSaveRelocation) {
-      // formData.delete("save_id");
+      formData.delete("save_id");
 
       if (!data?.game_state) {
         console.error("Unable to relocate save: no game state available");

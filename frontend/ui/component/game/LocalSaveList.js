@@ -135,6 +135,8 @@ export default class LocalSaveList extends LazyItemList {
     const el = document.createElement("save-list-slot");
 
     el.data = {
+      id: item.slot_name,
+      name: item.slot_name,
       ...item,
       created_at: formatDate(item.created_at),
       updated_at: formatDate(item.updated_at),
@@ -143,7 +145,7 @@ export default class LocalSaveList extends LazyItemList {
       el.setAttribute("controls", this.itemControls);
     }
 
-    this._byId.set(item.id, el);
+    this._byId.set(item.slot_name, el);
 
     return el;
   }
