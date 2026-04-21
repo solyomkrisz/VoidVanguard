@@ -14,7 +14,7 @@ export default class Mouse extends Rigidbody {
       model: new Model(
         // prettier-ignore
         [new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0), spriteID: null, mass: 1e-10 })],
-        Model.COPY_MODE.PRESERVE
+        Model.COPY_MODE.PRESERVE,
       ),
       x: 0,
       y: 0,
@@ -31,24 +31,42 @@ export default class Mouse extends Rigidbody {
 
     this.ndc = new Float32Array([-1, -1, 1]);
 
-    this.mouseMoveEventHandler = this.mouseMoveEventHandler.bind(this);
-    this.mouseDownEventHandler = this.mouseDownEventHandler.bind(this);
-    this.mouseUpEventHandler = this.mouseUpEventHandler.bind(this);
+    this.pointerMoveEventHandler = this.pointerMoveEventHandler.bind(this);
+    this.pointerDownEventHandler = this.pointerDownEventHandler.bind(this);
+    this.pointerUpEventHandler = this.pointerUpEventHandler.bind(this);
+
+    this.activePointerId = null;
   }
 
   enableListening() {
-    document.addEventListener("mousemove", this.mouseMoveEventHandler);
-    document.addEventListener("mousedown", this.mouseDownEventHandler);
-    document.addEventListener("mouseup", this.mouseUpEventHandler);
+    const el = this.game.canvas;
+
+    el.addEventListener("pointermove", this.pointerMoveEventHandler, {
+      passive: false,
+    });
+    el.addEventListener("pointerdown", this.pointerDownEventHandler, {
+      passive: false,
+    });
+    el.addEventListener("pointerup", this.pointerUpEventHandler, {
+      passive: false,
+    });
+    el.addEventListener("pointercancel", this.pointerUpEventHandler);
   }
 
   disableListening() {
-    document.removeEventListener("mousemove", this.mouseMoveEventHandler);
-    document.removeEventListener("mousedown", this.mouseDownEventHandler);
-    document.removeEventListener("mouseup", this.mouseUpEventHandler);
+    const el = this.game.canvas;
+
+    el.removeEventListener("pointermove", this.pointerMoveEventHandler);
+    el.removeEventListener("pointerdown", this.pointerDownEventHandler);
+    el.removeEventListener("pointerup", this.pointerUpEventHandler);
+    el.removeEventListener("pointercancel", this.pointerUpEventHandler);
   }
 
-  mouseMoveEventHandler(event) {
+  pointerMoveEventHandler(event) {
+    // if (event.pointerId !== this.activePointerId) return;
+
+    event.preventDefault();
+
     const game = this.game;
     const DOMRect = game.canvasDomRect;
 
@@ -59,12 +77,38 @@ export default class Mouse extends Rigidbody {
     this.ndc[1] = 1 - (2 * y) / game.canvas.height;
   }
 
-  mouseDownEventHandler(event) {
-    event.button === 0 && (this.isDown = true);
+  pointerDownEventHandler(event) {
+    event.preventDefault();
+
+    // ignore if already tracking a finger
+    if (this.activePointerId !== null) return;
+
+    const isMouseLeft = event.pointerType === "mouse" && event.button === 0;
+    const isTouch = event.pointerType === "touch";
+
+    if (!isMouseLeft && !isTouch) return;
+
+    this.activePointerId = event.pointerId;
+    this.isDown = true;
+
+    event.target.setPointerCapture(event.pointerId);
+
+    this.pointerMoveEventHandler(event);
   }
 
-  mouseUpEventHandler(event) {
-    event.button === 0 && this.reset();
+  pointerUpEventHandler(event) {
+    if (event.pointerId !== this.activePointerId) return;
+
+    const isMouseLeft = event.pointerType === "mouse" && event.button === 0;
+    const isTouch = event.pointerType === "touch";
+
+    if (!isMouseLeft && !isTouch) return;
+
+    this.activePointerId = null;
+
+    this.reset();
+
+    event.target.releasePointerCapture(event.pointerId);
   }
 
   reset() {
