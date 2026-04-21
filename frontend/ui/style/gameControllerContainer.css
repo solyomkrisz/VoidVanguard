@@ -1,0 +1,72 @@
+:host {
+  position: absolute;
+  z-index: 1999;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+
+  pointer-events: none;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+
+  grid-template-areas:
+    "pause . ."
+    ". . ."
+    ". . ."
+    ". . propulsion"
+    ". . ."
+    ". . throttle"
+    "igniter computer joystick";
+}
+
+:host > * {
+  pointer-events: auto;
+}
+
+pause-button {
+  grid-area: pause;
+  justify-self: start;
+  align-self: start;
+}
+
+engine-ignition-controller {
+  grid-area: igniter;
+  justify-self: start;
+  align-self: end;
+}
+
+ship-propulsion-panel {
+  grid-area: propulsion;
+  justify-self: end;
+  align-self: end;
+}
+
+flight-computer {
+  grid-area: computer;
+  justify-self: center;
+  align-self: end;
+}
+
+engine-throttle-controller {
+  grid-area: throttle;
+  justify-self: end;
+  align-self: end;
+}
+
+thrust-vector-controller {
+  grid-area: joystick;
+  justify-self: end;
+  align-self: end;
+}

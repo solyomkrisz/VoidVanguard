@@ -2,16 +2,8 @@
   box-sizing: border-box;
 }
 
-html,
-body,
-canvas {
-  touch-action: none;
-  overflow: hidden;
-}
-
 body {
   margin: 0;
-  touch-action: manipulation;
 }
 
 :host([hidden]),

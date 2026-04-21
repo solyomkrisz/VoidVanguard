@@ -37,8 +37,15 @@ export default class Player extends Spaceship {
     // Creating UI
     // prettier-ignore
     {
-      this.UI.propulsionPanel = UI.element("ship-propulsion-panel").setSource(this).insertInto();
-      this.UI.flightComputer = UI.element("flight-computer").setSource(this).insertInto();
+      this.UI.propulsionPanel = UI.element("ship-propulsion-panel").setSource(this);
+      this.UI.flightComputer = UI.element("flight-computer").setSource(this);
+
+      const controllerContainer = this.game.UI.controllerContainer;
+
+      if (controllerContainer) {
+        controllerContainer.appendShadowChild?.(this.UI.propulsionPanel);
+        controllerContainer.appendShadowChild?.(this.UI.flightComputer);
+      }
     }
 
     this.updatePropulsion = this.manualPropulsionUpdate;

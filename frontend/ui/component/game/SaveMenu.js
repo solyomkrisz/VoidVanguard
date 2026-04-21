@@ -27,6 +27,7 @@ export default class SaveMenu extends HTMLElement {
       this.onSlotSelectVerificationRequest.bind(this);
     this.onSaveSuccess = this.onSaveSuccess.bind(this);
     this.onSaveFailure = this.onSaveFailure.bind(this);
+    this.onSaveDeleted = this.onSaveDeleted.bind(this);
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
   }
@@ -106,7 +107,8 @@ export default class SaveMenu extends HTMLElement {
 
     if (this._elements.saveForm) {
       this._elements.saveForm.from(this._selectedSlot.slotData);
-      this._elements.saveForm._elements.selectInput.value = this._selectedSlot.type;
+      this._elements.saveForm._elements.selectInput.value =
+        this._selectedSlot.type;
     }
   }
 
@@ -128,6 +130,17 @@ export default class SaveMenu extends HTMLElement {
 
   onSaveFailure(e) {
     e.stopPropagation();
+  }
+
+  onSaveDeleted(e) {
+    e.stopPropagation();
+
+    const saveId = e?.detail?.saveId;
+    if (!saveId) return;
+
+    if (this._selectedSlot?.slotData?.id === saveId) {
+      this.removeCurrentSelection();
+    }
   }
 
   onLogin(e) {
@@ -256,6 +269,7 @@ export default class SaveMenu extends HTMLElement {
     this.addEventListener("save-request", this.onSaveRequest);
     this.addEventListener("save-success", this.onSaveSuccess);
     this.addEventListener("save-failure", this.onSaveFailure);
+    this.addEventListener("save-deleted", this.onSaveDeleted);
     this.addEventListener(
       "slot-select-verification-request",
       this.onSlotSelectVerificationRequest,

@@ -80,13 +80,17 @@ export default class ThrustVectorController extends BaseCustomElement {
 
     this.setShadowInnerHTML(`
       <div class="base">
+        <button class="button open-engine-controls"></button>
         <div class="knob"></div>
-        <button class="reset">↺</button>
+        <button class="button reset">↺</button>
       </div>
     `);
 
     this.base = this.queryShadowSelector(".base");
     this.knob = this.queryShadowSelector(".knob");
+    this.openEngineControlsButton = this.queryShadowSelector(
+      ".open-engine-controls",
+    );
     this.resetButton = this.queryShadowSelector(".reset");
   }
 
@@ -184,7 +188,12 @@ export default class ThrustVectorController extends BaseCustomElement {
   }
 
   updateKnob(x) {
-    const r = 25;
+    // translation radius from css variable
+    const rStr = getComputedStyle(this)
+      .getPropertyValue("--knob-translation-radius")
+      .trim();
+    const r = parseFloat(rStr);
+
     this.knob.style.transform = `translate(${x * r}px, 0px)`;
   }
 }
