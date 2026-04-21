@@ -10,6 +10,9 @@ import * as UI from "/ui/UI.js";
 import _ from "/ui/component/game/ShipPropulsionPanel.js";
 import _1 from "/ui/component/game/FlightComputer.js";
 import BuildingBlock from "/game/BuildingBlock.js";
+import EngineIgnitionController from "/ui/component/game/EngineIgnitionController.js";
+import EngineThrottleController from "/ui/component/game/EngineThrottleController.js";
+import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
@@ -96,12 +99,29 @@ export default class Player extends Spaceship {
   }
 
   manualPropulsionUpdate(dt, _b, activeControls) {
-    const _W = activeControls.has(Keyboard.KeyW);
-    const _A = activeControls.has(Keyboard.KeyA);
-    const _D = activeControls.has(Keyboard.KeyD);
-    const _R = activeControls.has(Keyboard.KeyR);
-    const _LCtrl = activeControls.has(Keyboard.LCtrl);
-    const _LShift = activeControls.has(Keyboard.LShift);
+    const _W =
+      activeControls.has(Keyboard.KeyW) ||
+      activeControls.has(EngineIgnitionController.IGNITE);
+
+    const _A =
+      activeControls.has(Keyboard.KeyA) ||
+      activeControls.has(ThrustVectorController.GIMBAL_LEFT);
+
+    const _D =
+      activeControls.has(Keyboard.KeyD) ||
+      activeControls.has(ThrustVectorController.GIMBAL_RIGHT);
+
+    const _R =
+      activeControls.has(Keyboard.KeyR) ||
+      activeControls.has(ThrustVectorController.GIMBAL_RESET);
+
+    const _LCtrl =
+      activeControls.has(Keyboard.LCtrl) ||
+      activeControls.has(EngineThrottleController.THROTTLE_DOWN);
+
+    const _LShift =
+      activeControls.has(Keyboard.LShift) ||
+      activeControls.has(EngineThrottleController.THROTTLE_UP);
 
     if (this.controlledThrusters.size > 0) {
       let T = 0;
@@ -130,12 +150,29 @@ export default class Player extends Spaceship {
   }
 
   autoPropulsionUpdate(dt, _b, activeControls) {
-    const _W = activeControls.has(Keyboard.KeyW);
-    const _A = activeControls.has(Keyboard.KeyA);
-    const _D = activeControls.has(Keyboard.KeyD);
-    const _R = activeControls.has(Keyboard.KeyR);
-    const _LCtrl = activeControls.has(Keyboard.LCtrl);
-    const _LShift = activeControls.has(Keyboard.LShift);
+    const _W =
+      activeControls.has(Keyboard.KeyW) ||
+      activeControls.has(EngineIgnitionController.IGNITE);
+
+    const _A =
+      activeControls.has(Keyboard.KeyA) ||
+      activeControls.has(ThrustVectorController.GIMBAL_LEFT);
+
+    const _D =
+      activeControls.has(Keyboard.KeyD) ||
+      activeControls.has(ThrustVectorController.GIMBAL_RIGHT);
+
+    const _R =
+      activeControls.has(Keyboard.KeyR) ||
+      activeControls.has(ThrustVectorController.GIMBAL_RESET);
+
+    const _LCtrl =
+      activeControls.has(Keyboard.LCtrl) ||
+      activeControls.has(EngineThrottleController.THROTTLE_DOWN);
+
+    const _LShift =
+      activeControls.has(Keyboard.LShift) ||
+      activeControls.has(EngineThrottleController.THROTTLE_UP);
 
     if (this.controlledThrusters.size > 0) {
       let T = 0;
@@ -170,7 +207,7 @@ export default class Player extends Spaceship {
 
     const dt = this.game.fdt;
     const _b = this.game.buffer;
-    const activeControls = this.game.keyboard.activeControls;
+    const activeControls = this.game.activeControls;
 
     this.updatePropulsion(dt, _b, activeControls);
 

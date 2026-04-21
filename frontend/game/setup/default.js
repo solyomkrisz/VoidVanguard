@@ -9,6 +9,9 @@ import * as UI from "/ui/UI.js";
 import Sprite from "/game/Sprite.js";
 import { TextureID, SpriteID } from "/game/texture/Texture.js";
 import "/ui/component/game/ContextMenuTemplate.js";
+import EngineIgnitionController from "/ui/component/game/EngineIgnitionController.js";
+import EngineThrottleController from "/ui/component/game/EngineThrottleController.js";
+import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
 
 export function setupGame(game, playerModel = Models.PLAYER) {
   if (game.running) return;
@@ -70,18 +73,40 @@ export function setupGame(game, playerModel = Models.PLAYER) {
   game.mouse = mouse;
   mouse.enableListening();
 
-  //#region keyboard
-  const keyboard = new Keyboard(game);
-  game.keyboard = keyboard;
-  keyboard.observeKey(Keyboard.KeyW);
-  keyboard.observeKey(Keyboard.KeyS);
-  keyboard.observeKey(Keyboard.KeyA);
-  keyboard.observeKey(Keyboard.KeyD);
-  keyboard.observeKey(Keyboard.Space);
-  keyboard.observeKey(Keyboard.LCtrl);
-  keyboard.observeKey(Keyboard.LShift);
-  keyboard.observeKey(Keyboard.KeyR);
-  keyboard.enableListening();
+  //#region keyboard or ignition controller
+  const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+  if (isTouch) {
+    const ignitionController = document.createElement(
+      "engine-ignition-controller",
+    );
+    game.addController(ignitionController);
+    ignitionController.observeControl(EngineIgnitionController.IGNITE);
+
+    const throttleController = document.createElement(
+      "engine-throttle-controller",
+    );
+    game.addController(throttleController);
+    throttleController.observeControl(EngineThrottleController.THROTTLE_UP);
+    throttleController.observeControl(EngineThrottleController.THROTTLE_DOWN);
+
+    const thrustVectorController = document.createElement(
+      "thrust-vector-controller",
+    );
+    game.addController(thrustVectorController);
+  } else {
+    const keyboard = new Keyboard(game);
+    game.keyboard = keyboard;
+    keyboard.observeKey(Keyboard.KeyW);
+    keyboard.observeKey(Keyboard.KeyS);
+    keyboard.observeKey(Keyboard.KeyA);
+    keyboard.observeKey(Keyboard.KeyD);
+    keyboard.observeKey(Keyboard.Space);
+    keyboard.observeKey(Keyboard.LCtrl);
+    keyboard.observeKey(Keyboard.LShift);
+    keyboard.observeKey(Keyboard.KeyR);
+    keyboard.enableListening();
+  }
 
   game.createPlayer(playerModel); // Must be added after mouse or dragging wont work
 
