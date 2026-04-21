@@ -36,6 +36,8 @@ export default class Mouse extends Rigidbody {
     this.pointerUpEventHandler = this.pointerUpEventHandler.bind(this);
 
     this.activePointerId = null;
+    this.dragDelayTimer = null;
+    this.dragDelay = 200; // milliseconds before drag starts on touch
   }
 
   enableListening() {
@@ -89,11 +91,22 @@ export default class Mouse extends Rigidbody {
     if (!isMouseLeft && !isTouch) return;
 
     this.activePointerId = event.pointerId;
-    this.isDown = true;
 
     event.target.setPointerCapture(event.pointerId);
 
     this.pointerMoveEventHandler(event);
+
+    // for touch we delay drag start to allow normal working of tooltip
+    if (isTouch) {
+      this.dragDelayTimer = setTimeout(() => {
+        this.isDown = true;
+        this.dragDelayTimer = null;
+      }, this.dragDelay);
+
+      // if its a mouse left click start drag immediately
+    } else {
+      this.isDown = true;
+    }
   }
 
   pointerUpEventHandler(event) {
@@ -105,6 +118,12 @@ export default class Mouse extends Rigidbody {
     if (!isMouseLeft && !isTouch) return;
 
     this.activePointerId = null;
+
+    // cancel drag delay timer if still pending
+    if (this.dragDelayTimer !== null) {
+      clearTimeout(this.dragDelayTimer);
+      this.dragDelayTimer = null;
+    }
 
     this.reset();
 
