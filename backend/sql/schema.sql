@@ -191,3 +191,32 @@ CREATE TABLE saves(
         ON UPDATE RESTRICT,
     UNIQUE KEY unique_user_state (user_id, state_hash)
 );
+
+CREATE TABLE challenges(
+    id CHAR(36) PRIMARY KEY,
+    creator_id CHAR(36) NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (creator_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);
+
+CREATE TABLE scores(
+    save_id CHAR(36) NOT NULL,
+    user_id CHAR(36) NOT NULL,
+    score INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (save_id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (save_id) REFERENCES saves(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+);

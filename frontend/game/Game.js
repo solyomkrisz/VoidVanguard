@@ -46,8 +46,10 @@ export default class Game extends WebGLCanvas {
     return game;
   }
 
-  constructor(seed = null) {
+  constructor(seed = null, game_id = null) {
     super();
+
+    this.game_id = game_id;
 
     this.dirty = true;
     this.inSavingProcess = false;
@@ -160,7 +162,10 @@ export default class Game extends WebGLCanvas {
   }
 
   exportSave() {
+    this.game_id = this.game_id || crypto.randomUUID();
+
     return {
+      game_id: this.game_id,
       seed: this.seed,
       player: this.player.exportSave(),
       // enemies: this.enemies,

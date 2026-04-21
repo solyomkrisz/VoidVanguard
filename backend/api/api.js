@@ -9,6 +9,7 @@ import comments from "./comments.js";
 import reactions from "./reactions.js";
 import admin from "./admin.js";
 import saves from "./saves.js";
+import challenges from "./challenges.js";
 
 const router = express.Router();
 
@@ -28,5 +29,6 @@ router.use("/comments", comments);
 router.use("/reactions", reactions);
 router.use("/admin", admin);
 router.use("/saves", saves);
+router.use("/challenges", challenges);
 
 export default router;
