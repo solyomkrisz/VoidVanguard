@@ -11,11 +11,11 @@ export default class ShipPropulsionPanel extends HTMLElement {
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
         :host {
-          position: absolute;
-          z-index: 1002;
-          top: 50%;
-          right: 0;
-          transform: translateY(-50%);
+          // position: absolute;
+          // z-index: 1002;
+          // top: 50%;
+          // right: 0;
+          // transform: translateY(-50%);
           display: flex;
           flex-direction: column;
           gap: 20px;

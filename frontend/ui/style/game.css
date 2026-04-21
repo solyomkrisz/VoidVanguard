@@ -1,0 +1,18 @@
+html,
+body,
+canvas {
+  touch-action: none;
+  overflow: hidden;
+}
+
+body {
+  touch-action: manipulation;
+}
+
+/* ha nincs itt akkor a canvas DOMRect.top 22 lesz és az egér in-game pozíciója rosszul lesz kiszámolva */
+game-controller-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}

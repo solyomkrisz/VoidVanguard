@@ -33,6 +33,16 @@ export default class LocalSaveList extends LazyItemList {
     this.parseSaves();
     this._byId.clear();
     this.reloadCurrentPage();
+
+    this.dispatchEvent(
+      new CustomEvent("save-deleted", {
+        detail: {
+          saveId,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   toggleSelectedSlotHighlight(id) {

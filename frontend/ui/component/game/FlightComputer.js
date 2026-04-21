@@ -11,11 +11,12 @@ export default class FlightComputer extends HTMLElement {
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
       :host {
-        position: absolute;
-        z-index: 1001;
-        left: 50%;
-        bottom: 0;
-        transform: translateX(-50%);
+        // position: absolute;
+        // z-index: 1001;
+        // left: 50%;
+        // bottom: 0;
+        // transform: translateX(-50%);
+        box-sizing: border-box;
         max-width: 550px;
         width: 100%;
         max-height: 100px;
