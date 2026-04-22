@@ -27,18 +27,21 @@ import Models from "/game/SpaceShipModels.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 export default class Game extends WebGLCanvas {
-  static from(gameState = null) {
-    if (gameState === null) {
+  static from(save = null) {
+    console.log(save);
+    if (save == null || save.game_state == null) {
       const game = new Game();
       setupGame(game);
       return game;
     }
 
     let parsed;
-    if (typeof gameState === "string") parsed = Save.parse(gameState);
-    else parsed = gameState;
+    if (typeof save.game_state === "string")
+      parsed = Save.parse(save.game_state);
+    else parsed = save.game_state;
 
-    const game = new Game(parsed.seed);
+    const game = new Game(parsed.seed, parsed.game_id);
+    game.loadedSave = save;
     setupGame(game, new Model(Save.recoverPlayerModel(parsed.player.model)));
 
     game.player.teleportTo(...parsed.player.position);
