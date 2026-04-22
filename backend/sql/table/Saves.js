@@ -14,6 +14,7 @@ class Saves extends Table {
         new Column("user_id"),
         new Column("save_name").grant(Role.USER, Permission.W),
         new Column("game_state").grant(Role.USER, Permission.W),
+        new Column("is_finished").grant(Role.USER, Permission.W),
         new Column("created_at"),
         new Column("updated_at"),
       ],
@@ -97,7 +98,7 @@ class Saves extends Table {
       values,
     );
 
-    return result.affectedRows > 0;
+    return result;
   }
 }
 

@@ -1,5 +1,10 @@
 import Scores from "../sql/table/Scores.js";
 
+export async function selectByUserAndGameId({ userId, gameId }) {
+  const rows = await Scores.select(gameId, userId);
+  return rows;
+}
+
 export async function setOrUpdateScoreForGame({ gameId, userId, score }) {
   const currentEntryForGameId = await Scores.select(gameId, userId);
 

@@ -43,6 +43,7 @@ export default class Game extends WebGLCanvas {
     game.loadedSave = save;
     setupGame(game, new Model(Save.recoverPlayerModel(parsed.player.model)));
 
+    game.player.score = parsed.player.score;
     game.player.teleportTo(...parsed.player.position);
 
     return game;
@@ -55,6 +56,7 @@ export default class Game extends WebGLCanvas {
     this.loadedSave = null;
     this.saveType = null;
     this.inSavingProcess = false;
+    this.isFinished = false;
 
     this.UI = {};
     this.buildUI();
@@ -135,12 +137,14 @@ export default class Game extends WebGLCanvas {
     this.update = this.update.bind(this);
   }
 
-  finish() {
+  async finishSave() {
+    // Játék befejezése ha nem volt mentve
     if (!["local", "remote"].includes(this.saveType)) {
       ToastManager.REQUEST("Unable to finish game");
       return;
     }
 
+    // Ha mentve volt
     if (this.saveType === "local") {
       const localSaves = getLocalSaves();
 
@@ -156,6 +160,33 @@ export default class Game extends WebGLCanvas {
 
       return;
     }
+
+    const formData = new FormData();
+
+    formData.set("game_id", this.game_id);
+    formData.set("is_finished", "1");
+    formData.set("game_state", JSON.stringify(this.exportSave()));
+
+    const response = await net.send("/api/saves", {
+      method: "PATCH",
+      body: formData,
+    });
+
+    if (!response?.success) {
+      console.error(
+        `Unable to finish game: ${response?.message ? response.message : ""}`,
+      );
+      ToastManager.REQUEST(
+        `Unable to finish game: ${response?.message ? response.message : ""}`,
+      );
+
+      return;
+    }
+
+    console.log("Game has been marked as finished remotely.");
+    ToastManager.REQUEST("Game has been marked as finished remotely.");
+
+    // kiléptetés vagy endscreen mutatása
   }
 
   destroy() {
@@ -207,7 +238,7 @@ export default class Game extends WebGLCanvas {
     let localSaves = getLocalSaves();
 
     const existingSave = localSaves.get(this.game_id);
-    const created_at = existingSave.created_at || Date.now();
+    const created_at = existingSave?.created_at || Date.now();
 
     localSaves.set(this.game_id, {
       game_id: this.game_id,
@@ -243,10 +274,10 @@ export default class Game extends WebGLCanvas {
 
     if (!response?.success) {
       console.error(
-        `Unable to save game: ${response?.message ? response.message : ""}`
+        `Unable to save game: ${response?.message ? response.message : ""}`,
       );
       ToastManager.REQUEST(
-        `Unable to save game: ${response?.message ? response.message : ""}`
+        `Unable to save game: ${response?.message ? response.message : ""}`,
       );
 
       this.inSavingProcess = false;
@@ -336,7 +367,7 @@ export default class Game extends WebGLCanvas {
   start() {
     if (!this.gl) {
       throw new Error(
-        "GAME-start: Couldn't start game: WebGL hasn't been initalized!"
+        "GAME-start: Couldn't start game: WebGL hasn't been initalized!",
       );
     }
     if (!this.player) {
@@ -416,7 +447,7 @@ export default class Game extends WebGLCanvas {
 
     this.unprocessed = Math.min(
       this.unprocessed,
-      this.maxUpdates * this.timestep
+      this.maxUpdates * this.timestep,
     );
 
     while (this.unprocessed >= this.timestep) {
@@ -549,7 +580,7 @@ export default class Game extends WebGLCanvas {
   createPlayer(model) {
     if (!(model instanceof Model)) {
       throw new Error(
-        "Unable to create player: the provided argument is not a Model"
+        "Unable to create player: the provided argument is not a Model",
       );
     }
 
@@ -563,7 +594,7 @@ export default class Game extends WebGLCanvas {
   addTextureManager(textureManager) {
     if (!(textureManager instanceof TextureManager)) {
       console.warn(
-        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!"
+        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!",
       );
       return;
     }
@@ -577,7 +608,7 @@ export default class Game extends WebGLCanvas {
   setDebugPanel(debugPanel) {
     if (!(debugPanel instanceof DebugPanel)) {
       throw new Error(
-        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class."
+        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class.",
       );
     }
 
@@ -587,7 +618,7 @@ export default class Game extends WebGLCanvas {
   setDebugOverlay(debugOverlay) {
     if (!(debugOverlay instanceof DebugOverlay)) {
       throw new Error(
-        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class."
+        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class.",
       );
     }
 
@@ -597,7 +628,7 @@ export default class Game extends WebGLCanvas {
   setBlockStyle(blockStyle) {
     if (!(blockStyle instanceof BlockStyle)) {
       throw new Error(
-        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class."
+        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class.",
       );
     }
 
@@ -607,7 +638,7 @@ export default class Game extends WebGLCanvas {
   startDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
       );
       return;
     }
@@ -619,7 +650,7 @@ export default class Game extends WebGLCanvas {
   stopDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
       );
       return;
     }

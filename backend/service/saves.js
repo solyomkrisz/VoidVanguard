@@ -16,7 +16,7 @@ export async function saveOrUpdate({ userId, role, body }) {
     console.log(
       "No existing save found for gameId " +
         body.game_id +
-        ", creating new one."
+        ", creating new one.",
     );
 
     return await save({ userId, body });
@@ -91,8 +91,28 @@ export async function updateSave({ userId, role, body }) {
   }
 
   const changedColumns = Object.keys(updates);
+  const parsedState =
+    typeof body.game_state === "string"
+      ? JSON.parse(body.game_state)
+      : body.game_state;
 
-  if (!changedColumns.length) throw CustomError.NO_DATA_CHANGE;
+  if (!changedColumns.length) {
+    // megnézzük van e score hozzá és ha nincs függetlenül mindentől berakjuk azt
+    const associatedScore = await scores.selectByUserAndGameId({
+      userId,
+      gameId,
+    });
+
+    if (!associatedScore) {
+      await scores.setOrUpdateScoreForGame({
+        userId,
+        gameId,
+        score: parsedState.player.score,
+      });
+    }
+
+    throw CustomError.NO_DATA_CHANGE;
+  }
 
   let result;
 
@@ -101,11 +121,6 @@ export async function updateSave({ userId, role, body }) {
 
     // update score
     if (result.affectedRows === 1) {
-      const parsedState =
-        typeof body.game_state === "string"
-          ? JSON.parse(body.game_state)
-          : body.game_state;
-
       await scores.setOrUpdateScoreForGame({
         userId,
         gameId,

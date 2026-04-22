@@ -37,7 +37,21 @@ export async function selectSave(request, response) {
   }
 }
 
-export async function patchSave(request, response) {}
+export async function patchSave(request, response) {
+  try {
+    const result = await service.updateSave({
+      userId: request.targetUser.id,
+      role: request.targetUser.role ?? -1,
+      body: request.body,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, result, "Save successfully updated"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
 
 export async function saveOrUpdate(request, response) {
   try {
