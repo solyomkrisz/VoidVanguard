@@ -10,8 +10,7 @@ export default class LeaderboardElement extends LazyItemList {
     super();
 
     this._elements = {};
-    this._userItem = null;
-    this._pinLocation = null;
+    this._userScoreData = null;
     this._byUserId = new Map();
 
     this.onLogin = this.onLogin.bind(this);
@@ -24,42 +23,42 @@ export default class LeaderboardElement extends LazyItemList {
   }
 
   onLogout() {
-    this._userItem?.remove();
-    this._userItem = null;
-    this._pinLocation = null;
+    this.unpinUser(this._byUserId.get(this._userScoreData?.user_id));
+    this._userScoreData = null;
   }
 
   onScroll(e) {
-    if (!this._userItem) return;
+    if (!this._userScoreData) return;
 
-    const inListNode = this._byUserId.get(this._userItem?.data?.user_id);
-    const visible = isInViewport(inListNode);
+    const node = this._byUserId.get(this._userScoreData?.user_id);
+    const visible = isInViewport(node);
 
     if (visible) {
-      this.unpinUser();
+      this.unpinUser(node);
       return;
     }
 
-    const rect = inListNode.getBoundingClientRect();
-
-    if (rect.top < 0) {
-      this.pinUser(inListNode, "top");
+    if (node.getBoundingClientRect().top < 0) {
+      this.pinUser(node, "top");
     } else {
-      this.pinUser(inListNode, "bottom");
+      this.pinUser(node, "bottom");
     }
   }
 
-  unpinUser(originalNode) {
-    this._userItem?.remove?.();
+  unpinUser(node) {
+    node.style.visibility = "visible";
+    this._elements.topPinContainer.textContent = "";
+    this._elements.bottomPinContainer.textContent = "";
   }
 
-  pinUser(originalNode, position) {
-    this.unpinUser(originalNode);
+  pinUser(node, position) {
+    // this.unpinUser(originalNode);
+    node.style.visibility = "hidden";
 
     if (position === "top") {
-      this._elements.topPinContainer?.appendChild(this._userItem);
+      this._elements.topPinContainer.innerHTML = node.innerHTML;
     } else if (position === "bottom") {
-      this._elements.bottomPinContainer?.appendChild(this._userItem);
+      this._elements.bottomPinContainer.innerHTML = node.innerHTML;
     }
   }
 
@@ -99,9 +98,9 @@ export default class LeaderboardElement extends LazyItemList {
   async customize() {
     if (!isLoggedIn()) return;
 
-    await this.createUserItem();
+    this._userScoreData = await this.getUserBestScoreWithRank();
 
-    if (!this._userItem) return;
+    if (!this._userScoreData) return;
 
     requestAnimationFrame(() => {
       this.onScroll();
@@ -116,17 +115,6 @@ export default class LeaderboardElement extends LazyItemList {
     }
 
     return response.result;
-  }
-
-  async createUserItem() {
-    const scoreData = await this.getUserBestScoreWithRank();
-    if (!scoreData) return;
-
-    const item = el("leaderboard-item");
-    item.data = scoreData;
-    item.id = "pinned";
-
-    this._userItem = item;
   }
 
   renderItem(item) {
