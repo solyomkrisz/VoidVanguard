@@ -83,6 +83,7 @@ export default class RemoteSaveList extends LazyItemList {
     if (this.itemControls) {
       el.setAttribute("controls", this.itemControls);
     }
+    el.setAttribute("save-type", "remote");
 
     this._byGameId.set(item.game_id, el);
 

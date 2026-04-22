@@ -4,6 +4,10 @@ import { path } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 
 export default class SaveListSlot extends BaseCustomElement {
+  get saveType() {
+    return this.getAttribute("save-type");
+  }
+
   get controlsConfig() {
     const value = this.getAttribute("controls");
     if (!value) return [];
@@ -45,10 +49,10 @@ export default class SaveListSlot extends BaseCustomElement {
   onLoadSaveButtonClick(e) {
     this.dispatchEvent(
       new CustomEvent("save-load-request", {
-        detail: { save: { ...this.data } },
+        detail: { save: { ...this.data }, saveType: this.saveType },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -58,7 +62,7 @@ export default class SaveListSlot extends BaseCustomElement {
         detail: { save: { ...this.data } },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -71,7 +75,7 @@ export default class SaveListSlot extends BaseCustomElement {
       elements.loadSaveButton = el(
         "button",
         { onClick: this.onLoadSaveButtonClick },
-        ["Mentés betöltése"],
+        ["Mentés betöltése"]
       );
 
       this.appendShadowChild(elements.loadSaveButton);

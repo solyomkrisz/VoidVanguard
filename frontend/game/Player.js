@@ -25,6 +25,7 @@ export default class Player extends Spaceship {
     });
 
     this.score = 0;
+    this.scoreTimer = 3;
 
     this.chunk = vec2.create();
     this.setCurrentChunk();
@@ -116,10 +117,10 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation,
+            this.rotation
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
           );
           T += thruster.getTorque(this);
         }
@@ -152,10 +153,10 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation,
+            this.rotation
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
           );
           T += thruster.getTorque(this);
         }
@@ -180,12 +181,19 @@ export default class Player extends Spaceship {
     this.updateAngularVelocity();
     this.updateRotation();
 
+    this.shootCooldown = Math.max(0, this.shootCooldown - dt);
+    this.scoreTimer = Math.max(0, this.scoreTimer - dt);
+
     if (this.shootCooldown <= 0 && activeControls.has(Keyboard.Space)) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
       this.shoot(muzzle, 2, 1);
     }
 
-    this.shootCooldown = Math.max(0, this.shootCooldown - dt);
+    if (this.scoreTimer <= 0) {
+      this.score++;
+      this.scoreTimer = 3;
+      console.log("PLAYER SCORE: ", this.score);
+    }
   }
 
   onPositionChange() {

@@ -19,7 +19,7 @@ import DecorationBlock from "/game/DecorationBlock.js";
 import StarGenerator from "/game/texture/StarGenerator.js";
 import Model from "/game/Model.js";
 import "/ui/component/game/PauseMenu.js";
-import { isLoggedIn, isLoggedInAsync } from "/common/common.js";
+import { getLocalSaves } from "/common/common.js";
 import * as net from "/common/network.js";
 import Save from "/game/Save.js";
 import { setupGame } from "/game/setup/default.js";
@@ -28,7 +28,6 @@ import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 export default class Game extends WebGLCanvas {
   static from(save = null) {
-    console.log(save);
     if (save == null || save.game_state == null) {
       const game = new Game();
       setupGame(game);
@@ -54,6 +53,7 @@ export default class Game extends WebGLCanvas {
 
     this.game_id = game_id || crypto.randomUUID();
     this.loadedSave = null;
+    this.saveType = null;
     this.inSavingProcess = false;
 
     this.UI = {};
@@ -135,6 +135,29 @@ export default class Game extends WebGLCanvas {
     this.update = this.update.bind(this);
   }
 
+  finish() {
+    if (!["local", "remote"].includes(this.saveType)) {
+      ToastManager.REQUEST("Unable to finish game");
+      return;
+    }
+
+    if (this.saveType === "local") {
+      const localSaves = getLocalSaves();
+
+      localSaves.set(this.game_id, {
+        ...this.loadedSave,
+        game_id: this.game_id,
+        game_state: this.exportSave(),
+        is_finished: 1,
+        updated_at: Date.now(),
+      });
+
+      localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
+
+      return;
+    }
+  }
+
   destroy() {
     // from Canvas class
     {
@@ -181,14 +204,17 @@ export default class Game extends WebGLCanvas {
 
     const saveName = formData.get("save_name") || "Unnamed Save";
 
-    const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
-    let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
+    let localSaves = getLocalSaves();
+
+    const existingSave = localSaves.get(this.game_id);
+    const created_at = existingSave.created_at || Date.now();
 
     localSaves.set(this.game_id, {
       game_id: this.game_id,
       save_name: saveName,
       game_state: this.exportSave(),
-      created_at: Date.now(),
+      is_finished: 0,
+      created_at,
       updated_at: Date.now(),
     });
 
@@ -217,22 +243,20 @@ export default class Game extends WebGLCanvas {
 
     if (!response?.success) {
       console.error(
-        `Unable to save game: ${response?.message ? response.message : ""}`,
+        `Unable to save game: ${response?.message ? response.message : ""}`
       );
       ToastManager.REQUEST(
-        `Unable to save game: ${response?.message ? response.message : ""}`,
+        `Unable to save game: ${response?.message ? response.message : ""}`
       );
 
       this.inSavingProcess = false;
       return false;
     }
 
-    console.log(
-      "Game state has been saved remotely as " + formData.get("slot_name"),
-    );
-    ToastManager.REQUEST(
-      "Game state has been saved remotely as " + formData.get("slot_name"),
-    );
+    const saveName = formData.get("save_name");
+
+    console.log("Game state has been saved remotely as " + saveName);
+    ToastManager.REQUEST("Game state has been saved remotely as " + saveName);
 
     this.inSavingProcess = false;
 
@@ -312,7 +336,7 @@ export default class Game extends WebGLCanvas {
   start() {
     if (!this.gl) {
       throw new Error(
-        "GAME-start: Couldn't start game: WebGL hasn't been initalized!",
+        "GAME-start: Couldn't start game: WebGL hasn't been initalized!"
       );
     }
     if (!this.player) {
@@ -392,7 +416,7 @@ export default class Game extends WebGLCanvas {
 
     this.unprocessed = Math.min(
       this.unprocessed,
-      this.maxUpdates * this.timestep,
+      this.maxUpdates * this.timestep
     );
 
     while (this.unprocessed >= this.timestep) {
@@ -525,7 +549,7 @@ export default class Game extends WebGLCanvas {
   createPlayer(model) {
     if (!(model instanceof Model)) {
       throw new Error(
-        "Unable to create player: the provided argument is not a Model",
+        "Unable to create player: the provided argument is not a Model"
       );
     }
 
@@ -539,7 +563,7 @@ export default class Game extends WebGLCanvas {
   addTextureManager(textureManager) {
     if (!(textureManager instanceof TextureManager)) {
       console.warn(
-        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!",
+        "GAME-addTextureManager: Couldn't add texture manager: the given value is not an instance of the TextureManager class!"
       );
       return;
     }
@@ -553,7 +577,7 @@ export default class Game extends WebGLCanvas {
   setDebugPanel(debugPanel) {
     if (!(debugPanel instanceof DebugPanel)) {
       throw new Error(
-        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class.",
+        "GAME-setDebugPanel: The given argument is not an instance of the DebugPanel class."
       );
     }
 
@@ -563,7 +587,7 @@ export default class Game extends WebGLCanvas {
   setDebugOverlay(debugOverlay) {
     if (!(debugOverlay instanceof DebugOverlay)) {
       throw new Error(
-        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class.",
+        "GAME-setDebugOverlay: The given argument is not an instance of the DebugOverlay class."
       );
     }
 
@@ -573,7 +597,7 @@ export default class Game extends WebGLCanvas {
   setBlockStyle(blockStyle) {
     if (!(blockStyle instanceof BlockStyle)) {
       throw new Error(
-        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class.",
+        "GAME-setBlockStyle: The given argument is not an instance of the BlockStyle class."
       );
     }
 
@@ -583,7 +607,7 @@ export default class Game extends WebGLCanvas {
   startDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
       );
       return;
     }
@@ -595,7 +619,7 @@ export default class Game extends WebGLCanvas {
   stopDebugging() {
     if (!this.debugPanel || !(this.debugPanel instanceof DebugPanel)) {
       console.warn(
-        "GAME-stopDebugging: There is no Debug Menu on the Game instance!",
+        "GAME-stopDebugging: There is no Debug Menu on the Game instance!"
       );
       return;
     }

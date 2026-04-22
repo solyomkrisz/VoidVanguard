@@ -6,6 +6,8 @@ export const GET = function (request, response, next) {
   next();
 };
 
+export const PATCH = {};
+
 export const PUT = {
   game_id: {
     in: ["body"],

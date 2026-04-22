@@ -15,13 +15,22 @@ router.get("/", authenticate(), controller.lazySelectByUserId);
 
 router.get("/:id", authenticate(), validator.GET, controller.selectSave);
 
+router.patch(
+  "/",
+  authenticate(),
+  upload.none(),
+  checkSchema(validator.PATCH),
+  handleValidation,
+  controller.patchSave
+);
+
 router.put(
   "/",
   authenticate(),
   upload.none(),
   checkSchema(validator.PUT),
   handleValidation,
-  controller.saveOrUpdate,
+  controller.saveOrUpdate
 );
 
 router.delete(
@@ -30,7 +39,7 @@ router.delete(
   upload.none(),
   checkSchema(validator.DELETE),
   handleValidation,
-  controller.deleteSave,
+  controller.deleteSave
 );
 
 export default router;

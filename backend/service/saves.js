@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import * as CustomError from "../common/CustomError.js";
 import Saves from "../sql/table/Saves.js";
 import Permission from "../common/Permission.js";
-import crypto from "crypto";
+import * as scores from "../service/scores.js";
 
 export async function selectUserSave({ gameId, userId }) {
   const result = await Saves.selectByIdForUser(gameId, userId);
@@ -16,7 +16,7 @@ export async function saveOrUpdate({ userId, role, body }) {
     console.log(
       "No existing save found for gameId " +
         body.game_id +
-        ", creating new one.",
+        ", creating new one."
     );
 
     return await save({ userId, body });
@@ -40,6 +40,15 @@ export async function save({ userId, body }) {
       saveName: body.save_name,
       gameState: JSON.stringify(parsedState),
     });
+
+    // add score
+    if (result.affectedRows === 1) {
+      await scores.setOrUpdateScoreForGame({
+        userId,
+        gameId: body.game_id,
+        score: parsedState.player.score,
+      });
+    }
   } catch (error) {
     if (
       error.code === "ER_DUP_ENTRY" &&
@@ -61,20 +70,7 @@ export async function updateSave({ userId, role, body }) {
   const gameId = body.game_id;
 
   const saveFromDb = await selectUserSave({ gameId, userId });
-  // if (!save) throw CustomError.TEST;
-
-  if (!saveFromDb) {
-    console.log("PATCH de nincs ilyen " + gameId + "game id-vel mentés.");
-
-    const saveName = body.save_name;
-    const gameState = body.game_state;
-
-    if (!saveName || !gameState) {
-      throw CustomError.TEST;
-    }
-
-    return await save({ userId, body });
-  }
+  if (!save) throw CustomError.TEST;
 
   const updates = {};
 
@@ -96,14 +92,26 @@ export async function updateSave({ userId, role, body }) {
 
   const changedColumns = Object.keys(updates);
 
-  if (!changedColumns.length) {
-    throw CustomError.NO_DATA_CHANGE;
-  }
+  if (!changedColumns.length) throw CustomError.NO_DATA_CHANGE;
 
   let result;
 
   try {
     result = await Saves.update(userId, gameId, updates);
+
+    // update score
+    if (result.affectedRows === 1) {
+      const parsedState =
+        typeof body.game_state === "string"
+          ? JSON.parse(body.game_state)
+          : body.game_state;
+
+      await scores.setOrUpdateScoreForGame({
+        userId,
+        gameId,
+        score: parsedState.player.score,
+      });
+    }
   } catch (error) {
     if (
       error.code === "ER_DUP_ENTRY" &&

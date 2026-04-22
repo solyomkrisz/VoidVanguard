@@ -99,6 +99,7 @@ export default class LocalSaveList extends LazyItemList {
     if (this.itemControls) {
       el.setAttribute("controls", this.itemControls);
     }
+    el.setAttribute("save-type", "local");
 
     this._byGameId.set(item.game_id, el);
 

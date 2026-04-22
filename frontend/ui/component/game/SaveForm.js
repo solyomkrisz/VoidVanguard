@@ -34,7 +34,11 @@ export default class SaveForm extends BaseCustomElement {
     on("logout", this.onLogout);
 
     this.dispatchEvent(
-      new CustomEvent("save-form-connected", { detail: { form: this } }),
+      new CustomEvent("save-form-connected", {
+        detail: { form: this },
+        bubbles: true,
+        composed: true,
+      })
     );
   }
 
@@ -54,7 +58,7 @@ export default class SaveForm extends BaseCustomElement {
         detail: { formData, onDone: this.onDone },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
 
     this._elements.submitButton.disabled = true;
@@ -84,11 +88,8 @@ export default class SaveForm extends BaseCustomElement {
     `);
 
     this._elements.submitButton = this.queryShadowSelector("button");
-    this._elements.gameIdInput = this.queryShadowSelector(
-      "input[name='game_id']",
-    );
     this._elements.saveNameInput = this.queryShadowSelector(
-      "input[name='save_name']",
+      "input[name='save_name']"
     );
     this._elements.selectInput = this.queryShadowSelector("select");
     this._elements.form = this.queryShadowSelector("form");
@@ -106,7 +107,6 @@ export default class SaveForm extends BaseCustomElement {
 
     if (!data || !data.game_id || !data.save_name) return;
 
-    this._elements.gameIdInput.value = data.game_id;
     this._elements.saveNameInput.value = data.save_name;
   }
 

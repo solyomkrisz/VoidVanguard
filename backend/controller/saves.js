@@ -37,6 +37,8 @@ export async function selectSave(request, response) {
   }
 }
 
+export async function patchSave(request, response) {}
+
 export async function saveOrUpdate(request, response) {
   try {
     const gameId = await service.saveOrUpdate({

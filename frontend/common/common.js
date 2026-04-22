@@ -19,7 +19,7 @@ export function getMinMaxXY(
   target,
   objects,
   getX = (o) => o.localPosition[0],
-  getY = (o) => o.localPosition[1],
+  getY = (o) => o.localPosition[1]
 ) {
   let minX = Infinity;
   let minY = Infinity;
@@ -154,7 +154,7 @@ export async function setUser(userdata, { origin = "unknown" } = {}) {
       },
       bubbles: true,
       composed: true,
-    }),
+    })
   );
 }
 
@@ -309,7 +309,16 @@ export function formatDate(ts) {
   const pad = (n) => String(n).padStart(2, "0");
 
   return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
-    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+      date.getSeconds()
+    )}`
   );
+}
+
+export function getLocalSaves() {
+  const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
+  return new Map(Array.isArray(parsed) ? parsed : []);
 }
