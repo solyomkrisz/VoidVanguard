@@ -177,7 +177,10 @@ export default class LazyItemList extends HTMLElement {
     const page = e.detail?.page;
     if (!page) return;
 
+    if (this._loading) return;
+
     this.showPage(page);
+    e.detail?.onDone?.();
   }
 
   async loadMore(e) {

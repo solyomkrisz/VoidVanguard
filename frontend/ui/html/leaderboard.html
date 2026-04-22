@@ -3,7 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/leaderboard.css" />
     <title>Document</title>
   </head>
-  <body></body>
+  <body>
+    <leaderboard-element src="/api/scores/leaderboard"></leaderboard-element>
+
+    <script type="module">
+      import { autologin } from "/common/common.js";
+      import "/ui/component/misc/LeaderboardElement.js";
+
+      await autologin();
+    </script>
+  </body>
 </html>
