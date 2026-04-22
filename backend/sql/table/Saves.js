@@ -10,9 +10,9 @@ class Saves extends Table {
   constructor() {
     super({
       columns: [
-        new Column("id"),
+        new Column("game_id"),
         new Column("user_id"),
-        new Column("slot_name").grant(Role.USER, Permission.W),
+        new Column("save_name").grant(Role.USER, Permission.W),
         new Column("game_state").grant(Role.USER, Permission.W),
         new Column("created_at"),
         new Column("updated_at"),
@@ -20,31 +20,33 @@ class Saves extends Table {
     });
   }
 
-  async insert({ id, userId, slotName, gameState, stateHash }) {
+  async insert({ gameId, userId, saveName, gameState }) {
     const [result] = await execute(
-      "INSERT INTO saves(id, user_id, slot_name, game_state, state_hash) VALUES(?, ?, ?, ?, ?)",
-      [id, userId, slotName, gameState, stateHash],
+      "INSERT INTO saves(game_id, user_id, save_name, game_state) VALUES(?, ?, ?, ?)",
+      [gameId, userId, saveName, gameState],
     );
     return result;
   }
 
-  async getBySlotName(userId, slotName) {
+  async getBySaveName(userId, saveName) {
     const [rows] = await execute(
-      "SELECT * FROM saves WHERE user_id = ? AND slot_name = ?",
-      [userId, slotName],
+      "SELECT * FROM saves WHERE user_id = ? AND save_name = ?",
+      [userId, saveName],
     );
     return rows.length ? rows : null;
   }
 
-  async selectById(saveId) {
-    const [rows] = await execute("SELECT * FROM saves WHERE id = ?", [saveId]);
+  async selectById(gameId) {
+    const [rows] = await execute("SELECT * FROM saves WHERE game_id = ?", [
+      gameId,
+    ]);
     return rows.length ? rows : null;
   }
 
-  async selectByIdForUser(saveId, userId) {
+  async selectByIdForUser(gameId, userId) {
     const [rows] = await execute(
-      "SELECT * FROM saves WHERE id = ? AND user_id = ?",
-      [saveId, userId],
+      "SELECT * FROM saves WHERE game_id = ? AND user_id = ?",
+      [gameId, userId],
     );
     return rows.length ? rows[0] : null;
   }
@@ -74,24 +76,24 @@ class Saves extends Table {
     });
   }
 
-  async delete(userId, saveId) {
+  async delete(userId, gameId) {
     const [result] = await execute(
-      "DELETE FROM saves WHERE id = ? AND user_id = ?",
-      [saveId, userId],
+      "DELETE FROM saves WHERE game_id = ? AND user_id = ?",
+      [gameId, userId],
     );
     return result;
   }
 
-  async update(userId, saveId, updates) {
+  async update(userId, gameId, updates) {
     const columns = Object.keys(updates);
 
     if (!columns.length) return false;
 
     const set = columns.map((i) => `${i} = ?`).join(",");
-    const values = [...Object.values(updates), saveId, userId];
+    const values = [...Object.values(updates), gameId, userId];
 
     const [result] = await execute(
-      `UPDATE saves SET ${set} WHERE id = ? AND user_id = ?`,
+      `UPDATE saves SET ${set} WHERE game_id = ? AND user_id = ?`,
       values,
     );
 

@@ -177,46 +177,26 @@ CREATE TABLE reactions(
 );
 
 CREATE TABLE saves(
-    id CHAR(36),
-    user_id CHAR(36),
-    slot_name VARCHAR(30),
-    game_state JSON,
-    state_hash CHAR(64) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE
-        ON UPDATE RESTRICT,
-    UNIQUE KEY unique_user_state (user_id, state_hash)
-);
-
-CREATE TABLE challenges(
-    id CHAR(36) PRIMARY KEY,
-    creator_id CHAR(36) NOT NULL,
-    title VARCHAR(100) NOT NULL,
-    description TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (creator_id) REFERENCES users(id)
-        ON DELETE CASCADE
-        ON UPDATE RESTRICT
-);
-
-CREATE TABLE scores(
-    save_id CHAR(36) NOT NULL,
+    game_id CHAR(36),
     user_id CHAR(36) NOT NULL,
-    score INT DEFAULT 0,
+    save_name VARCHAR(30),
+    game_state JSON,
+    is_finished BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (save_id),
+    PRIMARY KEY (game_id),
     FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
         ON UPDATE RESTRICT,
-    FOREIGN KEY (save_id) REFERENCES saves(id)
-        ON DELETE CASCADE
-        ON UPDATE RESTRICT
+    UNIQUE KEY unique_user_save_name (user_id, save_name)
+);
+
+CREATE TABLE scores (
+    game_id CHAR(36) PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
+    score INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (game_id) REFERENCES saves(game_id)
 );

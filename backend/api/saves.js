@@ -15,22 +15,13 @@ router.get("/", authenticate(), controller.lazySelectByUserId);
 
 router.get("/:id", authenticate(), validator.GET, controller.selectSave);
 
-router.post(
+router.put(
   "/",
   authenticate(),
   upload.none(),
-  checkSchema(validator.POST),
+  checkSchema(validator.PUT),
   handleValidation,
-  controller.saveGame,
-);
-
-router.patch(
-  "/",
-  authenticate(),
-  upload.none(),
-  checkSchema(validator.PATCH),
-  handleValidation,
-  controller.updateSave,
+  controller.saveOrUpdate,
 );
 
 router.delete(
