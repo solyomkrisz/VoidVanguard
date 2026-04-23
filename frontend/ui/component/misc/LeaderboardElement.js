@@ -6,6 +6,10 @@ import { el } from "/ui/UI.js";
 import "/ui/component/misc/LeaderboardItem.js";
 
 export default class LeaderboardElement extends LazyItemList {
+  get view() {
+    return this.getAttribute("view");
+  }
+
   constructor() {
     super();
 
@@ -156,6 +160,12 @@ export default class LeaderboardElement extends LazyItemList {
 
   extractItems(response) {
     return response?.result?.scores;
+  }
+
+  getURL() {
+    const url = new URL(this.src, window.location.origin);
+    url.searchParams.set("view", this.view);
+    return url;
   }
 }
 

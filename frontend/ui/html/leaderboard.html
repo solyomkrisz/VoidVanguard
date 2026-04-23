@@ -3,18 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/viewSwitcher.css" />
     <link rel="stylesheet" href="/ui/style/leaderboard.css" />
     <title>Document</title>
   </head>
   <body>
-    <leaderboard-element
-      controls="scroll"
-      src="/api/scores/leaderboard"
-    ></leaderboard-element>
+    <view-switcher initial="public-leaderboard" no-cache>
+      <template id="public-leaderboard" data-name="Nyilvános ranglétra">
+        <leaderboard-element
+          controls="scroll"
+          src="/api/scores/leaderboard"
+          view="public"
+        ></leaderboard-element>
+      </template>
+      <template id="friend-leaderboard" data-name="Barát ranglétra">
+        <leaderboard-element
+          controls="scroll"
+          src="/api/scores/leaderboard"
+          view="private"
+        ></leaderboard-element>
+      </template>
+    </view-switcher>
 
     <script type="module">
       import { autologin } from "/common/common.js";
       import "/ui/component/misc/LeaderboardElement.js";
+      import "/ui/component/layout/ViewSwitcher.js";
 
       await autologin();
     </script>

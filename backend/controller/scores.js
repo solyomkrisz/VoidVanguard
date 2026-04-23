@@ -4,7 +4,15 @@ import * as CustomError from "../common/CustomError.js";
 
 export async function lazySelectBestUserScores(request, response) {
   try {
+    const view = request?.query?.view || "public";
+
+    if (view !== "public" && !request?.targetUser?.id) {
+      throw CustomError.UNAUTHORIZED;
+    }
+
     const result = await service.lazySelectBestUserScores({
+      userId: request?.targetUser?.id,
+      view,
       page: Number(request.query?.page || 1),
       limit: Number(request.query?.limit || 20),
     });

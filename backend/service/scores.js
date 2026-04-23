@@ -1,16 +1,31 @@
 import Scores from "../sql/table/Scores.js";
 
-export async function lazySelectBestUserScores({ page = 1, limit = 20 }) {
+export async function lazySelectBestUserScores({
+  userId = null,
+  view = "public",
+  page = 1,
+  limit = 20,
+}) {
   const offset = (page - 1) * limit;
 
-  const scores = await Scores.lazySelectBestUserScoreWithoutRank({
-    limit,
-    offset,
-  });
+  let scores, total;
 
-  console.log(scores);
-
-  const total = await Scores.getTotalBestScores();
+  if (view === "public") {
+    scores = await Scores.lazySelectBestUserScoresWithoutRankPublic({
+      limit,
+      offset,
+    });
+    total = await Scores.getTotalBestScoresPublic();
+  } else if (view === "private" && userId) {
+    scores = await Scores.lazySelectBestUserScoresWithoutRankPrivate(userId, {
+      limit,
+      offset,
+    });
+    total = await Scores.getTotalBestScoresPrivate(userId);
+  } else {
+    scores = [];
+    total = 0;
+  }
 
   return {
     scores,

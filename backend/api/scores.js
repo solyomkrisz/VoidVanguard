@@ -18,6 +18,7 @@ router.get(
     onInvalidAccessToken: (_, _1, next) => next(),
   }),
   checkSchema(validator.GET),
+  handleValidation,
   controller.lazySelectBestUserScores,
 );
 

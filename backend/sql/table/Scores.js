@@ -41,30 +41,40 @@ class Scores extends Table {
   async selectBestUserScoreWithRank(userId) {
     const [rows] = await execute(
       `
-      SELECT user_id, best_score, rank FROM (
         SELECT
-          user_id,
-          MAX(score) AS best_score,
-          RANK() OVER (ORDER BY MAX(score) DESC) AS rank
-        FROM scores
-        GROUP BY user_id
-      ) t
-      WHERE user_id = ?
-    `,
+          s.user_id,
+          MAX(s.score) AS best_score,
+          COALESCE(p.display_name, u.username) AS name,
+          RANK() OVER (ORDER BY MAX(s.score) DESC) AS rank
+        FROM scores s
+        INNER JOIN users u ON u.id = s.user_id
+        LEFT JOIN profiles p ON p.user_id = u.id
+        GROUP BY s.user_id, u.username, p.display_name
+        HAVING s.user_id = ?
+      `,
       [userId],
     );
+
     return rows.length ? rows[0] : null;
   }
 
-  async lazySelectBestUserScoreWithoutRank({ limit = null, offset = null }) {
+  async lazySelectBestUserScoresWithoutRankPublic({
+    limit = null,
+    offset = null,
+  }) {
     const sql = `
-    SELECT user_id, best_score
+      SELECT
+        t.user_id,
+        COALESCE(p.display_name, u.username) AS name,
+        t.best_score
       FROM (
         SELECT user_id, MAX(score) AS best_score
         FROM scores
         GROUP BY user_id
       ) t
-      ORDER BY best_score DESC
+      INNER JOIN users u ON u.id = t.user_id
+      LEFT JOIN profiles p ON p.user_id = u.id
+      ORDER BY t.best_score DESC
     `;
 
     const rows = await runQueryWithPagination(sql, [], { limit, offset });
@@ -72,10 +82,62 @@ class Scores extends Table {
     return rows;
   }
 
-  async getTotalBestScores() {
+  async getTotalBestScoresPublic() {
     const [[{ count }]] = await execute(
       "SELECT COUNT(DISTINCT user_id) AS count FROM scores;",
     );
+    return count;
+  }
+
+  async lazySelectBestUserScoresWithoutRankPrivate(
+    userId,
+    { limit = null, offset = null },
+  ) {
+    const sql = `
+      SELECT 
+        scores.user_id,
+        COALESCE(p.display_name, u.username) AS name,
+        MAX(scores.score) AS best_score
+      FROM scores
+      INNER JOIN users u ON u.id = scores.user_id
+      LEFT JOIN profiles p ON p.user_id = u.id
+      LEFT JOIN friends
+        ON (
+          (friends.initiator_id = ? AND friends.recipient_id = scores.user_id)
+          OR
+          (friends.recipient_id = ? AND friends.initiator_id = scores.user_id)
+        )
+      WHERE 
+        (friends.status = 'accepted')
+        OR scores.user_id = ?
+      GROUP BY scores.user_id, u.username, p.display_name
+      ORDER BY best_score DESC
+    `;
+
+    const rows = await runQueryWithPagination(sql, [userId, userId, userId], {
+      limit,
+      offset,
+    });
+
+    return rows;
+  }
+
+  async getTotalBestScoresPrivate(userId) {
+    const [[{ count }]] = await execute(
+      `
+      SELECT COUNT(DISTINCT scores.user_id) AS count
+      FROM scores
+      INNER JOIN friends
+        ON (
+          (friends.initiator_id = ? AND friends.recipient_id = scores.user_id)
+          OR
+          (friends.recipient_id = ? AND friends.initiator_id = scores.user_id)
+        )
+      WHERE friends.status = 'accepted';
+      `,
+      [userId, userId],
+    );
+
     return count;
   }
 

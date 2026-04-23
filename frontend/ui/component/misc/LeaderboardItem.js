@@ -26,8 +26,9 @@ export default class LeaderboardItem extends HTMLElement {
   build() {
     if (this._built) return;
 
+    this._elements.name = this.appendChild(el("div"));
     this._elements.score = this.appendChild(el("div"));
-    this._elements.userId = this.appendChild(el("div"));
+    // this._elements.userId = this.appendChild(el("div"));
 
     this._built = true;
   }
@@ -35,8 +36,9 @@ export default class LeaderboardItem extends HTMLElement {
   update() {
     if (!this._built) return;
 
-    this._elements.userId.textContent = `User ID: ${this.data?.user_id}`;
+    this._elements.name.textContent = this.data?.name;
     this._elements.score.textContent = `Best Score: ${this.data?.best_score}`;
+    // this._elements.userId.textContent = `User ID: ${this.data?.user_id}`;
   }
 }
 
