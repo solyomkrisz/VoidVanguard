@@ -19,7 +19,7 @@ import DecorationBlock from "/game/DecorationBlock.js";
 import StarGenerator from "/game/texture/StarGenerator.js";
 import Model from "/game/Model.js";
 import "/ui/component/game/PauseMenu.js";
-import { isLoggedIn, isLoggedInAsync } from "/common/common.js";
+import { getLocalSaves } from "/common/common.js";
 import * as net from "/common/network.js";
 import Save from "/game/Save.js";
 import { setupGame } from "/game/setup/default.js";
@@ -29,30 +29,36 @@ import "/ui/component/game/GameControllerContainer.js";
 import "/ui/component/game/PauseButton.js";
 
 export default class Game extends WebGLCanvas {
-  static from(gameState = null) {
-    if (gameState === null) {
+  static from(save = null) {
+    if (save == null || save.game_state == null) {
       const game = new Game();
       setupGame(game);
       return game;
     }
 
     let parsed;
-    if (typeof gameState === "string") parsed = Save.parse(gameState);
-    else parsed = gameState;
+    if (typeof save.game_state === "string")
+      parsed = Save.parse(save.game_state);
+    else parsed = save.game_state;
 
-    const game = new Game(parsed.seed);
+    const game = new Game(parsed.seed, parsed.game_id);
+    game.loadedSave = save;
     setupGame(game, new Model(Save.recoverPlayerModel(parsed.player.model)));
 
+    game.player.score = parsed.player.score;
     game.player.teleportTo(...parsed.player.position);
 
     return game;
   }
 
-  constructor(seed = null) {
+  constructor(seed = null, game_id = null) {
     super();
 
-    this.dirty = true;
+    this.game_id = game_id || crypto.randomUUID();
+    this.loadedSave = null;
+    this.saveType = null;
     this.inSavingProcess = false;
+    this.isFinished = false;
 
     this.UI = {};
     this.buildUI();
@@ -135,6 +141,58 @@ export default class Game extends WebGLCanvas {
     this.update = this.update.bind(this);
   }
 
+  async finishSave() {
+    // Játék befejezése ha nem volt mentve
+    if (!["local", "remote"].includes(this.saveType)) {
+      ToastManager.REQUEST("Unable to finish game");
+      return;
+    }
+
+    // Ha mentve volt
+    if (this.saveType === "local") {
+      const localSaves = getLocalSaves();
+
+      localSaves.set(this.game_id, {
+        ...this.loadedSave,
+        game_id: this.game_id,
+        game_state: this.exportSave(),
+        is_finished: 1,
+        updated_at: Date.now(),
+      });
+
+      localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
+
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.set("game_id", this.game_id);
+    formData.set("is_finished", "1");
+    formData.set("game_state", JSON.stringify(this.exportSave()));
+
+    const response = await net.send("/api/saves", {
+      method: "PATCH",
+      body: formData,
+    });
+
+    if (!response?.success) {
+      console.error(
+        `Unable to finish game: ${response?.message ? response.message : ""}`,
+      );
+      ToastManager.REQUEST(
+        `Unable to finish game: ${response?.message ? response.message : ""}`,
+      );
+
+      return;
+    }
+
+    console.log("Game has been marked as finished remotely.");
+    ToastManager.REQUEST("Game has been marked as finished remotely.");
+
+    // kiléptetés vagy endscreen mutatása
+  }
+
   destroy() {
     // from Canvas class
     {
@@ -178,7 +236,10 @@ export default class Game extends WebGLCanvas {
   }
 
   exportSave() {
+    this.game_id = this.game_id || crypto.randomUUID();
+
     return {
+      game_id: this.game_id,
       seed: this.seed,
       player: this.player.exportSave(),
       // enemies: this.enemies,
@@ -186,94 +247,46 @@ export default class Game extends WebGLCanvas {
     };
   }
 
-  localSave(formData, gameState, isSaveRelocation) {
+  localSave(formData) {
     if (this.inSavingProcess) return;
     this.inSavingProcess = true;
 
-    const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
-    let localSaves = new Map(Array.isArray(parsed) ? parsed : []);
+    const saveName = formData.get("save_name") || "Unnamed Save";
 
-    console.log(formData);
+    let localSaves = getLocalSaves();
 
-    const slotName = formData.get("slot_name"); // slot_name amit a form ad
-    const renameOnly = formData.get("rename_only") === "on";
-    const oldSlotName = formData.get("save_id");
-    console.log("OLDSLOTNAME: ", oldSlotName);
+    const existingSave = localSaves.get(this.game_id);
+    const created_at = existingSave?.created_at || Date.now();
 
-    if (!slotName) {
-      console.error("Unable to save game: no slot name provided");
-      ToastManager.REQUEST("Unable to save game: no slot name provided");
-
-      this.inSavingProcess = false;
-      return false;
-    }
-
-    if (renameOnly) {
-      if (!oldSlotName || !localSaves.has(oldSlotName)) {
-        console.error("Cannot rename: no existing save selected");
-        ToastManager.REQUEST("Cannot rename: no existing save selected");
-        this.inSavingProcess = false;
-        return false;
-      }
-      const existing = localSaves.get(oldSlotName);
-      localSaves.delete(oldSlotName);
-      localSaves.set(slotName, {
-        ...existing,
-        slot_name: slotName,
-        updated_at: Date.now(),
-      });
-    } else {
-      console.log("Saving local save with slot name: ", slotName);
-
-      const existing = localSaves.get(slotName);
-      const now = Date.now();
-
-      localSaves.set(slotName, {
-        user_id: window?.VoidVanguard?.user?.id || null,
-        slot_name: slotName,
-        game_state: gameState,
-        created_at: existing?.created_at || now,
-        updated_at: now,
-      });
-    }
+    localSaves.set(this.game_id, {
+      game_id: this.game_id,
+      save_name: saveName,
+      game_state: this.exportSave(),
+      is_finished: 0,
+      created_at,
+      updated_at: Date.now(),
+    });
 
     window.localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
 
-    console.log("Game state has been saved locally as " + slotName);
-    ToastManager.REQUEST("Game state has been saved locally as " + slotName);
+    console.log("Game state has been saved locally as " + saveName);
+    ToastManager.REQUEST("Game state has been saved locally as " + saveName);
 
     this.inSavingProcess = false;
-    if (!isSaveRelocation) {
-      this.dirty = false;
-    }
 
     return true;
   }
 
-  async remoteSave(formData, gameState, isSaveRelocation) {
+  async remoteSave(formData) {
     if (this.inSavingProcess) return;
     this.inSavingProcess = true;
 
-    const saveId = formData.get("save_id");
-    const renameOnly = formData.get("rename_only") === "on";
-
-    if (renameOnly && !saveId) {
-      console.error("Cannot rename without selecting a save");
-      ToastManager.REQUEST("Cannot rename without selecting a save");
-      this.inSavingProcess = false;
-      return false;
-    }
-
-    // Ha eventből jön (helyi mentést akarunk feltölteni, akkor alapból string)
-    const stringifiedGameState =
-      typeof gameState === "string" ? gameState : JSON.stringify(gameState);
-
-    if (!renameOnly) {
-      formData.append("game_state", stringifiedGameState); // ha a konzolon azt mutatja hogy a formData-ban egy adott ponton van game_state akkor az azért van mert itt tényleg hozzáadjuk és a js működése miatt visszamenőleg lefrissíti a consoleon
-    }
+    console.log(this.game_id);
+    formData.set("game_id", this.game_id);
+    formData.set("game_state", JSON.stringify(this.exportSave()));
 
     const response = await net.send("/api/saves", {
-      method: saveId ? "PATCH" : "POST",
+      method: "PUT",
       body: formData,
     });
 
@@ -289,94 +302,33 @@ export default class Game extends WebGLCanvas {
       return false;
     }
 
-    if (!isSaveRelocation) {
-      this.dirty = false;
-    }
+    const saveName = formData.get("save_name");
 
-    console.log(
-      "Game state has been saved remotely as " + formData.get("slot_name"),
-    );
-    ToastManager.REQUEST(
-      "Game state has been saved remotely as " + formData.get("slot_name"),
-    );
+    console.log("Game state has been saved remotely as " + saveName);
+    ToastManager.REQUEST("Game state has been saved remotely as " + saveName);
 
     this.inSavingProcess = false;
 
     return true;
   }
 
-  async save(data) {
-    const formData = data?.formData;
-    const type = data?.type;
-
-    if (!formData || !type) {
+  async save(formData) {
+    if (!formData) {
       console.error("Unable to save game: invalid format");
       ToastManager.REQUEST("Unable to save game: invalid format");
 
-      return [false, data];
+      return false;
     }
 
-    let isSaveRelocation;
-
-    if (
-      ["local", "remote"].includes(data?.currentType) &&
-      data.currentType !== type
-    ) {
-      isSaveRelocation = true;
-    } else {
-      isSaveRelocation = false;
-    }
-
-    console.log(this.inSavingProcess, isSaveRelocation, this.dirty);
-    const renameOnly = formData.get("rename_only") === "on";
-
-    // || (!isSaveRelocation && !this.dirty && !renameOnly)
-    if (this.inSavingProcess) {
-      console.warn(
-        "Unable to save game: it is already being saved or hasn't changed since last save",
-      );
-      ToastManager.REQUEST(
-        "Unable to save game: it is already being saved or hasn't changed since last save",
-      );
-
-      return [false, data];
-    }
-
-    let gameState;
-
-    // A mentés vagy csak helyileg van vagy csak távoliag így az id-je oda ahova menteni akarjuk nem létezik
-    // ha nem töröljük ki azt hiszi a rendszer hogy PATCH-elni akarunk és hibát ad
-    if (isSaveRelocation) {
-      formData.delete("save_id");
-
-      if (!data?.game_state) {
-        console.error("Unable to relocate save: no game state available");
-        ToastManager.REQUEST(
-          "Unable to relocate save: no game state available",
-        );
-
-        return [false, data];
-      }
-
-      gameState = data.game_state;
-    } else {
-      gameState = this.exportSave();
-    }
-
-    let success;
+    const type = formData.get("save_type") || "local";
 
     if (type === "local") {
-      success = this.localSave(formData, gameState, isSaveRelocation);
+      return this.localSave(formData);
     } else if (type === "remote") {
-      success = await this.remoteSave(formData, gameState, isSaveRelocation);
-    } else {
-      console.error("Unable to save game: invalid save location");
-      ToastManager.REQUEST("Unable to save game: invalid save location");
-
-      return [false, data];
+      return await this.remoteSave(formData);
     }
 
-    return [success, data];
+    return false;
   }
 
   // prettier-ignore

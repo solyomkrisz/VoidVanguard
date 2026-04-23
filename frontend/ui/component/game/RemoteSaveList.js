@@ -14,22 +14,19 @@ export default class RemoteSaveList extends LazyItemList {
     super();
 
     this._elements = {};
-    this._byId = new Map();
+    this._byGameId = new Map();
 
     this.onSaveDelete = this.onSaveDelete.bind(this);
-    this.onSlotSelect = this.onSlotSelect.bind(this);
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
-    this.removeSelection = this.removeSelection.bind(this);
-    this.addSelection = this.addSelection.bind(this);
   }
 
   async onSaveDelete(e) {
-    const saveId = e?.detail?.saveId;
-    if (!saveId) return;
+    const gameId = e?.detail?.save?.game_id;
+    if (!gameId) return;
 
     const formData = new FormData();
-    formData.append("saveId", saveId);
+    formData.append("game_id", gameId);
 
     const response = await net.send("/api/saves", {
       method: "DELETE",
@@ -48,11 +45,11 @@ export default class RemoteSaveList extends LazyItemList {
       return;
     }
 
-    this._byId.get(saveId)?.remove?.();
-    this._byId.delete(saveId);
+    this._byGameId.get(gameId)?.remove?.();
+    this._byGameId.delete(gameId);
 
     if (this.controls === "pagination") {
-      this._byId.clear();
+      this._byGameId.clear();
       this.reloadCurrentPage();
     }
 
@@ -60,44 +57,6 @@ export default class RemoteSaveList extends LazyItemList {
       new CustomEvent("save-deleted", {
         detail: {
           saveId,
-        },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
-  toggleSelectedSlotHighlight(id) {
-    const element = this._byId.get(id);
-    element && element?.toggleSelection();
-  }
-
-  removeSelection(slot) {
-    if (slot.type !== "remote") return;
-
-    const element = this._byId.get(slot.slotData.id);
-    element && element?.removeSelection();
-  }
-
-  addSelection(slot) {
-    if (slot.type !== "remote") return;
-
-    const element = this._byId.get(slot.slotData.id);
-    element && element?.addSelection();
-  }
-
-  onSlotSelect(e) {
-    e.stopPropagation();
-
-    this.dispatchEvent(
-      new CustomEvent("slot-select-verification-request", {
-        detail: {
-          slot: {
-            slotData: e?.detail?.slotData,
-            type: "remote",
-          },
-          removeSelection: this.removeSelection,
-          addSelection: this.addSelection,
         },
         bubbles: true,
         composed: true,
@@ -113,7 +72,6 @@ export default class RemoteSaveList extends LazyItemList {
     super.connectedCallback?.();
 
     this.addEventListener("save-delete", this.onSaveDelete);
-    this.addEventListener("slot-select", this.onSlotSelect);
 
     on("login", this.onLogin);
     on("logout", this.onLogout);
@@ -123,7 +81,6 @@ export default class RemoteSaveList extends LazyItemList {
     super.disconnectedCallback?.();
 
     this.removeEventListener("save-delete", this.onSaveDelete);
-    this.removeEventListener("slot-select", this.onSlotSelect);
 
     off("login", this.onLogin);
     off("logout", this.onLogout);
@@ -136,8 +93,9 @@ export default class RemoteSaveList extends LazyItemList {
     if (this.itemControls) {
       el.setAttribute("controls", this.itemControls);
     }
+    el.setAttribute("save-type", "remote");
 
-    this._byId.set(item.id, el);
+    this._byGameId.set(item.game_id, el);
 
     return el;
   }

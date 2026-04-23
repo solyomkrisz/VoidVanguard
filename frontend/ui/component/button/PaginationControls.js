@@ -20,16 +20,21 @@ export default class PaginationControls extends HTMLElement {
     if (page < 1 || page > this._totalPages || page === this._currentPage)
       return;
 
-    this._currentPage = page;
-    this.setAttribute("page", page);
+    // this._currentPage = page;
+    // this.setAttribute("page", page);
 
     this.dispatchEvent(
       new CustomEvent("page-request", {
-        detail: { page },
+        detail: { page, onDone: () => this.onSuccessfulPageLoad(page) },
         bubbles: true,
         composed: true,
       }),
     );
+  }
+
+  onSuccessfulPageLoad(page) {
+    this._currentPage = page;
+    this.setAttribute("page", page);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

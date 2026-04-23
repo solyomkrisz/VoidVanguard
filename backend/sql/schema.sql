@@ -177,17 +177,32 @@ CREATE TABLE reactions(
 );
 
 CREATE TABLE saves(
-    id CHAR(36),
-    user_id CHAR(36),
-    slot_name VARCHAR(30),
+    game_id CHAR(36),
+    user_id CHAR(36) NOT NULL,
+    save_name VARCHAR(30),
     game_state JSON,
-    state_hash CHAR(64) NOT NULL,
+    is_finished BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (id),
+    PRIMARY KEY (game_id),
     FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
         ON UPDATE RESTRICT,
-    UNIQUE KEY unique_user_state (user_id, state_hash)
+    UNIQUE KEY unique_user_save_name (user_id, save_name)
+);
+
+CREATE TABLE scores (
+    game_id CHAR(36) PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
+    score INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (game_id) REFERENCES saves(game_id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
 );
