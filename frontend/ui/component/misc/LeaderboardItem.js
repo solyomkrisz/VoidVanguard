@@ -26,8 +26,8 @@ export default class LeaderboardItem extends HTMLElement {
   build() {
     if (this._built) return;
 
-    this._elements.userId = this.appendChild(el("div"));
     this._elements.score = this.appendChild(el("div"));
+    this._elements.userId = this.appendChild(el("div"));
 
     this._built = true;
   }

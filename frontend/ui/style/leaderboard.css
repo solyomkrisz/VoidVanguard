@@ -1,6 +1,6 @@
 leaderboard-element .item-container > * {
   display: block;
-  margin-block: 10000px;
+  /* margin-block: 10000px; */
 }
 
 leaderboard-element .top-pin-container {
@@ -11,4 +11,11 @@ leaderboard-element .top-pin-container {
 leaderboard-element .bottom-pin-container {
   position: fixed;
   bottom: 0;
+}
+
+leaderboard-item {
+  display: flex !important;
+  gap: 15px;
+  padding: 20px;
+  font-size: 22px;
 }

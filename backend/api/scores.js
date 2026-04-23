@@ -13,7 +13,10 @@ const router = express.Router();
 
 router.get(
   "/leaderboard",
-  authenticate(),
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
   checkSchema(validator.GET),
   controller.lazySelectBestUserScores,
 );

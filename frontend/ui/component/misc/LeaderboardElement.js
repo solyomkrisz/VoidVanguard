@@ -11,6 +11,7 @@ export default class LeaderboardElement extends LazyItemList {
 
     this._elements = {};
     this._userScoreData = null;
+    this._userPinNode = null;
     this._byUserId = new Map();
 
     this.onLogin = this.onLogin.bind(this);
@@ -23,44 +24,58 @@ export default class LeaderboardElement extends LazyItemList {
   }
 
   onLogout() {
-    this.unpinUser(this._byUserId.get(this._userScoreData?.user_id));
+    this.unpinUser();
     this._userScoreData = null;
   }
 
   onScroll(e) {
     if (!this._userScoreData) return;
 
-    const node = this._byUserId.get(this._userScoreData?.user_id);
-    const visible = isInViewport(node);
+    const originalNode = this.getOriginalNode();
+    const visible = isInViewport(originalNode);
 
     if (visible) {
-      this.unpinUser(node);
+      this.unpinUser();
       return;
     }
 
     // ha nem látható és felfele van
-    if (node.getBoundingClientRect().top < 0) {
-      this.pinUser(node, "top");
-      // ha nem látható és nem felfele van (akkor is igaz ha szimplán még nem töltődött le)
+    if (originalNode && originalNode.getBoundingClientRect().top < 0) {
+      this.pinUser("top");
+      // ha nem látható és nem felfele van (akkor is igaz ha szimplán még nem töltődött le, vagyis mindenképpen lentebb van)
     } else {
-      this.pinUser(node, "bottom");
+      this.pinUser("bottom");
     }
   }
 
-  unpinUser(node) {
-    node.style.visibility = "visible";
+  getOriginalNode() {
+    return this._byUserId.get(this._userScoreData.user_id) || null;
+  }
+
+  unpinUser() {
+    if (this._userScoreData) {
+      const originalNode = this.getOriginalNode();
+
+      if (originalNode) {
+        originalNode.style.visibility = "visible";
+      }
+    }
+
     this._elements.topPinContainer.textContent = "";
     this._elements.bottomPinContainer.textContent = "";
   }
 
-  pinUser(node, position) {
+  pinUser(position) {
     // this.unpinUser(originalNode);
-    node.style.visibility = "hidden";
+    const originalNode = this.getOriginalNode();
+    originalNode && (originalNode.style.visibility = "hidden");
+
+    if (!this._userPinNode) return;
 
     if (position === "top") {
-      this._elements.topPinContainer.innerHTML = node.innerHTML;
+      this._elements.topPinContainer.appendChild(this._userPinNode);
     } else if (position === "bottom") {
-      this._elements.bottomPinContainer.innerHTML = node.innerHTML;
+      this._elements.bottomPinContainer.appendChild(this._userPinNode);
     }
   }
 
@@ -101,6 +116,7 @@ export default class LeaderboardElement extends LazyItemList {
     if (!isLoggedIn()) return;
 
     this._userScoreData = await this.getUserBestScoreWithRank();
+    this.createUserPinNode();
 
     if (!this._userScoreData) return;
 
@@ -119,11 +135,21 @@ export default class LeaderboardElement extends LazyItemList {
     return response.result;
   }
 
-  renderItem(item) {
+  createUserPinNode() {
+    if (this._userScoreData) {
+      this._userPinNode = this.renderItem(this._userScoreData, false);
+      return;
+    }
+    this._userPinNode = null;
+  }
+
+  renderItem(item, addToMap = true) {
     const element = el("leaderboard-item");
     element.data = item;
 
-    this._byUserId.set(item.user_id, element);
+    if (addToMap) {
+      this._byUserId.set(item.user_id, element);
+    }
 
     return element;
   }
