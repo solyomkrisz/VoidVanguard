@@ -4,6 +4,7 @@ import * as MATRIX from "/common/common.js";
 import * as vec from "/common/vec.js";
 import DynamicTooltip from "/ui/component/game/DynamicTooltip.js";
 import Shape from "/game/Shape.js";
+import { SpriteID } from "/game/texture/Texture.js";
 
 export default class Block {
   // prettier-ignore
@@ -206,6 +207,7 @@ export default class Block {
 
     block.type = blockState.type;
     block.textureRotation = new Map(blockState.textureRotation);
+    block.defaultTextureRotation = blockState.defaultTextureRotation ?? 0;
     block.isRemovable = blockState.isRemovable;
 
     return block;
@@ -216,9 +218,16 @@ export default class Block {
     this.type = 0;
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
-    this.spriteID = spriteID;
+    this.connectedSpriteID = spriteID;
+    // Derive the standalone (no-connector) sprite if this is a grade block
+    const gradeIndex = spriteID - SpriteID.BLOCK_0;
+    this.standaloneSpriteID = (gradeIndex >= 0 && gradeIndex <= 14)
+      ? SpriteID[`BLOCK_STANDALONE_${gradeIndex}`]
+      : spriteID;
+    this.spriteID = this.standaloneSpriteID; // start with standalone texture
     this.gradeID = gradeID;
     this.textureRotation = new Map();
+    this.defaultTextureRotation = 0;
     this.mass = mass;
     this.isRemovable = true;
     this.toRemove = false;
@@ -233,9 +242,10 @@ export default class Block {
       type: this.type,
       localPosition: [...this.localPosition],
       shape: this.shape.exportSave(),
-      spriteID: this.spriteID,
+      spriteID: this.connectedSpriteID,
       gradeID: this.gradeID,
       textureRotation: [...this.textureRotation],
+      defaultTextureRotation: this.defaultTextureRotation,
       mass: this.mass,
       isRemovable: this.isRemovable,
       health: this.health,
@@ -257,15 +267,17 @@ export default class Block {
   getTextureRotation(textureName) {
     return this.textureRotation.has(textureName)
       ? this.textureRotation.get(textureName)
-      : 0;
+      : this.defaultTextureRotation;
   }
 
   onRemove(parent) {
     this.toRemove = false;
+    this.spriteID = this.standaloneSpriteID; // revert to standalone texture
     return this;
   }
 
   onInsert(parent) {
+    this.spriteID = this.connectedSpriteID; // switch to connected texture
     return this;
   }
 

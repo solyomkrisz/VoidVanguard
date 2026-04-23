@@ -66,6 +66,8 @@ export default class Model {
         }),
       );
     }
+
+    this.setupBlockOrientations();
   }
 
   init(parent) {
@@ -78,8 +80,51 @@ export default class Model {
     this.parent = parent;
 
     this.objects.forEach((object) => object.onInsert(this.parent));
+    this.setupBlockOrientations();
 
     return this;
+  }
+
+  /**
+   * For each block, finds the best adjacent neighbor and sets defaultTextureRotation
+   * so the block faces away from it (connector side toward neighbor).
+   * Prefers special neighbors (turrets, thrusters) over regular grade blocks.
+   * Called after the full model is built/loaded so all positions are known.
+   */
+  setupBlockOrientations() {
+    const GRADE_BLOCK_MIN = 2;  // SpriteID.BLOCK_0
+    const GRADE_BLOCK_MAX = 16; // SpriteID.BLOCK_14
+
+    const isGradeBlock = (obj) => {
+      const id = obj.connectedSpriteID ?? obj.spriteID;
+      return id >= GRADE_BLOCK_MIN && id <= GRADE_BLOCK_MAX;
+    };
+
+    for (const obj of this.objects) {
+      if (typeof obj.defaultTextureRotation === "undefined") continue;
+      // Only auto-orient if no rotation was already explicitly set
+      if (obj.defaultTextureRotation !== 0) continue;
+
+      let bestNeighbor = null;
+
+      for (const neighbor of this.objects) {
+        if (neighbor === obj) continue;
+        const dx = neighbor.localPosition[0] - obj.localPosition[0];
+        const dy = neighbor.localPosition[1] - obj.localPosition[1];
+        if (Math.abs(dx) + Math.abs(dy) !== 1) continue;
+
+        // Prefer special blocks soo thrusters/turrets over grade blocks
+        if (!bestNeighbor || (!isGradeBlock(neighbor) && isGradeBlock(bestNeighbor))) {
+          bestNeighbor = neighbor;
+        }
+      }
+
+      if (bestNeighbor) {
+        const dx = bestNeighbor.localPosition[0] - obj.localPosition[0];
+        const dy = bestNeighbor.localPosition[1] - obj.localPosition[1];
+        obj.defaultTextureRotation = Math.atan2(-dx, -dy);
+      }
+    }
   }
 
   clear() {

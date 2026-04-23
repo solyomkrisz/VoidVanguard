@@ -90,10 +90,20 @@ export default class BuildingBlock extends Rigidbody {
 
       const [object] = this.model.objects;
       vec2.copy(object.localPosition, nLP);
+
+      // Rotate the sprite to face away from the neighbor it connects to
+      const neighbor = other.model.objects[j];  
+      const dx = nLP[0] - neighbor.localPosition[0];
+      const dy = nLP[1] - neighbor.localPosition[1];
+      // atan2(dx, dy): angle from +Y axis (sprite "up") pointing away from the neighbor
+      object.defaultTextureRotation = Math.atan2(dx, dy);
+
       other.model.add(other, object);
       object.isRemovable = true;
 
-      this.model.reset();
+      // Clear this model's objects before reset() so onRemove is not called
+      // on the transferred object (which would revert it to the standalone texture)
+      this.model.objects.length = 0;
       this.game.mouse.reset();
 
       other.proxyCollider.onGeometryChange();

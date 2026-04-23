@@ -165,10 +165,14 @@ export function setupGame(game, playerModel = Models.PLAYER) {
 
   // Texture setup - 960x192 atlas (15 columns × 3 rows, 64x64 per texture)
   // Row 0: Block grades 0-14 with connector texture
-  // Row 1: Block grades 0-14 without connector (unused for now) - reserved for dragging the blocks around, cause they look weird with connectors when not connected to anything
+  // Row 1: Block grades 0-14 without connector (standalone/dragging state)
   // Row 2: Turret textures
   for (let i = 0; i < 15; i++) {
     tm.queueTextureCoordinate(TextureID[`BLOCK_${i}`], TextureManager.S0, i, 0);
+  }
+  // Queue standalone block textures from row 1 (no connectors)
+  for (let i = 0; i < 15; i++) {
+    tm.queueTextureCoordinate(TextureID[`BLOCK_STANDALONE_${i}`], TextureManager.S0, i, 1);
   }
   // Queue turret textures from row 2 (all 15 columns)
   for (let i = 0; i < 15; i++) {
@@ -189,6 +193,13 @@ export function setupGame(game, playerModel = Models.PLAYER) {
     const blockGradeSprite = new Sprite();
     blockGradeSprite.addFrame(TextureID[`BLOCK_${i}`], 2);
     tm.addSprite(SpriteID[`BLOCK_${i}`], blockGradeSprite);
+  }
+
+  // Create standalone sprites for all 15 block grades (no connectors, used when not attached)
+  for (let i = 0; i < 15; i++) {
+    const standaloneSprite = new Sprite();
+    standaloneSprite.addFrame(TextureID[`BLOCK_STANDALONE_${i}`], 2);
+    tm.addSprite(SpriteID[`BLOCK_STANDALONE_${i}`], standaloneSprite);
   }
 
   // Create sprites for all 15 turrets
