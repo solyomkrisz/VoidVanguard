@@ -52,6 +52,16 @@ export default class RemoteSaveList extends LazyItemList {
       this._byGameId.clear();
       this.reloadCurrentPage();
     }
+
+    this.dispatchEvent(
+      new CustomEvent("save-deleted", {
+        detail: {
+          saveId,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   onLogin(e) {}

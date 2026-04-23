@@ -41,19 +41,37 @@ export default class DynamicTooltip extends HTMLElement {
     this.onContentChange = this.onContentChange.bind(this);
     this.enable = this.enable.bind(this);
     this.disable = this.disable.bind(this);
+    this.onPointerMove = this.onPointerMove.bind(this);
+    this.onPointerDown = this.onPointerDown.bind(this);
+  }
+
+  onPointerMove(e) {
+    this.mouse.x = e.clientX;
+    this.mouse.y = e.clientY;
+
+    this.visible && this.setPosition();
+  }
+
+  onPointerDown(e) {
+    this.mouse.x = e.clientX;
+    this.mouse.y = e.clientY;
+
+    this.visible && this.setPosition();
   }
 
   connectedCallback() {
-    document.addEventListener("mousemove", (e) => {
-      this.mouse.x = e.clientX;
-      this.mouse.y = e.clientY;
-
-      this.visible && this.setPosition();
-    });
-
     this.addEventListener("content-change", this.onContentChange);
+    document.addEventListener("pointermove", this.onPointerMove);
+    document.addEventListener("pointerdown", this.onPointerDown);
     document.addEventListener("context-menu-active", this.disable);
     document.addEventListener("context-menu-inactive", this.enable);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener("pointermove", this.onPointerMove);
+    document.removeEventListener("pointerdown", this.onPointerDown);
+    document.removeEventListener("context-menu-active", this.disable);
+    document.removeEventListener("context-menu-inactive", this.enable);
   }
 
   createTemplate(name, title, inner) {

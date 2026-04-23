@@ -14,7 +14,7 @@ export default class Keyboard {
   constructor(game) {
     if (!(game instanceof Game)) {
       throw new Error(
-        "KEYBOARD-constructor: game must be an instance of the Game class!"
+        "KEYBOARD-constructor: game must be an instance of the Game class!",
       );
     }
 
@@ -58,12 +58,12 @@ export default class Keyboard {
     const key = event.code;
 
     if (this.observed.has(key)) {
-      this.activeControls.add(key);
+      this.game.activeControls.add(key);
     } else if (key === Keyboard.Escape && !event.repeat) this.game.stop();
   }
 
   keyupEventHandler(event) {
     const key = event.code;
-    if (this.observed.has(key)) this.activeControls.delete(key);
+    if (this.observed.has(key)) this.game.activeControls.delete(key);
   }
 }

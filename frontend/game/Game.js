@@ -25,6 +25,8 @@ import Save from "/game/Save.js";
 import { setupGame } from "/game/setup/default.js";
 import Models from "/game/SpaceShipModels.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
+import "/ui/component/game/GameControllerContainer.js";
+import "/ui/component/game/PauseButton.js";
 
 export default class Game extends WebGLCanvas {
   static from(save = null) {
@@ -114,6 +116,8 @@ export default class Game extends WebGLCanvas {
     this.cameraMatrix = mat3.identity();
     this.cameraMatrixInverse = mat3.identity();
 
+    this.activeControls = new Set();
+    this.controllers = new Map();
     this.player = null;
     this.mouse = null;
     this.enemies = new ObjectCollection(this);
@@ -202,6 +206,12 @@ export default class Game extends WebGLCanvas {
         this.UI[key].remove?.();
       }
 
+      for (const value of this.controllers.values()) {
+        if (value instanceof HTMLElement) {
+          value.remove?.();
+        }
+      }
+
       this.tooltip?.remove?.();
 
       this.debugPanel?.destroy();
@@ -211,10 +221,18 @@ export default class Game extends WebGLCanvas {
     this.player?.destroy();
   }
 
+  // prettier-ignore
   buildUI() {
     this.UI.pauseMenu = document.createElement("pause-menu");
     this.UI.pauseMenu.game = this;
     document.body.appendChild(this.UI.pauseMenu);
+
+    this.UI.controllerContainer = document.createElement("game-controller-container");
+    this.UI.controllerContainer.setGame(this);
+    document.body.appendChild(this.UI.controllerContainer);
+
+    this.UI.pauseButton = document.createElement("pause-button");
+    this.UI.controllerContainer.appendShadowChild(this.UI.pauseButton);
   }
 
   exportSave() {
@@ -657,5 +675,32 @@ export default class Game extends WebGLCanvas {
 
     this.debugPanel.hide();
     this.debugPanel.stopDebugUpdating();
+  }
+
+  addController(controller, name = null) {
+    const controllerName = name ?? controller.constructor.name;
+
+    if (this.controllers.has(controllerName)) {
+      console.warn(
+        `GAME-addController: A controller with the name "${controllerName}" already exists and will be overwritten!`,
+      );
+    }
+
+    if (typeof controller.setGame !== "function") {
+      throw new Error(
+        "GAME-addController: The given controller does not have a setGame method!",
+      );
+    }
+
+    controller.setGame(this);
+    this.controllers.set(controllerName, controller);
+
+    if (controller instanceof HTMLElement) {
+      if (!controller.isConnected && this.UI.controllerContainer) {
+        this.UI.controllerContainer.appendShadowChild?.(controller);
+      }
+    }
+
+    return controllerName;
   }
 }
