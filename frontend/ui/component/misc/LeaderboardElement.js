@@ -38,8 +38,10 @@ export default class LeaderboardElement extends LazyItemList {
       return;
     }
 
+    // ha nem látható és felfele van
     if (node.getBoundingClientRect().top < 0) {
       this.pinUser(node, "top");
+      // ha nem látható és nem felfele van (akkor is igaz ha szimplán még nem töltődött le)
     } else {
       this.pinUser(node, "bottom");
     }
