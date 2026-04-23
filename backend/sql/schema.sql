@@ -28,6 +28,17 @@ BEGIN
 END //
 DELIMITER ;
 
+CREATE TABLE temp_pwds(
+    user_id CHAR(36) PRIMARY KEY,
+    password_hash CHAR(60) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+        ON UPDATE RESTRICT
+);
+
 CREATE TABLE refresh_tokens(
     user_id CHAR(36) NOT NULL,
     token_hash CHAR(60) PRIMARY KEY,
