@@ -1,5 +1,6 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { isLoggedIn, isUserSet } from "/common/common.js";
+import { on, off } from "/common/eventhub.js";
 import "/ui/component/account/BlockedUserListItem.js";
 import * as net from "/common/network.js";
 
@@ -17,6 +18,16 @@ export default class BlockedUserList extends LazyItemList {
 
     this._hasOngoingUnblock = false;
     this.onUnblockUser = this.onUnblockUser.bind(this);
+    this.onLogin = this.onLogin.bind(this);
+    this.onLogout = this.onLogout.bind(this);
+  }
+
+  onLogin(e) {
+    this.refresh();
+  }
+
+  onLogout(e) {
+    this.refresh();
   }
 
   async onUnblockUser(e) {
@@ -81,12 +92,16 @@ export default class BlockedUserList extends LazyItemList {
     }
 
     this.addEventListener("unblock-user", this.onUnblockUser);
+    on("login", this.onLogin);
+    on("logout", this.onLogout);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback?.();
 
     this.removeEventListener("unblock-user", this.onUnblockUser);
+    off("login", this.onLogin);
+    off("logout", this.onLogout);
   }
 
   renderItem(item) {

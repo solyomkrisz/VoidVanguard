@@ -20,6 +20,7 @@ export default class InputValidator extends HTMLElement {
   }
 
   connectedCallback() {
+    this.classList.add("input-validator");
     this.build();
   }
 
@@ -102,4 +103,6 @@ export default class InputValidator extends HTMLElement {
   }
 }
 
-window.customElements.define("input-validator", InputValidator);
+if (!customElements.get("input-validator")) {
+  customElements.define("input-validator", InputValidator);
+}

@@ -1,6 +1,7 @@
 import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import "/ui/component/form/InputGroup.js";
+import "/ui/component/validator/PasswordInputValidator.js";
 
 function getResetToken() {
   const params = new URLSearchParams(window.location.search);
@@ -17,6 +18,8 @@ export default class PasswordResetForm extends HTMLElement {
     this._built = false;
 
     this.onSubmit = this.onSubmit.bind(this);
+    this.onSubmitDisable = this.onSubmitDisable.bind(this);
+    this.onSubmitEnable = this.onSubmitEnable.bind(this);
   }
 
   async onSubmit(e) {
@@ -52,6 +55,18 @@ export default class PasswordResetForm extends HTMLElement {
     window.location.href = "/";
   }
 
+  onSubmitDisable(e) {
+    const submitButton = this._elements?.submitButton;
+    if (!submitButton) return;
+    submitButton.disabled = true;
+  }
+
+  onSubmitEnable(e) {
+    const submitButton = this._elements?.submitButton;
+    if (!submitButton) return;
+    submitButton.disabled = false;
+  }
+
   connectedCallback() {
     this.build();
   }
@@ -63,11 +78,15 @@ export default class PasswordResetForm extends HTMLElement {
       <form>
         <input-group>
           <label>Új jelszó</label>
-          <input type="password" name="password" />
+          <password-input-validator>
+            <input type="password" name="password" />
+          </password-input-validator>
         </input-group>
         <input-group>
           <label>Jelszó megerősítése</label>
-          <input type="password" name="passwordConfirm" />
+          <password-input-validator>
+            <input type="password" name="passwordConfirm" />
+          </password-input-validator>
         </input-group>
         <button>Jelszó beállítása</button>
       </form>
@@ -76,6 +95,7 @@ export default class PasswordResetForm extends HTMLElement {
 
     this._elements.form = this.querySelector("form");
     this._elements.form.addEventListener("submit", this.onSubmit);
+    this._elements.submitButton = this.querySelector("button");
     this._elements.message = this.querySelector("#message");
 
     this._built = true;
