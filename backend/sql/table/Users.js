@@ -130,6 +130,22 @@ class Users extends Table {
 
     return result.affectedRows > 0;
   }
+
+  async updatePassword(id, passwordHash) {
+    const [result] = await execute(
+      "UPDATE users SET password_hash = ? WHERE id = ?",
+      [passwordHash, id],
+    );
+    return result;
+  }
+
+  async selectByEmail(email) {
+    const [rows] = await execute(
+      "SELECT id, username, email FROM users WHERE email = ?",
+      [email],
+    );
+    return rows.length ? rows[0] : null;
+  }
 }
 
 export default new Users();

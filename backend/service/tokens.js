@@ -14,7 +14,11 @@ export async function refresh(refreshToken) {
 
   try {
     payload = Token.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-  } catch {
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      throw CustomError.REFRESH_TOKEN_EXPIRED;
+    }
+
     throw CustomError.INVALID_TOKEN;
   }
 

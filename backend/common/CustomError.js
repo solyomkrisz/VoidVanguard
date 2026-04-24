@@ -72,6 +72,15 @@ export const INVALID_TOKEN = new CustomError({
   },
 });
 
+export const INVALID_RESET_TOKEN = new CustomError({
+  statusCode: 400,
+  definition: {
+    name: "InvalidResetTokenError",
+    code: "ER_INV_RTKN",
+    message: "Invalid reset token",
+  },
+});
+
 export const PROFILE_NOT_FOUND = new CustomError({
   statusCode: 404,
   definition: {
@@ -195,6 +204,24 @@ export const DUPLICATE_SAVE_STATE = new CustomError({
     name: "DuplicateSaveStateError",
     code: "ER_DUP_SAVE_STATE",
     message: "A save with this game state already exists",
+  },
+});
+
+export const PASSWORD_UPDATE = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "PasswordUpdateError",
+    code: "ER_PWD_UPDATE",
+    message: "Unable to update password",
+  },
+});
+
+export const REFRESH_TOKEN_EXPIRED = new CustomError({
+  statusCode: 401,
+  definition: {
+    name: "RefreshTokenExpirationError",
+    code: "ER_RFH_TKN_EXP",
+    message: "Refresh token expired",
   },
 });
 
