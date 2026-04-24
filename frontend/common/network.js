@@ -7,7 +7,12 @@ const getReqKey = ({ method }, url) => `${method}:${url}`;
 let refreshPromise = null;
 
 export function refreshAccessToken() {
-  if (refreshPromise) return refreshPromise;
+  console.log("Refreshing access token...");
+
+  if (refreshPromise) {
+    console.log("Refresh is already in progress, returning that...");
+    return refreshPromise;
+  }
 
   refreshPromise = (async () => {
     try {
@@ -34,10 +39,14 @@ export function refreshAccessToken() {
 
       if (!newToken) {
         localStorage.removeItem("access_token");
+        console.log(
+          "No new access token received, token cleared from localStorage",
+        );
         return { success: false };
       }
 
       localStorage.setItem("access_token", newToken);
+      console.log("New access token received: " + newToken);
       return { success: true, refreshed: true };
     } catch (err) {
       console.error("refreshAccessToken failed:", err);
