@@ -12,6 +12,7 @@ import "/ui/component/game/ContextMenuTemplate.js";
 import EngineIgnitionController from "/ui/component/game/EngineIgnitionController.js";
 import EngineThrottleController from "/ui/component/game/EngineThrottleController.js";
 import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
+import AudioManager from "/common/AudioManager.js";
 
 export function setupGame(game, playerModel = Models.PLAYER) {
   if (game.running) return;
@@ -107,6 +108,13 @@ export function setupGame(game, playerModel = Models.PLAYER) {
     keyboard.observeKey(Keyboard.KeyR);
     keyboard.enableListening();
   }
+
+  //#region audio
+  // must be above the player because player accesses it inside its constructor
+  const am = new AudioManager();
+  game.addAudioManager(am);
+
+  am.queueAudio("rocketengine", "/sound/rocketengine.mp3");
 
   game.createPlayer(playerModel); // Must be added after mouse or dragging wont work
 

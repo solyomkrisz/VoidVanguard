@@ -52,6 +52,32 @@ export default class Player extends Spaceship {
     this.updatePropulsion = this.manualPropulsionUpdate;
 
     this.model.init(this);
+
+    this.sounds = new Map();
+  }
+
+  setSound(name, source, options = {}) {
+    this.sounds.set(name, {
+      sound: this.game.audioManager.createSound(source, {
+        ...options,
+      }),
+      isPlaying: false,
+    });
+  }
+
+  playSound(name) {
+    const sound = this.sounds.get(name);
+    if (!sound || !sound.isPlaying) return;
+    sound.sound.start();
+    sound.isPlaying = true;
+  }
+
+  stopSound(name) {
+    const sound = this.sounds.get(name);
+    if (!sound || !sound.isPlaying) return;
+    sound.sound.stop();
+    console.log("SOUND STOPPED");
+    sound.isPlaying = false;
   }
 
   destroy() {
@@ -144,16 +170,21 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation
+            this.rotation,
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
+          this.playSound("enginesound");
+        } else {
+          this.stopSound("enginesound");
         }
       }
 
       this.angularAcceleration = T / this.I;
+    } else {
+      this.stopSound("enginesound");
     }
   }
 
@@ -197,16 +228,21 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation
+            this.rotation,
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
+          this.playSound("enginesound");
+        } else {
+          this.stopSound("enginesound");
         }
       }
 
       this.angularAcceleration = T / this.I;
+    } else {
+      this.stopSound("enginesound");
     }
   }
 
