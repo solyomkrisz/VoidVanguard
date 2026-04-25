@@ -52,32 +52,18 @@ export default class Player extends Spaceship {
     this.updatePropulsion = this.manualPropulsionUpdate;
 
     this.model.init(this);
-
-    this.sounds = new Map();
   }
 
-  setSound(name, source, options = {}) {
-    this.sounds.set(name, {
-      sound: this.game.audioManager.createSound(source, {
-        ...options,
-      }),
-      isPlaying: false,
-    });
+  onEngineEnabled() {
+    const am = this.game.audioManager;
+    const sound = am.getSound("enginesound");
+    sound.start();
   }
 
-  playSound(name) {
-    const sound = this.sounds.get(name);
-    if (!sound || sound.isPlaying) return;
-    sound.sound.start();
-    sound.isPlaying = true;
-  }
-
-  stopSound(name) {
-    const sound = this.sounds.get(name);
-    if (!sound || !sound.isPlaying) return;
-    sound.sound.stop();
-    console.log("SOUND STOPPED");
-    sound.isPlaying = false;
+  onEngineDisabled() {
+    const am = this.game.audioManager;
+    const sound = am.getSound("enginesound");
+    sound.stop();
   }
 
   destroy() {
@@ -177,15 +163,15 @@ export default class Player extends Spaceship {
           );
           T += thruster.getTorque(this);
 
-          this.playSound("enginesound");
+          this.onEngineEnabled();
         } else {
-          this.stopSound("enginesound");
+          this.onEngineDisabled();
         }
       }
 
       this.angularAcceleration = T / this.I;
     } else {
-      this.stopSound("enginesound");
+      this.onEngineDisabled();
     }
   }
 
@@ -236,15 +222,15 @@ export default class Player extends Spaceship {
           );
           T += thruster.getTorque(this);
 
-          this.playSound("enginesound");
+          this.onEngineEnabled();
         } else {
-          this.stopSound("enginesound");
+          this.onEngineDisabled();
         }
       }
 
       this.angularAcceleration = T / this.I;
     } else {
-      this.stopSound("enginesound");
+      this.onEngineDisabled();
     }
   }
 

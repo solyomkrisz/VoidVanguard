@@ -401,10 +401,10 @@ export default class Game extends WebGLCanvas {
     const audioManager = this.audioManager;
 
     const texturePromises = textureManager.promises ?? [];
-    const audioPromises = audioManager?.promises ?? [];
+    const audioPromise = audioManager?.whenAllLoaded?.() ?? Promise.resolve();
 
     // prettier-ignore
-    Promise.all([...texturePromises, ...audioPromises]).then(
+    Promise.all([...texturePromises, audioPromise]).then(
       () => {
         for (const { name, slot, offsetX, offsetY } of textureManager.textureCoordinateQueue) {
           textureManager.addTextureCoordinates(name, slot, offsetX, offsetY);
@@ -436,14 +436,6 @@ export default class Game extends WebGLCanvas {
 
         error !== gl.NO_ERROR && console.error("WebGL Error: ", error);
 
-        this.player.setSound(
-          "enginesound",
-          "rocketengine", {
-            loop: true,
-            offsetByPlay: [0, 2.5],
-          }
-        );
-
         this.last = window.performance.now();
         this.frameId = window.requestAnimationFrame(this.update);
         this.running = true;
@@ -458,6 +450,7 @@ export default class Game extends WebGLCanvas {
     if (!this.running) return;
     this.running = false;
     window.cancelAnimationFrame(this.frameId);
+    this.audioManager?.stopAll?.();
     this.tooltip.disable();
     this.UI.pauseMenu?.show();
   }

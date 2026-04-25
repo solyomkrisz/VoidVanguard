@@ -114,7 +114,10 @@ export function setupGame(game, playerModel = Models.PLAYER) {
   const am = new AudioManager();
   game.addAudioManager(am);
 
-  am.queueAudio("rocketengine", "/sound/rocketengine.mp3");
+  am.queueSound("enginesound", "/sound/rocketengine.mp3", {
+    loop: true,
+    offsetByPlay: [0, 2.2],
+  });
 
   game.createPlayer(playerModel); // Must be added after mouse or dragging wont work
 
