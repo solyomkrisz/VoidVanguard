@@ -6,10 +6,6 @@ import "/ui/component/game/SaveForm.js";
 import { isLoggedIn } from "/common/common.js";
 
 export default class SaveMenu extends HTMLElement {
-  get withForm() {
-    return this.hasAttribute("with-form");
-  }
-
   get remoteSaveListControls() {
     return this.getAttribute("remote-save-list-controls");
   }
@@ -20,127 +16,8 @@ export default class SaveMenu extends HTMLElement {
     this._built = false;
     this._elements = {};
 
-    this._selectedSlot = null;
-
-    this.onSaveRequest = this.onSaveRequest.bind(this);
-    this.onSlotSelectVerificationRequest =
-      this.onSlotSelectVerificationRequest.bind(this);
-    this.onSaveSuccess = this.onSaveSuccess.bind(this);
-    this.onSaveFailure = this.onSaveFailure.bind(this);
-    this.onSaveDeleted = this.onSaveDeleted.bind(this);
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
-  }
-
-  onSaveRequest(e) {
-    e.stopPropagation();
-
-    const formData = e?.detail?.formData;
-    if (!formData) return;
-
-    if (this._selectedSlot) {
-      formData.set("save_id", this._selectedSlot.slotData.id); // <save-form>-ban van egy input name="save_id" így ha itt append-et használunk és az input üres volt, akkor formData.get("save_id") <empty-string> lesz és nem működik a PATCH
-      e.detail.formData = formData;
-    }
-
-    this.parentElement.dispatchEvent(
-      new CustomEvent("save-request", {
-        detail: {
-          ...e.detail,
-          currentType: this._selectedSlot?.type, // megkülönböztetjük, hogy jelenleg hol van (helyi/távoli)
-          formData,
-          game_state: this._selectedSlot?.slotData?.game_state || null,
-        }, // megtartjuk a SaveForm által belerakott onDone függvényt
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
-  removeCurrentSelection() {
-    if (
-      this._selectedSlot?.type === "remote" &&
-      this._elements.remoteSaveSectionList
-    ) {
-      this._elements.remoteSaveSectionList.removeSelection(this._selectedSlot);
-    } else if (
-      this._selectedSlot?.type === "local" &&
-      this._elements.localSaveSectionList
-    ) {
-      this._elements.localSaveSectionList.removeSelection(this._selectedSlot);
-    }
-
-    this._selectedSlot = null;
-    this._elements.saveForm.reset();
-  }
-
-  onSlotSelectVerificationRequest(e) {
-    e.stopPropagation();
-
-    const slot = e?.detail?.slot;
-
-    if (
-      !slot ||
-      typeof e?.detail?.removeSelection !== "function" ||
-      typeof e?.detail?.addSelection !== "function"
-    )
-      return;
-
-    // Ha ugyan az mint a jelenleg kiválasztott leszedjük róla a jelölést
-    if (
-      slot.type === this._selectedSlot?.type &&
-      slot.slotData.id === this._selectedSlot?.slotData?.id
-    ) {
-      this.removeCurrentSelection();
-
-      if (this._elements.saveForm) {
-        this._elements.saveForm.reset();
-      }
-
-      return;
-    }
-
-    this.removeCurrentSelection();
-
-    this._selectedSlot = slot;
-    e.detail.addSelection(this._selectedSlot);
-
-    if (this._elements.saveForm) {
-      this._elements.saveForm.from(this._selectedSlot.slotData);
-      this._elements.saveForm._elements.selectInput.value =
-        this._selectedSlot.type;
-    }
-  }
-
-  onSaveSuccess(e) {
-    e.stopPropagation();
-
-    const type = e?.detail?.type;
-
-    if (!type || type === "remote") {
-      this._elements?.remoteSaveSectionList?.reloadCurrentPage?.();
-    }
-    if (!type || type === "local") {
-      this._elements?.localSaveSectionList?.parseSaves?.();
-      this._elements?.localSaveSectionList?.reloadCurrentPage?.();
-    }
-
-    this.removeCurrentSelection();
-  }
-
-  onSaveFailure(e) {
-    e.stopPropagation();
-  }
-
-  onSaveDeleted(e) {
-    e.stopPropagation();
-
-    const saveId = e?.detail?.saveId;
-    if (!saveId) return;
-
-    if (this._selectedSlot?.slotData?.id === saveId) {
-      this.removeCurrentSelection();
-    }
   }
 
   onLogin(e) {
@@ -165,27 +42,6 @@ export default class SaveMenu extends HTMLElement {
   disconnectedCallback() {
     off("login", this.onLogin);
     off("logout", this.onLogout);
-  }
-
-  createSaveForm() {
-    if (!this.withForm) return;
-
-    const container = this._elements.formContainer;
-    if (!container) return;
-
-    container.textContent = "";
-    container.hidden = false;
-    this._elements.saveFormTitle = null;
-    this._elements.saveForm = null;
-
-    const title = el("h1", {}, ["Jelenlegi állás mentése"]);
-    this._elements.saveFormTitle = title;
-
-    const saveForm = el("save-form");
-    this._elements.saveForm = saveForm;
-
-    container.appendChild(title);
-    container.appendChild(saveForm);
   }
 
   createLocalSaveSection() {
@@ -250,36 +106,21 @@ export default class SaveMenu extends HTMLElement {
   build() {
     if (this._built) return;
 
-    this._elements.formContainer = el("div", { hidden: true });
     this._elements.localSaveSectionContainer = el("div", { hidden: true });
     this._elements.remoteSaveSectionContainer = el("div", { hidden: true });
-
-    this.appendChild(this._elements.formContainer);
-    this.appendChild(el("hr"));
 
     this.appendChild(this._elements.localSaveSectionContainer);
     this.appendChild(el("hr"));
 
     this.appendChild(this._elements.remoteSaveSectionContainer);
 
-    this.createSaveForm();
     this.createLocalSaveSection();
     this.createRemoteSaveSection();
-
-    this.addEventListener("save-request", this.onSaveRequest);
-    this.addEventListener("save-success", this.onSaveSuccess);
-    this.addEventListener("save-failure", this.onSaveFailure);
-    this.addEventListener("save-deleted", this.onSaveDeleted);
-    this.addEventListener(
-      "slot-select-verification-request",
-      this.onSlotSelectVerificationRequest,
-    );
 
     this._built = true;
   }
 
   rebuild() {
-    this.createSaveForm();
     this.createLocalSaveSection();
     this.createRemoteSaveSection();
   }

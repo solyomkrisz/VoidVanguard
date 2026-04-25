@@ -156,6 +156,8 @@ export default class FullProfile extends HTMLElement {
       active: null,
     };
 
+    this._activeLoadToken = null;
+
     this._changed = new Set();
     this._editing = false;
 
@@ -569,7 +571,7 @@ export default class FullProfile extends HTMLElement {
           </div>
         </div>
         <div class="profile-footer">
-          <comment-section controls="scroll" page-size="2" ${this.admin ? "admin" : ""}>
+          <comment-section controls="pagination" page-size="2" ${this.admin ? "admin" : ""}>
             <comment-form ${this.admin ? "admin" : ""}></comment-form>
           </comment-section>
         </div>
@@ -603,8 +605,13 @@ export default class FullProfile extends HTMLElement {
     console.log("UPDATE META: ", meta);
 
     const currentUserId = this.userId;
+    const loadToken = Symbol();
+    this._activeLoadToken = loadToken;
+
     const response = await net.send("/api/profiles/" + currentUserId);
-    if (currentUserId !== this.userId) return;
+
+    if (this._activeLoadToken !== loadToken) return;
+    // if (currentUserId !== this.userId) return;
 
     if (!response?.success) {
       console.error("Unable to fetch profile.");

@@ -4,6 +4,10 @@ import { path } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 
 export default class SaveListSlot extends BaseCustomElement {
+  get saveType() {
+    return this.getAttribute("save-type");
+  }
+
   get controlsConfig() {
     const value = this.getAttribute("controls");
     if (!value) return [];
@@ -26,11 +30,9 @@ export default class SaveListSlot extends BaseCustomElement {
     this._elements = {};
     this._built = false;
     this._data = null;
-    this._selected = false;
 
     this.onLoadSaveButtonClick = this.onLoadSaveButtonClick.bind(this);
     this.onDelete = this.onDelete.bind(this);
-    this.onSelect = this.onSelect.bind(this);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -47,72 +49,21 @@ export default class SaveListSlot extends BaseCustomElement {
   onLoadSaveButtonClick(e) {
     this.dispatchEvent(
       new CustomEvent("save-load-request", {
-        detail: { gameState: this.data.game_state },
+        detail: { save: { ...this.data }, saveType: this.saveType },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
   onDelete(e) {
     this.dispatchEvent(
       new CustomEvent("save-delete", {
-        detail: { saveId: this.data.id },
+        detail: { save: { ...this.data } },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
-  }
-
-  onSelect(e) {
-    this.dispatchEvent(
-      new CustomEvent("slot-select", {
-        detail: {
-          slotData: {
-            id: this.data.id,
-            name: this.data.slot_name,
-            game_state: this.data.game_state,
-          },
-        },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
-  toggleSelection() {
-    const selectButton = this._elements.selectButton;
-    if (!this.controlsConfig.includes("select") || !selectButton) return;
-
-    this._selected = !this._selected;
-
-    if (this._selected) {
-      this.classList.add("selected");
-      this._elements.selectButton.textContent = "Kijelölés törlése";
-    } else {
-      this.classList.remove("selected");
-      this._elements.selectButton.textContent = "Kijelölés";
-    }
-  }
-
-  addSelection() {
-    const selectButton = this._elements.selectButton;
-    if (!this.controlsConfig.includes("select") || !selectButton) return;
-
-    this._selected = true;
-
-    this.classList.add("selected");
-    this._elements.selectButton.textContent = "Kijelölés törlése";
-  }
-
-  removeSelection() {
-    const selectButton = this._elements.selectButton;
-    if (!this.controlsConfig.includes("select") || !selectButton) return;
-
-    this._selected = false;
-
-    this.classList.remove("selected");
-    this._elements.selectButton.textContent = "Kijelölés";
   }
 
   generateControls(config, all = false) {
@@ -124,18 +75,10 @@ export default class SaveListSlot extends BaseCustomElement {
       elements.loadSaveButton = el(
         "button",
         { onClick: this.onLoadSaveButtonClick },
-        ["Mentés betöltése"],
+        ["Mentés betöltése"]
       );
 
       this.appendShadowChild(elements.loadSaveButton);
-    }
-
-    if (config.includes("select") || all) {
-      elements.selectButton = el("button", { onClick: this.onSelect }, [
-        "Kijelölés",
-      ]);
-
-      this.appendShadowChild(elements.selectButton);
     }
 
     if (config.includes("delete") || all) {
@@ -152,11 +95,11 @@ export default class SaveListSlot extends BaseCustomElement {
 
     const elements = this._elements;
 
-    elements.slotName = el("div", { class: "slot-name" });
+    elements.saveName = el("div", { class: "save-name" });
     elements.createdAtDate = el("div", { class: "created-at" });
     elements.updatedAtDate = el("div", { class: "updated-at" });
 
-    this.appendShadowChild(elements.slotName);
+    this.appendShadowChild(elements.saveName);
     this.appendShadowChild(elements.createdAtDate);
     this.appendShadowChild(elements.updatedAtDate);
 
@@ -177,7 +120,7 @@ export default class SaveListSlot extends BaseCustomElement {
 
     const elements = this._elements;
 
-    elements.slotName.textContent = this.data?.slot_name;
+    elements.saveName.textContent = this.data?.save_name;
     elements.createdAtDate.textContent = this.data?.created_at;
     elements.updatedAtDate.textContent = this.data?.updated_at;
   }

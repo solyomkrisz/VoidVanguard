@@ -32,6 +32,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.onExit = this.onExit.bind(this);
     this.onViewChange = this.onViewChange.bind(this);
     this.onSaveRequest = this.onSaveRequest.bind(this);
+    this.onSaveFormConnect = this.onSaveFormConnect.bind(this);
   }
 
   onResume(e) {
@@ -41,7 +42,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.game.resume();
 
     document.dispatchEvent(
-      new CustomEvent("resume-game", { detail: { game: this } }),
+      new CustomEvent("resume-game", { detail: { game: this } })
     );
   }
 
@@ -52,7 +53,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.game.destroy();
 
     document.dispatchEvent(
-      new CustomEvent("exit-game", { detail: { game: this._game } }),
+      new CustomEvent("exit-game", { detail: { game: this._game } })
     );
   }
 
@@ -66,17 +67,21 @@ export default class PauseMenu extends BaseCustomElement {
     if (!formData) {
       console.error("Unable to process save request: no form data provided");
       ToastManager.REQUEST(
-        "Unable to process save request: no form data provided",
+        "Unable to process save request: no form data provided"
       );
 
       return;
     }
 
-    const type = e?.detail?.type || "local";
+    const success = await this.game.save(e?.detail.formData);
 
-    const [success, data] = await this.game.save(e.detail);
+    e?.detail?.onDone?.(success);
+  }
 
-    e?.detail?.onDone?.(success, data);
+  onSaveFormConnect(e) {
+    if (!e?.detail?.form) return;
+
+    e.detail.form.from(this.game.loadedSave);
   }
 
   connectedCallback() {
@@ -92,7 +97,7 @@ export default class PauseMenu extends BaseCustomElement {
         <h1 class="title">Játék megállítva</h1>
         <drilldown-menu initial="root">
           <template id="save-game" data-name="Játékmenet mentése">
-            <save-menu with-form></save-menu>
+            <save-form></save-form>
           </template>
           <template id="root">
             <resume-button></resume-button>
@@ -106,6 +111,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.addEventListener("exit-game", this.onExit);
     this.addEventListener("save-request", this.onSaveRequest);
     this.addEventListener("view-change", this.onViewChange);
+    this.addEventListener("save-form-connected", this.onSaveFormConnect);
 
     this._built = true;
   }

@@ -6,23 +6,36 @@ export const GET = function (request, response, next) {
   next();
 };
 
-export const POST = {
-  slot_name: {
+export const PATCH = {
+  game_id: {
     in: ["body"],
+    custom: {
+      options: (value) => {
+        if (!value || !isValidUUIDv4(value)) {
+          throw new Error("Invalid save ID");
+        }
+        return true;
+      },
+    },
+  },
+  save_name: {
+    in: ["body"],
+    optional: { options: { nullable: true } },
     isString: {
-      errorMessage: "Slot name must be a string",
+      errorMessage: "Save name must be a string",
     },
     isLength: {
       options: {
         min: 3,
         max: 20,
       },
-      errorMessage: "Slot name must be 3-20 characters long",
+      errorMessage: "Save name must be 3-20 characters long",
     },
     trim: true,
   },
   game_state: {
     in: ["body"],
+    optional: { options: { nullable: true } },
     custom: {
       options: (value) => {
         try {
@@ -43,10 +56,18 @@ export const POST = {
       },
     },
   },
+  is_finished: {
+    in: ["body"],
+    optional: { options: { nullable: true } },
+    toBoolean: true,
+    isBoolean: {
+      errorMessage: "is_finished must be a boolean",
+    },
+  },
 };
 
-export const PATCH = {
-  save_id: {
+export const PUT = {
+  game_id: {
     in: ["body"],
     custom: {
       options: (value) => {
@@ -57,11 +78,11 @@ export const PATCH = {
       },
     },
   },
-  slot_name: {
+  save_name: {
     in: ["body"],
     optional: { options: { nullable: true } },
     isString: {
-      errorMessage: "Slot name must be a string",
+      errorMessage: "Save name must be a string",
     },
     isLength: {
       options: {
@@ -74,7 +95,6 @@ export const PATCH = {
   },
   game_state: {
     in: ["body"],
-    optional: { options: { nullable: true } },
     custom: {
       options: (value) => {
         try {
@@ -98,7 +118,7 @@ export const PATCH = {
 };
 
 export const DELETE = {
-  saveId: {
+  game_id: {
     in: ["body"],
     custom: {
       options: (value) => {

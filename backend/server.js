@@ -66,6 +66,12 @@ router.get(
     );
   },
 );
+// Leaderboard oldal
+router.get("/leaderboard", (request, response) => {
+  response.sendFile(
+    path.join(__dirname, "../frontend/ui/html/leaderboard.html"),
+  );
+});
 
 // Refresh oldal
 // router.get("/refresh", (request, response) => {

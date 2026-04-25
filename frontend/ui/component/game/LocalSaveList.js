@@ -13,25 +13,22 @@ export default class LocalSaveList extends LazyItemList {
     this._data = null;
     this.parseSaves();
 
-    this._byId = new Map();
+    this._byGameId = new Map();
 
     this.onSaveDelete = this.onSaveDelete.bind(this);
-    this.onSlotSelect = this.onSlotSelect.bind(this);
-    this.removeSelection = this.removeSelection.bind(this);
-    this.addSelection = this.addSelection.bind(this);
   }
 
   onSaveDelete(e) {
-    const saveId = e?.detail?.saveId;
-    if (!saveId) return;
+    const gameId = e?.detail?.save?.game_id;
+    if (!gameId) return;
 
-    console.log(saveId, this._data);
-    this._data.delete(saveId);
+    console.log(gameId, this._data);
+    this._data.delete(gameId);
 
     window.localStorage.setItem("localSaves", JSON.stringify([...this._data]));
 
     this.parseSaves();
-    this._byId.clear();
+    this._byGameId.clear();
     this.reloadCurrentPage();
 
     this.dispatchEvent(
@@ -45,49 +42,10 @@ export default class LocalSaveList extends LazyItemList {
     );
   }
 
-  toggleSelectedSlotHighlight(id) {
-    const element = this._byId.get(id);
-    element && element?.toggleSelection();
-  }
-
-  removeSelection(slot) {
-    if (slot.type !== "local") return;
-
-    const element = this._byId.get(slot.slotData.id);
-    element && element?.removeSelection();
-  }
-
-  addSelection(slot) {
-    if (slot.type !== "local") return;
-
-    const element = this._byId.get(slot.slotData.id);
-    element && element?.addSelection();
-  }
-
-  onSlotSelect(e) {
-    e.stopPropagation();
-
-    this.dispatchEvent(
-      new CustomEvent("slot-select-verification-request", {
-        detail: {
-          slot: {
-            slotData: e?.detail?.slotData,
-            type: "local",
-          },
-          removeSelection: this.removeSelection,
-          addSelection: this.addSelection,
-        },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
   connectedCallback() {
     super.connectedCallback?.();
 
     this.addEventListener("save-delete", this.onSaveDelete);
-    this.addEventListener("slot-select", this.onSlotSelect);
 
     if (this._built) this.refresh();
   }
@@ -96,7 +54,6 @@ export default class LocalSaveList extends LazyItemList {
     super.disconnectedCallback?.();
 
     this.removeEventListener("save-delete", this.onSaveDelete);
-    this.removeEventListener("slot-select", this.onSlotSelect);
   }
 
   parseSaves() {
@@ -145,8 +102,6 @@ export default class LocalSaveList extends LazyItemList {
     const el = document.createElement("save-list-slot");
 
     el.data = {
-      id: item.slot_name,
-      name: item.slot_name,
       ...item,
       created_at: formatDate(item.created_at),
       updated_at: formatDate(item.updated_at),
@@ -154,8 +109,9 @@ export default class LocalSaveList extends LazyItemList {
     if (this.itemControls) {
       el.setAttribute("controls", this.itemControls);
     }
+    el.setAttribute("save-type", "local");
 
-    this._byId.set(item.slot_name, el);
+    this._byGameId.set(item.game_id, el);
 
     return el;
   }

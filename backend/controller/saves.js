@@ -37,29 +37,7 @@ export async function selectSave(request, response) {
   }
 }
 
-export async function saveGame(request, response) {
-  try {
-    const saveId = await service.save({
-      userId: request.targetUser.id,
-      slotName: request.body.slot_name,
-      gameState: request.body.game_state,
-    });
-
-    response
-      .status(200)
-      .json(createResponse(true, saveId, "Game successfully saved"));
-  } catch (error) {
-    if (
-      error.code === "ER_DUP_ENTRY" &&
-      error.sqlMessage.includes("unique_user_state")
-    ) {
-      throw CustomError.DUPLICATE_SAVE_STATE;
-    }
-    handleCaughtError(response, error);
-  }
-}
-
-export async function updateSave(request, response) {
+export async function patchSave(request, response) {
   try {
     const result = await service.updateSave({
       userId: request.targetUser.id,
@@ -69,8 +47,30 @@ export async function updateSave(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Save successfully updated"));
+      .json(createResponse(true, result, "Save successfully updated"));
   } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function saveOrUpdate(request, response) {
+  try {
+    const gameId = await service.saveOrUpdate({
+      userId: request.targetUser.id,
+      role: request.targetUser.role ?? -1,
+      body: request.body,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, gameId, "Game successfully saved"));
+  } catch (error) {
+    if (
+      error.code === "ER_DUP_ENTRY" &&
+      error.sqlMessage.includes("unique_user_slot")
+    ) {
+      throw CustomError.DUPLICATE_SAVE_STATE;
+    }
     handleCaughtError(response, error);
   }
 }
@@ -78,7 +78,7 @@ export async function updateSave(request, response) {
 export async function deleteSave(request, response) {
   try {
     const result = await service.deleteSave({
-      saveId: request.body.saveId,
+      gameId: request.body.game_id,
       userId: request.targetUser.id,
     });
 

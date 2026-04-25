@@ -53,10 +53,13 @@ export default class MainMenu extends BaseCustomElement {
   onSaveLoadRequest(e) {
     e.stopPropagation();
 
-    const gameState = e?.detail?.gameState;
-    if (!gameState) return;
+    const save = e?.detail?.save;
+    const saveType = e?.detail?.saveType;
+    console.log(save, saveType);
+    if (!save || !saveType) return;
 
-    const game = this.preInitGame(gameState);
+    const game = this.preInitGame(save);
+    game.saveType = saveType;
     this._startedGame = game;
     game.start();
     this.hidden = true;

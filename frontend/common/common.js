@@ -91,8 +91,10 @@ export const path = Object.freeze({
 
 //#region login stuff start
 export function isLoggedIn() {
-  // return Boolean(window.VoidVanguard?.user?.id);
-  return Boolean(localStorage.getItem("access_token"));
+  return Boolean(window.VoidVanguard?.user?.id);
+
+  // return Boolean(localStorage.getItem("access_token"));
+
   // const token = localStorage.getItem("access_token");
   // return token && !isExpired(token, 10);
 }
@@ -134,7 +136,7 @@ window.addEventListener("storage", (event) => {
 });
 
 export async function setUser(userdata, { origin = "unknown" } = {}) {
-  if (!window.VoidVanguard) {
+  if (!window?.VoidVanguard) {
     window.VoidVanguard = {};
   }
 
@@ -309,7 +311,22 @@ export function formatDate(ts) {
   const pad = (n) => String(n).padStart(2, "0");
 
   return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
-    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate(),
+    )} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+      date.getSeconds(),
+    )}`
   );
+}
+
+export function getLocalSaves() {
+  const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
+  return new Map(Array.isArray(parsed) ? parsed : []);
+}
+
+export function isInViewport(element) {
+  if (!element) return false;
+  const rect = element.getBoundingClientRect();
+  return rect.top >= 0 && rect.bottom <= window.innerHeight;
 }
