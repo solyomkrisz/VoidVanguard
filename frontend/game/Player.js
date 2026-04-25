@@ -67,7 +67,7 @@ export default class Player extends Spaceship {
 
   playSound(name) {
     const sound = this.sounds.get(name);
-    if (!sound || !sound.isPlaying) return;
+    if (!sound || sound.isPlaying) return;
     sound.sound.start();
     sound.isPlaying = true;
   }
@@ -176,6 +176,7 @@ export default class Player extends Spaceship {
             _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
+
           this.playSound("enginesound");
         } else {
           this.stopSound("enginesound");
@@ -234,6 +235,7 @@ export default class Player extends Spaceship {
             _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
+
           this.playSound("enginesound");
         } else {
           this.stopSound("enginesound");
