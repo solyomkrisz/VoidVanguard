@@ -114,7 +114,7 @@ export function setupGame(game, playerModel = Models.PLAYER) {
   const am = new AudioManager();
   game.addAudioManager(am);
 
-  am.queueSound("enginesound", "/sound/rocketengine.mp3", {
+  am.queueAudio("enginesound", "/sound/rocketengine.mp3", {
     loop: true,
     offsetByPlay: [0, 2.2],
   });

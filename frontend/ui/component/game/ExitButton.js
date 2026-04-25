@@ -21,7 +21,11 @@ export default class ExitButton extends HTMLElement {
   build() {
     if (this._built) return;
 
-    const button = el("button", { onClick: this.onClick }, ["Kilépés"]);
+    const button = el(
+      "button",
+      { "data-sfx": "click_1", onClick: this.onClick },
+      ["Kilépés"],
+    );
     this.appendChild(button);
 
     this._built = true;

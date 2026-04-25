@@ -66,6 +66,7 @@ export default class DrilldownMenu extends HTMLElement {
       "button",
       {
         class: "drilldown-menu-go-back-button",
+        "data-sfx": "click_1",
         hidden: true,
         onClick: this.goBack,
       },

@@ -57,13 +57,13 @@ export default class Player extends Spaceship {
   onEngineEnabled() {
     const am = this.game.audioManager;
     const sound = am.getSound("enginesound");
-    sound.start();
+    sound.instance.start();
   }
 
   onEngineDisabled() {
     const am = this.game.audioManager;
     const sound = am.getSound("enginesound");
-    sound.stop();
+    sound.instance.stop();
   }
 
   destroy() {

@@ -13,7 +13,7 @@ export default class AudioManager {
     return this.sounds.get(name);
   }
 
-  async queueSound(name, url, options = {}) {
+  async queueAudio(name, url, options = {}) {
     if (this.sounds.has(name)) {
       return this.sounds.get(name);
     }
@@ -24,10 +24,18 @@ export default class AudioManager {
 
     const promise = this.load(name, url)
       .then(() => {
-        const soundObject = this.createSound(name, options);
+        const entry =
+          options.type === "pool"
+            ? this.createPool(name, options)
+            : this.createSound(name, options);
 
-        this.sounds.set(name, soundObject);
-        return soundObject;
+        const audioObject = {
+          type: options.type ?? "sound",
+          instance: entry,
+        };
+
+        this.sounds.set(name, audioObject);
+        return audioObject;
       })
       .finally(() => {
         this.loading.delete(name);
@@ -53,7 +61,7 @@ export default class AudioManager {
     return new Sound(this.ctx, this.buffers.get(name), options);
   }
 
-  createPool(name, options) {
+  createPool(name, options = {}) {
     return new SoundPool(this.ctx, this.buffers.get(name), options);
   }
 
@@ -65,7 +73,11 @@ export default class AudioManager {
 
   stopAll() {
     for (const sound of this.sounds.values()) {
-      sound.stop();
+      if (sound.type === "pool") {
+        sound.instance.stopAll();
+      } else {
+        sound.instance.stop();
+      }
     }
   }
 

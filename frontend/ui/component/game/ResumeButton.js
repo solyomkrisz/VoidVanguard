@@ -21,7 +21,11 @@ export default class ResumeButton extends HTMLElement {
   build() {
     if (this._built) return;
 
-    const button = el("button", { onClick: this.onClick }, ["Folytatás"]);
+    const button = el(
+      "button",
+      { "data-sfx": "click_1", onClick: this.onClick },
+      ["Folytatás"],
+    );
     this.appendChild(button);
 
     this._built = true;

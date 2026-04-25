@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="hu">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,7 +21,8 @@
       import "/ui/component/feedback/ToastManager.js";
       import "/ui/component/auth/LogoutButton.js";
 
-      import globalAudio from "/common/globalAudio.js";
+      import { attachGlobalAudioListeners } from "/common/globalAudio.js";
+      attachGlobalAudioListeners();
 
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
     </script>
