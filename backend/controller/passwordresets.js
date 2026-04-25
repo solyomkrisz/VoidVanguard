@@ -9,7 +9,6 @@ import Role from "../common/Role.js";
 import * as CustomError from "../common/CustomError.js";
 
 export async function requestPasswordReset(request, response) {
-  console.log(request.body);
   try {
     const result = await service.createForUserWithEmail({
       email: request.body.email,

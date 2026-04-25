@@ -9,6 +9,11 @@ export async function find({ userId }) {
   return row;
 }
 
+export async function deleteAll({ userId } = {}) {
+  const [result] = await RefreshTokens.deleteAll(userId);
+  return result;
+}
+
 export async function refresh(refreshToken) {
   let payload;
 

@@ -6,6 +6,7 @@ import Users from "../sql/table/Users.js";
 import { pool } from "../sql/database.js";
 import Password from "../common/Password.js";
 import * as emails from "./emails.js";
+import * as tokens from "./tokens.js";
 
 export function hashToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
@@ -68,6 +69,14 @@ export async function resetPassword({ token, password }) {
       WHERE token_hash = ?
       `,
       [tokenHash],
+    );
+
+    await conn.execute(
+      `
+      DELETE FROM refresh_tokens
+      WHERE user_id = ?  
+      `,
+      [userId],
     );
 
     await conn.commit();
