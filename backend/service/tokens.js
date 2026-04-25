@@ -9,12 +9,21 @@ export async function find({ userId }) {
   return row;
 }
 
+export async function deleteAll({ userId } = {}) {
+  const [result] = await RefreshTokens.deleteAll(userId);
+  return result;
+}
+
 export async function refresh(refreshToken) {
   let payload;
 
   try {
     payload = Token.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-  } catch {
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      throw CustomError.REFRESH_TOKEN_EXPIRED;
+    }
+
     throw CustomError.INVALID_TOKEN;
   }
 

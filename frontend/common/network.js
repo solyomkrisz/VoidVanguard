@@ -1,80 +1,65 @@
 import { isExpired, decode } from "./jwt.js";
 import { logout } from "/common/common.js";
 
-const tokenRefresh = {
-  isPending: false,
-  promise: null,
-};
-
 const pendingRequests = new Map();
 const getReqKey = ({ method }, url) => `${method}:${url}`;
 
-export async function refreshAccessToken() {
-  const rawToken = localStorage.getItem("access_token");
+let refreshPromise = null;
 
-  if (rawToken && !isExpired(rawToken, 10)) {
-    return { success: true, refreshed: false };
-  }
-
-  tokenRefresh.isPending = true;
+export function refreshAccessToken() {
   console.log("Refreshing access token...");
 
-  try {
-    if (tokenRefresh.promise) {
-      console.log("Waiting for ongoing refresh...");
-      await tokenRefresh.promise;
-      return { success: true, refreshed: true };
-    }
-
-    tokenRefresh.promise = fetch("/api/tokens")
-      .then(async (response) => {
-        if (!response.ok) return null;
-        return response.json();
-      })
-      .catch((error) => {
-        console.error(error);
-        return null;
-      })
-      .finally(() => {
-        tokenRefresh.isPending = false;
-        tokenRefresh.promise = null;
-      });
-
-    const result = await tokenRefresh.promise;
-
-    // logout happend while refreshing
-    const tokenBefore = rawToken;
-    const tokenNow = localStorage.getItem("access_token");
-    if (tokenBefore !== tokenNow) {
-      return { success: false, refreshed: false };
-    }
-
-    if (!result?.success) {
-      console.error(result?.message || "Token refresh failed");
-      await logout(); // logout
-      localStorage.removeItem("access_token");
-      return { success: false, refreshed: false };
-    }
-
-    const token = result?.result?.access_token;
-
-    if (!token) {
-      console.error("No access token returned from server");
-      await logout(); // logout
-      localStorage.removeItem("access_token");
-      return { success: false, refreshed: false };
-    }
-
-    console.log("New access token received and set: " + token);
-    localStorage.setItem("access_token", token);
-
-    return { success: true, refreshed: true };
-  } catch (err) {
-    console.error("Unexpected refresh error:", err);
-    await logout(); // logout
-    localStorage.removeItem("access_token");
-    return { success: false, refreshed: false };
+  if (refreshPromise) {
+    console.log("Refresh is already in progress, returning that...");
+    return refreshPromise;
   }
+
+  refreshPromise = (async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      if (token && !isExpired(token, 10)) {
+        return { success: true, refreshed: false };
+      }
+
+      const res = await fetch("/api/tokens");
+
+      if (!res.ok) {
+        throw new Error(`Token refresh failed: ${res.status}`);
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Invalid JSON from token endpoint");
+      }
+
+      const newToken = data?.result?.access_token;
+
+      if (!newToken) {
+        localStorage.removeItem("access_token");
+        console.log(
+          "No new access token received, token cleared from localStorage",
+        );
+        return { success: false };
+      }
+
+      localStorage.setItem("access_token", newToken);
+      console.log("New access token received: " + newToken);
+      return { success: true, refreshed: true };
+    } catch (err) {
+      console.error("refreshAccessToken failed:", err);
+
+      localStorage.removeItem("access_token");
+
+      return { success: false };
+    }
+  })().finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
 }
 
 const isDeduplicationSave = (method) => method === "GET";

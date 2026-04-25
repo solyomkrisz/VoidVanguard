@@ -100,8 +100,12 @@
       <button>Request protected resource</button>
     </form>
 
+    <password-reset-request-form></password-reset-request-form>
+
     <script type="module" src="./ui/initcomponents.js"></script>
     <script type="module">
+      import "/ui/component/auth/PasswordResetRequestForm.js";
+
       import * as net from "./common/network.js";
       import * as jwt from "./common/jwt.js";
       import {

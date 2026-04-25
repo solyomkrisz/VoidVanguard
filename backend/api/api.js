@@ -9,6 +9,7 @@ import comments from "./comments.js";
 import reactions from "./reactions.js";
 import admin from "./admin.js";
 import saves from "./saves.js";
+import passwordresets from "./passwordresets.js";
 import scores from "./scores.js";
 
 const router = express.Router();
@@ -29,6 +30,7 @@ router.use("/comments", comments);
 router.use("/reactions", reactions);
 router.use("/admin", admin);
 router.use("/saves", saves);
+router.use("/reset-password", passwordresets);
 router.use("/scores", scores);
 
 export default router;

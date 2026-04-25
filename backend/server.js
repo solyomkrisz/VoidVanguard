@@ -49,6 +49,23 @@ router.get("/game", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/ui/html/game.html"));
 });
 
+// Password reset oldal
+router.get(
+  "/reset-password",
+  function (request, response, next) {
+    if (!request.query?.token) {
+      response.sendFile(path.join(__dirname, "../frontend/ui/html/error.html"));
+      return;
+    }
+
+    next();
+  },
+  (request, response) => {
+    response.sendFile(
+      path.join(__dirname, "../frontend/ui/html/passwordreset.html"),
+    );
+  },
+);
 // Leaderboard oldal
 router.get("/leaderboard", (request, response) => {
   response.sendFile(

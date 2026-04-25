@@ -92,3 +92,9 @@ export async function updateUser({ userId, role, body }) {
 
   return result;
 }
+
+export async function updatePassword({ id, password }) {
+  const passwordHash = await Password.hash(password);
+  const result = await Users.updatePassword(id, passwordHash);
+  return result.affectedRows > 0;
+}

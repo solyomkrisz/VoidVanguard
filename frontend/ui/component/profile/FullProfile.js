@@ -16,6 +16,58 @@ import "/ui/component/form/InlineEditor.js";
 import "/ui/component/validator/DisplayNameInputValidator.js";
 import "/ui/component/validator/DescriptionInputValidator.js";
 
+function getFriendshipRequestMethod(status) {
+  switch (status) {
+    case "not-friends":
+      return "POST";
+    case "received":
+      return "PATCH";
+    case "accepted":
+    case "sent":
+      return "DELETE";
+    default:
+      return null;
+  }
+}
+
+function getBlockRequestMethod(status) {
+  switch (status) {
+    case "you-blocked":
+    case "both-blocked":
+      return "DELETE";
+    case "got-blocked":
+    case "not-blocked":
+      return "POST";
+    default:
+      return null;
+  }
+}
+
+function getFriendshipButtonText(status) {
+  switch (status) {
+    case "accepted":
+      return "Barát eltávolítása";
+    case "not-friends":
+      return "Barát hozzáadása";
+    case "received":
+      return "Barátkérelem elfogadása";
+    case "sent":
+      return "Barátkérelem törlése";
+    default:
+      return "";
+  }
+}
+
+function getBlockButtonText(status) {
+  switch (status) {
+    case "you-blocked":
+    case "both-blocked":
+      return "Tiltás feloldása";
+    default:
+      return "Felhasználó letiltása";
+  }
+}
+
 // name - selector
 const TO_SELECT = new Map([
   ["profileContainer", ".profile-container"],
@@ -42,8 +94,6 @@ function selectElements(from, save) {
 
 const EVENTHANDLERS = new Map([
   ["friend-list-change", "onFriendListChange"],
-  ["friendship-status-change", "onFriendshipStatusChange"],
-  ["block-status-change", "onBlockStatusChange"],
   ["profile-create", "onProfileCreate"],
   ["inline-edit", "onInlineEdit"],
 ]);
@@ -111,13 +161,15 @@ export default class FullProfile extends HTMLElement {
     this._changed = new Set();
     this._editing = false;
 
+    this._hasOngoingRelationshipUpdate = false;
+
     this._built = false;
 
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
     this.onFriendListChange = this.onFriendListChange.bind(this);
-    this.onFriendshipStatusChange = this.onFriendshipStatusChange.bind(this);
-    this.onBlockStatusChange = this.onBlockStatusChange.bind(this);
+    this.onFriendshipButtonClick = this.onFriendshipButtonClick.bind(this);
+    this.onBlockButtonClick = this.onBlockButtonClick.bind(this);
     this.onProfileCreate = this.onProfileCreate.bind(this);
     this.onDelete = this.onDelete.bind(this);
     this.onSave = this.onSave.bind(this);
@@ -141,6 +193,58 @@ export default class FullProfile extends HTMLElement {
     this.update({ origin: "onLogout" });
   }
 
+  disableActionButtons(disabled) {
+    const fbutton = this._elements.friendshipButton;
+    fbutton && (fbutton.disabled = disabled);
+
+    const bbutton = this._elements.blockButton;
+    bbutton && (bbutton.disabled = disabled);
+  }
+
+  async onFriendshipButtonClick(e) {
+    if (this._hasOngoingRelationshipUpdate) return;
+    this._hasOngoingRelationshipUpdate = true;
+
+    if (!this.userId) return;
+
+    this.disableActionButtons(true);
+
+    const formData = new FormData();
+    formData.set("userId", this.userId);
+
+    const response = await net.send("/api/friends", {
+      method: getFriendshipRequestMethod(this._profileData.friendship_status),
+      body: formData,
+    });
+
+    this.update({ origin: "onFriendshipButtonClick" });
+
+    this._hasOngoingRelationshipUpdate = false;
+    this.disableActionButtons(false);
+  }
+
+  async onBlockButtonClick(e) {
+    if (this._hasOngoingRelationshipUpdate) return;
+    this._hasOngoingRelationshipUpdate = true;
+
+    if (!this.userId) return;
+
+    this.disableActionButtons(true);
+
+    const formData = new FormData();
+    formData.set("userId", this.userId);
+
+    const response = await net.send("/api/blocks", {
+      method: getBlockRequestMethod(this._profileData.block_status),
+      body: formData,
+    });
+
+    this.update({ origin: "onBlockButtonClick" });
+
+    this._hasOngoingRelationshipUpdate = false;
+    this.disableActionButtons(false);
+  }
+
   onFriendListChange(e) {
     if (this.userId === e?.detail?.userId) {
       const { friendList } = this._elements;
@@ -148,17 +252,6 @@ export default class FullProfile extends HTMLElement {
 
       friendList.refresh?.();
     }
-  }
-
-  async onFriendshipStatusChange(e) {
-    console.log(e.target);
-    await this.update({ origin: "friendshipStatusChangeHandler" });
-    e.target?.enable();
-  }
-
-  async onBlockStatusChange(e) {
-    await this.update({ origin: "blockStatusChangeHandler" });
-    e.target?.enable();
   }
 
   onProfileCreate(e) {
@@ -343,8 +436,19 @@ export default class FullProfile extends HTMLElement {
   buildProfileHeaderActionsDOM(showRelationshipControls, canEdit) {
     if (showRelationshipControls) {
       return el("div", {}, [
-        el("friendship-action-button", { controlled: "" }),
-        el("block-action-button", { controlled: "" }),
+        el(
+          "button",
+          {
+            id: "friendship-controller",
+            onClick: this.onFriendshipButtonClick,
+          },
+          ["Barát hozzáadása"],
+        ),
+        el(
+          "button",
+          { id: "block-controller", onClick: this.onBlockButtonClick },
+          ["Felhasználó letiltása"],
+        ),
       ]);
     }
 
@@ -437,8 +541,8 @@ export default class FullProfile extends HTMLElement {
 
     container.replaceChildren(cache[key]);
 
-    elements.friendshipActionButton = container.querySelector("friendship-action-button");
-    elements.blockActionButton = container.querySelector("block-action-button");
+    elements.friendshipButton = container.querySelector("#friendship-controller");
+    elements.blockButton = container.querySelector("#block-controller");
     elements.saveButton = container.querySelector("#save");
     elements.cancelButton = container.querySelector("#cancel");
     elements.deleteButton = container.querySelector("#delete")
@@ -515,6 +619,8 @@ export default class FullProfile extends HTMLElement {
       return;
     }
 
+    console.log(response.result);
+
     this.updateContent(meta, response.result);
   }
 
@@ -574,16 +680,10 @@ export default class FullProfile extends HTMLElement {
   renderActions(state, prev) {
     this.updateProfileHeaderActions();
 
-    const { friendshipActionButton, blockActionButton, saveButton } =
-      this._elements;
+    const { friendshipButton, blockButton, saveButton } = this._elements;
 
-    if (friendshipActionButton) {
-      friendshipActionButton.status = state.friendship_status;
-    }
-
-    if (blockActionButton) {
-      blockActionButton.status = state.block_status;
-    }
+    this.updateFriendshipButtonText();
+    this.updateBlockButtonText();
 
     if (saveButton) {
       saveButton.hidden = true;
@@ -617,8 +717,6 @@ export default class FullProfile extends HTMLElement {
   setUserIdDependecies(userId) {
     const el = this._elements;
 
-    el.friendshipActionButton?.setAttribute("user-id", userId);
-    el.blockActionButton?.setAttribute("user-id", userId);
     el.friendList?.setAttribute("user-id", userId);
     el.friendListFull?.setAttribute("user-id", userId);
 
@@ -626,15 +724,31 @@ export default class FullProfile extends HTMLElement {
     el.commentSection?.setAttribute("src", `/api/comments?targetId=${userId}`);
   }
 
+  updateFriendshipButtonText() {
+    const button = this._elements.friendshipButton;
+    if (!button) return;
+
+    button.textContent = getFriendshipButtonText(
+      this._profileData.friendship_status,
+    );
+  }
+
+  updateBlockButtonText() {
+    const button = this._elements.blockButton;
+    if (!button) return;
+
+    button.textContent = getBlockButtonText(this._profileData.block_status);
+  }
+
   syncFriendshipVisibility(state, prev) {
-    const button = this._elements.friendshipActionButton;
+    const button = this._elements.friendshipButton;
     if (!button) return;
 
     const wasBlocked = this.isBlocked(prev);
     const isBlocked = this.isBlocked(state);
 
     if (!isBlocked) {
-      wasBlocked && button?.refresh();
+      wasBlocked && this.updateFriendshipButtonText();
       button.hidden = false;
 
       return;

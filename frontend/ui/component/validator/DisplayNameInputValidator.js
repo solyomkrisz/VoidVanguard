@@ -11,7 +11,9 @@ export default class DisplayNameInputValidator extends InputValidator {
   }
 }
 
-window.customElements.define(
-  "display-name-input-validator",
-  DisplayNameInputValidator,
-);
+if (!customElements.get("display-name-input-validator")) {
+  customElements.define(
+    "display-name-input-validator",
+    DisplayNameInputValidator,
+  );
+}
