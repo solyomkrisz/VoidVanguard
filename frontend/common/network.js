@@ -24,15 +24,24 @@ export function refreshAccessToken() {
 
       const res = await fetch("/api/tokens");
 
-      if (!res.ok) {
-        throw new Error(`Token refresh failed: ${res.status}`);
-      }
-
       let data;
       try {
         data = await res.json();
       } catch {
-        throw new Error("Invalid JSON from token endpoint");
+        // throw new Error("Invalid JSON from token endpoint");
+        data = null;
+      }
+
+      if (
+        data?.result?.name === "RefreshTokenExpirationError" ||
+        data?.result?.name === "InvalidTokenError"
+      ) {
+        await logout();
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.message || `Token refresh failed: ${res.status}`);
       }
 
       const newToken = data?.result?.access_token;
@@ -87,7 +96,7 @@ export async function send(
       : `Starting a non-deduplicated request for ${options.method} ${url}`,
   );
 
-  const requestOptions = { ...options };
+  const requestOptions = { ...options, credentials: "include" };
 
   const promise = (async () => {
     if (isProtected) {

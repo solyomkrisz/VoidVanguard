@@ -22,9 +22,9 @@ export async function login(request, response) {
     /** */
     response.cookie("access_token", accessToken, {
       httpOnly: true,
-      sameSite: "strict",
-      maxAge: accessTokenLifetimeMin * 60 * 1000,
+      sameSite: "Strict",
       path: "/",
+      maxAge: accessTokenLifetimeMin * 60 * 1000,
     });
     /** */
 
@@ -40,15 +40,17 @@ export async function login(request, response) {
 
 export async function destroyAllSessions(request, response) {
   try {
+    service.logout(response);
+
     const userId = request?.targetUser?.id;
 
     if (userId) {
       await service.destroyAllSessions({ userId });
     }
 
-    service.logout(response);
-
-    response.sendStatus(204);
+    response
+      .status(200)
+      .json(createResponse(true, null, "Successfully ended all sessions"));
   } catch (error) {
     handleCaughtError(response, error);
   }

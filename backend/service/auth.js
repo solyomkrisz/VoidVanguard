@@ -36,7 +36,7 @@ export async function login({ username, password }) {
     process.env.REFRESH_TOKEN_SECRET,
   );
 
-  await RefreshTokens.revokeAll(user.id);
+  // await RefreshTokens.revokeAll(user.id);
 
   const refreshTokenHash = Token.hash(refreshToken);
 
@@ -55,18 +55,16 @@ export async function login({ username, password }) {
 }
 
 export function logout(response) {
-  response.cookie("refresh_token", "", {
-    httpOnly: true,
-    maxAge: 0,
-    expires: new Date(0),
+  response.clearCookie("refresh_token", {
     path: "/api/tokens",
+    sameSite: "Strict",
+    httpOnly: true,
   });
 
-  response.cookie("access_token", "", {
-    httpOnly: true,
-    maxAge: 0,
-    expires: new Date(0),
+  response.clearCookie("access_token", {
     path: "/",
+    sameSite: "Strict",
+    httpOnly: true,
   });
 }
 

@@ -177,9 +177,14 @@ export async function onDOMContentLoaded() {
 }
 
 export async function logout() {
-  if (!isLoggedIn()) return;
-
   const token = localStorage.getItem("access_token");
+
+  if (!isLoggedIn() && !token) {
+    console.log(
+      "Login helper function returned early, due to being not logged in",
+    );
+    return;
+  }
 
   try {
     if (token) {

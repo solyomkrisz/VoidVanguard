@@ -19,6 +19,7 @@
     <view-switcher layout="sidebar" initial="account-manager" no-cache>
       <template id="account-manager" data-name="Fiók szerkesztése">
         <h1>Fiók szerkesztése</h1>
+        <destroy-all-sessions-button></destroy-all-sessions-button>
         <account-form-restorer user-id auto>
           <account-form action="update" restore with-validator></account-form>
         </account-form-restorer>
@@ -70,6 +71,7 @@
       import "/ui/component/account/BlockedUserList.js";
       import "/ui/component/account/AccountFormRestorer.js";
       import "/ui/component/account/AccountForm.js";
+      import "/ui/component/auth/DestroyAllSessionsButton.js";
       import {
         onDOMContentLoaded,
         isLoggedIn,
@@ -87,16 +89,16 @@
       });
 
       on("logout", () => {
-        window.location.href = "/";
+        window.top.location.href = "/";
       });
 
       await autologin(); // first add event listeners
 
       if (!isLoggedIn()) {
-        window.location.href = "/";
+        window.top.location.href = "/";
       }
 
-      const url = new URL(window.location.href);
+      const url = new URL(window.top.location.href);
       const active = new URLSearchParams(url.searchParams).get("active");
 
       if (active) {

@@ -46,7 +46,7 @@ export default class LogoutButton extends HTMLElement {
     button.addEventListener("click", async () => {
       try {
         await logout();
-      } catch (err) {
+      } catch (error) {
         console.warn("Server logout failed");
       }
     });

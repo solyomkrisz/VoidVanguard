@@ -33,8 +33,11 @@ router.get("/profile/:id", (request, response) => {
 });
 
 // Én oldal
+// router.get("/me", (request, response) => {
+//   response.sendFile(path.join(__dirname, "../frontend/ui/html/me.html"));
+// });
 router.get("/me", (request, response) => {
-  response.sendFile(path.join(__dirname, "../frontend/ui/html/me.html"));
+  response.sendFile(path.join(__dirname, "../frontend/ui/html/me-loader.html"));
 });
 
 // Functional test oldal
