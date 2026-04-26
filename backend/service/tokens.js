@@ -9,6 +9,11 @@ export async function find({ userId }) {
   return row;
 }
 
+export async function findHash({ tokenHash }) {
+  const row = await RefreshTokens.findByHash(tokenHash);
+  return row;
+}
+
 export async function deleteAll({ userId } = {}) {
   const [result] = await RefreshTokens.deleteAll(userId);
   return result;
@@ -31,17 +36,11 @@ export async function refresh(refreshToken) {
     throw CustomError.INVALID_TOKEN;
   }
 
-  const row = await find({ userId: payload.id });
+  const refreshTokenHash = Token.hash(refreshToken);
+
+  const row = await findHash({ tokenHash: refreshTokenHash });
 
   if (!row) {
-    throw CustomError.INVALID_TOKEN;
-  }
-
-  const { token_hash } = row;
-
-  const match = await bcrypt.compare(refreshToken, token_hash);
-
-  if (!match) {
     throw CustomError.INVALID_TOKEN;
   }
 
@@ -54,4 +53,11 @@ export async function refresh(refreshToken) {
   const accessToken = Token.get(user);
 
   return accessToken;
+}
+
+export async function revokeSession(refreshToken) {
+  const tokenHash = Token.hash(refreshToken);
+  const result = await RefreshTokens.deleteByTokenHash(tokenHash);
+
+  return true;
 }

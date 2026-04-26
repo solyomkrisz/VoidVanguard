@@ -1,8 +1,9 @@
 import { isLoggedIn, logout } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import { element, text } from "/ui/UI.js";
+import * as net from "/common/network.js";
 
-export default class LogoutButton extends HTMLElement {
+export default class DestroyAllSessionsButton extends HTMLElement {
   constructor() {
     super();
 
@@ -41,13 +42,25 @@ export default class LogoutButton extends HTMLElement {
   }
 
   build() {
-    const button = this.appendChild(element("button", text("Kijelentkezés")));
+    const button = this.appendChild(
+      element("button", text("Kijelentkezés mindenhonnan")),
+    );
 
     button.addEventListener("click", async () => {
       try {
-        await logout();
+        const response = await net.send("/api/sessions", {
+          method: "DELETE",
+        });
+
+        localStorage.removeItem("access_token");
+
+        if (!response?.success) {
+          throw new Error(`Global logout failed: ${response?.message}`);
+        }
       } catch (error) {
-        console.warn("Server logout failed");
+        console.error(error);
+      } finally {
+        window.top.location.reload();
       }
     });
 
@@ -59,4 +72,7 @@ export default class LogoutButton extends HTMLElement {
   }
 }
 
-window.customElements.define("logout-button", LogoutButton);
+window.customElements.define(
+  "destroy-all-sessions-button",
+  DestroyAllSessionsButton,
+);

@@ -48,6 +48,22 @@ class RefreshTokens extends Table {
     );
     return rows.length ? rows[0] : null;
   }
+
+  async findByHash(tokenHash) {
+    const [rows] = await execute(
+      "SELECT token_hash FROM refresh_tokens WHERE token_hash = ? AND revoked = FALSE AND expires_at > NOW()",
+      [tokenHash],
+    );
+    return rows.length ? rows[0] : null;
+  }
+
+  async deleteByTokenHash(tokenHash) {
+    const [result] = await execute(
+      "DELETE FROM refresh_tokens WHERE token_hash = ?",
+      [tokenHash],
+    );
+    return result;
+  }
 }
 
 export default new RefreshTokens();

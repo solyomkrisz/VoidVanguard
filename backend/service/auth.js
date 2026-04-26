@@ -36,9 +36,9 @@ export async function login({ username, password }) {
     process.env.REFRESH_TOKEN_SECRET,
   );
 
-  await RefreshTokens.revokeAll(user.id);
+  // await RefreshTokens.revokeAll(user.id);
 
-  const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+  const refreshTokenHash = Token.hash(refreshToken);
 
   RefreshTokens.save({
     userId: user.id,
@@ -55,16 +55,20 @@ export async function login({ username, password }) {
 }
 
 export function logout(response) {
-  response.cookie("refresh_token", "", {
-    httpOnly: true,
-    maxAge: 0,
-    expires: new Date(0),
+  response.clearCookie("refresh_token", {
     path: "/api/tokens",
+    sameSite: "Strict",
+    httpOnly: true,
   });
 
-  response.cookie("access_token", "", {
+  response.clearCookie("access_token", {
+    path: "/",
+    sameSite: "Strict",
     httpOnly: true,
-    maxAge: 0,
-    expires: new Date(0),
   });
+}
+
+export async function destroyAllSessions({ userId }) {
+  const result = await RefreshTokens.deleteAll(userId);
+  return result;
 }

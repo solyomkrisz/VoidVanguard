@@ -7,6 +7,7 @@ import "/ui/component/layout/DrilldownMenu.js";
 import "/ui/component/game/SaveBrowserLauncher.js";
 import "/ui/component/game/RemoteSaveList.js";
 import "/ui/component/game/SaveMenu.js";
+import globalAudio from "/common/globalAudio.js";
 
 export default class MainMenu extends BaseCustomElement {
   constructor() {
@@ -90,8 +91,8 @@ export default class MainMenu extends BaseCustomElement {
         <h1>VoidVanguard</h1>
         <drilldown-menu initial="root">
             <template id="root">
-                <button id="start">Új játék indítása</button>
-                <button data-target="save-menu">Játékmenet betöltése</button>
+                <button data-sfx="click_1" id="start">Új játék indítása</button>
+                <button data-sfx="click_1" data-target="save-menu">Játékmenet betöltése</button>
             </template>
             <template id="save-menu">
               <save-menu remote-save-list-controls="load delete"></save-menu>

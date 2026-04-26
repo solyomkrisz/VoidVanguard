@@ -177,21 +177,21 @@ export async function onDOMContentLoaded() {
 }
 
 export async function logout() {
-  if (!isLoggedIn()) return;
-
   const token = localStorage.getItem("access_token");
+
+  if (!isLoggedIn() && !token) {
+    console.log(
+      "Login helper function returned early, due to being not logged in",
+    );
+    return;
+  }
 
   try {
     if (token) {
-      const response = await fetch("/api/sessions", {
+      const response = await fetch("/api/tokens", {
         method: "DELETE",
+        credentials: "include",
       });
-
-      const data = await response.json();
-
-      if (!response.ok || !data?.success) {
-        throw new Error(`Logout failed: ${data.message}`);
-      }
 
       /**
        * we must remove the access_token from localStorage after the server finishes with its part of logging out
@@ -211,6 +211,10 @@ export async function logout() {
        * so when the storage event runs the other tabs cannot refresh the access token and put it back
        */
       localStorage.removeItem("access_token");
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
     }
   } catch (error) {
     console.error("Logout error:", error);

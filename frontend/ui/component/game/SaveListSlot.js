@@ -52,7 +52,7 @@ export default class SaveListSlot extends BaseCustomElement {
         detail: { save: { ...this.data }, saveType: this.saveType },
         bubbles: true,
         composed: true,
-      })
+      }),
     );
   }
 
@@ -62,7 +62,7 @@ export default class SaveListSlot extends BaseCustomElement {
         detail: { save: { ...this.data } },
         bubbles: true,
         composed: true,
-      })
+      }),
     );
   }
 
@@ -74,17 +74,19 @@ export default class SaveListSlot extends BaseCustomElement {
     if (config.includes("load") || all) {
       elements.loadSaveButton = el(
         "button",
-        { onClick: this.onLoadSaveButtonClick },
-        ["Mentés betöltése"]
+        { "data-sfx": "click_1", onClick: this.onLoadSaveButtonClick },
+        ["Mentés betöltése"],
       );
 
       this.appendShadowChild(elements.loadSaveButton);
     }
 
     if (config.includes("delete") || all) {
-      elements.deleteButton = el("button", { onClick: this.onDelete }, [
-        "Mentés törlése",
-      ]);
+      elements.deleteButton = el(
+        "button",
+        { "data-sfx": "click_1", onClick: this.onDelete },
+        ["Mentés törlése"],
+      );
 
       this.appendShadowChild(elements.deleteButton);
     }

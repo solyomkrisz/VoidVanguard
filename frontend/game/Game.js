@@ -27,6 +27,7 @@ import Models from "/game/SpaceShipModels.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 import "/ui/component/game/GameControllerContainer.js";
 import "/ui/component/game/PauseButton.js";
+import AudioManager from "/common/AudioManager.js";
 
 export default class Game extends WebGLCanvas {
   static from(save = null) {
@@ -129,6 +130,7 @@ export default class Game extends WebGLCanvas {
     this.debugOverlay = null;
     this.blockStyle = null;
     this.textureManager = null;
+    this.audioManager = null;
 
     this.showNebula = true;
     this.showSpaceGrid = true;
@@ -396,15 +398,20 @@ export default class Game extends WebGLCanvas {
 
     const gl = this.gl;
     const textureManager = this.textureManager;
+    const audioManager = this.audioManager;
+
+    const texturePromises = textureManager.promises ?? [];
+    const audioPromise = audioManager?.whenAllLoaded?.() ?? Promise.resolve();
 
     // prettier-ignore
-    Promise.all(textureManager.promises).then(
+    Promise.all([...texturePromises, audioPromise]).then(
       () => {
         for (const { name, slot, offsetX, offsetY } of textureManager.textureCoordinateQueue) {
           textureManager.addTextureCoordinates(name, slot, offsetX, offsetY);
         }
 
         textureManager.loadFromActiveSlot();
+        audioManager?.unlock?.();
 
         this.maxLayers = gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS);
 
@@ -443,6 +450,7 @@ export default class Game extends WebGLCanvas {
     if (!this.running) return;
     this.running = false;
     window.cancelAnimationFrame(this.frameId);
+    this.audioManager?.stopAll?.();
     this.tooltip.disable();
     this.UI.pauseMenu?.show();
   }
@@ -618,6 +626,20 @@ export default class Game extends WebGLCanvas {
     }
 
     this.textureManager = textureManager;
+  }
+
+  /**
+   * @param {AudioManager} audioManager
+   */
+  addAudioManager(audioManager) {
+    if (!(audioManager instanceof AudioManager)) {
+      console.warn(
+        "GAME-addAudioManager: Couldn't add audio manager: the given value is not an instance of the AudioManager class!",
+      );
+      return;
+    }
+
+    this.audioManager = audioManager;
   }
 
   /**

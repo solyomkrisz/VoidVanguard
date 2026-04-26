@@ -11,6 +11,7 @@ import admin from "./admin.js";
 import saves from "./saves.js";
 import passwordresets from "./passwordresets.js";
 import scores from "./scores.js";
+import me from "./me.js";
 
 const router = express.Router();
 
@@ -32,5 +33,6 @@ router.use("/admin", admin);
 router.use("/saves", saves);
 router.use("/reset-password", passwordresets);
 router.use("/scores", scores);
+router.use("/me", me);
 
 export default router;

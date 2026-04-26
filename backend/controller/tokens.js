@@ -5,28 +5,23 @@ import {
   handleCaughtError,
   accessTokenLifetimeMin,
 } from "../common/common.js";
+import * as CustomError from "../common/CustomError.js";
 
 export async function refresh(request, response) {
   const token = request?.cookies?.refresh_token;
 
-  if (!token) {
-    return response
-      .status(400)
-      .json(
-        createResponse(
-          false,
-          { access_token: "" },
-          "Unauthorized access, no token provided",
-        ),
-      );
-  }
   try {
+    if (!token) {
+      throw CustomError.NO_REFRESH_TOKEN;
+    }
+
     const accessToken = await service.refresh(token);
 
     /** */
     response.cookie("access_token", accessToken, {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "Strict",
+      path: "/",
       maxAge: accessTokenLifetimeMin * 60 * 1000,
     });
     /** */
@@ -42,6 +37,24 @@ export async function refresh(request, response) {
       );
   } catch (error) {
     authService.logout(response);
+    handleCaughtError(response, error);
+  }
+}
+
+export async function revokeSession(request, response) {
+  const token = request?.cookies?.refresh_token;
+
+  try {
+    authService.logout(response);
+
+    if (token) {
+      await service.revokeSession(token);
+    }
+
+    response
+      .status(200)
+      .json(createResponse(true, null, "Successfully logged out"));
+  } catch (error) {
     handleCaughtError(response, error);
   }
 }

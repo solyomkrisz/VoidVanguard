@@ -225,6 +225,24 @@ export const REFRESH_TOKEN_EXPIRED = new CustomError({
   },
 });
 
+export const NO_REFRESH_TOKEN = new CustomError({
+  statusCode: 400,
+  definition: {
+    name: "NoRefreshTokenError",
+    code: "ER_NO_RFH_TKN",
+    message: "No refresh token was provided",
+  },
+});
+
+export const UNABLE_TO_END_SESSION = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "SessionDestroyError",
+    code: "ER_SESSION_DESTROY",
+    message: "Unable to end session",
+  },
+});
+
 export function isCustomError(error) {
   return error instanceof CustomError;
 }

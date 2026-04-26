@@ -54,6 +54,18 @@ export default class Player extends Spaceship {
     this.model.init(this);
   }
 
+  onEngineEnabled() {
+    const am = this.game.audioManager;
+    const sound = am.getSound("enginesound");
+    sound.instance.start();
+  }
+
+  onEngineDisabled() {
+    const am = this.game.audioManager;
+    const sound = am.getSound("enginesound");
+    sound.instance.stop();
+  }
+
   destroy() {
     for (const key of Object.keys(this.UI)) {
       this.UI[key].remove?.();
@@ -144,16 +156,22 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation
+            this.rotation,
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
+
+          this.onEngineEnabled();
+        } else {
+          this.onEngineDisabled();
         }
       }
 
       this.angularAcceleration = T / this.I;
+    } else {
+      this.onEngineDisabled();
     }
   }
 
@@ -197,16 +215,22 @@ export default class Player extends Spaceship {
         if (_W) {
           const thrustVector = vec2.rotate(
             vec2.copy(_b.vec2_1, thruster.getThrustVector()),
-            this.rotation
+            this.rotation,
           );
           this.netForce.apply(
-            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector)
+            _b.force_1.setFromMagDir(thruster.getThrust(), thrustVector),
           );
           T += thruster.getTorque(this);
+
+          this.onEngineEnabled();
+        } else {
+          this.onEngineDisabled();
         }
       }
 
       this.angularAcceleration = T / this.I;
+    } else {
+      this.onEngineDisabled();
     }
   }
 

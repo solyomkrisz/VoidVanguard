@@ -59,6 +59,8 @@ export default class LazyItemList extends HTMLElement {
 
     this._deferredAttributes = new Map();
     this._activeLoadToken = null;
+
+    this.onRefreshButtonClick = this.onRefreshButtonClick.bind(this);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -85,8 +87,17 @@ export default class LazyItemList extends HTMLElement {
     this._scrollObserver?.disconnect();
   }
 
+  onRefreshButtonClick(e) {
+    if (this._loading) return;
+    this.partialRefresh();
+  }
+
   build() {
     if (this._built) return;
+
+    this._refreshButton = this.appendChild(document.createElement("button"));
+    this._refreshButton.textContent = "Frissítés";
+    this._refreshButton.addEventListener("click", this.onRefreshButtonClick);
 
     this._container = this.appendChild(document.createElement("div"));
     this._container.setAttribute("aria-live", "polite");

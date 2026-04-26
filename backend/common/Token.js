@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { accessTokenLifetimeMin } from "./common.js";
 
 class Token {
@@ -17,6 +18,13 @@ class Token {
 
   static verify(token, secret) {
     return jwt.verify(token, secret);
+  }
+
+  static hash(token) {
+    return crypto
+      .createHmac("sha256", process.env.REFRESH_TOKEN_HASH_SECRET)
+      .update(token)
+      .digest("hex");
   }
 }
 

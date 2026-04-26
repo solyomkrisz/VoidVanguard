@@ -42,7 +42,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.game.resume();
 
     document.dispatchEvent(
-      new CustomEvent("resume-game", { detail: { game: this } })
+      new CustomEvent("resume-game", { detail: { game: this } }),
     );
   }
 
@@ -53,7 +53,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.game.destroy();
 
     document.dispatchEvent(
-      new CustomEvent("exit-game", { detail: { game: this._game } })
+      new CustomEvent("exit-game", { detail: { game: this._game } }),
     );
   }
 
@@ -67,7 +67,7 @@ export default class PauseMenu extends BaseCustomElement {
     if (!formData) {
       console.error("Unable to process save request: no form data provided");
       ToastManager.REQUEST(
-        "Unable to process save request: no form data provided"
+        "Unable to process save request: no form data provided",
       );
 
       return;
@@ -101,7 +101,7 @@ export default class PauseMenu extends BaseCustomElement {
           </template>
           <template id="root">
             <resume-button></resume-button>
-            <button data-target="save-game">Játékmenet mentése</button>
+            <button data-sfx="click_1" data-target="save-game">Játékmenet mentése</button>
             <exit-button></exit-button>
           </template>
         </drilldown-menu>
