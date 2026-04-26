@@ -44,7 +44,11 @@ export default class LogoutButton extends HTMLElement {
     const button = this.appendChild(element("button", text("Kijelentkezés")));
 
     button.addEventListener("click", async () => {
-      await logout();
+      try {
+        await logout();
+      } catch (err) {
+        console.warn("Server logout failed");
+      }
     });
 
     if (!isLoggedIn()) button.hidden = true;

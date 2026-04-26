@@ -20,6 +20,7 @@ export async function refresh(request, response) {
         ),
       );
   }
+
   try {
     const accessToken = await service.refresh(token);
 
@@ -42,6 +43,22 @@ export async function refresh(request, response) {
       );
   } catch (error) {
     authService.logout(response);
+    handleCaughtError(response, error);
+  }
+}
+
+export async function revokeSession(request, response) {
+  const token = request?.cookies?.refresh_token;
+
+  try {
+    if (token) {
+      await service.revokeSession(token);
+    }
+
+    authService.logout(response);
+
+    response.sendStatus(204);
+  } catch (error) {
     handleCaughtError(response, error);
   }
 }

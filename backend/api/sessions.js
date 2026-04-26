@@ -25,6 +25,13 @@ router.post(
   controller.login,
 );
 
-router.delete("/", controller.logout);
+router.delete(
+  "/",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  controller.destroyAllSessions,
+);
 
 export default router;

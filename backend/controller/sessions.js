@@ -24,6 +24,7 @@ export async function login(request, response) {
       httpOnly: true,
       sameSite: "strict",
       maxAge: accessTokenLifetimeMin * 60 * 1000,
+      path: "/",
     });
     /** */
 
@@ -37,10 +38,18 @@ export async function login(request, response) {
   }
 }
 
-export function logout(_, response) {
-  service.logout(response);
+export async function destroyAllSessions(request, response) {
+  try {
+    const userId = request?.targetUser?.id;
 
-  response
-    .status(200)
-    .json(createResponse(true, { access_token: "" }, "Logout successful"));
+    if (userId) {
+      await service.destroyAllSessions({ userId });
+    }
+
+    service.logout(response);
+
+    response.sendStatus(204);
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
 }

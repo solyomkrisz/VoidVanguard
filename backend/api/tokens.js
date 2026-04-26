@@ -5,4 +5,6 @@ const router = express.Router();
 
 router.get("/", controller.refresh);
 
+router.delete("/", controller.revokeSession);
+
 export default router;

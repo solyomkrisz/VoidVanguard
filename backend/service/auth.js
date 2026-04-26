@@ -38,7 +38,7 @@ export async function login({ username, password }) {
 
   await RefreshTokens.revokeAll(user.id);
 
-  const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+  const refreshTokenHash = Token.hash(refreshToken);
 
   RefreshTokens.save({
     userId: user.id,
@@ -66,5 +66,11 @@ export function logout(response) {
     httpOnly: true,
     maxAge: 0,
     expires: new Date(0),
+    path: "/",
   });
+}
+
+export async function destroyAllSessions({ userId }) {
+  const result = await RefreshTokens.deleteAll(userId);
+  return result;
 }
