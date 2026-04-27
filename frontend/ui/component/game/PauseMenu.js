@@ -33,6 +33,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.onViewChange = this.onViewChange.bind(this);
     this.onSaveRequest = this.onSaveRequest.bind(this);
     this.onSaveFormConnect = this.onSaveFormConnect.bind(this);
+    this.onGameVolumeChange = this.onGameVolumeChange.bind(this);
   }
 
   onResume(e) {
@@ -44,6 +45,15 @@ export default class PauseMenu extends BaseCustomElement {
     document.dispatchEvent(
       new CustomEvent("resume-game", { detail: { game: this } }),
     );
+  }
+
+  onGameVolumeChange(e) {
+    e.stopPropagation();
+
+    const volume = e?.detail?.volume;
+    if (volume == null) return;
+
+    this.game.setVolume(volume);
   }
 
   onExit(e) {
@@ -112,6 +122,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.addEventListener("save-request", this.onSaveRequest);
     this.addEventListener("view-change", this.onViewChange);
     this.addEventListener("save-form-connected", this.onSaveFormConnect);
+    this.addEventListener("game-volume-change", this.onGameVolumeChange);
 
     this._built = true;
   }

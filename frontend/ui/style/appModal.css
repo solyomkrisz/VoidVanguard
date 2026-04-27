@@ -1,0 +1,12 @@
+:host(:not([open])) {
+  display: none;
+}
+
+:host {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #444;
+  color: #fff;
+}

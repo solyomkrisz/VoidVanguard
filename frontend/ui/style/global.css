@@ -67,3 +67,11 @@ fullscreen-overlay a {
 .dropdown:hover .dropdown-menu {
   display: block;
 }
+
+app-modal {
+  display: block;
+}
+
+destroy-all-sessions-button {
+  display: block;
+}

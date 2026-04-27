@@ -1,0 +1,15 @@
+token-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 10px;
+  border: 1px solid #333;
+  padding: 4px;
+}
+
+.is-current-marker {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background-color: lightgreen;
+}

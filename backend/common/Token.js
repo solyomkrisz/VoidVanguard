@@ -10,10 +10,14 @@ class Token {
     secret = process.env.ACCESS_TOKEN_SECRET,
     options = {},
   ) {
-    payload.iat = iat;
-    payload.exp = exp;
+    const fullPayload = {
+      ...payload,
+      iat,
+      exp,
+      jti: crypto.randomUUID(),
+    };
 
-    return jwt.sign(payload, secret, options);
+    return jwt.sign(fullPayload, secret, options);
   }
 
   static verify(token, secret) {

@@ -104,6 +104,9 @@ export async function update(request, response) {
 export async function remove(request, response) {
   try {
     await service.deleteUser({ id: request.targetUser.id });
+    response
+      .status(200)
+      .json(createResponse(true, null, "Account successfully deleted"));
   } catch (error) {
     handleCaughtError(response, error);
   }

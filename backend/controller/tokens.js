@@ -41,14 +41,51 @@ export async function refresh(request, response) {
   }
 }
 
-export async function revokeSession(request, response) {
+export async function lazySelectActiveTokens(request, response) {
+  try {
+    const currentRefreshToken = request?.cookies?.refresh_token;
+
+    const result = await service.lazySelectByUserId({
+      userId: request?.targetUser?.id,
+      currentRefreshToken,
+      page: Number(request.query?.page || 1),
+      limit: Number(request.query?.limit || 20),
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, result, "Active tokens fetched successfully"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function revokeSessionById(request, response) {
+  try {
+    const currentRefreshToken = request?.cookies?.refresh_token;
+
+    const result = await service.revokeSessionById({
+      id: request.params.id,
+      userId: request.targetUser.id,
+      currentRefreshToken,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, result, "Session destroyed successfully"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function revokeSessionByToken(request, response) {
   const token = request?.cookies?.refresh_token;
 
   try {
     authService.logout(response);
 
     if (token) {
-      await service.revokeSession(token);
+      await service.revokeSessionByToken(token);
     }
 
     response

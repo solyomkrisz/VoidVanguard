@@ -40,8 +40,9 @@ CREATE TABLE password_resets (
 );
 
 CREATE TABLE refresh_tokens(
+    id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
-    token_hash CHAR(64) PRIMARY KEY, -- 60 was for bcrypt
+    token_hash CHAR(64) NOT NULL UNIQUE, -- 60 was for bcrypt
     expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     revoked BOOLEAN DEFAULT FALSE,

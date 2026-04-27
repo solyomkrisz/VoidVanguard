@@ -28,6 +28,8 @@ export async function login(request, response) {
     });
     /** */
 
+    console.log("Refresh és access token cookie-k beállítva...");
+
     response
       .status(200)
       .json(
