@@ -5,8 +5,12 @@ export default class Sound {
 
     this.loop = options.loop ?? false;
 
-    this.gain = ctx.createGain();
-    this.gain.connect(ctx.destination);
+    if (options.gainNode) {
+      this.gainNode = options.gainNode;
+    } else {
+      this.gainNode = ctx.createGain();
+      this.gainNode.connect(ctx.destination);
+    }
 
     this.source = null;
     this.startTime = 0;
@@ -35,7 +39,7 @@ export default class Sound {
       };
     }
 
-    src.connect(this.gain);
+    src.connect(this.gainNode);
     return src;
   }
 

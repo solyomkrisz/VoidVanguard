@@ -8,9 +8,13 @@ export default class SoundPool {
 
     this.activeSounds = new Set();
 
-    this.gain = ctx.createGain();
-    this.gain.gain.value = this.volume;
-    this.gain.connect(ctx.destination);
+    if (options.gainNode) {
+      this.gainNode = options.gainNode;
+    } else {
+      this.gainNode = ctx.createGain();
+      this.gainNode.gain.value = this.volume;
+      this.gainNode.connect(ctx.destination);
+    }
   }
 
   play({ volume = 1, playbackRate = 1 } = {}) {
@@ -29,7 +33,7 @@ export default class SoundPool {
     gainNode.gain.value = volume;
 
     src.connect(gainNode);
-    gainNode.connect(this.gain);
+    gainNode.connect(this.gainNode);
 
     src.start();
 
@@ -41,7 +45,7 @@ export default class SoundPool {
   }
 
   setVolume(v) {
-    this.gain.gain.value = v;
+    this.gainNode.gain.value = v;
   }
 
   stopAll() {
