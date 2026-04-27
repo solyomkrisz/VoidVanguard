@@ -45,6 +45,9 @@ CREATE TABLE refresh_tokens(
     token_hash CHAR(64) NOT NULL UNIQUE, -- 60 was for bcrypt
     expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ip VARCHAR(45),
+    user_agent TEXT,
     revoked BOOLEAN DEFAULT FALSE,
 
     FOREIGN KEY (user_id) REFERENCES users(id)

@@ -52,6 +52,8 @@ export async function refresh(refreshToken) {
 
   const accessToken = Token.get(user);
 
+  await RefreshTokens.updateLastUsedAt(refreshTokenHash);
+
   return accessToken;
 }
 

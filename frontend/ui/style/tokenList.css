@@ -1,9 +1,22 @@
 token-list-item {
   display: flex;
+  flex-direction: column;
+  border: 1px solid #333;
+  cursor: pointer;
+}
+
+.token-list-item-main {
+  display: flex;
   align-items: center;
   justify-content: end;
   gap: 10px;
-  border: 1px solid #333;
+  padding: 4px;
+  user-select: none;
+}
+
+.token-list-item-dropdown {
+  background-color: #333;
+  color: #fff;
   padding: 4px;
 }
 

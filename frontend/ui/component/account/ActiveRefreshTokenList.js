@@ -6,6 +6,10 @@ import * as net from "/common/network.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 export default class ActiveRefreshTokenList extends LazyItemList {
+  static get observedAttributes() {
+    return [...super.observedAttributes, "user-id"];
+  }
+
   constructor() {
     super();
 
@@ -14,6 +18,33 @@ export default class ActiveRefreshTokenList extends LazyItemList {
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
     this.onSessionDestroy = this.onSessionDestroy.bind(this);
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    // super.attributeChangedCallback?.(name, oldValue, newValue);
+
+    if (!this._built) {
+      this._deferredAttributes.set(name, newValue);
+      return;
+    }
+
+    if (name === "src" && oldValue !== newValue && newValue) {
+      this.refresh();
+    }
+
+    if (name === "user-id" && oldValue !== newValue) {
+      console.warn(
+        `${name} changed from [${oldValue}] to [${newValue}] when this._built was`,
+        this._built,
+      );
+
+      if (newValue) {
+        this.setAttribute("src", `/api/tokens/active?targetUserId=${newValue}`);
+        // this.refresh();
+      } else {
+        this.reset();
+      }
+    }
   }
 
   onLogin(e) {
@@ -29,11 +60,15 @@ export default class ActiveRefreshTokenList extends LazyItemList {
     if (!id || this._hasOngoingSessionDestroy || this._loading) return;
     this._hasOngoingSessionDestroy = true;
 
-    const response = await net.send("/api/tokens/" + id, {
-      method: "DELETE",
-    });
+    let url = "/api/tokens/" + id;
 
-    if (!response?.success) {
+    if (this.getAttribute("user-id")) {
+      url += "?targetUserId=" + this.getAttribute("user-id");
+    }
+
+    const response = await net.send(url, { method: "DELETE" });
+
+    if (!response?.success || !response?.result?.deleted) {
       ToastManager.REQUEST("Nem sikerült a kívánt munkamenet felfüggesztése.");
       this._hasOngoingSessionDestroy = false;
       return;

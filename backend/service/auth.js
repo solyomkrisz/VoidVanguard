@@ -6,7 +6,12 @@ import Password from "../common/Password.js";
 import Token from "../common/Token.js";
 import { v4 as uuidv4 } from "uuid";
 
-export async function login({ username, password }) {
+export async function login({
+  username,
+  password,
+  ip = null,
+  userAgent = null,
+}) {
   const user = await Users._selectByUsername(username);
 
   if (!user) {
@@ -47,6 +52,8 @@ export async function login({ username, password }) {
     tokenHash: refreshTokenHash,
     exp: new Date(exp * 1000),
     iat: new Date(iat * 1000),
+    ip,
+    userAgent,
   });
 
   return {

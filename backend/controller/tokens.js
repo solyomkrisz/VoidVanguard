@@ -36,7 +36,7 @@ export async function refresh(request, response) {
         ),
       );
   } catch (error) {
-    authService.logout(response);
+    // authService.logout(response);
     handleCaughtError(response, error);
   }
 }

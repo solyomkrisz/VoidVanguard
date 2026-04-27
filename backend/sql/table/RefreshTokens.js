@@ -14,15 +14,18 @@ class RefreshTokens extends Table {
         new Column("token_hash"),
         new Column("expires_at"),
         new Column("issued_at"),
+        new Column("last_used_at"),
+        new Column("ip"),
+        new Column("user_agent"),
         new Column("revoked"),
       ],
     });
   }
 
-  async save({ id, userId, tokenHash, exp, iat }) {
+  async save({ id, userId, tokenHash, exp, iat, ip, userAgent }) {
     const [result] = await execute(
-      "INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, issued_at) VALUES (?, ?, ?, ?, ?)",
-      [id, userId, tokenHash, exp, iat],
+      "INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, issued_at, ip, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [id, userId, tokenHash, exp, iat, ip, userAgent],
     );
     return result;
   }
@@ -75,6 +78,9 @@ class RefreshTokens extends Table {
     const sql = `
       SELECT
         id,
+        ip,
+        user_agent,
+        DATE_FORMAT(last_used_at, '%Y-%m-%d %H:%i:%s') AS last_used_at,
         DATE_FORMAT(expires_at, '%Y-%m-%d %H:%i:%s') AS expires_at,
         DATE_FORMAT(issued_at, '%Y-%m-%d %H:%i:%s') AS issued_at,
         CASE
@@ -110,6 +116,14 @@ class RefreshTokens extends Table {
     const [result] = await execute(
       "DELETE FROM refresh_tokens WHERE id = ? AND user_id = ?",
       [id, userId],
+    );
+    return result;
+  }
+
+  async updateLastUsedAt(tokenHash) {
+    const [result] = await execute(
+      "UPDATE refresh_tokens SET last_used_at = CURRENT_TIMESTAMP WHERE token_hash = ?",
+      [tokenHash],
     );
     return result;
   }

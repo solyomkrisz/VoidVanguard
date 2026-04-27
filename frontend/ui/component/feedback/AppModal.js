@@ -43,6 +43,10 @@ export default class AppModal extends BaseCustomElement {
     this.update();
   }
 
+  disconnectedCallback() {
+    this._resolve(false);
+  }
+
   onConfirmButtonClick() {
     const onConfirm = this.data.onConfirm ?? DEFAULT_CONFIG.onConfirm;
     onConfirm();

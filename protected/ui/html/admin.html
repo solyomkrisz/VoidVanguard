@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="/ui/style/searchBar.css" />
     <link rel="stylesheet" href="/ui/style/searchbox.css" />
     <link rel="stylesheet" href="/protected/ui/style/admin.css" />
+    <link rel="stylesheet" href="/ui/style/tokenList.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
     <style>
       full-profile {
         position: relative;
@@ -114,7 +116,19 @@
         page-size="6"
         user-id
       ></blocked-user-list>
+
+      <br />
+      <hr />
+      <h1>Aktív munkamenetek kezelése</h1>
+
+      <active-refresh-token-list
+        controls="pagination"
+        page-size="6"
+        user-id
+      ></active-refresh-token-list>
     </admin-module>
+
+    <toast-manager event-controlled></toast-manager>
 
     <script>
       function onSearchboxItemClick(event) {
@@ -155,6 +169,8 @@
       import "/ui/component/profile/ProfileFormRestorer.js";
       import "/ui/component/profile/FriendListFull.js";
       import "/ui/component/form/SearchBar.js";
+      import "/ui/component/account/ActiveRefreshTokenList.js";
+      import "/ui/component/feedback/ToastManager.js";
       await importWithRefresh(
         "/protected/ui/component/data/SearchBarResultList.js",
       );
