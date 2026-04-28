@@ -1,5 +1,6 @@
 import Table from "../Table.js";
 import Column from "../Column.js";
+import { runQueryWithPagination } from "../../common/common.js";
 import * as CustomError from "../../common/CustomError.js";
 import { execute } from "../database.js";
 import Friends from "./Friends.js";
@@ -33,6 +34,7 @@ class Bans extends Table {
         `,
       [userId],
     );
+
     return rows.length ? rows[0] : null;
   }
 

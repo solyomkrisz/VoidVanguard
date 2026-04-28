@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="/protected/ui/style/admin.css" />
     <link rel="stylesheet" href="/ui/style/tokenList.css" />
     <link rel="stylesheet" href="/ui/style/toasts.css" />
+    <link rel="stylesheet" href="/protected/ui/style/banForm.css" />
+    <link rel="stylesheet" href="/protected/ui/style/userBanList.css" />
     <style>
       full-profile {
         position: relative;
@@ -75,6 +77,14 @@
       <profile-form-restorer user-id>
         <profile-form admin restore></profile-form>
       </profile-form-restorer> -->
+
+      <br />
+      <hr />
+      <h1>Kitiltások</h1>
+      <div style="display: flex; gap: 30px">
+        <ban-form user-id></ban-form>
+        <user-ban-list controls="pagination" user-id></user-ban-list>
+      </div>
 
       <div class="friend-manager">
         <div>
@@ -182,6 +192,8 @@
       await importWithRefresh(
         "/protected/ui/component/button/RemoveDisguiseButton.js",
       );
+      await importWithRefresh("/protected/ui/component/data/UserBanList.js");
+      await importWithRefresh("/protected/ui/component/account/BanForm.js");
 
       on("logout", function () {
         window.top.location.href = "/";

@@ -28,8 +28,6 @@ export async function lazySelectByTarget(request, response) {
       limit: Number(request.query?.limit || 20),
     });
 
-    console.log(result);
-
     response
       .status(200)
       .json(createResponse(true, result, "Blocked users fetched successfully"));

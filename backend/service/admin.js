@@ -10,6 +10,8 @@ export async function banUser({ userId, reason, expiresAt, createdBy }) {
     throw CustomError.USER_NOT_FOUND;
   }
 
+  console.log("UID: ", userId);
+
   // prevent duplicate active bans
   const alreadyBanned = await Bans.isBanned(userId);
   if (alreadyBanned) {
@@ -43,7 +45,11 @@ export async function unBanUser({ userId, revokedBy }) {
     throw CustomError.NOT_BANNED;
   }
 
-  const result = await Bans.unBanUser(revokedBy, userId);
+  const result = await Bans.unBanUser(userId, revokedBy);
+
+  if (!result) {
+    throw CustomError.UNABLE_TO_UNBAN;
+  }
 
   return result;
 }

@@ -270,6 +270,15 @@ export const NOT_BANNED = new CustomError({
   },
 });
 
+export const UNABLE_TO_UNBAN = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "UnableToUnbanError",
+    code: "ER_UNABLE_TO_UNBAN",
+    message: "Unable to unban account",
+  },
+});
+
 export function isCustomError(error) {
   return error instanceof CustomError;
 }

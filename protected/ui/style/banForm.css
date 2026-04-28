@@ -1,0 +1,8 @@
+ban-form {
+  display: block;
+}
+
+ban-form .ban-form form {
+  display: flex;
+  flex-direction: column;
+}

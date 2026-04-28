@@ -1,0 +1,8 @@
+user-ban-list {
+  display: block;
+}
+
+user-ban-list-item {
+  display: flex;
+  gap: 10px;
+}

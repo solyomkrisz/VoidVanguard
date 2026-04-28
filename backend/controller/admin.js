@@ -28,7 +28,7 @@ export async function lazySelectUserBans(request, response) {
   try {
     const userId = request?.query?.targetUserId;
 
-    const result = await lazySelectUserBans({
+    const result = await service.lazySelectUserBans({
       userId,
       page: Number(request.query?.page || 1),
       limit: Number(request.query?.limit || 20),
@@ -44,9 +44,37 @@ export async function lazySelectUserBans(request, response) {
 
 export async function banUser(request, response) {
   try {
+    let expiresAt = null;
+
+    if (request.body.expiresAt) {
+      expiresAt = request.body.expiresAt.replace("T", " ") + ":00";
+    }
+
+    const result = await service.banUser({
+      userId: request.body.userId,
+      reason: request.body.reason,
+      expiresAt,
+      createdBy: request.user.id,
+    });
+
     response
       .status(200)
       .json(createResponse(true, null, "User successfully banned"));
+  } catch (error) {
+    handleCaughtError(response, error);
+  }
+}
+
+export async function unbanUser(request, response) {
+  try {
+    const result = await service.unBanUser({
+      userId: request.body.userId,
+      revokedBy: request.user.id,
+    });
+
+    response
+      .status(200)
+      .json(createResponse(true, null, "User successfully unbanned"));
   } catch (error) {
     handleCaughtError(response, error);
   }
