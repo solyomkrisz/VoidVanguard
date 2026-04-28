@@ -13,7 +13,8 @@ export default class BaseCustomElement extends HTMLElement {
       paths.map((path) => this._loadStyle(path)),
     ).then((sheets) => {
       // Apply styles in the correct order after all are loaded
-      if (!this.isConnected) return;
+      // if (!this.isConnected) return;
+      if (!this.shadowRoot) return;
 
       this.shadowRoot.adoptedStyleSheets = [
         ...this.shadowRoot.adoptedStyleSheets,

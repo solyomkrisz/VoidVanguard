@@ -3,8 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/global.css" />
     <link rel="stylesheet" href="/ui/style/viewSwitcher.css" />
     <link rel="stylesheet" href="/ui/style/friend.css" />
+    <link rel="stylesheet" href="/ui/style/tokenList.css" />
     <style>
       blocked-user-list-item {
         display: flex;
@@ -19,10 +21,19 @@
     <view-switcher layout="sidebar" initial="account-manager" no-cache>
       <template id="account-manager" data-name="Fiók szerkesztése">
         <h1>Fiók szerkesztése</h1>
-        <destroy-all-sessions-button></destroy-all-sessions-button>
         <account-form-restorer user-id auto>
           <account-form action="update" restore with-validator></account-form>
         </account-form-restorer>
+        <account-delete-button></account-delete-button>
+      </template>
+
+      <template id="session-control" data-name="Aktív munkamenetek">
+        <h1>Aktív munkamenetek kezelése</h1>
+        <destroy-all-sessions-button></destroy-all-sessions-button>
+        <active-refresh-token-list
+          src="/api/tokens/active"
+          controls="pagination"
+        ></active-refresh-token-list>
       </template>
 
       <template id="accepted-friend-requests" data-name="Barátok">
@@ -65,12 +76,17 @@
       </template>
     </view-switcher>
 
+    <toast-manager></toast-manager>
+
     <script type="module">
       import "/ui/component/layout/ViewSwitcher.js";
       import "/ui/component/profile/FriendListFull.js";
       import "/ui/component/account/BlockedUserList.js";
       import "/ui/component/account/AccountFormRestorer.js";
       import "/ui/component/account/AccountForm.js";
+      import "/ui/component/account/AccountDeleteButton.js";
+      import "/ui/component/feedback/ToastManager.js";
+      import "/ui/component/account/ActiveRefreshTokenList.js";
       import "/ui/component/auth/DestroyAllSessionsButton.js";
       import {
         onDOMContentLoaded,

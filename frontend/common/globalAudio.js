@@ -2,6 +2,11 @@ import AudioManager from "/common/AudioManager.js";
 
 const audioManager = new AudioManager();
 
+const uiVolume = localStorage.getItem("ui_volume")
+  ? Number(localStorage.getItem("ui_volume"))
+  : 1;
+audioManager.setVolume(uiVolume);
+
 audioManager.queueAudio("click_1", "/sound/clicksound_1.mp3", {
   type: "pool",
 });
@@ -28,6 +33,10 @@ const globalAudio = {
       if (entry) entry.instance.play();
     }
     pending.length = 0;
+  },
+
+  setVolume(volume) {
+    audioManager.setVolume(volume);
   },
 };
 

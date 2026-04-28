@@ -12,6 +12,9 @@
     <logout-button
       style="position: absolute; left: 0; top: 0; z-index: 2002"
     ></logout-button>
+    <ui-volume-controller
+      style="position: absolute; left: 0; top: 0; z-index: 2002"
+    ></ui-volume-controller>
     <main-menu></main-menu>
     <toast-manager event-controlled></toast-manager>
 
@@ -20,6 +23,7 @@
       import "/ui/component/main/MainMenu.js";
       import "/ui/component/feedback/ToastManager.js";
       import "/ui/component/auth/LogoutButton.js";
+      import "/ui/component/misc/UIVolumeController.js";
 
       import { attachGlobalAudioListeners } from "/common/globalAudio.js";
       attachGlobalAudioListeners();

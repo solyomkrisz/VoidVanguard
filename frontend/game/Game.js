@@ -396,6 +396,12 @@ export default class Game extends WebGLCanvas {
 
     if (this.running) return;
 
+    // set initial volume
+    if (this.audioManager instanceof AudioManager) {
+      const volume = Number(localStorage.getItem("game_volume") ?? 1);
+      this.audioManager.setVolume(volume);
+    }
+
     const gl = this.gl;
     const textureManager = this.textureManager;
     const audioManager = this.audioManager;
@@ -640,6 +646,15 @@ export default class Game extends WebGLCanvas {
     }
 
     this.audioManager = audioManager;
+  }
+
+  setVolume(volume) {
+    if (!(this.audioManager instanceof AudioManager)) {
+      console.warn("GAME-setVolume: Unable to set game audio volume.");
+      return;
+    }
+
+    this.audioManager.setVolume(volume);
   }
 
   /**

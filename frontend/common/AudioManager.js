@@ -7,6 +7,13 @@ export default class AudioManager {
     this.buffers = new Map();
     this.loading = new Map();
     this.sounds = new Map();
+
+    this.gainNode = this.ctx.createGain();
+    this.gainNode.connect(this.ctx.destination);
+  }
+
+  setVolume(volume) {
+    this.gainNode.gain.value = volume;
   }
 
   getSound(name) {
@@ -26,8 +33,8 @@ export default class AudioManager {
       .then(() => {
         const entry =
           options.type === "pool"
-            ? this.createPool(name, options)
-            : this.createSound(name, options);
+            ? this.createPool(name, { gainNode: this.gainNode, ...options })
+            : this.createSound(name, { gainNode: this.gainNode, ...options });
 
         const audioObject = {
           type: options.type ?? "sound",

@@ -4,8 +4,14 @@ import Users from "../sql/table/Users.js";
 import RefreshTokens from "../sql/table/RefreshTokens.js";
 import Password from "../common/Password.js";
 import Token from "../common/Token.js";
+import { v4 as uuidv4 } from "uuid";
 
-export async function login({ username, password }) {
+export async function login({
+  username,
+  password,
+  ip = null,
+  userAgent = null,
+}) {
   const user = await Users._selectByUsername(username);
 
   if (!user) {
@@ -41,10 +47,13 @@ export async function login({ username, password }) {
   const refreshTokenHash = Token.hash(refreshToken);
 
   RefreshTokens.save({
+    id: uuidv4(),
     userId: user.id,
     tokenHash: refreshTokenHash,
     exp: new Date(exp * 1000),
     iat: new Date(iat * 1000),
+    ip,
+    userAgent,
   });
 
   return {
@@ -66,6 +75,8 @@ export function logout(response) {
     sameSite: "Strict",
     httpOnly: true,
   });
+
+  console.log("Refresh és access token cookie-k törölve...");
 }
 
 export async function destroyAllSessions({ userId }) {

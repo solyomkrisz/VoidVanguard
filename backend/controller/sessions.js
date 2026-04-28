@@ -7,9 +7,14 @@ import {
 
 export async function login(request, response) {
   try {
+    const ip = request.ip ?? null;
+    const userAgent = request.headers["user-agent"] ?? null;
+
     const { accessToken, refreshToken, exp } = await service.login({
       username: request.body.username,
       password: request.body.password,
+      ip,
+      userAgent,
     });
 
     response.cookie("refresh_token", refreshToken, {
@@ -27,6 +32,8 @@ export async function login(request, response) {
       maxAge: accessTokenLifetimeMin * 60 * 1000,
     });
     /** */
+
+    console.log("Refresh és access token cookie-k beállítva...");
 
     response
       .status(200)

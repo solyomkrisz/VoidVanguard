@@ -52,10 +52,70 @@ export async function refresh(refreshToken) {
 
   const accessToken = Token.get(user);
 
+  await RefreshTokens.updateLastUsedAt(refreshTokenHash);
+
   return accessToken;
 }
 
-export async function revokeSession(refreshToken) {
+export async function lazySelectByUserId({
+  userId,
+  currentRefreshToken = null,
+  page = 1,
+  limit = 20,
+} = {}) {
+  const offset = (page - 1) * limit;
+
+  const currentRefreshTokenHash = currentRefreshToken
+    ? Token.hash(currentRefreshToken)
+    : null;
+
+  const tokens = await RefreshTokens.lazySelectActiveByUserId(
+    userId,
+    currentRefreshTokenHash,
+    {
+      limit,
+      offset,
+    },
+  );
+  const total = await RefreshTokens.getTotalActiveTokensByUserId(userId);
+
+  return {
+    tokens,
+    page,
+    limit,
+    total,
+    hasNext: offset + tokens.length < total,
+  };
+}
+
+export async function revokeSessionById({ id, userId, currentRefreshToken }) {
+  let currentSession = {};
+
+  if (currentRefreshToken) {
+    const currentRefreshTokenHash = Token.hash(currentRefreshToken);
+    currentSession = await RefreshTokens.findByHash(currentRefreshTokenHash);
+  }
+
+  console.log("CURRENT TOKEN: ", currentRefreshToken);
+  console.log("CURRENT SESSION: ", currentSession);
+
+  const result = await RefreshTokens.deleteById(id, userId);
+
+  let deleted = false,
+    logout = false;
+
+  if (result.affectedRows >= 1) {
+    deleted = true;
+
+    if (currentSession?.id === id) {
+      logout = true;
+    }
+  }
+
+  return { deleted, logout };
+}
+
+export async function revokeSessionByToken(refreshToken) {
   const tokenHash = Token.hash(refreshToken);
   const result = await RefreshTokens.deleteByTokenHash(tokenHash);
 
