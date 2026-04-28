@@ -23,7 +23,9 @@ class Bans extends Table {
   async isBanned(userId) {
     const [rows] = await execute(
       `
-        SELECT reason
+        SELECT
+            reason,
+            DATE_FORMAT(expires_at, '%Y-%m-%d %H:%i:%s') AS expires_at
         FROM bans
         WHERE user_id = ?
             AND revoked_at IS NULL
@@ -60,6 +62,48 @@ class Bans extends Table {
     );
 
     return result.affectedRows > 0;
+  }
+
+  async lazySelectByUserId(userId, { limit = null, offset = null }) {
+    const sql = `
+        SELECT
+            b.id,
+            b.user_id,
+            b.reason,
+            DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
+            DATE_FORMAT(b.expires_at, '%Y-%m-%d %H:%i:%s') AS expires_at,
+            DATE_FORMAT(b.revoked_at, '%Y-%m-%d %H:%i:%s') AS revoked_at,
+
+            b.created_by,
+            cb.username AS created_by_name,
+
+            b.revoked_by,
+            rb.username AS revoked_by_name
+
+        FROM bans b
+
+        LEFT JOIN users cb ON cb.id = b.created_by
+        LEFT JOIN users rb ON rb.id = b.revoked_by
+
+        WHERE b.user_id = ?
+        ORDER BY b.created_at DESC
+    `;
+
+    const rows = await runQueryWithPagination(sql, [userId], {
+      limit,
+      offset,
+    });
+
+    return rows;
+  }
+
+  async getTotalBansForUser(userId) {
+    const [[{ count }]] = await execute(
+      "SELECT COUNT(*) AS count FROM bans WHERE user_id = ?",
+      [userId],
+    );
+
+    return count;
   }
 }
 

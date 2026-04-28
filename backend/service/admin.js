@@ -67,3 +67,18 @@ export async function getBanStatus({ userId }) {
     reason: activeBan.reason,
   };
 }
+
+export async function lazySelectUserBans({ userId, page = 1, limit = 20 }) {
+  const offset = (page - 1) * limit;
+
+  const bans = await Bans.lazySelectByUserId(userId, { limit, offset });
+  const total = await Bans.getTotalBansForUser(userId);
+
+  return {
+    bans,
+    page,
+    limit,
+    total,
+    hasNext: offset + bans.length < total,
+  };
+}

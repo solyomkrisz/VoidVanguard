@@ -40,10 +40,18 @@ router.get(
 // get ban status for user
 router.get(
   "/ban",
-  authenticate,
+  authenticate(),
   authorize(),
   checkSchema(validator.BAN_STATUS),
   controller.getBanStatus,
+);
+
+router.get(
+  "/bans",
+  authenticate(),
+  authorize(),
+  checkSchema(validator.BAN_STATUS),
+  controller.lazySelectUserBans,
 );
 
 router.post("/ban/:id", authenticate(), authorize(), controller.banUser);

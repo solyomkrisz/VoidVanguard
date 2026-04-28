@@ -244,7 +244,7 @@ export const UNABLE_TO_END_SESSION = new CustomError({
 });
 
 export const BANNED = new CustomError({
-  statusCode: 500,
+  statusCode: 403,
   definition: {
     name: "UserBannedError",
     code: "ER_USER_BANNED",
@@ -253,7 +253,7 @@ export const BANNED = new CustomError({
 });
 
 export const ALREADY_BANNED = new CustomError({
-  statusCode: 500,
+  statusCode: 409,
   definition: {
     name: "AlreadyBannedError",
     code: "ER_ALREADY_BANNED",
@@ -262,7 +262,7 @@ export const ALREADY_BANNED = new CustomError({
 });
 
 export const NOT_BANNED = new CustomError({
-  statusCode: 500,
+  statusCode: 409,
   definition: {
     name: "NotBannedError",
     code: "ER_NOT_BANNED",
