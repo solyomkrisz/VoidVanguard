@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import * as CustomError from "../common/CustomError.js";
 import Users from "../sql/table/Users.js";
+import Bans from "../sql/table/Bans.js";
 import RefreshTokens from "../sql/table/RefreshTokens.js";
 import Password from "../common/Password.js";
 import Token from "../common/Token.js";
@@ -22,6 +23,12 @@ export async function login({
 
   if (!match) {
     throw CustomError.INVALID_CREDENTIALS;
+  }
+
+  const ban = await Bans.isBanned(user.id);
+
+  if (ban) {
+    throw CustomError.BANNED;
   }
 
   const payload = {

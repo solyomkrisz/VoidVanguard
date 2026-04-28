@@ -243,6 +243,33 @@ export const UNABLE_TO_END_SESSION = new CustomError({
   },
 });
 
+export const BANNED = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "UserBannedError",
+    code: "ER_USER_BANNED",
+    message: "This account is banned",
+  },
+});
+
+export const ALREADY_BANNED = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "AlreadyBannedError",
+    code: "ER_ALREADY_BANNED",
+    message: "This account is already banned",
+  },
+});
+
+export const NOT_BANNED = new CustomError({
+  statusCode: 500,
+  definition: {
+    name: "NotBannedError",
+    code: "ER_NOT_BANNED",
+    message: "This account is not banned",
+  },
+});
+
 export function isCustomError(error) {
   return error instanceof CustomError;
 }

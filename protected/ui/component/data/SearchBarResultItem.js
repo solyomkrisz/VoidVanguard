@@ -39,6 +39,7 @@ export default class SearchBarResultItem extends HTMLElement {
     this.onProfileAction = this.onProfileAction.bind(this);
     this.onFriendButtonClick = this.onFriendButtonClick.bind(this);
     this.onBlockButtonClick = this.onBlockButtonClick.bind(this);
+    this.onBanToggleButtonClick = this.onBanToggleButtonClick.bind(this);
   }
 
   connectedCallback() {
@@ -168,6 +169,8 @@ export default class SearchBarResultItem extends HTMLElement {
     this.sendRelationshipChangeRequest("/api/blocks", method);
   }
 
+  async onBanToggleButtonClick() {}
+
   build() {
     if (this._built) return;
 
@@ -184,6 +187,11 @@ export default class SearchBarResultItem extends HTMLElement {
     const blockButton = el("button", { onClick: this.onBlockButtonClick }, [
       "Felhasználó letiltása",
     ]);
+    const banToggleButton = el(
+      "button",
+      { onClick: this.onBanToggleButtonClick },
+      ["Felhasználó kitiltása"],
+    );
 
     this._elements = {
       img,
@@ -193,6 +201,7 @@ export default class SearchBarResultItem extends HTMLElement {
       profileButton,
       friendButton,
       blockButton,
+      banToggleButton,
     };
 
     this.appendChild(img);

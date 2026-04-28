@@ -18,6 +18,7 @@ class Users extends Table {
         new Column("gender").grant(Role.USER, Permission.W),
         new Column("password").grant(Role.USER, Permission.W),
         new Column("created_at"),
+        new Column("is_banned").grant(Role.ADMIN, Permission.W),
       ],
     });
   }

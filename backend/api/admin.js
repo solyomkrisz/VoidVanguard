@@ -1,6 +1,9 @@
-import express from "express";
+import express, { response } from "express";
 import Role from "../common/Role.js";
 import { authenticate, authorize } from "../common/common.js";
+import * as controller from "../controller/admin.js";
+import * as validator from "../validator/admin.js";
+import { check, checkSchema } from "express-validator";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -33,5 +36,16 @@ router.get(
     );
   },
 );
+
+// get ban status for user
+router.get(
+  "/ban",
+  authenticate,
+  authorize(),
+  checkSchema(validator.BAN_STATUS),
+  controller.getBanStatus,
+);
+
+router.post("/ban/:id", authenticate(), authorize(), controller.banUser);
 
 export default router;
