@@ -101,6 +101,20 @@
       <toast-manager event-controlled></toast-manager>
     </template>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener(
+          "animationend",
+          (event) => {
+            if (event.animationName === "meShellRise") {
+              document.body.style.overflow = "visible";
+            }
+          },
+          { once: true },
+        );
+      });
+    </script>
+
     <script type="module">
       import "/ui/component/layout/ViewSwitcher.js";
       import "/ui/component/feedback/ToastManager.js";
@@ -130,6 +144,10 @@
         const fragment = template.content.cloneNode(true);
 
         document.body.appendChild(fragment);
+
+        requestAnimationFrame(() => {
+          document.body.classList.add("is-ready");
+        });
       })().then(() => {
         const viewSwitcher = document.querySelector("view-switcher");
         const _setActive = viewSwitcher?.setActive?.bind(viewSwitcher);
@@ -143,6 +161,15 @@
 
             _setActive(id);
           };
+        }
+
+        const url = new URL(window.top.location.href);
+        const active = new URLSearchParams(url.searchParams).get("active");
+
+        if (active) {
+          requestAnimationFrame(() => {
+            document.querySelector("view-switcher")?.setActive(active);
+          });
         }
       });
 
@@ -188,29 +215,6 @@
         }
 
         window.top.location.href = "/profile/" + userId;
-      }
-
-      const viewSwitcher = document.querySelector("view-switcher");
-      const _setActive = viewSwitcher?.setActive?.bind(viewSwitcher);
-
-      if (_setActive) {
-        viewSwitcher.setActive = (id) => {
-          if (id === "profile-manager") {
-            redirectToOwnProfile();
-            return;
-          }
-
-          _setActive(id);
-        };
-      }
-
-      const url = new URL(window.top.location.href);
-      const active = new URLSearchParams(url.searchParams).get("active");
-
-      if (active) {
-        requestAnimationFrame(() => {
-          document.querySelector("view-switcher")?.setActive(active);
-        });
       }
 
       // --- After sending a friend request, switch to the outgoing tab ---

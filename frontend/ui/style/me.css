@@ -47,6 +47,10 @@ body {
   align-items: center;
   padding: 4vmin 2vw 6vmin;
   gap: 2vmin;
+  overflow: hidden; /* will be taken off in me.html */
+}
+
+body.is-ready {
   animation: meShellRise 420ms ease-out both;
 }
 
