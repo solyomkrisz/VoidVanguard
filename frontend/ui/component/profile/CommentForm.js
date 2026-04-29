@@ -17,6 +17,7 @@ export default class CommentForm extends HTMLElement {
   constructor() {
     super();
 
+    this._pending = false;
     this._elements = {};
     this._built = false;
     this.onSubmit = this.onSubmit.bind(this);
@@ -37,10 +38,13 @@ export default class CommentForm extends HTMLElement {
 
     const form = this.querySelector("form");
     form.addEventListener("submit", this.onSubmit);
+    this._elements.form = form;
   }
 
   async onSubmit(e) {
     e.preventDefault();
+
+    if (this._pending) return;
 
     if (!isLoggedIn()) {
       return;
@@ -79,6 +83,8 @@ export default class CommentForm extends HTMLElement {
   }
 
   async sendRequest(formData) {
+    this._pending = true;
+
     const response = await net.send("/api/comments", {
       method: "POST",
       body: formData,
@@ -88,6 +94,8 @@ export default class CommentForm extends HTMLElement {
   }
 
   async onResponse(response) {
+    this._pending = false;
+
     const { success, result, message } = response;
 
     if (!success || !result) {
@@ -95,6 +103,8 @@ export default class CommentForm extends HTMLElement {
       console.error("An error occured during posting your comment.");
       return;
     }
+
+    this._elements.form?.reset?.();
 
     this.dispatchEvent(
       new CustomEvent("comment-post", {

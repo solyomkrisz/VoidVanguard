@@ -38,6 +38,8 @@ export default class LeaderboardElement extends LazyItemList {
     const originalNode = this.getOriginalNode();
     const visible = isInViewport(originalNode);
 
+    console.log(originalNode, visible);
+
     if (visible) {
       this.unpinUser();
       return;
@@ -86,8 +88,6 @@ export default class LeaderboardElement extends LazyItemList {
   connectedCallback() {
     super.connectedCallback?.();
 
-    this.customize();
-
     this._elements.topPinContainer = this.insertBefore(
       el("div", { class: "top-pin-container" }),
       this._container,
@@ -97,6 +97,8 @@ export default class LeaderboardElement extends LazyItemList {
       el("div", { class: "bottom-pin-container" }),
       this._container.nextSibling,
     );
+
+    this.customize();
 
     on("login", this.onLogin);
     on("logout", this.onLogout);
@@ -154,6 +156,8 @@ export default class LeaderboardElement extends LazyItemList {
     if (addToMap) {
       this._byUserId.set(item.user_id, element);
     }
+
+    this.onScroll();
 
     return element;
   }
