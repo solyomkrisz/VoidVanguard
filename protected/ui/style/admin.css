@@ -1,13 +1,13 @@
 /* ── Base ─────────────────────────────────────────────── */
 @font-face {
-  font-family: 'Jersey';
-  src: url('/font/Jersey10-Regular.ttf') format('truetype');
+  font-family: "Jersey";
+  src: url("/font/Jersey10-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 :root {
-  --admin-font: 'Jersey', 'Courier New', monospace;
+  --admin-font: "Jersey", "Courier New", monospace;
   --admin-text: #fff;
   --admin-text-muted: #8fd0ff;
   --admin-border: #2a5a9e;
@@ -22,22 +22,38 @@
   --admin-disabled-text: #b8b8c2;
   --admin-disabled-border: #5c5c66;
   --admin-shadow-frame: inset 0 0 0 1px rgba(13, 13, 21, 0.8);
-  --admin-shadow-button: inset 0 0 0 1px #0d0d15, 0 3px 0 0 #1a2a4e, 0 3px 8px rgba(0, 0, 0, 0.5);
+  --admin-shadow-button:
+    inset 0 0 0 1px #0d0d15, 0 3px 0 0 #1a2a4e, 0 3px 8px rgba(0, 0, 0, 0.5);
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   image-rendering: pixelated;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 65% 45% at 10% 90%, rgba(15, 35, 145, 0.45) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 40% at 90% 10%, rgba(75, 15, 145, 0.30) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(10, 20, 60, 0.50) 0%, transparent 80%),
+    radial-gradient(
+      ellipse 65% 45% at 10% 90%,
+      rgba(15, 35, 145, 0.45) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 55% 40% at 90% 10%,
+      rgba(75, 15, 145, 0.3) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 50% 50%,
+      rgba(10, 20, 60, 0.5) 0%,
+      transparent 80%
+    ),
     linear-gradient(160deg, #0d0d22 0%, #06060f 100%);
   background-attachment: fixed;
   color: var(--admin-text);
@@ -96,7 +112,8 @@ admin-module.disguise-gated[target-user-id] {
   display: block;
 }
 
-body:has(admin-module.disguise-gated[target-user-id]) #disguise-required-message {
+body:has(admin-module.disguise-gated[target-user-id])
+  #disguise-required-message {
   display: none;
 }
 
@@ -159,7 +176,11 @@ body:has(#disguise-info:not(:empty)) #admin-wrapper {
   z-index: 120;
   padding: clamp(0.5rem, 1vmin, 0.8rem);
   background:
-    linear-gradient(180deg, rgba(34, 70, 122, 0.35) 0%, rgba(10, 14, 28, 0.92) 65%),
+    linear-gradient(
+      180deg,
+      rgba(34, 70, 122, 0.35) 0%,
+      rgba(10, 14, 28, 0.92) 65%
+    ),
     rgba(10, 14, 28, 0.9);
   border: 2px solid #3f79c6;
   border-left-width: 6px;
@@ -203,7 +224,11 @@ body:has(#disguise-info:not(:empty)) #admin-wrapper {
 /* ── Section panels ───────────────────────────────────── */
 .admin-panel {
   background:
-    radial-gradient(120% 120% at 100% 0%, rgba(54, 112, 195, 0.12) 0%, transparent 45%),
+    radial-gradient(
+      120% 120% at 100% 0%,
+      rgba(54, 112, 195, 0.12) 0%,
+      transparent 45%
+    ),
     linear-gradient(180deg, #141828 0%, #101522 100%);
   border: 2px solid var(--admin-border);
   box-shadow:
@@ -215,7 +240,10 @@ body:has(#disguise-info:not(:empty)) #admin-wrapper {
   display: flex;
   flex-direction: column;
   gap: clamp(0.45rem, 1.1vmin, 0.75rem);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .admin-panel:hover {
@@ -251,7 +279,12 @@ body:has(#disguise-info:not(:empty)) #admin-wrapper {
   font-size: clamp(0.78rem, 1.3vmin, 1rem);
   font-family: var(--admin-font);
   cursor: pointer;
-  transition: background 0.1s, color 0.1s, border-color 0.1s, transform 0.1s, box-shadow 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s,
+    border-color 0.1s,
+    transform 0.1s,
+    box-shadow 0.1s;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   text-shadow: none;
@@ -322,7 +355,13 @@ hr {
 }
 
 /* Admin-only row styling: blocked rows match Manage Friends visual design */
-:is(.admin-user-list--incoming, .admin-user-list--outgoing, .admin-user-list--friends, .admin-user-list--blocked) .item-container {
+:is(
+    .admin-user-list--incoming,
+    .admin-user-list--outgoing,
+    .admin-user-list--friends,
+    .admin-user-list--blocked
+  )
+  .item-container {
   display: flex;
   flex-direction: column;
   gap: 0.6vmin;
@@ -331,11 +370,11 @@ hr {
 }
 
 :is(
-    .admin-user-list--incoming friend-list-item,
-    .admin-user-list--outgoing friend-list-item,
-    .admin-user-list--friends friend-list-item,
-    .admin-user-list--blocked .blocked-user-row
-  ) {
+  .admin-user-list--incoming friend-list-item,
+  .admin-user-list--outgoing friend-list-item,
+  .admin-user-list--friends friend-list-item,
+  .admin-user-list--blocked .blocked-user-row
+) {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -349,11 +388,11 @@ hr {
 }
 
 :is(
-    .admin-user-list--incoming friend-list-item > a,
-    .admin-user-list--outgoing friend-list-item > a,
-    .admin-user-list--friends friend-list-item > a,
-    .admin-user-list--blocked .blocked-user-row > .blocked-user-meta
-  ) {
+  .admin-user-list--incoming friend-list-item > a,
+  .admin-user-list--outgoing friend-list-item > a,
+  .admin-user-list--friends friend-list-item > a,
+  .admin-user-list--blocked .blocked-user-row > .blocked-user-meta
+) {
   color: var(--admin-text);
   text-decoration: none;
   min-width: 0;
@@ -370,11 +409,11 @@ hr {
 }
 
 :is(
-    .admin-user-list--incoming friend-list-item > a .friend-name,
-    .admin-user-list--outgoing friend-list-item > a .friend-name,
-    .admin-user-list--friends friend-list-item > a .friend-name,
-    .admin-user-list--blocked .blocked-user-name
-  ) {
+  .admin-user-list--incoming friend-list-item > a .friend-name,
+  .admin-user-list--outgoing friend-list-item > a .friend-name,
+  .admin-user-list--friends friend-list-item > a .friend-name,
+  .admin-user-list--blocked .blocked-user-name
+) {
   color: var(--admin-text);
   text-shadow: 1px 1px 0 #000;
   white-space: nowrap;
@@ -383,27 +422,27 @@ hr {
 }
 
 :is(
-    .admin-user-list--incoming .friend-avatar-shell,
-    .admin-user-list--outgoing .friend-avatar-shell,
-    .admin-user-list--friends .friend-avatar-shell,
-    .admin-user-list--blocked .blocked-user-avatar
-  ),
+  .admin-user-list--incoming .friend-avatar-shell,
+  .admin-user-list--outgoing .friend-avatar-shell,
+  .admin-user-list--friends .friend-avatar-shell,
+  .admin-user-list--blocked .blocked-user-avatar
+),
 :is(
-    .admin-user-list--incoming .friend-avatar-shell img,
-    .admin-user-list--outgoing .friend-avatar-shell img,
-    .admin-user-list--friends .friend-avatar-shell img
-  ) {
+  .admin-user-list--incoming .friend-avatar-shell img,
+  .admin-user-list--outgoing .friend-avatar-shell img,
+  .admin-user-list--friends .friend-avatar-shell img
+) {
   width: 32px;
   height: 32px;
   border-radius: 0;
 }
 
 :is(
-    .admin-user-list--incoming .friend-avatar-shell,
-    .admin-user-list--outgoing .friend-avatar-shell,
-    .admin-user-list--friends .friend-avatar-shell,
-    .admin-user-list--blocked .blocked-user-avatar
-  ) {
+  .admin-user-list--incoming .friend-avatar-shell,
+  .admin-user-list--outgoing .friend-avatar-shell,
+  .admin-user-list--friends .friend-avatar-shell,
+  .admin-user-list--blocked .blocked-user-avatar
+) {
   border: 1px solid var(--admin-border);
   background: var(--admin-bg-dark);
   box-shadow: inset 0 0 0 1px rgba(13, 13, 21, 0.8);
@@ -417,10 +456,10 @@ hr {
 }
 
 :is(
-    .admin-user-list--incoming friend-list-item > div,
-    .admin-user-list--outgoing friend-list-item > div,
-    .admin-user-list--friends friend-list-item > div
-  ) {
+  .admin-user-list--incoming friend-list-item > div,
+  .admin-user-list--outgoing friend-list-item > div,
+  .admin-user-list--friends friend-list-item > div
+) {
   width: auto;
   display: flex;
   align-items: center;
@@ -429,40 +468,40 @@ hr {
 }
 
 :is(
-    .admin-user-list--incoming friend-list-item > div > button,
-    .admin-user-list--outgoing friend-list-item > div > button,
-    .admin-user-list--friends friend-list-item > div > button,
-    .admin-user-list--blocked .blocked-user-row > button
-  ) {
+  .admin-user-list--incoming friend-list-item > div > button,
+  .admin-user-list--outgoing friend-list-item > div > button,
+  .admin-user-list--friends friend-list-item > div > button,
+  .admin-user-list--blocked .blocked-user-row > button
+) {
   min-height: 2.35rem;
 }
 
 @media (max-width: 900px) {
   :is(
-      .admin-user-list--incoming friend-list-item,
-      .admin-user-list--outgoing friend-list-item,
-      .admin-user-list--friends friend-list-item,
-      .admin-user-list--blocked .blocked-user-row
-    ) {
+    .admin-user-list--incoming friend-list-item,
+    .admin-user-list--outgoing friend-list-item,
+    .admin-user-list--friends friend-list-item,
+    .admin-user-list--blocked .blocked-user-row
+  ) {
     align-items: flex-start;
     flex-wrap: wrap;
     gap: 0.6rem;
   }
 
   :is(
-      .admin-user-list--incoming friend-list-item > a,
-      .admin-user-list--outgoing friend-list-item > a,
-      .admin-user-list--friends friend-list-item > a,
-      .admin-user-list--blocked .blocked-user-row > .blocked-user-meta
-    ) {
+    .admin-user-list--incoming friend-list-item > a,
+    .admin-user-list--outgoing friend-list-item > a,
+    .admin-user-list--friends friend-list-item > a,
+    .admin-user-list--blocked .blocked-user-row > .blocked-user-meta
+  ) {
     width: 100%;
   }
 
   :is(
-      .admin-user-list--incoming friend-list-item > div,
-      .admin-user-list--outgoing friend-list-item > div,
-      .admin-user-list--friends friend-list-item > div
-    ) {
+    .admin-user-list--incoming friend-list-item > div,
+    .admin-user-list--outgoing friend-list-item > div,
+    .admin-user-list--friends friend-list-item > div
+  ) {
     width: 100%;
     display: grid;
     gap: 0.4rem;
@@ -471,11 +510,11 @@ hr {
   }
 
   :is(
-      .admin-user-list--incoming friend-list-item > div > button,
-      .admin-user-list--outgoing friend-list-item > div > button,
-      .admin-user-list--friends friend-list-item > div > button,
-      .admin-user-list--blocked .blocked-user-row > button
-    ) {
+    .admin-user-list--incoming friend-list-item > div > button,
+    .admin-user-list--outgoing friend-list-item > div > button,
+    .admin-user-list--friends friend-list-item > div > button,
+    .admin-user-list--blocked .blocked-user-row > button
+  ) {
     width: 100%;
     min-width: 0;
     min-height: 2.55rem;
@@ -485,9 +524,25 @@ hr {
 }
 
 @media (max-width: 600px) {
-  :is(.admin-user-list--incoming, .admin-user-list--outgoing, .admin-user-list--friends) friend-list-item img,
-  :is(.admin-user-list--incoming, .admin-user-list--outgoing, .admin-user-list--friends) .friend-avatar-shell,
-  :is(.admin-user-list--incoming, .admin-user-list--outgoing, .admin-user-list--friends) .friend-preview-avatar-shell,
+  :is(
+      .admin-user-list--incoming,
+      .admin-user-list--outgoing,
+      .admin-user-list--friends
+    )
+    friend-list-item
+    img,
+  :is(
+      .admin-user-list--incoming,
+      .admin-user-list--outgoing,
+      .admin-user-list--friends
+    )
+    .friend-avatar-shell,
+  :is(
+      .admin-user-list--incoming,
+      .admin-user-list--outgoing,
+      .admin-user-list--friends
+    )
+    .friend-preview-avatar-shell,
   .admin-user-list--blocked .blocked-user-avatar {
     width: 38px;
     height: 38px;
@@ -571,11 +626,17 @@ search-bar-result-list .item-container > search-bar-result-item > img {
   background: var(--admin-bg-dark);
 }
 
-search-bar-result-list .item-container > search-bar-result-item > div:nth-child(2) {
+search-bar-result-list
+  .item-container
+  > search-bar-result-item
+  > div:nth-child(2) {
   min-width: 0;
 }
 
-search-bar-result-list .item-container > search-bar-result-item > :is(div:nth-child(3), div:nth-child(4)) {
+search-bar-result-list
+  .item-container
+  > search-bar-result-item
+  > :is(div:nth-child(3), div:nth-child(4)) {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -636,23 +697,39 @@ search-bar-result-list .item-container > search-bar-result-item > :is(div:nth-ch
     grid-area: avatar;
   }
 
-  search-bar-result-list .item-container > search-bar-result-item > div:nth-child(2) {
+  search-bar-result-list
+    .item-container
+    > search-bar-result-item
+    > div:nth-child(2) {
     grid-area: main;
   }
 
-  search-bar-result-list .item-container > search-bar-result-item > :is(div:nth-child(3), div:nth-child(4)) {
+  search-bar-result-list
+    .item-container
+    > search-bar-result-item
+    > :is(div:nth-child(3), div:nth-child(4)) {
     justify-content: stretch;
   }
 
-  search-bar-result-list .item-container > search-bar-result-item > div:nth-child(3) {
+  search-bar-result-list
+    .item-container
+    > search-bar-result-item
+    > div:nth-child(3) {
     grid-area: action1;
   }
 
-  search-bar-result-list .item-container > search-bar-result-item > div:nth-child(4) {
+  search-bar-result-list
+    .item-container
+    > search-bar-result-item
+    > div:nth-child(4) {
     grid-area: action2;
   }
 
-  search-bar-result-list .item-container > search-bar-result-item > :is(div:nth-child(3), div:nth-child(4)) > button {
+  search-bar-result-list
+    .item-container
+    > search-bar-result-item
+    > :is(div:nth-child(3), div:nth-child(4))
+    > button {
     width: 100%;
     min-height: 2.4rem;
   }
@@ -704,8 +781,16 @@ search-bar-result-list .item-container > search-bar-result-item > :is(div:nth-ch
   width: min(1260px, calc(100vw - 2.2rem));
   height: min(860px, calc(100dvh - 2.2rem));
   background:
-    radial-gradient(120% 130% at 100% -10%, rgba(106, 184, 255, 0.16) 0%, transparent 42%),
-    radial-gradient(110% 120% at 0% 100%, rgba(36, 86, 150, 0.2) 0%, transparent 45%),
+    radial-gradient(
+      120% 130% at 100% -10%,
+      rgba(106, 184, 255, 0.16) 0%,
+      transparent 42%
+    ),
+    radial-gradient(
+      110% 120% at 0% 100%,
+      rgba(36, 86, 150, 0.2) 0%,
+      transparent 45%
+    ),
     linear-gradient(180deg, #1a2236 0%, #131a2a 55%, #101624 100%);
   border: 2px solid var(--admin-accent);
   border-left-width: 6px;
@@ -740,7 +825,11 @@ body:has(#full-profile-container.active) {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(24, 39, 70, 0.42) 0%, rgba(5, 7, 14, 0.75) 70%),
+    radial-gradient(
+      ellipse 70% 50% at 50% 50%,
+      rgba(24, 39, 70, 0.42) 0%,
+      rgba(5, 7, 14, 0.75) 70%
+    ),
     rgba(0, 0, 0, 0.66);
   backdrop-filter: blur(6px);
   z-index: -1;
@@ -755,7 +844,11 @@ body:has(#full-profile-container.active) {
   padding: clamp(0.45rem, 1.1vmin, 0.8rem) clamp(0.45rem, 1.1vmin, 0.8rem)
     clamp(0.65rem, 1.4vmin, 1rem);
   border-bottom: 1px solid #2f5ea2;
-  background: linear-gradient(180deg, rgba(30, 53, 92, 0.55) 0%, rgba(18, 29, 51, 0.25) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(30, 53, 92, 0.55) 0%,
+    rgba(18, 29, 51, 0.25) 100%
+  );
 }
 
 #full-profile-target-create-text {
@@ -857,4 +950,13 @@ body:has(#full-profile-container.active) {
   #full-profile-container.active {
     animation: none;
   }
+}
+
+/**/
+active-refresh-token-list .lazy-item-list-refresh-button {
+  margin: 0.2rem 0 0.55rem;
+}
+
+.admin-panel--sessions pagination-controls > div {
+  justify-content: center;
 }

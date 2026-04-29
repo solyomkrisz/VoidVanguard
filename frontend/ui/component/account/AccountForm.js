@@ -41,14 +41,14 @@ const _innerHTML = `
 
   <input-group class="input-group">
     <label>Jelszó</label>
-    <password-input-validator>
+    <password-input-validator can-be-empty>
       <input type="password" name="password" placeholder="Jelszó" />
     </password-input-validator>
   </input-group>
   
   <input-group class="input-group">
     <label>Jelszó megerősítése</label>
-    <password-input-validator>
+    <password-input-validator can-be-empty>
       <input type="password" name="passwordConfirm" placeholder="Jelszó megerősítése" />
     </password-input-validator>
   </input-group>
@@ -72,7 +72,11 @@ export default class AccountForm extends BaseCustomElement {
   }
 
   constructor(extraPaths = []) {
-    super([path.join(dir, "global.css"), path.join(dir, "accountForm.css"), ...extraPaths]);
+    super([
+      path.join(dir, "global.css"),
+      path.join(dir, "accountForm.css"),
+      ...extraPaths,
+    ]);
 
     this._elements = {};
     this._built = false;

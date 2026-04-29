@@ -21,7 +21,9 @@
 
       <template id="account-manager" data-name="Fiók szerkesztése">
         <h1>Fiók szerkesztése</h1>
-        <p class="account-edit-note">Az üresen hagyott mezők nem kerülnek módosításra!</p>
+        <p class="account-edit-note">
+          Az üresen hagyott mezők nem kerülnek módosításra!
+        </p>
         <account-form-restorer user-id auto>
           <account-form action="update" restore with-validator></account-form>
         </account-form-restorer>
@@ -34,6 +36,7 @@
         <active-refresh-token-list
           src="/api/tokens/active"
           controls="pagination"
+          with-refresh-button
         ></active-refresh-token-list>
       </template>
 
@@ -45,7 +48,12 @@
 
       <template id="add-friend" data-name="Barát hozzáadása">
         <h1>Barát hozzáadása</h1>
-        <input id="friendSearchInput" type="text" placeholder="Felhasználónév keresése..." autocomplete="off" />
+        <input
+          id="friendSearchInput"
+          type="text"
+          placeholder="Felhasználónév keresése..."
+          autocomplete="off"
+        />
         <div id="friendSearchResults"></div>
       </template>
 
@@ -97,16 +105,12 @@
       import "/ui/component/feedback/ToastManager.js";
       import "/ui/component/account/ActiveRefreshTokenList.js";
       import "/ui/component/auth/DestroyAllSessionsButton.js";
-      import {
-        onDOMContentLoaded,
-      } from "/common/common.js";
+      import { onDOMContentLoaded } from "/common/common.js";
       import { on, off } from "/common/eventhub.js";
 
       function getCurrentUserId(loginEvent = null) {
         return (
-          loginEvent?.detail?.user?.id ||
-          window?.VoidVanguard?.user?.id ||
-          null
+          loginEvent?.detail?.user?.id || window?.VoidVanguard?.user?.id || null
         );
       }
 
@@ -141,7 +145,7 @@
       });
 
       document.getElementById("backBtn").addEventListener("click", () => {
-        window.location.href = "/";
+        window.top.location.href = "/";
       });
 
       async function redirectToOwnProfile() {
@@ -149,11 +153,11 @@
 
         const userId = getCurrentUserId();
         if (!userId) {
-          window.location.href = "/";
+          window.top.location.href = "/";
           return;
         }
 
-        window.location.href = "/profile/" + userId;
+        window.top.location.href = "/profile/" + userId;
       }
 
       const viewSwitcher = document.querySelector("view-switcher");
@@ -182,7 +186,9 @@
       // --- After sending a friend request, switch to the outgoing tab ---
       document.addEventListener("friendship-status-change", (e) => {
         if (e.target?.status === "sent") {
-          document.querySelector("view-switcher")?.setActive("outgoing-friend-requests");
+          document
+            .querySelector("view-switcher")
+            ?.setActive("outgoing-friend-requests");
         }
       });
 
@@ -229,11 +235,16 @@
         const name = document.createElement("span");
         name.textContent = user.username;
 
+        const dname = document.createElement("span");
+        dname.textContent = user.display_name ?? "";
+
         meta.appendChild(img);
         meta.appendChild(name);
+        meta.appendChild(dname);
 
         const btn = document.createElement("friendship-action-button");
         btn.setAttribute("user-id", user.id);
+        btn.setAttribute("auto-enable", "");
 
         item.appendChild(meta);
         item.appendChild(btn);

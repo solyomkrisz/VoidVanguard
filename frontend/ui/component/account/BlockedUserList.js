@@ -111,6 +111,23 @@ export default class BlockedUserList extends LazyItemList {
     off("logout", this.onLogout);
   }
 
+  renderContent(items, response) {
+    if (!Array.isArray(items)) return;
+
+    if (this._page === 1 && items.length === 0) {
+      this._container.textContent = "";
+
+      const empty = document.createElement("p");
+      empty.className = "block-list-empty";
+      empty.textContent = "Nincsenek megjeleníthető felhasználók.";
+
+      this._container.appendChild(empty);
+      return;
+    }
+
+    super.renderContent(items, response);
+  }
+
   renderItem(item) {
     const el = document.createElement("blocked-user-list-item");
     el.data = item;

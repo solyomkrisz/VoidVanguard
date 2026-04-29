@@ -16,25 +16,28 @@ const _innerHTML = `
   </input-group>
 
   <input-group class="input-group">
+    <label>Felhasználó jogosultsága</label>
     <select name="role">
       <option value="0">Felhasználó</option>
       <option value="1">Adminisztrátor</option>
     </select>
   </input-group>
 
-  <input-group class="input-group">
-    <label>Jelszó</label>
-    <password-input-validator>
-      <input type="password" name="password" placeholder="Jelszó" />
-    </password-input-validator>
-  </input-group>
-  
-  <input-group class="input-group">
-    <label>Jelszó megerősítése</label>
-    <password-input-validator>
-      <input type="password" name="passwordConfirm" placeholder="Jelszó megerősítése" />
-    </password-input-validator>
-  </input-group>
+  <div class="password-input-group">
+    <input-group class="input-group">
+      <label>Jelszó</label>
+      <password-input-validator>
+        <input type="password" name="password" placeholder="Jelszó" />
+      </password-input-validator>
+    </input-group>
+    
+    <input-group class="input-group">
+      <label>Jelszó megerősítése</label>
+      <password-input-validator>
+        <input type="password" name="passwordConfirm" placeholder="Jelszó megerősítése" />
+      </password-input-validator>
+    </input-group>
+  </div>
 
   <button>Fiókadatok módosítása</button>
 </form>

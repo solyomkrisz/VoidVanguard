@@ -1,12 +1,12 @@
 @font-face {
-  font-family: 'Jersey';
-  src: url('/font/Jersey10-Regular.ttf') format('truetype');
+  font-family: "Jersey";
+  src: url("/font/Jersey10-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 * {
-  font-family: 'Jersey', 'Courier New', monospace;
+  font-family: "Jersey", "Courier New", monospace;
   font-smooth: never;
   -webkit-font-smoothing: none;
 }
@@ -41,7 +41,7 @@ textarea {
   border: 0.15rem solid #2a5a9e;
   color: #ffffff;
   font-size: 1.8vmin;
-  font-family: 'Jersey', 'Courier New', monospace;
+  font-family: "Jersey", "Courier New", monospace;
   box-shadow:
     inset 3px 3px 0px rgba(0, 0, 0, 0.8),
     inset -2px -2px 0px rgba(74, 144, 226, 0.2);
@@ -75,7 +75,7 @@ button {
     0 6px 0 0 #2a5a9e,
     0 6px 16px rgba(0, 0, 0, 0.7);
   font-size: 1.8vmin;
-  font-family: 'Jersey', 'Courier New', monospace;
+  font-family: "Jersey", "Courier New", monospace;
   cursor: pointer;
   transition: all 0.1s;
   text-transform: uppercase;
@@ -117,7 +117,6 @@ button:disabled {
     0 2px 0 0 #2a2a33;
 }
 
-
 @media (max-width: 900px) {
   .input-group {
     margin-top: 0.6rem;
@@ -145,21 +144,21 @@ button:disabled {
     letter-spacing: 0.08em;
   }
 
+  @media (max-width: 600px) {
+    .input-group label {
+      font-size: clamp(0.9rem, 4.2vw, 1.05rem);
+    }
 
-@media (max-width: 600px) {
-  .input-group label {
-    font-size: clamp(0.9rem, 4.2vw, 1.05rem);
-  }
+    input,
+    select,
+    textarea {
+      min-height: 2.7rem;
+      padding: 0.58rem 0.68rem;
+    }
 
-  input,
-  select,
-  textarea {
-    min-height: 2.7rem;
-    padding: 0.58rem 0.68rem;
-  }
-
-  button {
-    min-height: 2.7rem;
-    padding: 0.62rem 0.8rem;
+    button {
+      min-height: 2.7rem;
+      padding: 0.62rem 0.8rem;
+    }
   }
 }

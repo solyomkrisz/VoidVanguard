@@ -29,7 +29,9 @@
       <h1 id="admin-title">Adminisztrációs felület</h1>
 
       <nav id="admin-nav">
-        <button id="backBtn" onclick="window.top.location.href='/'">&#8592; Vissza</button>
+        <button id="backBtn" onclick="window.top.location.href = '/'">
+          &#8592; Vissza
+        </button>
         <remove-disguise-button></remove-disguise-button>
         <logout-button></logout-button>
       </nav>
@@ -63,7 +65,11 @@
           <h1>Fiók kezelése</h1>
 
           <account-form-restorer user-id>
-            <admin-account-form action="update" admin restore></admin-account-form>
+            <admin-account-form
+              action="update"
+              admin
+              restore
+            ></admin-account-form>
           </account-form-restorer>
 
           <div class="friend-manager">
@@ -76,6 +82,7 @@
                 filter="status=pending&direction=incoming"
                 user-id
                 admin
+                with-refresh-button
               >
               </friend-list-full>
             </div>
@@ -89,6 +96,7 @@
                 filter="status=pending&direction=outgoing"
                 user-id
                 admin
+                with-refresh-button
               ></friend-list-full>
             </div>
           </div>
@@ -102,6 +110,7 @@
                 page-size="5"
                 user-id
                 admin
+                with-refresh-button
               >
               </friend-list-full>
             </div>
@@ -114,13 +123,18 @@
                 page-size="5"
                 user-id
                 admin
+                with-refresh-button
               ></blocked-user-list>
             </div>
+          </div>
+
+          <div class="admin-panel admin-panel--sessions">
             <h1>Aktív munkamenetek kezelése</h1>
             <active-refresh-token-list
               controls="pagination"
               page-size="6"
               user-id
+              with-refresh-button
             ></active-refresh-token-list>
           </div>
         </div>
@@ -209,7 +223,9 @@
       });
 
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => onDOMContentLoaded({ requireAuth: true }));
+        document.addEventListener("DOMContentLoaded", () =>
+          onDOMContentLoaded({ requireAuth: true }),
+        );
       } else {
         onDOMContentLoaded({ requireAuth: true });
       }

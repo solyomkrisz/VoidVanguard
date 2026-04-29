@@ -12,7 +12,11 @@
 .guest-profile-message {
   padding: 0.85rem 1rem;
   border: 1px solid rgba(255, 179, 112, 0.58);
-  background: linear-gradient(180deg, rgba(80, 46, 22, 0.88) 0%, rgba(57, 31, 14, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(80, 46, 22, 0.88) 0%,
+    rgba(57, 31, 14, 0.9) 100%
+  );
   color: #ffe2c9;
   letter-spacing: 0.03em;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.72);
@@ -105,7 +109,11 @@
   padding: 0.7rem 0.8rem 0.55rem;
   border: 1px solid rgba(123, 214, 255, 0.4);
   border-bottom: 0;
-  background: linear-gradient(180deg, rgba(18, 32, 50, 0.95) 0%, rgba(13, 24, 38, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 32, 50, 0.95) 0%,
+    rgba(13, 24, 38, 0.95) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(8, 14, 22, 0.85),
     0 16px 30px rgba(0, 0, 0, 0.38);
@@ -134,7 +142,11 @@
   gap: 0.4rem;
   padding: 0.75rem;
   border: 1px solid rgba(123, 214, 255, 0.4);
-  background: linear-gradient(180deg, rgba(13, 24, 38, 0.96) 0%, rgba(9, 17, 28, 0.97) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(13, 24, 38, 0.96) 0%,
+    rgba(9, 17, 28, 0.97) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(8, 14, 22, 0.85),
     0 16px 30px rgba(0, 0, 0, 0.38);
@@ -148,7 +160,10 @@
   border-radius: 8px;
   background: rgba(8, 14, 24, 0.9);
   cursor: pointer;
-  transition: transform 0.1s, border-color 0.1s, box-shadow 0.1s;
+  transition:
+    transform 0.1s,
+    border-color 0.1s,
+    box-shadow 0.1s;
 }
 
 .avatar-choice input {
@@ -173,7 +188,9 @@
 
 .avatar-choice:has(input:checked) {
   border-color: #9fe2ff;
-  box-shadow: 0 0 0 1px rgba(8, 16, 26, 0.9), 0 0 12px rgba(123, 214, 255, 0.24);
+  box-shadow:
+    0 0 0 1px rgba(8, 16, 26, 0.9),
+    0 0 12px rgba(123, 214, 255, 0.24);
 }
 
 .profile-visibility-editor {
@@ -237,7 +254,10 @@
 
 .avatar-shell.avatar-shell-clickable {
   cursor: pointer;
-  transition: border-color 0.14s ease, box-shadow 0.14s ease, transform 0.14s ease;
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease,
+    transform 0.14s ease;
 }
 
 .avatar-shell.avatar-shell-clickable::after {
@@ -251,10 +271,16 @@
   letter-spacing: 0.04em;
   text-align: center;
   color: #e9f6ff;
-  background: linear-gradient(180deg, rgba(4, 8, 14, 0) 0%, rgba(4, 8, 14, 0.85) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(4, 8, 14, 0) 0%,
+    rgba(4, 8, 14, 0.85) 100%
+  );
   opacity: 0;
   transform: translateY(4px);
-  transition: opacity 0.14s ease, transform 0.14s ease;
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
 }
 
 .avatar-shell.avatar-shell-clickable:hover {
@@ -286,7 +312,11 @@
 
 .avatar-shell.no-profile-avatar {
   background:
-    radial-gradient(circle at 50% 30%, rgba(160, 172, 194, 0.16), transparent 45%),
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(160, 172, 194, 0.16),
+      transparent 45%
+    ),
     linear-gradient(180deg, #434956 0%, #2e3440 100%);
 }
 
@@ -337,7 +367,8 @@
 }
 
 .friend-list-empty,
-.comment-list-empty {
+.comment-list-empty,
+.block-list-empty {
   margin: 0;
   padding: 0.75rem 0.85rem;
   border: 1px solid rgba(123, 214, 255, 0.34);
@@ -359,12 +390,19 @@ friend-list-preview .friend-list-item {
   padding: 0.7rem 0.85rem;
   border: 1px solid rgba(123, 214, 255, 0.42);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(18, 31, 50, 0.78) 0%, rgba(11, 22, 35, 0.88) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.78) 0%,
+    rgba(11, 22, 35, 0.88) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(8, 15, 26, 0.85),
     0 5px 14px rgba(0, 0, 0, 0.28);
   cursor: pointer;
-  transition: border-color 0.12s, transform 0.12s, box-shadow 0.12s;
+  transition:
+    border-color 0.12s,
+    transform 0.12s,
+    box-shadow 0.12s;
 }
 
 friend-list-preview .friend-list-item:hover {
@@ -396,14 +434,19 @@ friend-list-full .item-container {
   padding: 0.35rem;
 }
 
-friend-list-full > .lazy-item-list-refresh-button {
+friend-list-full > .lazy-item-list-refresh-button,
+blocked-user-list > .lazy-item-list-refresh-button {
   margin: 0.2rem 0 0.55rem;
-  min-width: 8.5rem;
+  /* min-width: 8.5rem; */
   align-self: flex-start;
   padding: 0.5rem 0.95rem;
   border: 2px solid rgba(123, 214, 255, 0.75);
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgba(56, 118, 186, 0.95) 0%, rgba(38, 87, 148, 0.95) 100%);
+  /* border-radius: 8px; */
+  background: linear-gradient(
+    180deg,
+    rgba(56, 118, 186, 0.95) 0%,
+    rgba(38, 87, 148, 0.95) 100%
+  );
   color: #f5fbff;
   font-family: "Jersey", "Courier New", monospace;
   font-size: 0.95rem;
@@ -416,12 +459,20 @@ friend-list-full > .lazy-item-list-refresh-button {
     0 4px 0 0 rgba(26, 61, 104, 0.95),
     0 7px 16px rgba(0, 0, 0, 0.35);
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s, background 0.1s, border-color 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s,
+    background 0.1s,
+    border-color 0.1s;
 }
 
 friend-list-full > .lazy-item-list-refresh-button:hover:not(:disabled) {
   border-color: #9fe2ff;
-  background: linear-gradient(180deg, rgba(84, 150, 220, 0.98) 0%, rgba(52, 112, 182, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(84, 150, 220, 0.98) 0%,
+    rgba(52, 112, 182, 0.98) 100%
+  );
   transform: translateY(-1px);
   box-shadow:
     inset 0 0 0 1px rgba(14, 28, 44, 0.95),
@@ -442,7 +493,11 @@ friend-list-full > .lazy-item-list-refresh-button:active:not(:disabled) {
 
 friend-list-full > .lazy-item-list-refresh-button:disabled {
   border-color: rgba(116, 140, 165, 0.55);
-  background: linear-gradient(180deg, rgba(72, 84, 102, 0.92) 0%, rgba(58, 69, 86, 0.92) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(72, 84, 102, 0.92) 0%,
+    rgba(58, 69, 86, 0.92) 100%
+  );
   color: rgba(232, 242, 252, 0.72);
   cursor: not-allowed;
   transform: none;
@@ -455,7 +510,11 @@ friend-list-full > .lazy-item-list-refresh-button:disabled {
 friend-list-full friend-list-item {
   border: 1px solid rgba(123, 214, 255, 0.42);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(18, 31, 50, 0.78) 0%, rgba(11, 22, 35, 0.88) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.78) 0%,
+    rgba(11, 22, 35, 0.88) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(8, 15, 26, 0.85),
     0 5px 14px rgba(0, 0, 0, 0.28);
@@ -502,7 +561,11 @@ friend-list-full pagination-controls button {
   padding: 0.42rem 0.75rem;
   border-radius: 8px;
   border: 2px solid rgba(123, 214, 255, 0.75);
-  background: linear-gradient(180deg, rgba(56, 118, 186, 0.95) 0%, rgba(38, 87, 148, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(56, 118, 186, 0.95) 0%,
+    rgba(38, 87, 148, 0.95) 100%
+  );
   color: #f5fbff;
   font-family: "Jersey", "Courier New", monospace;
   font-size: 0.95rem;
@@ -515,12 +578,20 @@ friend-list-full pagination-controls button {
     0 4px 0 0 rgba(26, 61, 104, 0.95),
     0 7px 16px rgba(0, 0, 0, 0.35);
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s, background 0.1s, border-color 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s,
+    background 0.1s,
+    border-color 0.1s;
 }
 
 friend-list-full pagination-controls button:hover:not(:disabled) {
   border-color: #9fe2ff;
-  background: linear-gradient(180deg, rgba(84, 150, 220, 0.98) 0%, rgba(52, 112, 182, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(84, 150, 220, 0.98) 0%,
+    rgba(52, 112, 182, 0.98) 100%
+  );
   transform: translateY(-1px);
   box-shadow:
     inset 0 0 0 1px rgba(14, 28, 44, 0.95),
@@ -541,7 +612,11 @@ friend-list-full pagination-controls button:active:not(:disabled) {
 
 friend-list-full pagination-controls button:disabled {
   border-color: rgba(116, 140, 165, 0.55);
-  background: linear-gradient(180deg, rgba(72, 84, 102, 0.92) 0%, rgba(58, 69, 86, 0.92) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(72, 84, 102, 0.92) 0%,
+    rgba(58, 69, 86, 0.92) 100%
+  );
   color: rgba(232, 242, 252, 0.72);
   cursor: not-allowed;
   transform: none;
@@ -558,11 +633,15 @@ friend-list-full pagination-controls span {
 
 comment-form {
   display: block;
-  margin-top: 10px;
+  margin-block: 10px;
   padding: 12px;
   border: 1px solid rgba(106, 184, 255, 0.45);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(18, 31, 50, 0.85) 0%, rgba(12, 22, 36, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.85) 0%,
+    rgba(12, 22, 36, 0.9) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(13, 13, 21, 0.8),
     0 6px 16px rgba(0, 0, 0, 0.32);
@@ -588,6 +667,7 @@ comment-form {
   border-radius: 8px;
   background: rgba(8, 14, 24, 0.88);
   color: #eef7ff;
+  resize: vertical;
 }
 
 .comment-compose-form textarea:focus {
@@ -607,7 +687,11 @@ comment-form button {
   margin-top: 0.2rem;
   padding: 0.7rem 1rem;
   border: 2px solid rgba(123, 214, 255, 0.75);
-  background: linear-gradient(180deg, rgba(56, 118, 186, 0.95) 0%, rgba(38, 87, 148, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(56, 118, 186, 0.95) 0%,
+    rgba(38, 87, 148, 0.95) 100%
+  );
   color: #f5fbff;
   font-family: "Jersey", "Courier New", monospace;
   font-size: 1rem;
@@ -621,7 +705,11 @@ comment-form button {
     0 7px 16px rgba(0, 0, 0, 0.35);
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s, background 0.1s, border-color 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s,
+    background 0.1s,
+    border-color 0.1s;
 }
 
 .profile-container button:hover,
@@ -629,7 +717,11 @@ friendship-action-button button:hover,
 block-action-button button:hover,
 comment-form button:hover {
   border-color: #9fe2ff;
-  background: linear-gradient(180deg, rgba(84, 150, 220, 0.98) 0%, rgba(52, 112, 182, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(84, 150, 220, 0.98) 0%,
+    rgba(52, 112, 182, 0.98) 100%
+  );
   transform: translateY(-1px);
   box-shadow:
     inset 0 0 0 1px rgba(14, 28, 44, 0.95),
@@ -656,7 +748,11 @@ friendship-action-button button:disabled,
 block-action-button button:disabled,
 comment-form button:disabled {
   border-color: rgba(116, 140, 165, 0.55);
-  background: linear-gradient(180deg, rgba(72, 84, 102, 0.92) 0%, rgba(58, 69, 86, 0.92) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(72, 84, 102, 0.92) 0%,
+    rgba(58, 69, 86, 0.92) 100%
+  );
   color: rgba(232, 242, 252, 0.72);
   cursor: not-allowed;
   transform: none;
@@ -678,7 +774,7 @@ comment-form button:disabled {
 .profile-header-actions > div {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  /* align-items: flex-start; */
   gap: 8px;
 }
 
@@ -708,7 +804,11 @@ block-action-button {
 
 #delete {
   border-color: rgba(255, 121, 121, 0.82);
-  background: linear-gradient(180deg, rgba(166, 53, 53, 0.96) 0%, rgba(123, 39, 39, 0.96) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(166, 53, 53, 0.96) 0%,
+    rgba(123, 39, 39, 0.96) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(57, 16, 16, 0.95),
     0 0 0 1px rgba(12, 6, 6, 0.85),
@@ -718,7 +818,11 @@ block-action-button {
 
 #delete:hover {
   border-color: rgba(255, 159, 159, 0.9);
-  background: linear-gradient(180deg, rgba(198, 72, 72, 0.98) 0%, rgba(150, 49, 49, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(198, 72, 72, 0.98) 0%,
+    rgba(150, 49, 49, 0.98) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(57, 16, 16, 0.95),
     0 0 0 1px rgba(12, 6, 6, 0.85),
@@ -742,7 +846,11 @@ comment-item {
   padding: 0.8rem 0.9rem;
   border: 1px solid rgba(123, 214, 255, 0.42);
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(16, 29, 47, 0.84) 0%, rgba(9, 18, 30, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(16, 29, 47, 0.84) 0%,
+    rgba(9, 18, 30, 0.9) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(8, 15, 26, 0.85),
     0 6px 14px rgba(0, 0, 0, 0.3);
@@ -788,7 +896,9 @@ comment-item .comment-author-avatar-link {
   box-shadow:
     inset 0 0 0 1px rgba(13, 23, 37, 0.82),
     0 3px 8px rgba(0, 0, 0, 0.35);
-  transition: border-color 0.12s ease, transform 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    transform 0.12s ease;
 }
 
 comment-item .comment-author-avatar-link:hover {
@@ -798,7 +908,11 @@ comment-item .comment-author-avatar-link:hover {
 
 comment-item .comment-author-avatar-link.no-profile-avatar {
   background:
-    radial-gradient(circle at 50% 30%, rgba(160, 172, 194, 0.16), transparent 45%),
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(160, 172, 194, 0.16),
+      transparent 45%
+    ),
     linear-gradient(180deg, #434956 0%, #2e3440 100%);
 }
 
@@ -898,12 +1012,20 @@ comment-item .comment-stat-value {
 
 comment-item .comment-stat.like {
   border-color: rgba(95, 214, 154, 0.45);
-  background: linear-gradient(180deg, rgba(19, 44, 34, 0.86) 0%, rgba(12, 29, 24, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(19, 44, 34, 0.86) 0%,
+    rgba(12, 29, 24, 0.9) 100%
+  );
 }
 
 comment-item .comment-stat.dislike {
   border-color: rgba(255, 138, 138, 0.45);
-  background: linear-gradient(180deg, rgba(55, 25, 28, 0.86) 0%, rgba(35, 16, 18, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(55, 25, 28, 0.86) 0%,
+    rgba(35, 16, 18, 0.9) 100%
+  );
 }
 
 comment-item .comment-stat.like .comment-stat-value {
@@ -945,7 +1067,11 @@ comment-item comment-reactions button {
   align-items: center;
   gap: 0.42rem;
   border-color: rgba(110, 156, 205, 0.75);
-  background: linear-gradient(180deg, rgba(26, 43, 64, 0.96) 0%, rgba(18, 30, 47, 0.96) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(26, 43, 64, 0.96) 0%,
+    rgba(18, 30, 47, 0.96) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(8, 15, 26, 0.95),
     0 0 0 1px rgba(4, 9, 17, 0.9),
@@ -961,7 +1087,11 @@ comment-item comment-reactions button .reaction-count {
   min-width: 1.9rem;
   padding: 0.16rem 0.52rem;
   border: 1px solid rgba(176, 224, 255, 0.65);
-  background: linear-gradient(180deg, rgba(91, 157, 228, 0.98) 0%, rgba(58, 119, 189, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(91, 157, 228, 0.98) 0%,
+    rgba(58, 119, 189, 0.98) 100%
+  );
   color: #f5fbff;
   text-align: center;
   font-weight: 700;
@@ -973,7 +1103,11 @@ comment-item comment-reactions button .reaction-count {
 
 comment-item comment-reactions button[data-type="like"] .reaction-count {
   border-color: rgba(124, 247, 184, 0.75);
-  background: linear-gradient(180deg, rgba(58, 154, 103, 0.98) 0%, rgba(34, 110, 70, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(58, 154, 103, 0.98) 0%,
+    rgba(34, 110, 70, 0.98) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(10, 35, 24, 0.78),
     0 0 0 1px rgba(4, 12, 8, 0.78);
@@ -981,7 +1115,11 @@ comment-item comment-reactions button[data-type="like"] .reaction-count {
 
 comment-item comment-reactions button[data-type="dislike"] .reaction-count {
   border-color: rgba(255, 165, 165, 0.75);
-  background: linear-gradient(180deg, rgba(172, 74, 74, 0.98) 0%, rgba(116, 45, 45, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(172, 74, 74, 0.98) 0%,
+    rgba(116, 45, 45, 0.98) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(49, 14, 14, 0.78),
     0 0 0 1px rgba(20, 6, 6, 0.78);
@@ -994,7 +1132,11 @@ comment-item comment-reactions button:disabled {
 
 comment-item comment-reactions button.active {
   border-color: #9fe2ff;
-  background: linear-gradient(180deg, rgba(88, 158, 232, 0.98) 0%, rgba(56, 121, 194, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(88, 158, 232, 0.98) 0%,
+    rgba(56, 121, 194, 0.98) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(14, 28, 44, 0.95),
     0 0 0 1px rgba(5, 10, 18, 0.9),
@@ -1005,7 +1147,11 @@ comment-item comment-reactions button.active {
 
 comment-item comment-reactions button[data-type="like"].active {
   border-color: rgba(124, 247, 184, 0.95);
-  background: linear-gradient(180deg, rgba(26, 103, 68, 0.98) 0%, rgba(16, 72, 48, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(26, 103, 68, 0.98) 0%,
+    rgba(16, 72, 48, 0.98) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(10, 35, 24, 0.95),
     0 0 0 1px rgba(4, 12, 8, 0.92),
@@ -1014,10 +1160,13 @@ comment-item comment-reactions button[data-type="like"].active {
     0 0 16px rgba(95, 214, 154, 0.35);
 }
 
-
 comment-item comment-reactions button[data-type="dislike"].active {
   border-color: rgba(255, 165, 165, 0.95);
-  background: linear-gradient(180deg, rgba(122, 46, 46, 0.98) 0%, rgba(90, 30, 30, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(122, 46, 46, 0.98) 0%,
+    rgba(90, 30, 30, 0.98) 100%
+  );
   box-shadow:
     inset 0 0 0 1px rgba(49, 14, 14, 0.95),
     0 0 0 1px rgba(20, 6, 6, 0.92),
@@ -1026,14 +1175,17 @@ comment-item comment-reactions button[data-type="dislike"].active {
     0 0 16px rgba(255, 126, 126, 0.35);
 }
 
-
 #open-profile-create,
 #continue-without-profile {
   width: min(420px, 92%);
   align-self: center;
   padding: 0.7rem 1rem;
   border: 2px solid rgba(123, 214, 255, 0.75);
-  background: linear-gradient(180deg, rgba(56, 118, 186, 0.95) 0%, rgba(38, 87, 148, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(56, 118, 186, 0.95) 0%,
+    rgba(38, 87, 148, 0.95) 100%
+  );
   color: #f5fbff;
   font-family: "Jersey", "Courier New", monospace;
   font-size: 1rem;
@@ -1047,7 +1199,11 @@ comment-item comment-reactions button[data-type="dislike"].active {
     0 7px 16px rgba(0, 0, 0, 0.35);
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s, background 0.1s, border-color 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s,
+    background 0.1s,
+    border-color 0.1s;
 }
 
 #missing-profile-message {
@@ -1062,7 +1218,11 @@ comment-item comment-reactions button[data-type="dislike"].active {
 #open-profile-create:hover,
 #continue-without-profile:hover {
   border-color: #9fe2ff;
-  background: linear-gradient(180deg, rgba(84, 150, 220, 0.98) 0%, rgba(52, 112, 182, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(84, 150, 220, 0.98) 0%,
+    rgba(52, 112, 182, 0.98) 100%
+  );
   transform: translateY(-1px);
   box-shadow:
     inset 0 0 0 1px rgba(14, 28, 44, 0.95),
@@ -1327,4 +1487,38 @@ comment-item .comment-stat-value,
 #open-profile-create,
 #continue-without-profile {
   border-radius: 2px;
+}
+
+/**/
+
+.profile-two-column {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.profile-two-column > * {
+  width: 100%;
+}
+
+.profile-two-column > *:first-child {
+  order: 2;
+}
+
+.profile-two-column > *:last-child {
+  order: 1;
+}
+
+@media (max-width: 860px) {
+  .profile-two-column {
+    flex-direction: column;
+  }
+
+  .profile-two-column > *:first-child {
+    order: 1;
+  }
+
+  .profile-two-column > *:last-child {
+    order: 2;
+  }
 }

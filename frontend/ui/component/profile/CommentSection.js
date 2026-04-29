@@ -60,12 +60,6 @@ export default class CommentSection extends LazyItemList {
     this._reactionStates = new Map();
   }
 
-  build() {
-    super.build();
-    this._refreshButton?.remove();
-    this._refreshButton = null;
-  }
-
   attributeChangedCallback(name, oldValue, newValue) {
     super.attributeChangedCallback?.(name, oldValue, newValue);
 
@@ -334,7 +328,10 @@ export default class CommentSection extends LazyItemList {
     }
 
     e.target.comment = result; // Lehet később külön kéne lekérni az updatelt kommentet.
-    requestToast(response?.message || "Komment sikeresen modositva.", "success");
+    requestToast(
+      response?.message || "Komment sikeresen modositva.",
+      "success",
+    );
   }
 
   extractItems(response) {

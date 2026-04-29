@@ -118,13 +118,10 @@ const DEFAULT_AVATAR_PATHS = Object.freeze([
 const DEFAULT_AVATAR_PATH = DEFAULT_AVATAR_PATHS[0];
 
 function normalizeAvatarPath(path) {
-  return DEFAULT_AVATAR_PATHS.includes(path)
-    ? path
-    : DEFAULT_AVATAR_PATH;
+  return DEFAULT_AVATAR_PATHS.includes(path) ? path : DEFAULT_AVATAR_PATH;
 }
 
-const EMPTY_AVATAR_SRC =
-  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+const EMPTY_AVATAR_SRC = "/image/defaultPfp.png";
 const BIO_PLACEHOLDER_TEXT = "Ide írd a profilod leírását";
 const LEGACY_BIO_PLACEHOLDER_TEXT = "Ide írd a profilodnak leírását";
 const OWN_PROFILE_EMPTY_DESCRIPTION_TEXT =
@@ -255,7 +252,8 @@ export default class FullProfile extends HTMLElement {
     this.onFriendListChange = this.onFriendListChange.bind(this);
     this.onFriendshipButtonClick = this.onFriendshipButtonClick.bind(this);
     this.onBlockButtonClick = this.onBlockButtonClick.bind(this);
-    this.onFriendPreviewStateChange = this.onFriendPreviewStateChange.bind(this);
+    this.onFriendPreviewStateChange =
+      this.onFriendPreviewStateChange.bind(this);
     this.onProfileCreate = this.onProfileCreate.bind(this);
     this.onDelete = this.onDelete.bind(this);
     this.onSave = this.onSave.bind(this);
@@ -265,7 +263,8 @@ export default class FullProfile extends HTMLElement {
     this.onDescriptionEditorFocus = this.onDescriptionEditorFocus.bind(this);
     this.onAvatarSelectionChange = this.onAvatarSelectionChange.bind(this);
     this.onAvatarShellClick = this.onAvatarShellClick.bind(this);
-    this.onAvatarEditorBackdropClick = this.onAvatarEditorBackdropClick.bind(this);
+    this.onAvatarEditorBackdropClick =
+      this.onAvatarEditorBackdropClick.bind(this);
     this.onAvatarEditorCloseClick = this.onAvatarEditorCloseClick.bind(this);
     this.onVisibilityToggleClick = this.onVisibilityToggleClick.bind(this);
     this.onOpenProfileCreate = this.onOpenProfileCreate.bind(this);
@@ -275,7 +274,8 @@ export default class FullProfile extends HTMLElement {
   get isOwnProfile() {
     return (
       this._profileData?.user_id != null &&
-      String(this._profileData.user_id) === String(window?.VoidVanguard?.user?.id)
+      String(this._profileData.user_id) ===
+        String(window?.VoidVanguard?.user?.id)
     );
   }
 
@@ -526,7 +526,8 @@ export default class FullProfile extends HTMLElement {
       const profileDescription = this._elements?.profileDescription;
       const isOwnProfile =
         this._profileData?.user_id != null &&
-        String(this._profileData.user_id) === String(window?.VoidVanguard?.user?.id);
+        String(this._profileData.user_id) ===
+          String(window?.VoidVanguard?.user?.id);
       const normalized = sanitizeDescription(newValue);
       const shouldShowOwnProfilePlaceholder = isOwnProfile && !normalized;
 
@@ -578,7 +579,8 @@ export default class FullProfile extends HTMLElement {
       const profileDescription = this._elements?.profileDescription;
       const isOwnProfile =
         this._profileData?.user_id != null &&
-        String(this._profileData.user_id) === String(window?.VoidVanguard?.user?.id);
+        String(this._profileData.user_id) ===
+          String(window?.VoidVanguard?.user?.id);
       const normalized = sanitizeDescription(newValue);
       const shouldShowOwnProfilePlaceholder = isOwnProfile && !normalized;
 
@@ -618,7 +620,9 @@ export default class FullProfile extends HTMLElement {
 
   onVisibilityToggleClick() {
     const visibilityInput = this.querySelector('input[name="visibility"]');
-    const visibilityButtons = this.querySelectorAll(".profile-visibility-toggle");
+    const visibilityButtons = this.querySelectorAll(
+      ".profile-visibility-toggle",
+    );
 
     if (!visibilityInput || visibilityButtons.length === 0) return;
 
@@ -632,7 +636,9 @@ export default class FullProfile extends HTMLElement {
       button.textContent = getVisibilityLabel(nextVisibility);
     });
 
-    const currentProfileVisibility = normalizeVisibility(this._profileData?.visibility);
+    const currentProfileVisibility = normalizeVisibility(
+      this._profileData?.visibility,
+    );
 
     if (nextVisibility !== currentProfileVisibility) {
       this._changed.add("visibility");
@@ -731,7 +737,9 @@ export default class FullProfile extends HTMLElement {
     return el("form", {}, [
       el("div", { class: "profile-avatar-editor", hidden: true }, [
         el("div", { class: "profile-avatar-editor-head" }, [
-          el("p", { class: "profile-avatar-editor-label" }, ["Válassz egy profilképet!"]),
+          el("p", { class: "profile-avatar-editor-label" }, [
+            "Válassz egy profilképet!",
+          ]),
           el(
             "button",
             {
@@ -824,19 +832,25 @@ export default class FullProfile extends HTMLElement {
         value: normalizeVisibility(data.visibility),
       }),
 
-      el("div", { class: "profile-visibility-editor profile-visibility-editor-desktop" }, [
-        el("p", { class: "profile-visibility-editor-label" }, [
-          "Profil láthatósága",
-        ]),
-        el(
-          "button",
-          {
-            type: "button",
-            class: "profile-visibility-toggle",
-          },
-          [getVisibilityLabel(data.visibility)],
-        ),
-      ]),
+      el(
+        "div",
+        {
+          class: "profile-visibility-editor profile-visibility-editor-desktop",
+        },
+        [
+          el("p", { class: "profile-visibility-editor-label" }, [
+            "Profil láthatósága",
+          ]),
+          el(
+            "button",
+            {
+              type: "button",
+              class: "profile-visibility-toggle",
+            },
+            [getVisibilityLabel(data.visibility)],
+          ),
+        ],
+      ),
 
       el("inline-editor", {}, [
         el("dashed-border-box", {}, [
@@ -923,19 +937,25 @@ export default class FullProfile extends HTMLElement {
           },
           ["Törlés"],
         ),
-        el("div", { class: "profile-visibility-editor profile-visibility-editor-mobile" }, [
-          el("p", { class: "profile-visibility-editor-label" }, [
-            "Profil láthatósága",
-          ]),
-          el(
-            "button",
-            {
-              type: "button",
-              class: "profile-visibility-toggle",
-            },
-            [getVisibilityLabel(this._profileData?.visibility)],
-          ),
-        ]),
+        el(
+          "div",
+          {
+            class: "profile-visibility-editor profile-visibility-editor-mobile",
+          },
+          [
+            el("p", { class: "profile-visibility-editor-label" }, [
+              "Profil láthatósága",
+            ]),
+            el(
+              "button",
+              {
+                type: "button",
+                class: "profile-visibility-toggle",
+              },
+              [getVisibilityLabel(this._profileData?.visibility)],
+            ),
+          ],
+        ),
       ]);
     }
 
@@ -968,9 +988,7 @@ export default class FullProfile extends HTMLElement {
       ".profile-description",
     );
 
-    const avatarInputs = container.querySelectorAll(
-      'input[name="avatar"]',
-    );
+    const avatarInputs = container.querySelectorAll('input[name="avatar"]');
 
     avatarInputs.forEach((input) => {
       input.removeEventListener("change", this.onAvatarSelectionChange);
@@ -991,7 +1009,9 @@ export default class FullProfile extends HTMLElement {
       }
     });
 
-    const visibilityToggles = container.querySelectorAll(".profile-visibility-toggle");
+    const visibilityToggles = container.querySelectorAll(
+      ".profile-visibility-toggle",
+    );
     visibilityToggles.forEach((toggle) => {
       toggle.removeEventListener("click", this.onVisibilityToggleClick);
       toggle.addEventListener("click", this.onVisibilityToggleClick);
@@ -999,7 +1019,10 @@ export default class FullProfile extends HTMLElement {
 
     const avatarEditor = container.querySelector(".profile-avatar-editor");
     if (avatarEditor) {
-      avatarEditor.removeEventListener("click", this.onAvatarEditorBackdropClick);
+      avatarEditor.removeEventListener(
+        "click",
+        this.onAvatarEditorBackdropClick,
+      );
       avatarEditor.addEventListener("click", this.onAvatarEditorBackdropClick);
     }
 
@@ -1008,16 +1031,25 @@ export default class FullProfile extends HTMLElement {
 
   syncAvatarPickerUI() {
     const { avatarShell, profileHeaderDetails } = this._elements;
-    const avatarEditor = profileHeaderDetails?.querySelector(".profile-avatar-editor");
-    const canToggleAvatarPicker = this.shouldShowEditors && this.isOwnProfile && !!avatarEditor;
+    const avatarEditor = profileHeaderDetails?.querySelector(
+      ".profile-avatar-editor",
+    );
+    const canToggleAvatarPicker =
+      this.shouldShowEditors && this.isOwnProfile && !!avatarEditor;
 
     if (avatarShell) {
-      avatarShell.classList.toggle("avatar-shell-clickable", canToggleAvatarPicker);
+      avatarShell.classList.toggle(
+        "avatar-shell-clickable",
+        canToggleAvatarPicker,
+      );
       avatarShell.setAttribute(
         "title",
         canToggleAvatarPicker ? "Kattints a profilkép módosításához" : "",
       );
-      avatarShell.setAttribute("aria-expanded", String(canToggleAvatarPicker && this._avatarPickerExpanded));
+      avatarShell.setAttribute(
+        "aria-expanded",
+        String(canToggleAvatarPicker && this._avatarPickerExpanded),
+      );
     }
 
     if (!canToggleAvatarPicker) {
@@ -1025,7 +1057,8 @@ export default class FullProfile extends HTMLElement {
     }
 
     if (avatarEditor) {
-      avatarEditor.hidden = !canToggleAvatarPicker || !this._avatarPickerExpanded;
+      avatarEditor.hidden =
+        !canToggleAvatarPicker || !this._avatarPickerExpanded;
     }
   }
 
@@ -1107,21 +1140,23 @@ export default class FullProfile extends HTMLElement {
             <div class="profile-header-actions">
             </div>
         </div>
-        <div class="profile-body">
-          <div>
-            <div class="profile-body-actions">
-              <button id="friend-list-full-toggle" type="button" hidden>Összes barát megtekintése</button>
-              <button id="profile-body-create" type="button" hidden>Profil létrehozása</button>
+        <div class="profile-two-column">
+          <div class="profile-body">
+            <div>
+              <div class="profile-body-actions">
+                <button id="friend-list-full-toggle" type="button" hidden>Összes barát megtekintése</button>
+                <button id="profile-body-create" type="button" hidden>Profil létrehozása</button>
+              </div>
+              <p class="friend-list-preview-label">Barátok előnézete</p>
+              <friend-list-preview></friend-list-preview>
             </div>
-            <p class="friend-list-preview-label">Barátok előnézete</p>
-            <friend-list-preview></friend-list-preview>
           </div>
-        </div>
-        <div class="profile-footer">
-          <p class="comment-section-label">Kommentek</p>
-          <comment-section controls="scroll" page-size="2" ${this.admin ? "admin" : ""}>
-            <comment-form ${this.admin ? "admin" : ""}></comment-form>
-          </comment-section>
+          <div class="profile-footer">
+            <p class="comment-section-label">Kommentek</p>
+            <comment-section controls="scroll" page-size="2" ${this.admin ? "admin" : ""}>
+              <comment-form ${this.admin ? "admin" : ""}></comment-form>
+            </comment-section>
+          </div>
         </div>
       </div>
 
@@ -1180,9 +1215,11 @@ export default class FullProfile extends HTMLElement {
     this._activeLoadToken = loadToken;
 
     const hasUserContext = !!window?.VoidVanguard?.user?.id;
-    const response = await net.send("/api/profiles/" + currentUserId, 
+    const response = await net.send(
+      "/api/profiles/" + currentUserId,
       { method: "GET" },
-      hasUserContext);
+      hasUserContext,
+    );
 
     if (this._activeLoadToken !== loadToken) return;
     // if (currentUserId !== this.userId) return;
@@ -1321,13 +1358,24 @@ export default class FullProfile extends HTMLElement {
   }
 
   renderCoreFields(state, prev) {
-    const { avatar, avatarShell, avatarEmptyText, profileName, profileUsername, profileDescription } = this._elements;
+    const {
+      avatar,
+      avatarShell,
+      avatarEmptyText,
+      profileName,
+      profileUsername,
+      profileDescription,
+    } = this._elements;
 
     if (!avatar || !profileName || !profileDescription) return;
 
     const hasProfile = state?.has_profile !== false;
 
-    if (!isEqual(state, prev, "avatar") || !isEqual(state, prev, "has_profile")) {
+    console.log("STATE: ", state);
+    if (
+      !isEqual(state, prev, "avatar") ||
+      !isEqual(state, prev, "has_profile")
+    ) {
       avatar.src = hasProfile && state.avatar ? state.avatar : EMPTY_AVATAR_SRC;
       avatar.classList.remove("skeleton");
       avatar.classList.toggle("no-profile-avatar", !hasProfile);
@@ -1347,7 +1395,9 @@ export default class FullProfile extends HTMLElement {
 
     const normalizedVisibility = normalizeVisibility(state.visibility);
     const visibilityInput = this.querySelector('input[name="visibility"]');
-    const visibilityButtons = this.querySelectorAll(".profile-visibility-toggle");
+    const visibilityButtons = this.querySelectorAll(
+      ".profile-visibility-toggle",
+    );
 
     if (visibilityInput) {
       visibilityInput.value = normalizedVisibility;
@@ -1365,7 +1415,10 @@ export default class FullProfile extends HTMLElement {
       profileUsername.textContent = state.username ? `@${state.username}` : "";
     }
 
-    if (!isEqual(state, prev, "description") || !isEqual(state, prev, "has_profile")) {
+    if (
+      !isEqual(state, prev, "description") ||
+      !isEqual(state, prev, "has_profile")
+    ) {
       const description = sanitizeDescription(state.description);
       const isOwnProfile =
         state?.user_id != null &&
@@ -1397,7 +1450,10 @@ export default class FullProfile extends HTMLElement {
     const profileFooter = profileContainer.querySelector(".profile-footer");
 
     guestProfileMessage.hidden = !shouldLockProfile;
-    profileContainer.classList.toggle("guest-profile-locked", shouldLockProfile);
+    profileContainer.classList.toggle(
+      "guest-profile-locked",
+      shouldLockProfile,
+    );
 
     if (profileHeader) {
       profileHeader.hidden = shouldLockProfile;
