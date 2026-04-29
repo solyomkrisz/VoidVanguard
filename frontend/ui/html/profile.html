@@ -10,35 +10,53 @@
     <link rel="stylesheet" href="/ui/style/dashedBorderBox.css" />
     <link rel="stylesheet" href="/ui/style/skeleton.css" />
     <link rel="stylesheet" href="/ui/style/dropdownMenu.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
+    <link rel="stylesheet" href="/ui/style/profilePage.css" />
     <title>Profil</title>
-    <style>
-      body {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-    </style>
   </head>
-  <body>
-    <nav>
-      <div class="searchbox">
-        <input type="text" />
-        <div class="searchbox-item-list"></div>
-        <template>
-          <div
-            class="searchbox-list-item"
-            onclick="onSearchboxItemClick(event)"
-          >
-            <input type="hidden" data-bind="user_id" bind-target="value" />
-            <img data-bind="avatar" bind-target="src" />
-            <div data-bind="display_name"></div>
-          </div>
-        </template>
-      </div>
-      <account-quick-manager></account-quick-manager>
-    </nav>
+  <body class="profile-page">
+    <div class="profile-bg profile-bg-grid" aria-hidden="true"></div>
+    <div class="profile-bg profile-bg-glow" aria-hidden="true"></div>
 
-    <full-profile></full-profile>
+    <button id="backBtn" type="button">Vissza</button>
+
+    <div class="profile-shell">
+      <header class="profile-topbar">
+        <div class="profile-title-wrap">
+          <p class="profile-kicker">VoidVanguard</p>
+          <h1>Közösségi Profilok</h1>
+          <p class="profile-subtitle">
+            Keress játékosokra, nézd meg a profiljukat, és kezeld a kapcsolataidat egy helyen.
+          </p>
+        </div>
+
+        <nav class="profile-toolbar">
+          <div class="searchbox" aria-label="Profil kereső">
+            <input type="text" placeholder="Felhasználó keresése..." />
+            <div class="searchbox-item-list"></div>
+            <template>
+              <div
+                class="searchbox-list-item"
+                onclick="onSearchboxItemClick(event)"
+              >
+                <input type="hidden" data-bind="user_id" bind-target="value" />
+                <div class="searchbox-avatar-shell">
+                  <img data-bind="avatar" bind-target="src" />
+                </div>
+                <div data-bind="display_name"></div>
+              </div>
+            </template>
+          </div>
+          <account-quick-manager></account-quick-manager>
+        </nav>
+      </header>
+
+      <main class="profile-content" aria-live="polite">
+        <full-profile></full-profile>
+      </main>
+    </div>
+
+    <toast-manager event-controlled></toast-manager>
 
     <template id="dashed-box-template">
       <svg
@@ -76,29 +94,53 @@
         )?.value;
 
         if (userId) {
-          window.history.replaceState({}, "", userId);
+          window.history.replaceState({}, "", `/profile/${userId}`);
           document.querySelector("full-profile").userId = userId;
         }
       }
     </script>
 
     <script type="module">
-      import { onDOMContentLoaded, isLoggedIn } from "/common/common.js";
+      import { onDOMContentLoaded } from "/common/common.js";
       import Searchbox from "/ui/js/Searchbox.js";
+      import "/ui/component/feedback/ToastManager.js";
       import "/ui/component/profile/FullProfile.js";
       import "/ui/component/auth/AccountQuickManager.js";
       import "/ui/component/auth/LogoutButton.js";
 
-      document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+      document.addEventListener("DOMContentLoaded", () => {
+        // Always attempt autologin on page load.
+        // This avoids treating users as guests when an access token is near expiry
+        // but a valid refresh token still exists.
+        void onDOMContentLoaded();
+      });
+
+      window.addEventListener("pageshow", () => {
+        void onDOMContentLoaded();
+      });
 
       Searchbox(
         ".searchbox",
         "/api/profiles?search=",
         (response) => response.result.profiles,
+        { isProtected: false },
       );
 
-      const userId = window.location.pathname.split("/").pop();
-      document.querySelector("full-profile").userId = userId;
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      const userId = pathParts.length > 1 ? pathParts[pathParts.length - 1] : "";
+
+      if (userId && userId !== "profile") {
+        document.querySelector("full-profile").userId = userId;
+      }
+
+      document.getElementById("backBtn")?.addEventListener("click", () => {
+        if (window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+
+        window.location.href = "/";
+      });
     </script>
   </body>
 </html>

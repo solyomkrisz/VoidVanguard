@@ -71,14 +71,22 @@ function getBlockButtonText(status) {
 // name - selector
 const TO_SELECT = new Map([
   ["profileContainer", ".profile-container"],
+  ["guestProfileMessage", ".guest-profile-message"],
   ["errorMessage", ".error"],
+  ["avatarShell", ".avatar-shell"],
   ["avatar", ".avatar"],
+  ["avatarEmptyText", ".avatar-empty-text"],
   ["profileHeaderDetails", ".profile-header-details"],
   ["profileHeaderActions", ".profile-header-actions"],
   ["friendList", "friend-list-preview"],
   ["commentSection", "comment-section"],
   ["commentForm", "comment-form"],
   ["profileFormOverlay", "#profile-form"],
+  ["missingProfileMessage", "#missing-profile-message"],
+  ["openProfileCreateBtn", "#open-profile-create"],
+  ["profileCreateForm", "#profile-create-form"],
+  ["continueWithoutProfileBtn", "#continue-without-profile"],
+  ["profileBodyCreateBtn", "#profile-body-create"],
   ["friendListOverlay", "#friend-list-full"],
   ["friendListFull", "friend-list-full"],
   ["friendListFullToggle", "#friend-list-full-toggle"],
@@ -94,9 +102,81 @@ function selectElements(from, save) {
 
 const EVENTHANDLERS = new Map([
   ["friend-list-change", "onFriendListChange"],
+  ["friend-preview-state-change", "onFriendPreviewStateChange"],
   ["profile-create", "onProfileCreate"],
   ["inline-edit", "onInlineEdit"],
 ]);
+
+const DEFAULT_AVATAR_PATHS = Object.freeze([
+  "/image/defaultPfp.png",
+  "/image/defaultPfp2.png",
+  "/image/defaultPfp3.png",
+  "/image/defaultPfp4.png",
+  "/image/defaultPfp5.png",
+  "/image/defaultPfp6.png",
+]);
+const DEFAULT_AVATAR_PATH = DEFAULT_AVATAR_PATHS[0];
+
+function normalizeAvatarPath(path) {
+  return DEFAULT_AVATAR_PATHS.includes(path)
+    ? path
+    : DEFAULT_AVATAR_PATH;
+}
+
+const EMPTY_AVATAR_SRC =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+const BIO_PLACEHOLDER_TEXT = "Ide írd a profilod leírását";
+const LEGACY_BIO_PLACEHOLDER_TEXT = "Ide írd a profilodnak leírását";
+const OWN_PROFILE_EMPTY_DESCRIPTION_TEXT =
+  "Jelenleg a profilod leírása üres. Itt módosíthatod!";
+
+function sanitizeDescription(value) {
+  const normalized = (value ?? "").trim();
+
+  if (
+    normalized === BIO_PLACEHOLDER_TEXT ||
+    normalized === LEGACY_BIO_PLACEHOLDER_TEXT
+  ) {
+    return "";
+  }
+
+  return normalized;
+}
+
+function normalizeVisibility(value) {
+  if (value === "public" || value === "friends-only") {
+    return value;
+  }
+
+  return "private";
+}
+
+const VISIBILITY_ORDER = ["public", "friends-only", "private"];
+
+function getVisibilityLabel(value) {
+  const normalized = normalizeVisibility(value);
+
+  if (normalized === "public") return "Nyilvános";
+  if (normalized === "friends-only") return "Csak barátok";
+  return "Privát";
+}
+
+function requestToast(message, variant = "info", delay = 0, duration = 3000) {
+  if (!message) return;
+
+  document.dispatchEvent(
+    new CustomEvent("toast-request", {
+      detail: {
+        toast: {
+          message,
+          variant,
+          delay,
+          duration,
+        },
+      },
+    }),
+  );
+}
 
 function toggleEventListeners(instance, initializerName) {
   for (const [name, handlerName] of EVENTHANDLERS) {
@@ -124,8 +204,11 @@ export default class FullProfile extends HTMLElement {
   }
 
   get shouldShowEditors() {
+    const hasUserContext = !!window?.VoidVanguard?.user?.id;
+
     return (
-      isLoggedIn() &&
+      hasUserContext &&
+      this._profileData?.has_profile !== false &&
       this._profileData?.user_id != null &&
       (this._profileData.user_id === window.VoidVanguard?.user?.id ||
         (this.admin && isAdmin()))
@@ -160,6 +243,8 @@ export default class FullProfile extends HTMLElement {
 
     this._changed = new Set();
     this._editing = false;
+    this._avatarPickerExpanded = false;
+    this._skipProfileCreationPrompt = false;
 
     this._hasOngoingRelationshipUpdate = false;
 
@@ -170,11 +255,28 @@ export default class FullProfile extends HTMLElement {
     this.onFriendListChange = this.onFriendListChange.bind(this);
     this.onFriendshipButtonClick = this.onFriendshipButtonClick.bind(this);
     this.onBlockButtonClick = this.onBlockButtonClick.bind(this);
+    this.onFriendPreviewStateChange = this.onFriendPreviewStateChange.bind(this);
     this.onProfileCreate = this.onProfileCreate.bind(this);
     this.onDelete = this.onDelete.bind(this);
     this.onSave = this.onSave.bind(this);
     this.onCancel = this.onCancel.bind(this);
     this.onInlineEdit = this.onInlineEdit.bind(this);
+    this.onProfileFieldInput = this.onProfileFieldInput.bind(this);
+    this.onDescriptionEditorFocus = this.onDescriptionEditorFocus.bind(this);
+    this.onAvatarSelectionChange = this.onAvatarSelectionChange.bind(this);
+    this.onAvatarShellClick = this.onAvatarShellClick.bind(this);
+    this.onAvatarEditorBackdropClick = this.onAvatarEditorBackdropClick.bind(this);
+    this.onAvatarEditorCloseClick = this.onAvatarEditorCloseClick.bind(this);
+    this.onVisibilityToggleClick = this.onVisibilityToggleClick.bind(this);
+    this.onOpenProfileCreate = this.onOpenProfileCreate.bind(this);
+    this.onContinueWithoutProfile = this.onContinueWithoutProfile.bind(this);
+  }
+
+  get isOwnProfile() {
+    return (
+      this._profileData?.user_id != null &&
+      String(this._profileData.user_id) === String(window?.VoidVanguard?.user?.id)
+    );
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -186,10 +288,14 @@ export default class FullProfile extends HTMLElement {
   }
 
   onLogin(e) {
+    this.syncGuestPresentation();
+    if (!this.userId) return;
     this.update({ origin: "onLogin" });
   }
 
   onLogout(e) {
+    this.syncGuestPresentation();
+    if (!this.userId) return;
     this.update({ origin: "onLogout" });
   }
 
@@ -254,12 +360,46 @@ export default class FullProfile extends HTMLElement {
     }
   }
 
+  onFriendPreviewStateChange(e) {
+    const showFullListButton = !!e?.detail?.hasMoreThanPreview;
+    const { friendListFullToggle } = this._elements;
+
+    if (!friendListFullToggle) return;
+    friendListFullToggle.hidden = !showFullListButton;
+  }
+
+  onAvatarShellClick() {
+    if (!this.shouldShowEditors || !this.isOwnProfile) return;
+
+    this._avatarPickerExpanded = !this._avatarPickerExpanded;
+    this.syncAvatarPickerUI();
+  }
+
+  onAvatarEditorBackdropClick(e) {
+    if (e?.target !== e?.currentTarget) return;
+
+    this._avatarPickerExpanded = false;
+    this.syncAvatarPickerUI();
+  }
+
+  onAvatarEditorCloseClick() {
+    this._avatarPickerExpanded = false;
+    this.syncAvatarPickerUI();
+  }
+
   onProfileCreate(e) {
     const profileData = e.detail?.result;
     if (!profileData) return;
 
     this.updateContent({ origin: "onProfileCreate" }, profileData);
-    this._elements.profileFormOverlay?.remove();
+
+    if (this._elements.profileFormOverlay) {
+      this._elements.profileFormOverlay.hidden = true;
+    }
+
+    if (this._elements.profileCreateForm) {
+      this._elements.profileCreateForm.hidden = true;
+    }
   }
 
   async onDelete(e) {
@@ -291,6 +431,9 @@ export default class FullProfile extends HTMLElement {
 
     const formData = new FormData(form);
 
+    const description = sanitizeDescription(formData.get("description"));
+    formData.set("description", description);
+
     /** admin */
     if (this.admin && isAdmin()) {
       formData.append("targetUserId", this.userId);
@@ -308,6 +451,8 @@ export default class FullProfile extends HTMLElement {
       return;
     }
 
+    requestToast(message || "Profil sikeresen mentve.", "success");
+
     this._changed.clear();
     this.toggleEditing();
 
@@ -320,16 +465,179 @@ export default class FullProfile extends HTMLElement {
     this.renderCoreFields(this._profileData, null);
   }
 
+  onOpenProfileCreate() {
+    this._skipProfileCreationPrompt = false;
+
+    const overlay = this._elements.profileFormOverlay;
+    const form = this._elements.profileCreateForm;
+    const openButton = this._elements.openProfileCreateBtn;
+    const continueButton = this._elements.continueWithoutProfileBtn;
+
+    if (overlay) {
+      overlay.hidden = false;
+    }
+
+    if (openButton) {
+      openButton.hidden = true;
+    }
+
+    if (continueButton) {
+      continueButton.hidden = false;
+    }
+
+    if (form) {
+      form.action = "create";
+      form.dispatchEvent(new Event("reset"));
+      form.hidden = false;
+    }
+  }
+
+  onContinueWithoutProfile() {
+    this._skipProfileCreationPrompt = true;
+
+    if (this._elements.profileFormOverlay) {
+      this._elements.profileFormOverlay.hidden = true;
+    }
+  }
+
   onInlineEdit(e) {
     e.stopPropagation();
 
     const newValue = e.detail?.newValue;
     const propName = e.detail?.name;
 
-    if (!Object.is(this._profileData[propName], newValue)) {
+    if (!propName) return;
+
+    const currentValue = this._profileData?.[propName] ?? "";
+    const comparableCurrentValue =
+      propName === "description"
+        ? sanitizeDescription(currentValue)
+        : currentValue;
+    const comparableNewValue =
+      propName === "description" ? sanitizeDescription(newValue) : newValue;
+
+    if (!Object.is(comparableCurrentValue, comparableNewValue)) {
       this._changed.add(propName);
     } else {
       this._changed.delete(propName);
+    }
+
+    if (propName === "description") {
+      const profileDescription = this._elements?.profileDescription;
+      const isOwnProfile =
+        this._profileData?.user_id != null &&
+        String(this._profileData.user_id) === String(window?.VoidVanguard?.user?.id);
+      const normalized = sanitizeDescription(newValue);
+      const shouldShowOwnProfilePlaceholder = isOwnProfile && !normalized;
+
+      if (profileDescription) {
+        profileDescription.textContent = shouldShowOwnProfilePlaceholder
+          ? OWN_PROFILE_EMPTY_DESCRIPTION_TEXT
+          : normalized;
+        profileDescription.classList.toggle(
+          "profile-description-placeholder",
+          shouldShowOwnProfilePlaceholder,
+        );
+      }
+    }
+
+    this.toggleEditing();
+  }
+
+  onDescriptionEditorFocus(e) {
+    const field = e?.target;
+    if (!field || field.name !== "description") return;
+
+    if (field.value === OWN_PROFILE_EMPTY_DESCRIPTION_TEXT) {
+      field.value = "";
+    }
+  }
+
+  onProfileFieldInput(e) {
+    const field = e?.target;
+    const propName = field?.name;
+
+    if (!propName) return;
+
+    const newValue = field.value ?? "";
+    const currentValue = this._profileData?.[propName] ?? "";
+    const comparableCurrentValue =
+      propName === "description"
+        ? sanitizeDescription(currentValue)
+        : currentValue;
+    const comparableNewValue =
+      propName === "description" ? sanitizeDescription(newValue) : newValue;
+
+    if (!Object.is(comparableCurrentValue, comparableNewValue)) {
+      this._changed.add(propName);
+    } else {
+      this._changed.delete(propName);
+    }
+
+    if (propName === "description") {
+      const profileDescription = this._elements?.profileDescription;
+      const isOwnProfile =
+        this._profileData?.user_id != null &&
+        String(this._profileData.user_id) === String(window?.VoidVanguard?.user?.id);
+      const normalized = sanitizeDescription(newValue);
+      const shouldShowOwnProfilePlaceholder = isOwnProfile && !normalized;
+
+      if (profileDescription) {
+        profileDescription.textContent = shouldShowOwnProfilePlaceholder
+          ? OWN_PROFILE_EMPTY_DESCRIPTION_TEXT
+          : normalized;
+        profileDescription.classList.toggle(
+          "profile-description-placeholder",
+          shouldShowOwnProfilePlaceholder,
+        );
+      }
+    }
+
+    this.toggleEditing();
+  }
+
+  onAvatarSelectionChange(e) {
+    const avatarPath = e?.target?.value;
+    if (!avatarPath) return;
+
+    const normalizedAvatarPath = normalizeAvatarPath(avatarPath);
+    const currentAvatarPath = normalizeAvatarPath(this._profileData?.avatar);
+
+    if (normalizedAvatarPath !== currentAvatarPath) {
+      this._changed.add("avatar");
+    } else {
+      this._changed.delete("avatar");
+    }
+
+    if (this._elements.avatar) {
+      this._elements.avatar.src = normalizedAvatarPath;
+    }
+
+    this.toggleEditing();
+  }
+
+  onVisibilityToggleClick() {
+    const visibilityInput = this.querySelector('input[name="visibility"]');
+    const visibilityButtons = this.querySelectorAll(".profile-visibility-toggle");
+
+    if (!visibilityInput || visibilityButtons.length === 0) return;
+
+    const currentVisibility = normalizeVisibility(visibilityInput.value);
+    const currentIndex = VISIBILITY_ORDER.indexOf(currentVisibility);
+    const nextVisibility =
+      VISIBILITY_ORDER[(currentIndex + 1) % VISIBILITY_ORDER.length];
+
+    visibilityInput.value = nextVisibility;
+    visibilityButtons.forEach((button) => {
+      button.textContent = getVisibilityLabel(nextVisibility);
+    });
+
+    const currentProfileVisibility = normalizeVisibility(this._profileData?.visibility);
+
+    if (nextVisibility !== currentProfileVisibility) {
+      this._changed.add("visibility");
+    } else {
+      this._changed.delete("visibility");
     }
 
     this.toggleEditing();
@@ -353,6 +661,7 @@ export default class FullProfile extends HTMLElement {
 
   connectedCallback() {
     this.build();
+    this._skipProfileCreationPrompt = false;
 
     on("login", this.onLogin);
     on("logout", this.onLogout);
@@ -379,19 +688,156 @@ export default class FullProfile extends HTMLElement {
       error?.code === "ER_PROFILE_NOT_FOUND" &&
       (this.userId === window.VoidVanguard.user.id || (this.admin && isAdmin()))
     ) {
+      this._skipProfileCreationPrompt = false;
       elements.profileFormOverlay.hidden = false;
+
+      if (elements.openProfileCreateBtn) {
+        elements.openProfileCreateBtn.hidden = false;
+      }
+
+      if (elements.profileCreateForm) {
+        elements.profileCreateForm.hidden = true;
+      }
+
+      if (elements.continueWithoutProfileBtn) {
+        elements.continueWithoutProfileBtn.hidden = false;
+      }
+
+      if (elements.profileBodyCreateBtn) {
+        elements.profileBodyCreateBtn.hidden = false;
+      }
+
+      if (elements.missingProfileMessage) {
+        const username = window?.VoidVanguard?.user?.username;
+        const mention = username ? `(@${username})` : "(@ismeretlen)";
+        elements.missingProfileMessage.textContent = `Profil létrehozása ${mention} felhasználó számára.`;
+        elements.missingProfileMessage.hidden = false;
+      }
     }
   }
 
   buildHeaderDetailsDOM(data, editable) {
+    const username = data.username ? `@${data.username}` : "";
+    const description = sanitizeDescription(data.description);
+
     if (!editable) {
       return el("div", {}, [
         el("div", { class: "profile-name" }, [data.display_name ?? ""]),
-        el("div", { class: "profile-description" }, [data.description ?? ""]),
+        el("div", { class: "profile-username" }, [username]),
+        el("div", { class: "profile-description" }, [description]),
       ]);
     }
 
     return el("form", {}, [
+      el("div", { class: "profile-avatar-editor", hidden: true }, [
+        el("div", { class: "profile-avatar-editor-head" }, [
+          el("p", { class: "profile-avatar-editor-label" }, ["Válassz egy profilképet!"]),
+          el(
+            "button",
+            {
+              type: "button",
+              class: "profile-avatar-editor-close",
+              onClick: this.onAvatarEditorCloseClick,
+            },
+            ["Bezárás"],
+          ),
+        ]),
+        el("div", { class: "profile-avatar-picker" }, [
+          el("label", { class: "avatar-choice" }, [
+            el("input", {
+              type: "radio",
+              name: "avatar",
+              value: "/image/defaultPfp.png",
+            }),
+            el("img", {
+              draggable: "false",
+              src: "/image/defaultPfp.png",
+              alt: "Alap profilkep 1",
+            }),
+          ]),
+          el("label", { class: "avatar-choice" }, [
+            el("input", {
+              type: "radio",
+              name: "avatar",
+              value: "/image/defaultPfp2.png",
+            }),
+            el("img", {
+              draggable: "false",
+              src: "/image/defaultPfp2.png",
+              alt: "Alap profilkep 2",
+            }),
+          ]),
+          el("label", { class: "avatar-choice" }, [
+            el("input", {
+              type: "radio",
+              name: "avatar",
+              value: "/image/defaultPfp3.png",
+            }),
+            el("img", {
+              draggable: "false",
+              src: "/image/defaultPfp3.png",
+              alt: "Alap profilkep 3",
+            }),
+          ]),
+          el("label", { class: "avatar-choice" }, [
+            el("input", {
+              type: "radio",
+              name: "avatar",
+              value: "/image/defaultPfp4.png",
+            }),
+            el("img", {
+              draggable: "false",
+              src: "/image/defaultPfp4.png",
+              alt: "Alap profilkep 4",
+            }),
+          ]),
+          el("label", { class: "avatar-choice" }, [
+            el("input", {
+              type: "radio",
+              name: "avatar",
+              value: "/image/defaultPfp5.png",
+            }),
+            el("img", {
+              draggable: "false",
+              src: "/image/defaultPfp5.png",
+              alt: "Alap profilkep 5",
+            }),
+          ]),
+          el("label", { class: "avatar-choice" }, [
+            el("input", {
+              type: "radio",
+              name: "avatar",
+              value: "/image/defaultPfp6.png",
+            }),
+            el("img", {
+              draggable: "false",
+              src: "/image/defaultPfp6.png",
+              alt: "Alap profilkep 6",
+            }),
+          ]),
+        ]),
+      ]),
+
+      el("input", {
+        type: "hidden",
+        name: "visibility",
+        value: normalizeVisibility(data.visibility),
+      }),
+
+      el("div", { class: "profile-visibility-editor profile-visibility-editor-desktop" }, [
+        el("p", { class: "profile-visibility-editor-label" }, [
+          "Profil láthatósága",
+        ]),
+        el(
+          "button",
+          {
+            type: "button",
+            class: "profile-visibility-toggle",
+          },
+          [getVisibilityLabel(data.visibility)],
+        ),
+      ]),
+
       el("inline-editor", {}, [
         el("dashed-border-box", {}, [
           el(
@@ -412,6 +858,8 @@ export default class FullProfile extends HTMLElement {
         ]),
       ]),
 
+      el("div", { class: "profile-username" }, [username]),
+
       el("inline-editor", {}, [
         el("dashed-border-box", {}, [
           el(
@@ -420,13 +868,14 @@ export default class FullProfile extends HTMLElement {
               class: "profile-description",
               "data-text": "",
             },
-            [data.description ?? ""],
+            [description],
           ),
         ]),
         el("description-input-validator", { "disable-on-invalid": "#save" }, [
           el("textarea", {
             "data-editor": "",
             name: "description",
+            placeholder: BIO_PLACEHOLDER_TEXT,
           }),
         ]),
       ]),
@@ -453,7 +902,7 @@ export default class FullProfile extends HTMLElement {
     }
 
     if (canEdit) {
-      return el("div", {}, [
+      return el("div", { class: "editor-actions" }, [
         el(
           "button",
           {
@@ -474,6 +923,19 @@ export default class FullProfile extends HTMLElement {
           },
           ["Törlés"],
         ),
+        el("div", { class: "profile-visibility-editor profile-visibility-editor-mobile" }, [
+          el("p", { class: "profile-visibility-editor-label" }, [
+            "Profil láthatósága",
+          ]),
+          el(
+            "button",
+            {
+              type: "button",
+              class: "profile-visibility-toggle",
+            },
+            [getVisibilityLabel(this._profileData?.visibility)],
+          ),
+        ]),
       ]);
     }
 
@@ -501,9 +963,70 @@ export default class FullProfile extends HTMLElement {
     container.replaceChildren(cache[key]);
 
     elements.profileName = container.querySelector(".profile-name");
+    elements.profileUsername = container.querySelector(".profile-username");
     elements.profileDescription = container.querySelector(
       ".profile-description",
     );
+
+    const avatarInputs = container.querySelectorAll(
+      'input[name="avatar"]',
+    );
+
+    avatarInputs.forEach((input) => {
+      input.removeEventListener("change", this.onAvatarSelectionChange);
+      input.addEventListener("change", this.onAvatarSelectionChange);
+    });
+
+    const editableFields = container.querySelectorAll(
+      'input[name="display_name"], textarea[name="description"]',
+    );
+
+    editableFields.forEach((field) => {
+      field.removeEventListener("input", this.onProfileFieldInput);
+      field.addEventListener("input", this.onProfileFieldInput);
+
+      if (field.name === "description") {
+        field.removeEventListener("focus", this.onDescriptionEditorFocus);
+        field.addEventListener("focus", this.onDescriptionEditorFocus);
+      }
+    });
+
+    const visibilityToggles = container.querySelectorAll(".profile-visibility-toggle");
+    visibilityToggles.forEach((toggle) => {
+      toggle.removeEventListener("click", this.onVisibilityToggleClick);
+      toggle.addEventListener("click", this.onVisibilityToggleClick);
+    });
+
+    const avatarEditor = container.querySelector(".profile-avatar-editor");
+    if (avatarEditor) {
+      avatarEditor.removeEventListener("click", this.onAvatarEditorBackdropClick);
+      avatarEditor.addEventListener("click", this.onAvatarEditorBackdropClick);
+    }
+
+    this.syncAvatarPickerUI();
+  }
+
+  syncAvatarPickerUI() {
+    const { avatarShell, profileHeaderDetails } = this._elements;
+    const avatarEditor = profileHeaderDetails?.querySelector(".profile-avatar-editor");
+    const canToggleAvatarPicker = this.shouldShowEditors && this.isOwnProfile && !!avatarEditor;
+
+    if (avatarShell) {
+      avatarShell.classList.toggle("avatar-shell-clickable", canToggleAvatarPicker);
+      avatarShell.setAttribute(
+        "title",
+        canToggleAvatarPicker ? "Kattints a profilkép módosításához" : "",
+      );
+      avatarShell.setAttribute("aria-expanded", String(canToggleAvatarPicker && this._avatarPickerExpanded));
+    }
+
+    if (!canToggleAvatarPicker) {
+      this._avatarPickerExpanded = false;
+    }
+
+    if (avatarEditor) {
+      avatarEditor.hidden = !canToggleAvatarPicker || !this._avatarPickerExpanded;
+    }
   }
 
   // prettier-ignore
@@ -514,13 +1037,21 @@ export default class FullProfile extends HTMLElement {
     
     const cache = this._actionsCache;
 
-    const isOwnProfile = this._profileData?.user_id === window?.VoidVanguard?.user?.id
-    const canEdit = isOwnProfile || (this.admin && isAdmin());
+    const isOwnProfile =
+      this._profileData?.user_id != null &&
+      String(this._profileData.user_id) === String(window?.VoidVanguard?.user?.id);
+    const hasUserContext = !!window?.VoidVanguard?.user?.id;
+    const canEdit =
+      hasUserContext &&
+      this._profileData?.has_profile !== false &&
+      this._profileData?.user_id != null &&
+      (isOwnProfile || (this.admin && isAdmin()));
 
     const showRelationshipControls =
-      isLoggedIn() &&
+      hasUserContext &&
       this._profileData.user_id != null &&
-      !canEdit;
+      !canEdit &&
+      !isOwnProfile;
 
     let key;
     
@@ -545,7 +1076,13 @@ export default class FullProfile extends HTMLElement {
     elements.blockButton = container.querySelector("#block-controller");
     elements.saveButton = container.querySelector("#save");
     elements.cancelButton = container.querySelector("#cancel");
-    elements.deleteButton = container.querySelector("#delete")
+    elements.deleteButton = container.querySelector("#delete");
+
+    const visibilityToggles = container.querySelectorAll(".profile-visibility-toggle");
+    visibilityToggles.forEach((toggle) => {
+      toggle.removeEventListener("click", this.onVisibilityToggleClick);
+      toggle.addEventListener("click", this.onVisibilityToggleClick);
+    });
   }
 
   build() {
@@ -557,8 +1094,14 @@ export default class FullProfile extends HTMLElement {
       </div>
 
       <div class="profile-container">
+        <div class="guest-profile-message" hidden>
+          Nem regisztrált fiókoknak nem jeleníthető meg profil. Kérlek, regisztrálj!
+        </div>
         <div class="profile-header">
-            <img draggable="false" class="avatar skeleton" />
+            <div class="avatar-shell">
+              <img draggable="false" class="avatar skeleton" />
+              <div class="avatar-empty-text" hidden>Ez a fiók nem rendelkezik profillal</div>
+            </div>
 
             <div class="profile-header-details"></div>
             <div class="profile-header-actions">
@@ -566,12 +1109,17 @@ export default class FullProfile extends HTMLElement {
         </div>
         <div class="profile-body">
           <div>
-            <div id="friend-list-full-toggle">Összes barát megtekintése</div>
+            <div class="profile-body-actions">
+              <button id="friend-list-full-toggle" type="button" hidden>Összes barát megtekintése</button>
+              <button id="profile-body-create" type="button" hidden>Profil létrehozása</button>
+            </div>
+            <p class="friend-list-preview-label">Barátok előnézete</p>
             <friend-list-preview></friend-list-preview>
           </div>
         </div>
         <div class="profile-footer">
-          <comment-section controls="pagination" page-size="2" ${this.admin ? "admin" : ""}>
+          <p class="comment-section-label">Kommentek</p>
+          <comment-section controls="scroll" page-size="2" ${this.admin ? "admin" : ""}>
             <comment-form ${this.admin ? "admin" : ""}></comment-form>
           </comment-section>
         </div>
@@ -579,7 +1127,10 @@ export default class FullProfile extends HTMLElement {
 
       <div>
         <fullscreen-overlay id="profile-form" no-close hidden>
-          <profile-form ${this.admin ? "admin" : ""} self-sign></profile-form>
+          <p id="missing-profile-message" hidden></p>
+          <button id="open-profile-create" type="button">Profil létrehozása</button>
+          <profile-form id="profile-create-form" ${this.admin ? "admin" : ""} self-sign hidden></profile-form>
+          <button id="continue-without-profile" type="button">Folytatás profil létrehozása nélkül</button>
         </fullscreen-overlay>
         <fullscreen-overlay id="friend-list-full" hidden>
           <friend-list-full controls="pagination" page-size="6"></friend-list-full>
@@ -589,12 +1140,32 @@ export default class FullProfile extends HTMLElement {
 
     const elements = selectElements(this, this._elements);
 
+    elements.avatarShell?.addEventListener("click", this.onAvatarShellClick);
+
     this.updateProfileHeaderDetailsDOM();
     this.updateProfileHeaderActions();
 
     elements.friendListFullToggle.addEventListener("click", function () {
       elements.friendListOverlay.hidden = false;
     });
+
+    elements.openProfileCreateBtn?.addEventListener(
+      "click",
+      this.onOpenProfileCreate,
+    );
+
+    elements.profileBodyCreateBtn?.addEventListener(
+      "click",
+      this.onOpenProfileCreate,
+    );
+
+    elements.continueWithoutProfileBtn?.addEventListener(
+      "click",
+      this.onContinueWithoutProfile,
+    );
+
+    // Apply guest lock immediately, even before first profile fetch resolves.
+    this.syncGuestPresentation();
 
     this._built = true;
   }
@@ -608,7 +1179,10 @@ export default class FullProfile extends HTMLElement {
     const loadToken = Symbol();
     this._activeLoadToken = loadToken;
 
-    const response = await net.send("/api/profiles/" + currentUserId);
+    const hasUserContext = !!window?.VoidVanguard?.user?.id;
+    const response = await net.send("/api/profiles/" + currentUserId, 
+      { method: "GET" },
+      hasUserContext);
 
     if (this._activeLoadToken !== loadToken) return;
     // if (currentUserId !== this.userId) return;
@@ -630,18 +1204,29 @@ export default class FullProfile extends HTMLElement {
     const prev = this._profileData;
 
     if (data) {
+      const sanitizedData = {
+        ...data,
+        description: sanitizeDescription(data.description),
+      };
+
       this._previousProfileData = prev;
-      this._profileData = data;
+      this._profileData = sanitizedData;
     }
 
     const state = this._profileData;
     const prevState = this._previousProfileData;
 
+    if (!this.isOwnProfile) {
+      this._avatarPickerExpanded = false;
+    }
+
     this.updateProfileHeaderDetailsDOM();
     this.updateProfileHeaderActions();
+    this.syncGuestPresentation();
 
     this.renderActions(state, prevState);
     this.renderCoreFields(state, null);
+    this.syncAvatarPickerUI();
 
     this.syncCommentSection(state);
     this.syncChildComponents(state, prevState);
@@ -650,7 +1235,52 @@ export default class FullProfile extends HTMLElement {
     const elements = this._elements;
 
     if (elements.profileFormOverlay) {
-      elements.profileFormOverlay.hidden = true;
+      const isOwnProfile =
+        state?.user_id != null &&
+        String(state.user_id) === String(window?.VoidVanguard?.user?.id);
+      const hasProfile = state?.has_profile !== false;
+      const username = state?.username ?? window?.VoidVanguard?.user?.username;
+
+      const canAdminCreate = this.admin && isAdmin();
+      const canCreateProfile = !hasProfile && (isOwnProfile || canAdminCreate);
+      const forceOpenCreate = this.hasAttribute("open-profile-create");
+      const missingProfileMessage = elements.missingProfileMessage;
+
+      if (elements.profileBodyCreateBtn) {
+        elements.profileBodyCreateBtn.hidden = !canCreateProfile;
+      }
+
+      if (
+        canCreateProfile &&
+        (!this._skipProfileCreationPrompt || canAdminCreate || forceOpenCreate)
+      ) {
+        elements.profileFormOverlay.hidden = false;
+
+        if (missingProfileMessage) {
+          const mention = username ? `(@${username})` : "(@ismeretlen)";
+          missingProfileMessage.textContent = `Profil létrehozása ${mention} felhasználó számára.`;
+          missingProfileMessage.hidden = false;
+        }
+
+        if (elements.openProfileCreateBtn) {
+          elements.openProfileCreateBtn.hidden = forceOpenCreate;
+        }
+        if (elements.profileCreateForm) {
+          elements.profileCreateForm.hidden = !forceOpenCreate;
+        }
+        if (elements.continueWithoutProfileBtn) {
+          elements.continueWithoutProfileBtn.hidden = false;
+        }
+      } else {
+        elements.profileFormOverlay.hidden = true;
+        if (missingProfileMessage) {
+          missingProfileMessage.hidden = true;
+        }
+      }
+
+      if (forceOpenCreate) {
+        this.removeAttribute("open-profile-create");
+      }
     }
 
     if (
@@ -691,20 +1321,99 @@ export default class FullProfile extends HTMLElement {
   }
 
   renderCoreFields(state, prev) {
-    const { avatar, profileName, profileDescription } = this._elements;
+    const { avatar, avatarShell, avatarEmptyText, profileName, profileUsername, profileDescription } = this._elements;
 
     if (!avatar || !profileName || !profileDescription) return;
 
-    if (!isEqual(state, prev, "avatar")) {
-      avatar.src = state.avatar;
+    const hasProfile = state?.has_profile !== false;
+
+    if (!isEqual(state, prev, "avatar") || !isEqual(state, prev, "has_profile")) {
+      avatar.src = hasProfile && state.avatar ? state.avatar : EMPTY_AVATAR_SRC;
+      avatar.classList.remove("skeleton");
+      avatar.classList.toggle("no-profile-avatar", !hasProfile);
+      avatarShell?.classList.toggle("no-profile-avatar", !hasProfile);
+      if (avatarEmptyText) {
+        avatarEmptyText.hidden = hasProfile;
+      }
     }
+
+    const avatarPath = normalizeAvatarPath(state.avatar);
+    const avatarInput = this.querySelector(
+      `input[name="avatar"][value="${avatarPath}"]`,
+    );
+    if (avatarInput) {
+      avatarInput.checked = true;
+    }
+
+    const normalizedVisibility = normalizeVisibility(state.visibility);
+    const visibilityInput = this.querySelector('input[name="visibility"]');
+    const visibilityButtons = this.querySelectorAll(".profile-visibility-toggle");
+
+    if (visibilityInput) {
+      visibilityInput.value = normalizedVisibility;
+    }
+
+    visibilityButtons.forEach((button) => {
+      button.textContent = getVisibilityLabel(normalizedVisibility);
+    });
 
     if (!isEqual(state, prev, "display_name")) {
       profileName.textContent = state.display_name;
     }
 
-    if (!isEqual(state, prev, "description")) {
-      profileDescription.textContent = state.description;
+    if (profileUsername && !isEqual(state, prev, "username")) {
+      profileUsername.textContent = state.username ? `@${state.username}` : "";
+    }
+
+    if (!isEqual(state, prev, "description") || !isEqual(state, prev, "has_profile")) {
+      const description = sanitizeDescription(state.description);
+      const isOwnProfile =
+        state?.user_id != null &&
+        String(state.user_id) === String(window?.VoidVanguard?.user?.id);
+      const shouldShowOwnProfilePlaceholder = isOwnProfile && !description;
+
+      profileDescription.textContent = shouldShowOwnProfilePlaceholder
+        ? OWN_PROFILE_EMPTY_DESCRIPTION_TEXT
+        : description;
+      profileDescription.classList.toggle(
+        "profile-description-placeholder",
+        shouldShowOwnProfilePlaceholder,
+      );
+    }
+  }
+
+  syncGuestPresentation() {
+    const { profileContainer, guestProfileMessage } = this._elements;
+    if (!profileContainer || !guestProfileMessage) return;
+
+    const hasUserContext = !!window?.VoidVanguard?.user?.id;
+    const isGuest = !isLoggedIn() && !hasUserContext;
+    const hasExplicitTarget = !!this.userId && this.userId !== "profile";
+    // Lock only when a guest opens the generic self-profile page (no explicit target user).
+    const shouldLockProfile = isGuest && !hasExplicitTarget;
+
+    const profileHeader = profileContainer.querySelector(".profile-header");
+    const profileBody = profileContainer.querySelector(".profile-body");
+    const profileFooter = profileContainer.querySelector(".profile-footer");
+
+    guestProfileMessage.hidden = !shouldLockProfile;
+    profileContainer.classList.toggle("guest-profile-locked", shouldLockProfile);
+
+    if (profileHeader) {
+      profileHeader.hidden = shouldLockProfile;
+    }
+
+    if (profileBody) {
+      profileBody.hidden = shouldLockProfile;
+    }
+
+    if (profileFooter) {
+      profileFooter.hidden = shouldLockProfile;
+    }
+
+    const friendListOverlay = this._elements.friendListOverlay;
+    if (friendListOverlay && shouldLockProfile) {
+      friendListOverlay.hidden = true;
     }
   }
 
@@ -761,7 +1470,17 @@ export default class FullProfile extends HTMLElement {
     const commentSection = this._elements.commentSection;
     if (!commentSection) return;
 
-    if (this.isBlocked(state)) {
+    const hasUserContext = !!window?.VoidVanguard?.user?.id;
+
+    if (state?.has_profile === false) {
+      commentSection.hidden = true;
+      commentSection.removeAttribute("can-comment");
+      return;
+    }
+
+    commentSection.hidden = false;
+
+    if (this.isBlocked(state) || !hasUserContext) {
       commentSection.removeAttribute("can-comment");
     } else {
       commentSection.setAttribute("can-comment", "");

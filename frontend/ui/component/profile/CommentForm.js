@@ -1,6 +1,23 @@
 import { isLoggedIn, isAdmin } from "/common/common.js";
 import * as net from "/common/network.js";
 
+function requestToast(message, variant = "info", delay = 0, duration = 3000) {
+  if (!message) return;
+
+  document.dispatchEvent(
+    new CustomEvent("toast-request", {
+      detail: {
+        toast: {
+          message,
+          variant,
+          delay,
+          duration,
+        },
+      },
+    }),
+  );
+}
+
 export default class CommentForm extends HTMLElement {
   set targetId(value) {
     this.setAttribute("target-id", value);
@@ -29,9 +46,10 @@ export default class CommentForm extends HTMLElement {
 
   build() {
     this.innerHTML = `
-        <form>
-            <textarea name="content"></textarea>
-            <button>Közzététel</button>
+      <form class="comment-compose-form">
+        <label class="comment-compose-label" for="profile-comment-input">Hozzászólás a profilhoz</label>
+        <textarea id="profile-comment-input" name="content" placeholder="Írj egy hozzászólást ehhez a profilhoz..."></textarea>
+        <button type="submit">Közzététel</button>
         </form>
     `;
 
@@ -105,6 +123,10 @@ export default class CommentForm extends HTMLElement {
         composed: true,
       }),
     );
+
+    requestToast(message || "Komment sikeresen közzétéve.", "success");
+
+    this.querySelector(".comment-compose-form")?.reset();
   }
 }
 

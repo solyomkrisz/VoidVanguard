@@ -5,6 +5,23 @@ import * as net from "/common/network.js";
 import "/ui/component/form/InlineEditor.js";
 import "/ui/component/profile/CommentItem.js";
 
+function requestToast(message, variant = "info", delay = 0, duration = 3000) {
+  if (!message) return;
+
+  document.dispatchEvent(
+    new CustomEvent("toast-request", {
+      detail: {
+        toast: {
+          message,
+          variant,
+          delay,
+          duration,
+        },
+      },
+    }),
+  );
+}
+
 function _push(array, item) {
   array.push(item);
 }
@@ -41,6 +58,12 @@ export default class CommentSection extends LazyItemList {
     this.onCommentReaction = this.onCommentReaction.bind(this);
 
     this._reactionStates = new Map();
+  }
+
+  build() {
+    super.build();
+    this._refreshButton?.remove();
+    this._refreshButton = null;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -80,7 +103,9 @@ export default class CommentSection extends LazyItemList {
     const commentForm = this.querySelector("comment-form");
     if (!commentForm) return;
 
-    if (this.canComment && isLoggedIn()) {
+    const hasUserContext = !!window?.VoidVanguard?.user?.id;
+
+    if (this.canComment && isLoggedIn() && hasUserContext) {
       commentForm.hidden = false;
     } else {
       commentForm.hidden = true;
@@ -133,6 +158,7 @@ export default class CommentSection extends LazyItemList {
 
   async refreshComment(commentId) {
     let url = "/api/comments/" + commentId;
+    const hasUserContext = !!window?.VoidVanguard?.user?.id;
 
     /** admin */
     if (this.admin && isAdmin()) {
@@ -144,7 +170,7 @@ export default class CommentSection extends LazyItemList {
       }
     }
 
-    const response = await net.send(url);
+    const response = await net.send(url, { method: "GET" }, hasUserContext);
 
     const { success, result } = response;
 
@@ -231,6 +257,8 @@ export default class CommentSection extends LazyItemList {
       return;
     }
 
+    this._container.querySelector(".comment-list-empty")?.remove();
+
     const commentItem = this.renderItem(comment);
     this._container.prepend(commentItem);
   }
@@ -268,6 +296,7 @@ export default class CommentSection extends LazyItemList {
     }
 
     this.removeFromMaps(comment);
+    requestToast(response?.message || "Komment sikeresen torolve.", "success");
   }
 
   async onCommentUpdate(e) {
@@ -305,6 +334,7 @@ export default class CommentSection extends LazyItemList {
     }
 
     e.target.comment = result; // Lehet később külön kéne lekérni az updatelt kommentet.
+    requestToast(response?.message || "Komment sikeresen modositva.", "success");
   }
 
   extractItems(response) {
@@ -344,6 +374,29 @@ export default class CommentSection extends LazyItemList {
     this.categorizeItemBy(comment.author_id, this._byAuthor, entry, Set, _add);
 
     return element;
+  }
+
+  renderContent(items, response) {
+    if (!Array.isArray(items)) return;
+
+    if (this._page === 1 && items.length === 0) {
+      this._container.textContent = "";
+
+      const empty = document.createElement("p");
+      empty.className = "comment-list-empty";
+      empty.textContent =
+        "Jelenleg nincsenek a profilnak kommentjei. Légy te az első aki ír egyet!";
+
+      this._container.appendChild(empty);
+      return;
+    }
+
+    super.renderContent(items, response);
+  }
+
+  executeRequest(url) {
+    const hasUserContext = !!window?.VoidVanguard?.user?.id;
+    return net.send(url, { method: "GET" }, hasUserContext);
   }
 
   getURL() {

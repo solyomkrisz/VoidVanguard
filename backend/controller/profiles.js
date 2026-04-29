@@ -42,19 +42,18 @@ export async function search(request, response) {
   try {
     if (!request.valid) throw CustomError.INVALID_REQUEST;
 
+    const page = Number.parseInt(request?.query?.page, 10) || 1;
+    const limit = Number.parseInt(request?.query?.limit, 10) || 20;
+
     const result = await service.searchFor({
       query: decodeURIComponent(request.query.search),
+      page,
+      limit,
     });
 
     response
       .status(200)
-      .json(
-        createResponse(
-          true,
-          { profiles: result },
-          "Search successfully completed",
-        ),
-      );
+      .json(createResponse(true, result, "Search successfully completed"));
   } catch (error) {
     handleCaughtError(response, error);
   }

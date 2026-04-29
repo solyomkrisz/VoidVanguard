@@ -96,6 +96,8 @@ export default class LazyItemList extends HTMLElement {
     if (this._built) return;
 
     this._refreshButton = this.appendChild(document.createElement("button"));
+    this._refreshButton.type = "button";
+    this._refreshButton.classList.add("lazy-item-list-refresh-button");
     this._refreshButton.textContent = "Frissítés";
     this._refreshButton.addEventListener("click", this.onRefreshButtonClick);
 

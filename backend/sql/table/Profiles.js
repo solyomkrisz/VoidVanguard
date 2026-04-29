@@ -19,10 +19,10 @@ class Profiles extends Table {
     });
   }
 
-  async like(query) {
+  async like(query, { limit = 6, offset = 0 } = {}) {
     const [rows] = await execute(
-      "SELECT user_id, avatar, display_name FROM profiles WHERE display_name LIKE ? LIMIT 6",
-      [`${query}%`],
+      "SELECT user_id, avatar, display_name FROM profiles WHERE display_name LIKE ? ORDER BY display_name ASC LIMIT ? OFFSET ?",
+      [`${query}%`, limit, offset],
     );
     return rows;
   }

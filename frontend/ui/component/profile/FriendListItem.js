@@ -8,6 +8,10 @@ const CONTROLS_DEFS = {
   block: { text: "Letiltás", handler: "onBlock" },
 };
 
+function getFriendUserId(friend) {
+  return friend?.user_id || null;
+}
+
 export default class FriendListItem extends HTMLElement {
   static get observedAttributes() {
     return ["controls"];
@@ -51,9 +55,15 @@ export default class FriendListItem extends HTMLElement {
   }
 
   onAccept(e) {
+    const userId = getFriendUserId(this.friend);
+    if (!userId) {
+      console.error("Unable to resolve target user id for friend-accept action.");
+      return;
+    }
+
     this.dispatchEvent(
       new CustomEvent("friend-accept", {
-        detail: { userId: this.friend?.user_id },
+        detail: { userId },
         bubbles: true,
         composed: true,
       }),
@@ -61,9 +71,15 @@ export default class FriendListItem extends HTMLElement {
   }
 
   onDelete(e) {
+    const userId = getFriendUserId(this.friend);
+    if (!userId) {
+      console.error("Unable to resolve target user id for friend-delete action.");
+      return;
+    }
+
     this.dispatchEvent(
       new CustomEvent("friend-delete", {
-        detail: { userId: this.friend?.user_id },
+        detail: { userId },
         bubbles: true,
         composed: true,
       }),
@@ -71,9 +87,15 @@ export default class FriendListItem extends HTMLElement {
   }
 
   onBlock(e) {
+    const userId = getFriendUserId(this.friend);
+    if (!userId) {
+      console.error("Unable to resolve target user id for user-block action.");
+      return;
+    }
+
     this.dispatchEvent(
       new CustomEvent("user-block", {
-        detail: { userId: this.friend?.user_id },
+        detail: { userId },
         bubbles: true,
         composed: true,
       }),
@@ -103,7 +125,7 @@ export default class FriendListItem extends HTMLElement {
 
     this.innerHTML = `
         <a>
-            <img />
+        <span class="friend-avatar-shell"><img /></span>
             <span class="friend-name"></span>
         </a>
     `;
@@ -165,8 +187,17 @@ export default class FriendListItem extends HTMLElement {
     const elements = this._elements;
     if (!elements) return;
 
-    elements.link && (elements.link.href = "/profile/" + this.friend?.user_id);
+    const userId = getFriendUserId(this.friend);
+
+    const hasProfile = this.friend?.has_profile !== 0;
+
+    elements.link && (elements.link.href = userId ? "/profile/" + userId : "#");
     elements.name && (elements.name.textContent = this.friend?.name);
+    if (elements.img) {
+      elements.img.src = this.friend?.avatar || "/image/defaultPfp.png";
+      elements.img.classList.toggle("no-profile-avatar", !hasProfile);
+      elements.img.closest(".friend-avatar-shell")?.classList.toggle("no-profile-avatar", !hasProfile);
+    }
   }
 
   changePersonalization(shouldPersonalize) {

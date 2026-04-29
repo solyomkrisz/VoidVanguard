@@ -112,14 +112,21 @@ export function authorize(
 
 export function modifyTargetUser(requiredRole = Role.ADMIN) {
   return function (request, response, next) {
-    if (request?.user?.role < requiredRole) {
+    if (!request?.user || request.user.role < requiredRole) {
       return next();
     }
+
     const targetUserId =
       request?.body?.targetUserId || request?.query?.targetUserId;
+
     if (!targetUserId) {
       return next();
     }
+
+    if (!request.targetUser) {
+      request.targetUser = { ...request.user };
+    }
+
     request.targetUser.id = targetUserId;
     next();
   };

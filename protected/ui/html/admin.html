@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/ui/style/friend.css" />
     <link rel="stylesheet" href="/ui/style/searchBar.css" />
     <link rel="stylesheet" href="/ui/style/searchbox.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
     <link rel="stylesheet" href="/protected/ui/style/admin.css" />
     <link rel="stylesheet" href="/ui/style/tokenList.css" />
     <link rel="stylesheet" href="/ui/style/toasts.css" />
@@ -19,114 +20,112 @@
         width: 100%;
         height: 100%;
       }
-
-      #disguise-info {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background-color: gray;
-        padding: 10px;
-      }
     </style>
   </head>
   <body>
     <div id="disguise-info"></div>
 
-    <h1>Adminisztrációs felület</h1>
+    <div id="admin-wrapper">
+      <h1 id="admin-title">Adminisztrációs felület</h1>
 
-    <hr />
+      <nav id="admin-nav">
+        <button id="backBtn" onclick="window.top.location.href='/'">&#8592; Vissza</button>
+        <remove-disguise-button></remove-disguise-button>
+        <logout-button></logout-button>
+      </nav>
 
-    <nav>
-      <remove-disguise-button></remove-disguise-button>
-      <logout-button></logout-button>
-    </nav>
-
-    <hr />
-
-    <div id="full-profile-container">
-      <div>
-        <button onclick="closeFullProfileContainer()">Bezár</button>
+      <div id="full-profile-container">
+        <div>
+          <span id="full-profile-target-create-text" hidden></span>
+          <button onclick="closeFullProfileContainer()">Bezár</button>
+        </div>
+        <admin-module>
+          <full-profile style="overflow-y: scroll" admin></full-profile>
+        </admin-module>
       </div>
-      <admin-module>
-        <full-profile style="overflow-y: scroll" admin></full-profile>
+
+      <div class="admin-panel admin-panel--search">
+        <h1>Felhasználó keresése</h1>
+        <search-bar class="admin-search">
+          <search-bar-result-list
+            controls="pagination"
+            page-size="6"
+          ></search-bar-result-list>
+        </search-bar>
+      </div>
+
+      <p id="disguise-required-message">
+        Először válassz ki egy felhasználót az "Álcázás mint" gombbal.
+      </p>
+
+      <admin-module class="disguise-gated">
+        <div class="admin-panel">
+          <h1>Fiók kezelése</h1>
+
+          <account-form-restorer user-id>
+            <admin-account-form action="update" admin restore></admin-account-form>
+          </account-form-restorer>
+
+          <div class="friend-manager">
+            <div class="admin-panel admin-panel--incoming">
+              <h1>Beérkező barátkérelmek kezelése</h1>
+              <friend-list-full
+                class="admin-user-list admin-user-list--incoming"
+                controls="pagination"
+                page-size="5"
+                filter="status=pending&direction=incoming"
+                user-id
+                admin
+              >
+              </friend-list-full>
+            </div>
+
+            <div class="admin-panel admin-panel--outgoing">
+              <h1>Kimenő barátkérelmek kezelése</h1>
+              <friend-list-full
+                class="admin-user-list admin-user-list--outgoing"
+                controls="pagination"
+                page-size="5"
+                filter="status=pending&direction=outgoing"
+                user-id
+                admin
+              ></friend-list-full>
+            </div>
+          </div>
+
+          <div class="friend-manager">
+            <div class="admin-panel admin-panel--friends">
+              <h1>Barátok kezelése</h1>
+              <friend-list-full
+                class="admin-user-list admin-user-list--friends"
+                controls="pagination"
+                page-size="5"
+                user-id
+                admin
+              >
+              </friend-list-full>
+            </div>
+
+            <div class="admin-panel admin-panel--blocked">
+              <h1>Letiltott felhasználók kezelése</h1>
+              <blocked-user-list
+                class="admin-user-list admin-user-list--blocked"
+                controls="pagination"
+                page-size="5"
+                user-id
+                admin
+              ></blocked-user-list>
+            </div>
+            <h1>Aktív munkamenetek kezelése</h1>
+            <active-refresh-token-list
+              controls="pagination"
+              page-size="6"
+              user-id
+            ></active-refresh-token-list>
+          </div>
+        </div>
       </admin-module>
     </div>
-
-    <search-bar>
-      <search-bar-result-list
-        controls="pagination"
-        page-size="6"
-      ></search-bar-result-list>
-    </search-bar>
-
-    <admin-module>
-      <hr />
-      <h1>Fiók kezelése</h1>
-
-      <account-form-restorer user-id>
-        <admin-account-form action="update" admin restore></admin-account-form>
-      </account-form-restorer>
-
-      <!-- <br />
-      <hr />
-      <h1>Profil kezelése</h1>
-
-      <profile-form-restorer user-id>
-        <profile-form admin restore></profile-form>
-      </profile-form-restorer> -->
-
-      <div class="friend-manager">
-        <div>
-          <h1>Barátok kezelése</h1>
-          <friend-list-full controls="pagination" page-size="6" user-id admin>
-          </friend-list-full>
-        </div>
-
-        <div>
-          <h1>Beérkező barátkérelmek kezelése</h1>
-          <friend-list-full
-            controls="pagination"
-            page-size="6"
-            filter="status=pending&direction=incoming"
-            user-id
-            admin
-          >
-          </friend-list-full>
-        </div>
-
-        <div>
-          <h1>Kimenő barátkérelmek kezelése</h1>
-          <friend-list-full
-            controls="pagination"
-            page-size="6"
-            filter="status=pending&direction=outgoing"
-            user-id
-            admin
-          ></friend-list-full>
-        </div>
-      </div>
-
-      <br />
-      <hr />
-      <h1>Letiltott felhasználók kezelése</h1>
-
-      <blocked-user-list
-        controls="pagination"
-        page-size="6"
-        user-id
-      ></blocked-user-list>
-
-      <br />
-      <hr />
-      <h1>Aktív munkamenetek kezelése</h1>
-
-      <active-refresh-token-list
-        controls="pagination"
-        page-size="6"
-        user-id
-      ></active-refresh-token-list>
-    </admin-module>
 
     <toast-manager event-controlled></toast-manager>
 
@@ -153,7 +152,28 @@
         const container = document.querySelector("#full-profile-container");
         if (!container) return;
 
+        const commentComposeForm = container.querySelector(
+          "full-profile comment-form form",
+        );
+        if (commentComposeForm) {
+          commentComposeForm.reset();
+          const commentInput = commentComposeForm.querySelector(
+            "textarea[name='content']",
+          );
+          if (commentInput) {
+            commentInput.value = "";
+          }
+        }
+
         container.classList.remove("active");
+
+        const headerText = document.querySelector(
+          "#full-profile-target-create-text",
+        );
+        if (headerText) {
+          headerText.textContent = "";
+          headerText.hidden = true;
+        }
       }
     </script>
 
@@ -162,6 +182,7 @@
       import { onDOMContentLoaded, isLoggedIn } from "/common/common.js";
       import { on, off } from "/common/eventhub.js";
       import { importWithRefresh } from "/common/network.js";
+      import "/ui/component/feedback/ToastManager.js";
       import "/ui/component/profile/FullProfile.js";
       import "/ui/component/auth/LogoutButton.js";
       import "/ui/component/account/BlockedUserList.js";
@@ -188,9 +209,9 @@
       });
 
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+        document.addEventListener("DOMContentLoaded", () => onDOMContentLoaded({ requireAuth: true }));
       } else {
-        onDOMContentLoaded();
+        onDOMContentLoaded({ requireAuth: true });
       }
 
       // Searchbox(

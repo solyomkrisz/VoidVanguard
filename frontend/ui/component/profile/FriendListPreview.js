@@ -1,5 +1,8 @@
 import * as net from "/common/network.js";
 import { on, off } from "/common/eventhub.js";
+import { isLoggedIn } from "/common/common.js";
+
+const PREVIEW_LIMIT = 5;
 
 export default class FriendListPreview extends HTMLElement {
   static get observedAttributes() {
@@ -55,9 +58,24 @@ export default class FriendListPreview extends HTMLElement {
     this.update();
   }
 
+  emitPreviewState(count = 0) {
+    this.dispatchEvent(
+      new CustomEvent("friend-preview-state-change", {
+        detail: {
+          count,
+          hasMoreThanPreview: count > PREVIEW_LIMIT,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
   async update() {
     const response = await net.send(
       `/api/friends/${this.userId}?include=preview`,
+      { method: "GET" },
+      isLoggedIn(),
     );
 
     const { success, result, message } = response;
@@ -80,13 +98,19 @@ export default class FriendListPreview extends HTMLElement {
 
   renderItem(item) {
     const el = document.createElement("template");
+    const hasProfile = item?.has_profile !== 0;
+    const avatarShellClass = hasProfile ? "friend-preview-avatar-shell" : "friend-preview-avatar-shell no-profile-avatar";
+    const avatarClass = hasProfile ? "friend-preview-avatar" : "friend-preview-avatar no-profile-avatar";
 
     el.innerHTML = `
       <div class="friend-list-item">
-        <img />
+        <span class="${avatarShellClass}"><img class="${avatarClass}" /></span>
         <span>${item.name}</span>
       </div>
     `;
+
+    const img = el.content.querySelector("img");
+    img.src = item.avatar || "/image/defaultPfp.png";
 
     el.content
       .querySelector(".friend-list-item")
@@ -108,7 +132,17 @@ export default class FriendListPreview extends HTMLElement {
 
     this._container.textContent = "";
 
-    for (const item of this.data) {
+    this.emitPreviewState(this.data.length);
+
+    if (this.data.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "friend-list-empty";
+      empty.textContent = "Nincsenek megjeleníthető barátok.";
+      this._container.appendChild(empty);
+      return;
+    }
+
+    for (const item of this.data.slice(0, PREVIEW_LIMIT)) {
       this._container.appendChild(this.renderItem(item));
     }
   }
@@ -116,6 +150,7 @@ export default class FriendListPreview extends HTMLElement {
   reset() {
     if (!this._built) return;
     this._container.textContent = "";
+    this.emitPreviewState(0);
   }
 }
 

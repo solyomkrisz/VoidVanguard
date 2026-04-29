@@ -15,17 +15,6 @@ const _innerHTML = `
     </email-input-validator>
   </input-group>
 
-  <div>
-    <div>
-      <input type="radio" name="gender" value="0" />
-      <label>Férfi</label>
-    </div>
-    <div>
-      <input type="radio" name="gender" value="1" />
-      <label>Nő</label>
-    </div>
-  </div>
-
   <input-group class="input-group">
     <select name="role">
       <option value="0">Felhasználó</option>
@@ -49,12 +38,11 @@ const _innerHTML = `
 
   <button>Fiókadatok módosítása</button>
 </form>
-<div id="message"></div>
 `;
 
 export default class AdminAccountForm extends AccountForm {
   constructor() {
-    super();
+    super(["/protected/ui/style/adminForm.css"]);
     this._innerHTML = _innerHTML;
   }
 }

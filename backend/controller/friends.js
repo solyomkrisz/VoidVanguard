@@ -30,7 +30,7 @@ export async function lazySelectByTarget(request, response) {
 
 export async function summary(request, response) {
   try {
-    const requesterId = request.targetUser.id;
+    const requesterId = request?.targetUser?.id ?? null;
     const userId = request.params.id;
     const include = (request.query.include || "").split(",");
 

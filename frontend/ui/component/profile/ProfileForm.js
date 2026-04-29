@@ -7,6 +7,23 @@ import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
+function requestToast(message, variant = "info", delay = 0, duration = 3000) {
+  if (!message) return;
+
+  document.dispatchEvent(
+    new CustomEvent("toast-request", {
+      detail: {
+        toast: {
+          message,
+          variant,
+          delay,
+          duration,
+        },
+      },
+    }),
+  );
+}
+
 const METHOD = {
   create: "POST",
   update: "PATCH",
@@ -35,7 +52,7 @@ export default class ProfileForm extends BaseCustomElement {
   }
 
   constructor() {
-    super([path.join(dir, "global.css")]);
+    super([path.join(dir, "global.css"), path.join(dir, "profileForm.css")]);
 
     this._elements = {};
     this._built = false;
@@ -94,15 +111,7 @@ export default class ProfileForm extends BaseCustomElement {
 
   onResponse(response) {
     const { success, result, message } = response;
-    const { responseMessage } = this._elements;
-
-    if (responseMessage) {
-      responseMessage.textContent = "";
-    }
-
-    if (responseMessage) {
-      responseMessage.textContent = message;
-    }
+    const performedAction = this.action;
 
     if (!success) {
       console.error(
@@ -112,8 +121,20 @@ export default class ProfileForm extends BaseCustomElement {
       return;
     }
 
+    if (performedAction === "create") {
+      this.action = "update";
+    }
+
+    requestToast(
+      message ||
+        (performedAction === "update"
+          ? "Profil sikeresen módosítva."
+          : "Profil sikeresen létrehozva."),
+      "success",
+    );
+
     this.dispatchEvent(
-      new CustomEvent(this.getEventName(), {
+      new CustomEvent(this.getEventName(performedAction), {
         detail: { result },
         bubbles: true,
         composed: true,
@@ -129,6 +150,7 @@ export default class ProfileForm extends BaseCustomElement {
   /** Needed to be compatible with <admin-module> */
   onSignError() {
     console.error("Unable to send signed data");
+    requestToast("Hiba: Nem sikerült elküldeni az adatokat.", "error");
   }
 
   update() {
@@ -143,6 +165,39 @@ export default class ProfileForm extends BaseCustomElement {
     this.setShadowInnerHTML(`
       <form>
         <input-group class="input-group">
+          <label>Profilkép választó</label>
+          <div class="avatar-picker-shell">
+            <p class="avatar-picker-note">Válassz egy alap profilképet:</p>
+            <div class="avatar-picker-grid">
+              <label class="avatar-option">
+                <input type="radio" name="avatar" value="/image/defaultPfp.png" checked />
+                <img src="/image/defaultPfp.png" alt="Alap profilkép 1" draggable="false" />
+              </label>
+              <label class="avatar-option">
+                <input type="radio" name="avatar" value="/image/defaultPfp2.png" />
+                <img src="/image/defaultPfp2.png" alt="Alap profilkép 2" draggable="false" />
+              </label>
+              <label class="avatar-option">
+                <input type="radio" name="avatar" value="/image/defaultPfp3.png" />
+                <img src="/image/defaultPfp3.png" alt="Alap profilkép 3" draggable="false" />
+              </label>
+              <label class="avatar-option">
+                <input type="radio" name="avatar" value="/image/defaultPfp4.png" />
+                <img src="/image/defaultPfp4.png" alt="Alap profilkép 4" draggable="false" />
+              </label>
+              <label class="avatar-option">
+                <input type="radio" name="avatar" value="/image/defaultPfp5.png" />
+                <img src="/image/defaultPfp5.png" alt="Alap profilkép 5" draggable="false" />
+              </label>
+              <label class="avatar-option">
+                <input type="radio" name="avatar" value="/image/defaultPfp6.png" />
+                <img src="/image/defaultPfp6.png" alt="Alap profilkép 6" draggable="false" />
+              </label>
+            </div>
+          </div>
+        </input-group>
+
+        <input-group class="input-group">
           <label>Profilnév</label>
           <display-name-input-validator>
             <input type="text" name="display_name" placeholder="Név123" />
@@ -152,7 +207,7 @@ export default class ProfileForm extends BaseCustomElement {
         <input-group class="input-group">
           <label>Leírás</label>
           <description-input-validator>
-            <textarea name="description" placeholder="Ez a profilom..."></textarea>
+            <textarea name="description" placeholder="Ide írd a profilod leírását"></textarea>
           </description-input-validator>
         </input-group>
         
@@ -166,7 +221,6 @@ export default class ProfileForm extends BaseCustomElement {
 
         <button>Profil létrehozása</button>
       </form>
-      <div id="message"></div>
     `);
 
     const form = this.queryShadowSelector("form");
@@ -174,7 +228,18 @@ export default class ProfileForm extends BaseCustomElement {
 
     this._elements.form = form;
     this._elements.button = this.queryShadowSelector("button");
-    this._elements.responseMessage = this.queryShadowSelector("#message");
+
+    const displayNameField = form.elements.namedItem("display_name");
+    if (
+      this.action !== "update" &&
+      displayNameField &&
+      !displayNameField.value
+    ) {
+      const username = window.VoidVanguard?.user?.username || "";
+      if (username) {
+        displayNameField.value = username;
+      }
+    }
 
     this.addEventListener("restore", this.restoreFrom);
     this.addEventListener("reset", this.resetForm);
@@ -200,8 +265,8 @@ export default class ProfileForm extends BaseCustomElement {
     this._elements.form?.reset?.();
   }
 
-  getEventName() {
-    switch (this.action) {
+  getEventName(action = this.action) {
+    switch (action) {
       case "update":
         return "profile-update";
       case "create":

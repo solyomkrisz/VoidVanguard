@@ -20,7 +20,7 @@ export default class Keyboard {
 
     this.game = game;
     this.observed = new Set();
-    this.activeControls = new Set();
+    this.activeControls = game.activeControls;
 
     this.keydownEventHandler = this.keydownEventHandler.bind(this);
     this.keyupEventHandler = this.keyupEventHandler.bind(this);
@@ -58,12 +58,20 @@ export default class Keyboard {
     const key = event.code;
 
     if (this.observed.has(key)) {
-      this.game.activeControls.add(key);
-    } else if (key === Keyboard.Escape && !event.repeat) this.game.stop();
+      this.activeControls.add(key);
+    } else if (key === Keyboard.Escape && !event.repeat) {
+      const pauseMenu = this.game?.UI?.pauseMenu;
+
+      if (this.game.running) {
+        this.game.stop();
+      } else if (pauseMenu && !pauseMenu.hidden) {
+        this.game.resume();
+      }
+    }
   }
 
   keyupEventHandler(event) {
     const key = event.code;
-    if (this.observed.has(key)) this.game.activeControls.delete(key);
+    if (this.observed.has(key)) this.activeControls.delete(key);
   }
 }

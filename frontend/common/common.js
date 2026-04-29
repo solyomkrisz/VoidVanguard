@@ -1,6 +1,10 @@
 import * as net from "./network.js";
 import { isExpired, decode } from "./jwt.js";
 
+if (!window.VoidVanguard) {
+  window.VoidVanguard = {};
+}
+
 export const DATA_STRUCTURE =
   typeof Float32Array !== "undefined" ? Float32Array : Array;
 
@@ -166,14 +170,19 @@ export async function autologin() {
 
     if (response.success) {
       setUser(response.result, { origin: "autologin" });
+      return true;
     }
   } catch (error) {
-    return;
+    return false;
   }
+  return false;
 }
 
-export async function onDOMContentLoaded() {
-  await autologin();
+export async function onDOMContentLoaded({ requireAuth = false } = {}) {
+  const ok = await autologin();
+  if (requireAuth && !ok) {
+    window.location.href = "/";
+  }
 }
 
 export async function logout() {
@@ -289,7 +298,7 @@ export function isEqual(obja, objb, path = "") {
 export function setFieldValue(field, value) {
   if (field instanceof RadioNodeList) {
     Array.from(field).forEach((input) => {
-      input.checked = input.value === value;
+      input.checked = input.value === String(value ?? "");
     });
     return;
   }

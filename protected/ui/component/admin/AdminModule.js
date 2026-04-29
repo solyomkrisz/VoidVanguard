@@ -69,7 +69,7 @@ export default class AdminModule extends HTMLElement {
     if (!handler) return;
 
     if (!this.targetUserId || !(formData || url)) {
-      handler.onSignError?.(e.detail);
+      handler.onSignError?.({ ...e.detail, message: "Először válasszon ki egy felhasználót az Álcázás mint gombbal!" });
       return;
     }
 

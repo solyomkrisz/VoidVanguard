@@ -52,13 +52,12 @@ export async function get(request, response) {
 }
 
 export async function register(request, response) {
-  const { username, email, gender, password } = request.body;
+  const { username, email, password } = request.body;
 
   try {
     await service.createUser({
       username,
       email,
-      gender,
       password,
     });
 

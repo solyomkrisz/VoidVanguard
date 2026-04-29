@@ -49,7 +49,13 @@ export default class SearchBarResultItem extends HTMLElement {
   onDisguise() {
     const info = document.querySelector("#disguise-info");
     if (info) {
-      info.textContent = `@${this.data.username} ${this.data.display_name ? `- ${this.data.display_name}` : ""} (${this.data.id})`;
+      const username = this.data?.username ? `@${this.data.username}` : "";
+      const displayName = this.data?.display_name
+        ? ` - ${this.data.display_name}`
+        : "";
+      const id = this.data?.id ? ` (${this.data.id})` : "";
+
+      info.textContent = `Álca: ${username}${displayName}${id}`.trim();
     }
 
     if (this.useEvent) {
@@ -79,7 +85,36 @@ export default class SearchBarResultItem extends HTMLElement {
     const fullProfile = document.querySelector("full-profile");
     if (!fullProfile) return;
 
-    fullProfile.setAttribute("user-id", this.data.id);
+    const headerText = document.querySelector(
+      "#full-profile-target-create-text",
+    );
+
+    const wantsCreateProfile = !this.data?.display_name;
+    if (wantsCreateProfile) {
+      fullProfile.setAttribute("open-profile-create", "");
+
+      if (headerText) {
+        const username = this.data?.username || this.data?.id || "";
+        headerText.textContent = `Profil létrehozása @${username} számára`;
+        headerText.hidden = false;
+      }
+    } else {
+      fullProfile.removeAttribute("open-profile-create");
+
+      if (headerText) {
+        headerText.textContent = "";
+        headerText.hidden = true;
+      }
+    }
+
+    const currentUserId = fullProfile.getAttribute("user-id");
+    const nextUserId = String(this.data.id || "");
+
+    fullProfile.setAttribute("user-id", nextUserId);
+
+    if (String(currentUserId || "") === nextUserId) {
+      void fullProfile.update?.({ origin: "admin-profile-action" });
+    }
 
     const container = document.querySelector("#full-profile-container");
     if (!container) return;
@@ -280,7 +315,13 @@ export default class SearchBarResultItem extends HTMLElement {
       }
     }
 
-    if (this.searchBar?.getAttribute("target-user-id") === this.data.id) {
+    const targetUserId = this.searchBar?.getAttribute("target-user-id");
+    const isTargetUser =
+      targetUserId != null && String(targetUserId) === String(this.data.id);
+
+    this._elements.disguiseButton.hidden = isTargetUser;
+
+    if (isTargetUser) {
       this._elements.friendButton.hidden = true;
       this._elements.blockButton.hidden = true;
     } else {

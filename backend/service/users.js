@@ -33,11 +33,11 @@ export async function getUser({ userId }) {
   return user;
 }
 
-export async function createUser({ username, email, gender, password }) {
+export async function createUser({ username, email, password }) {
   const id = uuidv4();
   const passwordHash = await Password.hash(password);
 
-  await Users.create({ id, username, email, gender, passwordHash });
+  await Users.create({ id, username, email, passwordHash });
 
   return id;
 }

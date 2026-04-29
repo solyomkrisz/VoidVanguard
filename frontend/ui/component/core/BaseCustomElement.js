@@ -100,7 +100,10 @@ export default class BaseCustomElement extends HTMLElement {
         return sheet;
       })
       .catch((error) => {
-        console.error(error);
+        // Ignore aborted fetches (e.g. page navigating away during auth redirect)
+        if (error?.name !== "AbortError" && error?.name !== "TypeError") {
+          console.error(error);
+        }
         BaseCustomElement.PENDING_FETCHES.delete(path);
         return null;
       });

@@ -29,6 +29,7 @@ export default class CommentItem extends HTMLElement {
     this._elements = {};
 
     this.onInlineEdit = this.onInlineEdit.bind(this);
+    this.onFieldInput = this.onFieldInput.bind(this);
     this.onSave = this.onSave.bind(this);
     this.onDelete = this.onDelete.bind(this);
     this.onLogin = this.onLogin.bind(this);
@@ -55,6 +56,23 @@ export default class CommentItem extends HTMLElement {
     const propName = e.detail?.name;
 
     if (!Object.is(this.comment[propName], newValue)) {
+      this._changed.add(propName);
+    } else {
+      this._changed.delete(propName);
+    }
+
+    this.toggleEditing();
+  }
+
+  onFieldInput(e) {
+    const field = e?.target;
+    const propName = field?.name;
+    if (!propName) return;
+
+    const newValue = field.value ?? "";
+    const currentValue = this.comment?.[propName] ?? "";
+
+    if (!Object.is(currentValue, newValue)) {
       this._changed.add(propName);
     } else {
       this._changed.delete(propName);
@@ -133,13 +151,43 @@ export default class CommentItem extends HTMLElement {
     );
   }
 
+  renderAuthorLink() {
+    const author = this.comment.author ?? "";
+    const authorId = this.comment.author_id;
+
+    if (!authorId) {
+      return `<span class="comment-author-name">${author}</span>`;
+    }
+
+    return `<a class="comment-author-link" href="/profile/${authorId}">${author}</a>`;
+  }
+
+  renderAuthorAvatar() {
+    const avatar = this.comment.author_avatar || "/image/defaultPfp.png";
+    const author = this.comment.author ?? "User";
+    const authorId = this.comment.author_id;
+    const hasProfile = this.comment.author_has_profile !== 0;
+    const avatarClass = hasProfile ? "comment-author-avatar" : "comment-author-avatar no-profile-avatar";
+    const linkClass = hasProfile ? "comment-author-avatar-link" : "comment-author-avatar-link no-profile-avatar";
+    const image = `<img class="${avatarClass}" src="${avatar}" alt="${author} profilkep" loading="lazy" decoding="async">`;
+
+    if (!authorId) return image;
+
+    return `<a class="${linkClass}" href="/profile/${authorId}" aria-label="${author} profilja">${image}</a>`;
+  }
+
   getPersonalizedTemplate() {
     return `
       <form>
           <div class="comment-header">
-              <div>${this.comment.author ?? ""}</div>
-              <div>${this.comment.created_at ?? ""}</div>
-              ${this.comment.created_at === this.comment.updated_at ? "" : this.comment.updated_at ? `<div>${this.comment.updated_at}</div>` : ""}
+              <div class="comment-author">
+                ${this.renderAuthorAvatar()}
+                <div class="comment-author-ident">${this.renderAuthorLink()}</div>
+              </div>
+              <div class="comment-meta">
+                <span class="comment-created">${this.comment.created_at ?? ""}</span>
+                ${this.comment.created_at === this.comment.updated_at ? "" : this.comment.updated_at ? `<span class="comment-updated">Szerkesztve: ${this.comment.updated_at}</span>` : ""}
+              </div>
           </div>
           <div class="comment-body">
               <inline-editor>
@@ -149,17 +197,12 @@ export default class CommentItem extends HTMLElement {
                   <textarea data-editor name="content"></textarea>
               </inline-editor>
           </div>
-          <div class="comment-footer">
-            <div>
-              <span>Likeok: <span>${this.comment.likes}</span></span>
-              <br />
-              <span>Dislikeok: <span>${this.comment.dislikes}</span></span>
-            </div>
-          </div>
           <div class="comment-actions">
             <comment-reactions controls="both"></comment-reactions>
-            <button id="save" type="button" hidden>Mentés</button>
-            <button id="delete" type="button">Törlés</button>
+            <div class="comment-owner-actions">
+              <button id="save" type="button" hidden>Mentés</button>
+              <button id="delete" type="button">Törlés</button>
+            </div>
           </div>
       </form>
     `;
@@ -168,19 +211,17 @@ export default class CommentItem extends HTMLElement {
   getTemplate() {
     return `
       <div class="comment-header">
-          <div>${this.comment.author ?? ""}</div>
-          <div>${this.comment.created_at ?? ""}</div>
-          ${this.comment.created_at === this.comment.updated_at ? "" : this.comment.updated_at ? `<div>${this.comment.updated_at}</div>` : ""}
+          <div class="comment-author">
+            ${this.renderAuthorAvatar()}
+            <div class="comment-author-ident">${this.renderAuthorLink()}</div>
+          </div>
+          <div class="comment-meta">
+            <span class="comment-created">${this.comment.created_at ?? ""}</span>
+            ${this.comment.created_at === this.comment.updated_at ? "" : this.comment.updated_at ? `<span class="comment-updated">Szerkesztve: ${this.comment.updated_at}</span>` : ""}
+          </div>
       </div>
       <div class="comment-body">
           <div class="comment-content">${this.comment.content ?? ""}</div>
-      </div>
-      <div class="comment-footer">
-        <div>
-          <span>Likeok: <span>${this.comment.likes}</span></span>
-          <br />
-          <span>Dislikeok: <span>${this.comment.dislikes}</span></span>
-        </div>
       </div>
       <div class="comment-actions">
         <comment-reactions controls="both"></comment-reactions>
@@ -211,11 +252,22 @@ export default class CommentItem extends HTMLElement {
         (isAdmin() && this.admin));
 
     if (force || shouldPersonalize !== this._personalized) {
+      this._changed.clear();
+      this._editing = false;
+
       if (shouldPersonalize) {
         this.innerHTML = this.getPersonalizedTemplate();
 
         const form = this.querySelector("form");
         elements.form = form;
+
+        const editableFields = form?.querySelectorAll(
+          'input[name="content"], textarea[name="content"]',
+        );
+        editableFields?.forEach((field) => {
+          field.removeEventListener("input", this.onFieldInput);
+          field.addEventListener("input", this.onFieldInput);
+        });
 
         const saveButton = this.querySelector("#save");
         saveButton.addEventListener?.("click", this.onSave);
@@ -233,15 +285,19 @@ export default class CommentItem extends HTMLElement {
 
       elements.commentReactions = this.querySelector("comment-reactions");
       elements.commentReactions.userReaction = this.comment.user_reaction_type;
+      elements.commentReactions.likes = this.comment.likes ?? 0;
+      elements.commentReactions.dislikes = this.comment.dislikes ?? 0;
+      elements.commentReactions.readOnly = !loggedIn;
 
       this._personalized = shouldPersonalize;
+    } else {
+      elements.commentReactions.userReaction = this.comment.user_reaction_type;
+      elements.commentReactions.likes = this.comment.likes ?? 0;
+      elements.commentReactions.dislikes = this.comment.dislikes ?? 0;
+      elements.commentReactions.readOnly = !loggedIn;
     }
 
-    if (!loggedIn) {
-      elements.commentReactions.hidden = true;
-    } else {
-      elements.commentReactions.hidden = false;
-    }
+    elements.commentReactions.hidden = false;
   }
 }
 

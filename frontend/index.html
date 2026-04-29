@@ -1,500 +1,12 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="hu">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VoidVanguard</title>
-    <style>
-      @font-face {
-        font-family: 'Jersey';
-        src: url('./font/Jersey10-Regular.ttf') format('truetype');
-        font-weight: normal;
-        font-style: normal;
-      }
+    <script>if (localStorage.getItem('access_token')) document.documentElement.classList.add('has-token');</script>
+    <link rel="stylesheet" href="./index.css" />
 
-      * {
-        box-sizing: border-box;
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: -webkit-crisp-edges;
-        image-rendering: -moz-crisp-edges;
-        image-rendering: pixelated;
-        -ms-interpolation-mode: nearest-neighbor;
-      }
-
-      body {
-        margin: 0;
-        background: #000000;
-        overflow: hidden;
-        font-family: 'Jersey', 'Courier New', monospace;
-        font-weight: normal;
-        font-smooth: never;
-        -webkit-font-smoothing: none;
-        -moz-osx-font-smoothing: grayscale;
-      }
-
-      body::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background: repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 2px,
-          rgba(0, 0, 0, 0.025) 2px,
-          rgba(0, 0, 0, 0.025) 4px
-        );
-        pointer-events: none;
-        z-index: 9999;
-      }
-
-      #authContainer {
-        --pattern-cut: 40vmin;
-        width: 100vw;
-        height: 100vh;
-        background:
-          radial-gradient(ellipse 65% 45% at 10% 90%, rgba(15, 35, 145, 0.45) 0%, transparent 65%),
-          radial-gradient(ellipse 55% 40% at 90% 10%, rgba(75, 15, 145, 0.30) 0%, transparent 65%),
-          radial-gradient(ellipse 40% 30% at 50% 50%, rgba(10, 20, 60, 0.50) 0%, transparent 80%),
-          linear-gradient(160deg, #0d0d22 0%, #06060f 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 1000;
-        padding: 2vh 2vw;
-        overflow: hidden;
-      }
-
-      #authContainer::before,
-      #authContainer::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background-image:
-          repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(40, 80, 180, 0.09) 4px, rgba(40, 80, 180, 0.09) 8px),
-          repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(40, 80, 180, 0.09) 4px, rgba(40, 80, 180, 0.09) 8px);
-        z-index: 0;
-      }
-
-      #authContainer::before {
-        clip-path: polygon(
-          var(--pattern-cut) 0,
-          100% 0,
-          100% calc(100% - var(--pattern-cut))
-        );
-      }
-
-      #authContainer::after {
-        clip-path: polygon(
-          0 var(--pattern-cut),
-          calc(100% - var(--pattern-cut)) 100%,
-          0 100%
-        );
-      }
-
-      #authContainer > * {
-        position: relative;
-        z-index: 1;
-      }
-
-      #stars {
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
-      }
-
-      #authContainer.hidden {
-        display: none;
-      }
-
-      .title-image {
-        width: 50vmin;
-        height: auto;
-        margin-bottom: 0;
-        flex-shrink: 0;
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: -webkit-crisp-edges;
-        image-rendering: -moz-crisp-edges;
-        image-rendering: pixelated;
-        -ms-interpolation-mode: nearest-neighbor;
-        animation: titleFeny 10s ease-in-out infinite;
-        transition: margin-top 0.3s ease;
-      }
-
-      #authContainer.reg-active .title-image {
-        margin-top: -2.5vmin;
-      }
-
-      .auth-forms {
-        display: flex;
-        gap: 1.5vmin;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: stretch;
-        width: 45vmin;
-        overflow: hidden;
-      }
-
-      #regForm {
-        display: none;
-      }
-
-      #logForm {
-        max-height: 60vh;
-      }
-
-      form {
-        background: #1a1a28;
-        color: #ffffff;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        padding: 1.5vmin 4vmin;
-        border: 4px solid #4a90e2;
-        box-shadow: 
-          inset 0 0 0 2px #0d0d15,
-          inset 0 0 0 6px #2a2a3e,
-          0 0 0 2px #0d0d15,
-          0 8px 0 0 #0d0d15,
-          0 8px 20px rgba(0, 0, 0, 0.9);
-        width: 55vmin;
-        max-height: 72.5vh;
-        gap: 1vmin;
-        overflow-y: auto;
-        animation: formFeny 4.5s ease-in-out infinite;
-      }
-
-      form h2 {
-        margin: 1.5vmin 0;
-        text-align: center;
-        color: #ffffff;
-        font-size: 3vmin;
-        text-shadow: 
-          1px 1px 0px #000000,
-          -1px -1px 0px #6ab8ff;
-        letter-spacing: 0.05vmin;
-        padding: 1.2vmin 1.5vmin;
-        background: #4a90e2;
-        border: 0.25rem solid #6ab8ff;
-        box-shadow: 
-          inset 0 0 0 2px #2a5a9e,
-          0 0 0 2px #0d0d15,
-          0 4px 0 0 #2a5a9e,
-          0 0 16px rgba(106, 184, 255, 0.4);
-        flex-shrink: 0;
-      }
-
-      form label {
-        margin-top: 0.8vmin;
-        font-size: 1.5vmin;
-        color: #6ab8ff;
-        text-transform: uppercase;
-        letter-spacing: 0.05vmin;
-        text-shadow: 1px 1px 0px #000000;
-        flex-shrink: 0;
-      }
-
-      form input {
-        padding: 1vmin 1.2vmin;
-        background: #0d0d15;
-        border: 0.15rem solid #2a5a9e;
-        color: #ffffff;
-        font-size: 2vmin;
-        font-family: 'Jersey', 'Courier New', monospace;
-        box-shadow: 
-          inset 3px 3px 0px rgba(0, 0, 0, 0.8),
-          inset -2px -2px 0px rgba(74, 144, 226, 0.2);
-        font-smooth: never;
-        -webkit-font-smoothing: none;
-        flex-shrink: 0;
-      }
-
-      form input:focus {
-        outline: none;
-        border-color: #6ab8ff;
-        background: #15151f;
-        box-shadow: 
-          inset 3px 3px 0px rgba(0, 0, 0, 0.8),
-          inset -2px -2px 0px rgba(106, 184, 255, 0.3),
-          0 0 0 3px #4a90e2,
-          0 0 16px rgba(106, 184, 255, 0.6);
-      }
-
-      form button {
-        margin-top: 2.5vmin;
-        padding: 1.5vmin 2vmin;
-        background: #4a90e2;
-        color: #ffffff;
-        border: 4px solid #6ab8ff;
-        box-shadow: 
-          inset 0 0 0 2px #2a5a9e,
-          0 0 0 2px #0d0d15,
-          0 6px 0 0 #2a5a9e,
-          0 6px 16px rgba(0, 0, 0, 0.7);
-        font-size: 1.8vmin;
-        font-family: 'Jersey', 'Courier New', monospace;
-        cursor: pointer;
-        transition: all 0.1s;
-        text-transform: uppercase;
-        letter-spacing: 0.2vmin;
-        text-shadow: 1px 1px 0px #000000;
-        font-smooth: never;
-        -webkit-font-smoothing: none;
-        flex-shrink: 0;
-      }
-
-      form button:hover {
-        background: #6ab8ff;
-        transform: translateY(-2px);
-        box-shadow: 
-          inset 0 0 0 2px #4a90e2,
-          0 0 0 2px #0d0d15,
-          0 8px 0 0 #2a5a9e,
-          0 8px 18px rgba(0, 0, 0, 0.7),
-          0 0 20px rgba(106, 184, 255, 0.5);
-      }
-
-      form button:active {
-        transform: translateY(3px);
-        box-shadow: 
-          inset 0 0 0 2px #2a5a9e,
-          0 0 0 2px #0d0d15,
-          0 3px 0 0 #2a5a9e,
-          0 3px 12px rgba(0, 0, 0, 0.7);
-      }
-
-      form a {
-        margin-top: 1vmin;
-        text-align: center;
-        color: #6ab8ff;
-        font-size: 2.2vmin;
-        text-shadow: 1px 1px 0px #000000;
-        cursor: pointer;
-        flex-shrink: 0;
-      }
-
-      form a:hover {
-        color: #b7d8ff;
-        text-shadow: 
-          1px 1px 0px #000000,
-          0 0 8px rgba(0, 119, 255, 0.986);
-      }
-
-      .form-message {
-        margin-top: 1vmin;
-        text-align: center;
-        font-size: 1.5vmin;
-        min-height: 3vmin;
-        padding: 1vmin 1.2vmin;
-        letter-spacing: 0.1vmin;
-        flex-shrink: 0;
-      }
-
-      .form-message.error {
-        color: #ffffff;
-        background: #dc2626;
-        border: 4px solid #ef4444;
-        box-shadow: 
-          inset 0 0 0 2px #7f1d1d,
-          0 0 0 2px #0d0d15,
-          0 4px 0 0 #7f1d1d,
-          0 0 16px rgba(239, 68, 68, 0.5);
-        text-shadow: 1px 1px 0px #000000;
-        animation: shake 0.3s;
-      }
-
-      .form-message.success {
-        color: #ffffff;
-        background: #10b981;
-        border: 4px solid #34d399;
-        box-shadow: 
-          inset 0 0 0 2px #065f46,
-          0 0 0 2px #0d0d15,
-          0 4px 0 0 #065f46,
-          0 0 16px rgba(52, 211, 153, 0.5);
-        text-shadow: 1px 1px 0px #000000;
-      }
-
-      @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-0.25rem); }
-        75% { transform: translateX(0.25rem); }
-      }
-
-      @keyframes pressed {
-        0%, 100% { transform: translateY(0.25rem); }
-        50% { transform: translateY(0); }
-      }
-
-      @keyframes titleFeny{
-        0%, 100% {
-          filter:
-            drop-shadow(0 10px 15px rgba(150, 1, 187, 0.4))
-            drop-shadow(0 0 20px rgba(74, 144, 226, 0.15));
-        }
-        50% {
-          filter:
-            drop-shadow(0 4px 16px rgba(207, 45, 194, 0.85))
-            drop-shadow(0 0 40px rgba(74, 144, 226, 0.38));
-        }
-      }
-
-      @keyframes formFeny {
-        0%, 100% {
-          box-shadow:
-            inset 0 0 0 2px #0d0d15,
-            inset 0 0 0 6px #2a2a3e,
-            0 0 0 2px #0d0d15,
-            0 8px 0 0 #0d0d15,
-            0 8px 20px rgba(0, 0, 0, 0.9),
-            0 0 18px rgba(74, 144, 226, 0.05);
-        }
-        50% {
-          box-shadow:
-            inset 0 0 0 2px #0d0d15,
-            inset 0 0 0 6px #2a2a3e,
-            0 0 0 2px #0d0d15,
-            0 8px 0 0 #0d0d15,
-            0 8px 20px rgba(0, 0, 0, 0.9),
-            0 0 45px rgba(74, 144, 226, 0.20);
-        }
-      }
-
-      #skipAuthBtn {
-        position: fixed;
-        bottom: 2vh;
-        right: 2vw;
-        padding: 1.2vmin 2vmin;
-        background: #f97316;
-        color: #ffffff;
-        border: 4px solid #fb923c;
-        box-shadow: 
-          inset 0 0 0 2px #c2410c,
-          0 0 0 2px #0d0d15,
-          0 4px 0 0 #c2410c,
-          0 4px 12px rgba(0, 0, 0, 0.7);
-        font-size: 1.4vmin;
-        font-family: 'Jersey', 'Courier New', monospace;
-        cursor: pointer;
-        transition: all 0.1s;
-        text-transform: uppercase;
-        letter-spacing: 0.2vmin;
-        text-shadow: 1px 1px 0px #000000;
-        z-index: 10;
-        font-smooth: never;
-        -webkit-font-smoothing: none;
-      }
-
-      #skipAuthBtn:hover {
-        background: #fb923c;
-        transform: translateY(-2px);
-        box-shadow: 
-          inset 0 0 0 2px #f97316,
-          0 0 0 2px #0d0d15,
-          0 6px 0 0 #c2410c,
-          0 6px 14px rgba(0, 0, 0, 0.7),
-          0 0 16px rgba(251, 146, 60, 0.4);
-      }
-
-      #skipAuthBtn:active {
-        transform: translateY(3px);
-        box-shadow: 
-          inset 0 0 0 2px #c2410c,
-          0 0 0 2px #0d0d15,
-          0 1px 0 0 #c2410c,
-          0 1px 8px rgba(0, 0, 0, 0.7);
-      }
-
-      #settingsBtn {
-        position: fixed;
-        top: 2vh;
-        right: 2vw;
-        width: 6vmin;
-        height: 6vmin;
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        z-index: 1001;
-        display: block;
-        image-rendering: pixelated;
-      }
-
-      #settingsBtn img {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
-
-      #settingsPanel {
-        position: fixed;
-        top: calc(6.5vmin + 2vh);
-        right: 2vw;
-        z-index: 1001;
-        display: none;
-        flex-direction: column;
-        gap: 0.75vmin;
-        background: #1a1a28;
-        border: 2px solid #2a5a9e;
-        border-radius: 0.5vmin;
-        padding: 0.8vmin 1.5vmin;
-        box-shadow: 0 4px 0 0 #0d0d15;
-      }
-
-      #settingsPanel label {
-        display: flex;
-        align-items: center;
-        gap: 0.5vmin;
-        color: #6ab8ff;
-        font-size: 1.4vmin;
-        text-transform: uppercase;
-        letter-spacing: 0.05vmin;
-        cursor: pointer;
-        text-shadow: 1px 1px 0 #000;
-        user-select: none;
-      }
-
-      #settingsPanel input[type="checkbox"] {
-        accent-color: #4a90e2;
-        width: 1.2vmin;
-        height: 1.2vmin;
-        cursor: pointer;
-      }
-
-      @keyframes buttonPressed {
-        0%   { transform: scale(1)    translateY(0); }
-        50%  { transform: scale(1.125) translateY(-0.125vw); }
-        100% { transform: scale(1)    translateY(0); }
-      }
-
-      @keyframes panelOpen {
-        from { opacity: 0; transform: translateY(-0.4vw); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
-
-      @keyframes panelClose {
-        from { opacity: 1; transform: translateY(0); }
-        to   { opacity: 0; transform: translateY(-0.4vw); }
-      }
-
-      #settingsBtn.pressed {
-        animation: buttonPressed 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-      }
-
-      #settingsPanel.open {
-        animation: panelOpen 0.18s ease-out forwards;
-      }
-
-      #settingsPanel.closing {
-        animation: panelClose 0.15s ease-in forwards;
-      }
-
-    </style>
   </head>
   <body>
     <div id="authContainer">
@@ -527,12 +39,35 @@
           <a>Nincs fiókod? Regisztrálj!</a>
         </form>
       </div>
-      <button id="skipAuthBtn">XDD login skip XDD</button>
+    </div>
+
+    <div id="gameMenu" class="hidden">
+      <canvas id="gameStars"></canvas>
+      <img src="./image/VoidVanguardTitlePixelart.png" alt="VoidVanguard" class="title-image" />
+      <div id="gameMenuPanel">
+        <div id="gameMenuMain">
+          <h2>Főmenü</h2>
+          <button id="newGameBtn">Új játék indítása</button>
+          <button id="loadGameBtn">Játékmenet betöltése</button>
+          <button id="adminPanelBtn" hidden>Admin panel</button>
+          <button id="gameMenuLogoutBtn">Kijelentkezés</button>
+        </div>
+        <div id="gameMenuLoad" class="hidden">
+          <h2>Játékmenet betöltése</h2>
+          <div id="gameMenuSaveSlot"></div>
+          <button id="backBtn">Vissza</button>
+        </div>
+      </div>
     </div>
 
     <button id="settingsBtn">
       <img src="./image/SettingsButton.png" alt="Settings" />
     </button>
+
+     <button id="friendsBtn">
+       <img src="./image/FriendsButton.png" alt="Friends" />
+     </button>
+
     <div id="settingsPanel">
       <label><input type="checkbox" id="toggleNebula" checked /> Nebula</label>
       <label><input type="checkbox" id="toggleChunkDebug" checked /> Chunk Debug</label>
@@ -542,44 +77,73 @@
       <label><input type="checkbox" id="toggleSpaceshipHitbox" checked /> Spaceship Hitbox</label>
     </div>
 
+    <toast-manager event-controlled></toast-manager>
+
     <script type="module" src="./ui/initcomponents.js"></script>
     <script>
-      const canvas = document.getElementById("stars");
-      const ctx = canvas.getContext("2d");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const authCanvas = document.getElementById("stars");
+      const authCtx = authCanvas.getContext("2d");
+      const authStars = [];
+      const gameCanvas = document.getElementById("gameStars");
+      const gameCtx = gameCanvas.getContext("2d");
+      const gameStars = [];
+      const STAR_COUNT = 120;
 
-      const stars = [];
-      for (let i = 0; i < 120; i++) {
-        const star = {
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() < 0.75 ? 1 : 2,   
-          opacity: Math.random(),                  
-          delta: Math.random() * 0.003 + 0.001,  
-        };
-        if (Math.random() < 0.5) {
-          star.delta = -star.delta;
+      function createStarsForCanvas(canvas, stars) {
+        stars.length = 0;
+        for (let i = 0; i < STAR_COUNT; i++) {
+          const star = {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() < 0.75 ? 1 : 2,
+            opacity: Math.random(),
+            delta: Math.random() * 0.003 + 0.001,
+          };
+          if (Math.random() < 0.5) {
+            star.delta = -star.delta;
+          }
+          stars.push(star);
         }
-        stars.push(star);
       }
 
-      function draw() {
+      function resizeStarsCanvas() {
+        authCanvas.width = window.innerWidth;
+        authCanvas.height = window.innerHeight;
+        gameCanvas.width = window.innerWidth;
+        gameCanvas.height = window.innerHeight;
+        createStarsForCanvas(authCanvas, authStars);
+        createStarsForCanvas(gameCanvas, gameStars);
+      }
+
+      resizeStarsCanvas();
+
+      function drawStars(ctx, canvas, stars) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         for (const star of stars) {
           star.opacity += star.delta;
-          
+
           if (star.opacity <= 0 || star.opacity >= 1) {
             star.delta = -star.delta;
           }
-          
+
           ctx.fillStyle = "rgba(190, 215, 255, " + star.opacity.toFixed(2) + ")";
           ctx.fillRect(star.x, star.y, star.size, star.size);
         }
+      }
+
+      function draw() {
+        drawStars(authCtx, authCanvas, authStars);
+        drawStars(gameCtx, gameCanvas, gameStars);
 
         // Schedule the next frame
         requestAnimationFrame(draw);
+      }
+
+      window.addEventListener("resize", resizeStarsCanvas);
+      window.addEventListener("orientationchange", resizeStarsCanvas);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", resizeStarsCanvas);
       }
 
       draw();
@@ -587,7 +151,7 @@
     <script type="module">
       import * as net from "./common/network.js";
       import * as jwt from "./common/jwt.js";
-      import { extractForm } from "./common/common.js";
+      import { extractForm, setUser } from "./common/common.js";
 
       // Handle registration
       document.querySelector("#regForm").addEventListener("submit", async (e) => {
@@ -626,8 +190,8 @@
           if (result.success) {
             // If we got a new access token, store it
             if (result.result?.access_token) {
-              sessionStorage.setItem("access_token", result.result.access_token);
-              sessionStorage.setItem(
+              localStorage.setItem("access_token", result.result.access_token);
+              localStorage.setItem(
                 "access_token_decoded",
                 JSON.stringify(jwt.decode(result.result.access_token))
               );
@@ -635,24 +199,14 @@
             
             // Success means we're authenticated (either newly logged in or already logged in)
             document.getElementById("authContainer").classList.add("hidden");
-            document.dispatchEvent(new CustomEvent("login"));
+            // Call setUser so window.VoidVanguard.user is set (including role) before the login event fires
+            if (result.result?.access_token) {
+              await setUser(jwt.decode(result.result.access_token), { origin: "login-form" });
+            } else {
+              document.dispatchEvent(new CustomEvent("login"));
+            }
           }
         }
-      });
-
-      // Dev bypass button
-      document.getElementById("skipAuthBtn").addEventListener("click", () => {
-        // Set a mock token (optional, for any code that checks sessionStorage)
-        const mockToken = "ideiglenes_token_xd";
-        sessionStorage.setItem("access_token", mockToken);
-        sessionStorage.setItem(
-          "access_token_decoded",
-          JSON.stringify({ username: "dev_user", sub: "dev_id" })
-        );
-
-        // Hide auth container and dispatch login event
-        document.getElementById("authContainer").classList.add("hidden");
-        document.dispatchEvent(new CustomEvent("login"));
       });
 
       // This will be checked by App.js after it loads
@@ -696,3 +250,4 @@
     </script>
   </body>
 </html>
+

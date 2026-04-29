@@ -2,7 +2,6 @@ import { isLoggedIn } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import * as net from "/common/network.js";
 import "/ui/component/auth/LogoutButton.js";
-import "/ui/component/layout/DropdownMenu.js";
 
 async function getIncomingFriendRequestCount(userId) {
   if (!userId) return null;
@@ -63,24 +62,23 @@ export default class AccountQuickManager extends HTMLElement {
 
     this.innerHTML = `
       <div class="not-logged-in" hidden>
-        <a href="/">Bejelentkezés</a>
-        <a href="/">Regisztráció</a>
+        <a href="/">További funkciók eléréséhez jelentkezz be itt!</a>
       </div>
 
       <div class="logged-in" hidden>
-        <dropdown-menu>
-          <span class="trigger username">Logged out</span>
-
-          <div class="menu">
-            <a class="profile-link">Profil megtekintése</a>
-            <a href="/me">Fiók kezelése</a>
-            <a href="/me?active=incoming-friend-requests">
-              <span>Beérkező barátkérelmek</span>
-              <span class="incoming-friend-requests-count"></span>
-            </a>
-            <logout-button></logout-button>
-          </div>
-        </dropdown-menu>
+        <div class="quick-actions">
+          <span class="profile-label">Profilom</span>
+          <a class="profile-link quick-action-link">Profil megtekintése</a>
+          <a href="/me" class="quick-action-link">Fiók kezelése</a>
+          <a
+            href="/me?active=incoming-friend-requests"
+            class="quick-action-link incoming-friend-requests-link"
+          >
+            <span>Beérkező barátkérelmek</span>
+            <span class="incoming-friend-requests-count"></span>
+          </a>
+          <logout-button></logout-button>
+        </div>
       </div>
     `;
 
@@ -89,7 +87,7 @@ export default class AccountQuickManager extends HTMLElement {
     elements.ifLoggedIn = this.querySelector(".logged-in");
     elements.notLoggedIn = this.querySelector(".not-logged-in");
 
-    elements.username = this.querySelector(".username");
+    elements.profileLabel = this.querySelector(".profile-label");
     elements.profileLink = this.querySelector(".profile-link");
     elements.logoutButton = this.querySelector("logout-button");
     elements.friendRequestCount = this.querySelector(
@@ -122,7 +120,7 @@ export default class AccountQuickManager extends HTMLElement {
     if (loggedIn && window?.VoidVanguard?.user) {
       const user = window.VoidVanguard.user;
 
-      elements.username.textContent = user.username;
+      elements.profileLabel.textContent = `Profilom (${user.username})`;
       elements.profileLink.setAttribute("href", "/profile/" + user.id);
 
       const incomingCount = await getIncomingFriendRequestCount(user.id);
@@ -130,7 +128,7 @@ export default class AccountQuickManager extends HTMLElement {
         elements.friendRequestCount.textContent = `(${incomingCount})`;
       }
     } else {
-      elements.username.textContent = "Logged out";
+      elements.profileLabel.textContent = "Profilom";
       elements.profileLink.removeAttribute("href");
       elements.friendRequestCount.textContent = "";
     }

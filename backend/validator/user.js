@@ -49,18 +49,6 @@ export const POST = {
       },
     },
   },
-  gender: {
-    in: ["body"],
-    isIn: {
-      options: [["0", 0, "1", 1]],
-      errorMessage: "Invalid gender",
-    },
-    customSanitizer: {
-      options: (value) => {
-        return parseInt(value);
-      },
-    },
-  },
 };
 
 export const PATCH = {
@@ -123,19 +111,6 @@ export const PATCH = {
           throw new Error("Passwords do not match");
         }
         return true;
-      },
-    },
-  },
-  gender: {
-    in: ["body"],
-    optional: { options: { nullable: true } },
-    isIn: {
-      options: [["0", 0, "1", 1]],
-      errorMessage: "Invalid gender",
-    },
-    customSanitizer: {
-      options: (value) => {
-        return parseInt(value);
       },
     },
   },

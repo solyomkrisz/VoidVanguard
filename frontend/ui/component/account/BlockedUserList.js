@@ -13,6 +13,10 @@ export default class BlockedUserList extends LazyItemList {
     return this.getAttribute("user-id");
   }
 
+  get admin() {
+    return this.hasAttribute("admin");
+  }
+
   constructor() {
     super();
 
@@ -87,8 +91,11 @@ export default class BlockedUserList extends LazyItemList {
   connectedCallback() {
     super.connectedCallback?.();
 
-    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto")) {
-      this.setAttribute("user-id", window.VoidVanguard.user.id);
+    this.addEventListener("click", this.onClick);
+
+    const userId = window?.VoidVanguard?.user?.id;
+    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto") && userId) {
+      this.setAttribute("user-id", userId);
     }
 
     this.addEventListener("unblock-user", this.onUnblockUser);

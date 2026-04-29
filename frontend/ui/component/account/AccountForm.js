@@ -8,6 +8,23 @@ import { path } from "/common/common.js";
 import "/ui/component/validator/EmailInputValidator.js";
 import "/ui/component/validator/PasswordInputValidator.js";
 
+function requestToast(message, variant = "info", delay = 0, duration = 3000) {
+  if (!message) return;
+
+  document.dispatchEvent(
+    new CustomEvent("toast-request", {
+      detail: {
+        toast: {
+          message,
+          variant,
+          delay,
+          duration,
+        },
+      },
+    }),
+  );
+}
+
 const _innerHTML = `
 <form>
   <input-group class="input-group">
@@ -21,17 +38,6 @@ const _innerHTML = `
       <input type="email" name="email" placeholder="email@email.email" />
     </email-input-validator>
   </input-group>
-
-  <div>
-    <div>
-      <input type="radio" name="gender" value="0" />
-      <label>Férfi</label>
-    </div>
-    <div>
-      <input type="radio" name="gender" value="1" />
-      <label>Nő</label>
-    </div>
-  </div>
 
   <input-group class="input-group">
     <label>Jelszó</label>
@@ -49,7 +55,6 @@ const _innerHTML = `
 
   <button>Fiókadatok módosítása</button>
 </form>
-<div id="message"></div>
 `;
 
 const METHOD = {
@@ -66,8 +71,8 @@ export default class AccountForm extends BaseCustomElement {
     return this.hasAttribute("admin");
   }
 
-  constructor() {
-    super([path.join(dir, "global.css")]);
+  constructor(extraPaths = []) {
+    super([path.join(dir, "global.css"), path.join(dir, "accountForm.css"), ...extraPaths]);
 
     this._elements = {};
     this._built = false;
@@ -101,6 +106,14 @@ export default class AccountForm extends BaseCustomElement {
       if (!formData.get("passwordConfirm")) {
         formData.delete("passwordConfirm");
       }
+
+      // Allow password-only updates even if account fields are currently blank.
+      for (const key of ["username", "email"]) {
+        const value = formData.get(key);
+        if (typeof value === "string" && !value.trim()) {
+          formData.delete(key);
+        }
+      }
     }
 
     /** Needed to be compatible with <admin-module> */
@@ -131,15 +144,6 @@ export default class AccountForm extends BaseCustomElement {
 
   onResponse(response) {
     const { success, result, message } = response;
-    const { responseMessage } = this._elements;
-
-    if (responseMessage) {
-      responseMessage.textContent = "";
-    }
-
-    if (responseMessage) {
-      responseMessage.textContent = message;
-    }
 
     if (!success) {
       console.error(
@@ -150,6 +154,14 @@ export default class AccountForm extends BaseCustomElement {
     }
 
     console.log(response);
+
+    requestToast(
+      message ||
+        (this.action === "update"
+          ? "Fiókadatok sikeresen módosítva."
+          : "Fiók sikeresen létrehozva."),
+      "success",
+    );
 
     this.dispatchEvent(
       new CustomEvent(this.getEventName(), {
@@ -166,8 +178,12 @@ export default class AccountForm extends BaseCustomElement {
   }
 
   /** Needed to be compatible with <admin-module> */
-  onSignError() {
+  onSignError(detail) {
     console.error("Unable to send signed data.");
+    requestToast(
+      detail?.message || "Hiba: Nem sikerült elküldeni az adatokat.",
+      "error",
+    );
   }
 
   build() {
@@ -177,7 +193,6 @@ export default class AccountForm extends BaseCustomElement {
     form.addEventListener("submit", this.onSubmit);
 
     this._elements.form = form;
-    this._elements.responseMessage = this.queryShadowSelector("#message");
     this._elements.button = this.queryShadowSelector("button");
 
     this.addEventListener("restore", this.restoreFrom);
@@ -208,11 +223,6 @@ export default class AccountForm extends BaseCustomElement {
     for (const [name, value] of Object.entries(data)) {
       const field = form.elements.namedItem(name);
       if (!field) continue;
-
-      if (name === "gender") {
-        setFieldValue(field, String(value));
-        continue;
-      }
 
       setFieldValue(field, value);
     }

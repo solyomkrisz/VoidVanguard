@@ -28,6 +28,10 @@ router.get("/", (request, response) => {
 });
 
 // Profil oldal
+router.get("/profile", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/ui/html/profile.html"));
+});
+
 router.get("/profile/:id", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/ui/html/profile.html"));
 });

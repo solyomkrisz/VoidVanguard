@@ -3,13 +3,13 @@ import { isValidUUIDv4 } from "../common/common.js";
 export const GET = {
   targetId: {
     in: ["query"],
-  },
-  custom: {
-    options: (value) => {
-      if (!isValidUUIDv4(value)) {
-        throw new Error("Invalid target ID");
-      }
-      return true;
+    custom: {
+      options: (value) => {
+        if (!isValidUUIDv4(value)) {
+          throw new Error("Invalid target ID");
+        }
+        return true;
+      },
     },
   },
   page: {
