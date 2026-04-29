@@ -127,12 +127,24 @@ const toggleEntityIds = document.getElementById("toggleEntityIds");
 const toggleSpaceshipCircle = document.getElementById("toggleSpaceshipCircle");
 const toggleSpaceshipHitbox = document.getElementById("toggleSpaceshipHitbox");
 
-toggleNebula.addEventListener("change", (e) => { if (game) game.showNebula = e.target.checked; });
-toggleChunkDebug.addEventListener("change", (e) => { if (game) game.showChunkDebug = e.target.checked; });
-toggleGridCells.addEventListener("change", (e) => { if (game) game.showGridCells = e.target.checked; });
-toggleEntityIds.addEventListener("change", (e) => { if (game) game.showEntityIds = e.target.checked; });
-toggleSpaceshipCircle.addEventListener("change", (e) => { if (game) game.showSpaceshipCircle = e.target.checked; });
-toggleSpaceshipHitbox.addEventListener("change", (e) => { if (game) game.showSpaceshipHitbox = e.target.checked; });
+toggleNebula.addEventListener("change", (e) => {
+  if (game) game.showNebula = e.target.checked;
+});
+toggleChunkDebug.addEventListener("change", (e) => {
+  if (game) game.showChunkDebug = e.target.checked;
+});
+toggleGridCells.addEventListener("change", (e) => {
+  if (game) game.showGridCells = e.target.checked;
+});
+toggleEntityIds.addEventListener("change", (e) => {
+  if (game) game.showEntityIds = e.target.checked;
+});
+toggleSpaceshipCircle.addEventListener("change", (e) => {
+  if (game) game.showSpaceshipCircle = e.target.checked;
+});
+toggleSpaceshipHitbox.addEventListener("change", (e) => {
+  if (game) game.showSpaceshipHitbox = e.target.checked;
+});
 
 // --- Game menu ---
 function showGameMenu() {
@@ -141,11 +153,15 @@ function showGameMenu() {
   document.getElementById("gameMenu").classList.remove("hidden");
 }
 
-function startGame(savedState = null) {
+function startGame(save = null, saveType = null) {
   document.getElementById("gameMenu").classList.add("hidden");
   friendsBtn.style.display = "none";
 
-  game = Game.from(savedState);
+  game = Game.from(save);
+
+  if (saveType) {
+    game.saveType = saveType;
+  }
 
   game.showNebula = toggleNebula.checked;
   game.showChunkDebug = toggleChunkDebug.checked;
@@ -191,9 +207,13 @@ function applyAuthState() {
   return false;
 }
 
-document.getElementById("newGameBtn").addEventListener("click", () => startGame(null));
+document
+  .getElementById("newGameBtn")
+  .addEventListener("click", () => startGame(null));
 
-document.getElementById("gameMenuLogoutBtn").addEventListener("click", () => logout());
+document
+  .getElementById("gameMenuLogoutBtn")
+  .addEventListener("click", () => logout());
 document.getElementById("adminPanelBtn").addEventListener("click", () => {
   window.location.href = "/admin";
 });
@@ -215,11 +235,17 @@ document.getElementById("backBtn").addEventListener("click", () => {
   document.getElementById("gameMenuMain").classList.remove("hidden");
 });
 
-document.getElementById("gameMenu").addEventListener("save-load-request", (e) => {
-  const gameState = e?.detail?.gameState;
-  if (!gameState) return;
-  startGame(gameState);
-});
+document
+  .getElementById("gameMenu")
+  .addEventListener("save-load-request", (e) => {
+    const save = e?.detail?.save;
+    const saveType = e?.detail?.saveType;
+
+    console.log(save, saveType);
+    if (!save || !saveType) return;
+
+    startGame(save, saveType);
+  });
 
 // --- Auth / lifecycle events ---
 document.addEventListener("login", () => {
@@ -227,6 +253,7 @@ document.addEventListener("login", () => {
 });
 
 document.addEventListener("exit-game", () => {
+  console.log("exit-gameexit-gameexit-game");
   game = null;
   friendsBtn.style.display = "block";
   showGameMenu();
@@ -238,4 +265,3 @@ document.addEventListener("logout", () => {
 
 // --- Check auth state on initial load ---
 applyAuthState();
-

@@ -122,6 +122,11 @@ export default class ThrustVectorController extends BaseCustomElement {
     window.removeEventListener("pointercancel", this.onResetButtonPointerUp);
   }
 
+  destroy() {
+    this.disableListening();
+    this.remove();
+  }
+
   onPointerDown(e) {
     if (this.pointerId !== null) return;
 

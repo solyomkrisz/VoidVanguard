@@ -73,6 +73,11 @@ export default class EngineIgnitionController extends BaseCustomElement {
     window.removeEventListener("pointercancel", this.onPointerCancel);
   }
 
+  destroy() {
+    this.disableListening();
+    this.remove();
+  }
+
   onPointerDown(event) {
     const control = EngineIgnitionController.IGNITE;
 

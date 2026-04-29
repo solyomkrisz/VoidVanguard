@@ -96,8 +96,8 @@ export function setupGame(game, playerModel = Models.PLAYER) {
     );
     game.addController(thrustVectorController);
   } else {
-    const keyboard = new Keyboard(game);
-    game.keyboard = keyboard;
+    const keyboard = new Keyboard();
+
     keyboard.observeKey(Keyboard.KeyW);
     keyboard.observeKey(Keyboard.KeyS);
     keyboard.observeKey(Keyboard.KeyA);
@@ -106,7 +106,10 @@ export function setupGame(game, playerModel = Models.PLAYER) {
     keyboard.observeKey(Keyboard.LCtrl);
     keyboard.observeKey(Keyboard.LShift);
     keyboard.observeKey(Keyboard.KeyR);
-    keyboard.enableListening();
+
+    game.addController(keyboard);
+
+    keyboard.enableListening(); // addController calls Keyboard.setGame and so enableListening will see Keyboard.game and can proceed
   }
 
   //#region audio

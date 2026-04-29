@@ -54,6 +54,11 @@ export default class GameControllerContainer extends BaseCustomElement {
 
     this._built = true;
   }
+
+  destroy() {
+    this.disableListeners();
+    this.remove();
+  }
 }
 
 window.customElements.define(

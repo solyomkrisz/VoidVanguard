@@ -94,6 +94,11 @@ export default class EngineThrottleController extends BaseCustomElement {
     this.throttleDownBtn.removeEventListener("pointercancel", this.onThrottleDownBtnPointerUp);
   }
 
+  destroy() {
+    this.disableListening();
+    this.remove();
+  }
+
   // throttle up button handlers
   onThrottleUpBtnPointerDown(event) {
     const key = EngineThrottleController.THROTTLE_UP;

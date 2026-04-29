@@ -11,18 +11,22 @@ export default class Keyboard {
   static LShift = "ShiftLeft";
   static KeyR = "KeyR";
 
-  constructor(game) {
-    if (!(game instanceof Game)) {
-      throw new Error(
-        "KEYBOARD-constructor: game must be an instance of the Game class!",
-      );
-    }
-
-    this.game = game;
+  constructor() {
+    this.game = null;
     this.observed = new Set();
 
     this.keydownEventHandler = this.keydownEventHandler.bind(this);
     this.keyupEventHandler = this.keyupEventHandler.bind(this);
+  }
+
+  setGame(game) {
+    if (!(game instanceof Game)) {
+      throw new Error(
+        "KEYBOARD-setGame: The given argument is not a Game instance",
+      );
+    }
+
+    this.game = game;
   }
 
   observeKey(key) {
@@ -34,6 +38,8 @@ export default class Keyboard {
   }
 
   enableListening() {
+    if (!this.game) return;
+
     if (document.addEventListener) {
       document.addEventListener("keydown", this.keydownEventHandler);
       document.addEventListener("keyup", this.keyupEventHandler);
@@ -53,6 +59,10 @@ export default class Keyboard {
     }
   }
 
+  destroy() {
+    this.disableListening();
+  }
+
   keydownEventHandler(event) {
     const key = event.code;
 
@@ -61,10 +71,12 @@ export default class Keyboard {
     } else if (key === Keyboard.Escape && !event.repeat) {
       const pauseMenu = this.game?.UI?.pauseMenu;
 
+      console.log("isRunning: ", this.game.running);
       if (this.game.running) {
         this.game.stop();
       } else if (pauseMenu && !pauseMenu.hidden) {
         this.game.resume();
+        console.log("JÁTÉK FOLYTATVA");
       }
     }
   }

@@ -47,6 +47,14 @@ export default class PasswordResetForm extends HTMLElement {
       this._elements.form.reset?.();
       this._loading = false;
 
+      this._elements.form.addEventListener(
+        "input",
+        () => {
+          this._elements.message.textContent = "";
+        },
+        { once: true },
+      );
+
       return;
     }
 
@@ -78,17 +86,17 @@ export default class PasswordResetForm extends HTMLElement {
       <form>
         <input-group>
           <label>Új jelszó</label>
-          <password-input-validator>
+          <password-input-validator disable-on-invalid="#password-reset-form-submit-button">
             <input type="password" name="password" />
           </password-input-validator>
         </input-group>
         <input-group>
           <label>Jelszó megerősítése</label>
-          <password-input-validator>
+          <password-input-validator disable-on-invalid="#password-reset-form-submit-button">
             <input type="password" name="passwordConfirm" />
           </password-input-validator>
         </input-group>
-        <button>Jelszó beállítása</button>
+        <button id="password-reset-form-submit-button">Jelszó beállítása</button>
       </form>
       <div id="message"></div>
     `;

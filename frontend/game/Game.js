@@ -196,6 +196,8 @@ export default class Game extends WebGLCanvas {
   }
 
   destroy() {
+    this.stop();
+
     // from Canvas class
     {
       this.canvas.remove?.();
@@ -205,13 +207,11 @@ export default class Game extends WebGLCanvas {
     // own
     {
       for (const key of Object.keys(this.UI)) {
-        this.UI[key].remove?.();
+        this.UI[key].destroy?.();
       }
 
       for (const value of this.controllers.values()) {
-        if (value instanceof HTMLElement) {
-          value.remove?.();
-        }
+        value.destroy?.();
       }
 
       this.tooltip?.remove?.();
@@ -462,15 +462,19 @@ export default class Game extends WebGLCanvas {
   }
 
   resume() {
+    console.log("resume, running: ", this.running);
+    if (this.running) return;
+    this.running = true;
+
     this.tooltip.enable();
     this.UI.pauseMenu.hide();
 
     this.last = window.performance.now();
     this.frameId = window.requestAnimationFrame(this.update);
-    this.running = true;
   }
 
   update() {
+    console.log("Game.running: ", this.running);
     this.now = window.performance.now();
     this.vdt = this.now - this.last;
     this.last = this.now;
