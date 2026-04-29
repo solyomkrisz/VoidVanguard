@@ -5,25 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VoidVanguard</title>
     <script>if (localStorage.getItem('access_token')) document.documentElement.classList.add('has-token');</script>
-    <link rel="stylesheet" href="./index.css" />
+    <link rel="stylesheet" href="/ui/style/index.css" />
 
   </head>
   <body>
     <div id="authContainer">
       <canvas id="stars"></canvas>
-      <img src="./image/VoidVanguardTitlePixelart.png" alt="VoidVanguard" class="title-image" />
+      <img src="/image/VoidVanguardTitlePixelart.png" alt="VoidVanguard" class="title-image" />
       <div class="auth-forms">
         <form id="regForm">
           <h2>Regisztráció</h2>
           <label for="reg-username">Felhasználónév</label>
-          <input autocomplete="off" name="username" id="reg-username" type="text" required />
+          <username-input-validator disable-on-invalid="#register-button" validate-immediately>
+            <input autocomplete="off" name="username" id="reg-username" type="text" required />
+          </username-input-validator>
           <label for="reg-email">Email</label>
-          <input autocomplete="off" name="email" id="reg-email" type="email" required />
+          <email-input-validator disable-on-invalid="#register-button" validate-immediately>
+            <input autocomplete="off" name="email" id="reg-email" type="email" required />
+          </email-input-validator>
           <label for="reg-password">Jelszó</label>
-          <input autocomplete="off" name="password" id="reg-password" type="password" required />
+          <password-input-validator disable-on-invalid="#register-button" validate-immediately>
+            <input autocomplete="off" name="password" id="reg-password" type="password" required />
+          </password-input-validator>
           <label for="reg-passwordConfirm">Jelszó megerősítése</label>
-          <input autocomplete="off" name="passwordConfirm" id="reg-passwordConfirm" type="password" required />
-          <button type="submit">Regisztráció</button>
+          <password-input-validator disable-on-invalid="#register-button" validate-immediately>
+            <input autocomplete="off" name="passwordConfirm" id="reg-passwordConfirm" type="password" required />
+          </password-input-validator>
+          <button type="submit" id="register-button">Regisztráció</button>
           <div id="regFormMsg" class="form-message"></div>
           <a>Van már fiókod? Jelentkezz be itt!</a>
         </form>
@@ -37,13 +45,14 @@
           <button type="submit">Bejelentkezés</button>
           <div id="logFormMsg" class="form-message"></div>
           <a>Nincs fiókod? Regisztrálj!</a>
+          <a>Elfelejtettem a jelszavam!</a>
         </form>
       </div>
     </div>
 
     <div id="gameMenu" class="hidden">
       <canvas id="gameStars"></canvas>
-      <img src="./image/VoidVanguardTitlePixelart.png" alt="VoidVanguard" class="title-image" />
+      <img src="/image/VoidVanguardTitlePixelart.png" alt="VoidVanguard" class="title-image" />
       <div id="gameMenuPanel">
         <div id="gameMenuMain">
           <h2>Főmenü</h2>
@@ -61,11 +70,11 @@
     </div>
 
     <button id="settingsBtn">
-      <img src="./image/SettingsButton.png" alt="Settings" />
+      <img src="/image/SettingsButton.png" alt="Settings" />
     </button>
 
      <button id="friendsBtn">
-       <img src="./image/FriendsButton.png" alt="Friends" />
+       <img src="/image/FriendsButton.png" alt="Friends" />
      </button>
 
     <div id="settingsPanel">
@@ -79,7 +88,7 @@
 
     <toast-manager event-controlled></toast-manager>
 
-    <script type="module" src="./ui/initcomponents.js"></script>
+    <script type="module" src="/ui/initcomponents.js"></script>
     <script>
       const authCanvas = document.getElementById("stars");
       const authCtx = authCanvas.getContext("2d");
@@ -245,7 +254,10 @@
     </script>
     <script type="module" src="./App.js"></script>
     <script type="module">
-      import {onDOMContentLoaded} from "/common/common.js";
+      import "/ui/component/validator/UsernameInputValidator.js"
+      import "/ui/component/validator/PasswordInputValidator.js";
+      import "/ui/component/validator/EmailInputValidator.js";
+      import { onDOMContentLoaded } from "/common/common.js";
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
     </script>
   </body>

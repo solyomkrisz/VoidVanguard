@@ -11,6 +11,11 @@
   -webkit-font-smoothing: none;
 }
 
+form {
+  display: flex;
+  flex-direction: column;
+}
+
 .input-group {
   display: flex;
   flex-direction: column;

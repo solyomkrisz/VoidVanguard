@@ -5,6 +5,10 @@ export default class InputValidator extends HTMLElement {
     return this.getAttribute("disable-on-invalid");
   }
 
+  get validateImmediately() {
+    return this.hasAttribute("validate-immediately");
+  }
+
   get for() {
     return this.getAttribute("for");
   }
@@ -22,6 +26,10 @@ export default class InputValidator extends HTMLElement {
   connectedCallback() {
     this.classList.add("input-validator");
     this.build();
+
+    if (this.validateImmediately) {
+      this.onInput();
+    }
   }
 
   build() {

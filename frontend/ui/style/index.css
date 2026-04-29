@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Jersey';
-  src: url('./font/Jersey10-Regular.ttf') format('truetype');
+  font-family: "Jersey";
+  src: url("/font/Jersey10-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -18,7 +18,7 @@ body {
   margin: 0;
   background: #000000;
   overflow: hidden;
-  font-family: 'Jersey', 'Courier New', monospace;
+  font-family: "Jersey", "Courier New", monospace;
   font-weight: normal;
   font-smooth: never;
   -webkit-font-smoothing: none;
@@ -47,9 +47,21 @@ body::after {
   min-height: 100dvh;
   height: 100dvh;
   background:
-    radial-gradient(ellipse 65% 45% at 10% 90%, rgba(15, 35, 145, 0.45) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 40% at 90% 10%, rgba(75, 15, 145, 0.30) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(10, 20, 60, 0.50) 0%, transparent 80%),
+    radial-gradient(
+      ellipse 65% 45% at 10% 90%,
+      rgba(15, 35, 145, 0.45) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 55% 40% at 90% 10%,
+      rgba(75, 15, 145, 0.3) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 50% 50%,
+      rgba(10, 20, 60, 0.5) 0%,
+      transparent 80%
+    ),
     linear-gradient(160deg, #0d0d22 0%, #06060f 100%);
   display: flex;
   flex-direction: column;
@@ -72,8 +84,20 @@ body::after {
   inset: 0;
   pointer-events: none;
   background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(40, 80, 180, 0.09) 4px, rgba(40, 80, 180, 0.09) 8px),
-    repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(40, 80, 180, 0.09) 4px, rgba(40, 80, 180, 0.09) 8px);
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 4px,
+      rgba(40, 80, 180, 0.09) 4px,
+      rgba(40, 80, 180, 0.09) 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 4px,
+      rgba(40, 80, 180, 0.09) 4px,
+      rgba(40, 80, 180, 0.09) 8px
+    );
   z-index: 0;
 }
 
@@ -124,7 +148,9 @@ html.has-token #authContainer {
   image-rendering: -moz-crisp-edges;
   image-rendering: pixelated;
   -ms-interpolation-mode: nearest-neighbor;
-  animation: authItemRise 420ms ease-out 60ms both, titleFeny 10s ease-in-out 520ms infinite;
+  animation:
+    authItemRise 420ms ease-out 60ms both,
+    titleFeny 10s ease-in-out 520ms infinite;
   transition: margin-top 0.3s ease;
 }
 
@@ -169,7 +195,9 @@ form {
   max-height: 72.5vh;
   gap: 1vmin;
   overflow-y: auto;
-  animation: authItemRise 420ms ease-out 170ms both, formFeny 4.5s ease-in-out 620ms infinite;
+  animation:
+    authItemRise 420ms ease-out 170ms both,
+    formFeny 4.5s ease-in-out 620ms infinite;
 }
 
 form h2,
@@ -212,12 +240,13 @@ form label {
 }
 
 form input {
+  width: 100%; /**/
   padding: 1vmin 1.2vmin;
   background: #0d0d15;
   border: 0.15rem solid #2a5a9e;
   color: #ffffff;
   font-size: 2vmin;
-  font-family: 'Jersey', 'Courier New', monospace;
+  font-family: "Jersey", "Courier New", monospace;
   box-shadow:
     inset 3px 3px 0px rgba(0, 0, 0, 0.8),
     inset -2px -2px 0px rgba(74, 144, 226, 0.2);
@@ -249,7 +278,7 @@ form button {
     0 6px 0 0 #2a5a9e,
     0 6px 16px rgba(0, 0, 0, 0.7);
   font-size: 1.8vmin;
-  font-family: 'Jersey', 'Courier New', monospace;
+  font-family: "Jersey", "Courier New", monospace;
   cursor: pointer;
   transition: all 0.1s;
   text-transform: uppercase;
@@ -333,9 +362,16 @@ form a:hover {
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-0.25rem); }
-  75% { transform: translateX(0.25rem); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-0.25rem);
+  }
+  75% {
+    transform: translateX(0.25rem);
+  }
 }
 
 @keyframes authShellRise {
@@ -363,25 +399,30 @@ form a:hover {
 }
 
 @keyframes pressed {
-  0%, 100% { transform: translateY(0.25rem); }
-  50% { transform: translateY(0); }
+  0%,
+  100% {
+    transform: translateY(0.25rem);
+  }
+  50% {
+    transform: translateY(0);
+  }
 }
 
 @keyframes titleFeny {
-  0%, 100% {
-    filter:
-      drop-shadow(0 10px 15px rgba(150, 1, 187, 0.4))
+  0%,
+  100% {
+    filter: drop-shadow(0 10px 15px rgba(150, 1, 187, 0.4))
       drop-shadow(0 0 20px rgba(74, 144, 226, 0.15));
   }
   50% {
-    filter:
-      drop-shadow(0 4px 16px rgba(207, 45, 194, 0.85))
+    filter: drop-shadow(0 4px 16px rgba(207, 45, 194, 0.85))
       drop-shadow(0 0 40px rgba(74, 144, 226, 0.38));
   }
 }
 
 @keyframes formFeny {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow:
       inset 0 0 0 2px #0d0d15,
       inset 0 0 0 6px #2a2a3e,
@@ -397,7 +438,7 @@ form a:hover {
       0 0 0 2px #0d0d15,
       0 8px 0 0 #0d0d15,
       0 8px 20px rgba(0, 0, 0, 0.9),
-      0 0 45px rgba(74, 144, 226, 0.20);
+      0 0 45px rgba(74, 144, 226, 0.2);
   }
 }
 
@@ -463,7 +504,11 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
   gap: 0.35rem;
   width: min(74vw, 16.5rem);
   background:
-    linear-gradient(180deg, rgba(106, 184, 255, 0.14) 0%, rgba(106, 184, 255, 0) 24%),
+    linear-gradient(
+      180deg,
+      rgba(106, 184, 255, 0.14) 0%,
+      rgba(106, 184, 255, 0) 24%
+    ),
     linear-gradient(180deg, #202033 0%, #161624 100%);
   border: 4px solid #4a90e2;
   border-radius: 0.5vmin;
@@ -518,7 +563,10 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
   padding: 0.3rem 0.45rem;
   border: 2px solid transparent;
   background: rgba(13, 13, 21, 0.34);
-  transition: border-color 0.12s ease, background 0.12s ease, transform 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    transform 0.12s ease;
 }
 
 #settingsPanel label:hover {
@@ -536,19 +584,37 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
 }
 
 @keyframes buttonPressed {
-  0%   { transform: scale(1) translateY(0); }
-  50%  { transform: scale(1.125) translateY(-0.125vw); }
-  100% { transform: scale(1) translateY(0); }
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.125) translateY(-0.125vw);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
 }
 
 @keyframes panelOpen {
-  from { opacity: 0; transform: translateY(-0.4vw); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-0.4vw);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes panelClose {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-0.4vw); }
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.4vw);
+  }
 }
 
 #settingsBtn.pressed {
@@ -571,9 +637,21 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
   min-height: 100dvh;
   height: 100dvh;
   background:
-    radial-gradient(ellipse 65% 45% at 10% 90%, rgba(15, 35, 145, 0.45) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 40% at 90% 10%, rgba(75, 15, 145, 0.30) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(10, 20, 60, 0.50) 0%, transparent 80%),
+    radial-gradient(
+      ellipse 65% 45% at 10% 90%,
+      rgba(15, 35, 145, 0.45) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 55% 40% at 90% 10%,
+      rgba(75, 15, 145, 0.3) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 50% 50%,
+      rgba(10, 20, 60, 0.5) 0%,
+      transparent 80%
+    ),
     linear-gradient(160deg, #0d0d22 0%, #06060f 100%);
   display: flex;
   flex-direction: column;
@@ -595,8 +673,20 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
   inset: 0;
   pointer-events: none;
   background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(40, 80, 180, 0.09) 4px, rgba(40, 80, 180, 0.09) 8px),
-    repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(40, 80, 180, 0.09) 4px, rgba(40, 80, 180, 0.09) 8px);
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 4px,
+      rgba(40, 80, 180, 0.09) 4px,
+      rgba(40, 80, 180, 0.09) 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 4px,
+      rgba(40, 80, 180, 0.09) 4px,
+      rgba(40, 80, 180, 0.09) 8px
+    );
   z-index: 0;
 }
 
@@ -636,7 +726,11 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
   padding: 1.5vmin 4vmin 2.85vmin;
   border: 4px solid #4a90e2;
   background-image:
-    linear-gradient(180deg, rgba(106, 184, 255, 0.12) 0%, rgba(106, 184, 255, 0) 22%),
+    linear-gradient(
+      180deg,
+      rgba(106, 184, 255, 0.12) 0%,
+      rgba(106, 184, 255, 0) 22%
+    ),
     linear-gradient(180deg, #202033 0%, #161624 100%);
   box-shadow:
     inset 0 0 0 2px #0d0d15,
@@ -649,7 +743,9 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
   gap: 1vmin;
   overflow-y: auto;
   overflow-x: hidden;
-  animation: authItemRise 420ms ease-out 130ms both, formFeny 4.5s ease-in-out 620ms infinite;
+  animation:
+    authItemRise 420ms ease-out 130ms both,
+    formFeny 4.5s ease-in-out 620ms infinite;
 }
 
 #gameMenuPanel::before,
@@ -665,14 +761,13 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
 
 #gameMenuPanel::after {
   inset: 0;
-  background-image:
-    repeating-linear-gradient(
-      180deg,
-      rgba(106, 184, 255, 0.05) 0px,
-      rgba(106, 184, 255, 0.05) 1px,
-      transparent 1px,
-      transparent 4px
-    );
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(106, 184, 255, 0.05) 0px,
+    rgba(106, 184, 255, 0.05) 1px,
+    transparent 1px,
+    transparent 4px
+  );
   mix-blend-mode: screen;
   opacity: 0.45;
   z-index: 0;
@@ -732,7 +827,7 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
     0 6px 0 0 #2a5a9e,
     0 6px 16px rgba(0, 0, 0, 0.7);
   font-size: 1.8vmin;
-  font-family: 'Jersey', 'Courier New', monospace;
+  font-family: "Jersey", "Courier New", monospace;
   cursor: pointer;
   transition: all 0.1s;
   text-transform: uppercase;

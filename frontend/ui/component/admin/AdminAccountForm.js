@@ -45,7 +45,7 @@ const _innerHTML = `
 
 export default class AdminAccountForm extends AccountForm {
   constructor() {
-    super(["/protected/ui/style/adminForm.css"]);
+    super(["/ui/style/adminForm.css"]);
     this._innerHTML = _innerHTML;
   }
 }

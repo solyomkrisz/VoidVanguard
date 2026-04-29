@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoidVanguard - Adminisztrációs felület</title>
+    <link rel="stylesheet" href="/ui/style/global.css" />
+    <link rel="stylesheet" href="/ui/style/profile.css" />
+    <link rel="stylesheet" href="/ui/style/friend.css" />
+    <link rel="stylesheet" href="/ui/style/searchBar.css" />
+    <link rel="stylesheet" href="/ui/style/searchbox.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
+    <link rel="stylesheet" href="/ui/style/admin.css" />
+    <link rel="stylesheet" href="/ui/style/tokenList.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
+    <style>
+      full-profile {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        animation: adminShellRise 420ms ease-out both;
+      }
+
+      admin-loader {
+        width: 100%;
+        height: 100vh;
+        display: block;
+        animation: adminItemRise 420ms ease-out 120ms both;
+      }
+
+      iframe {
+        height: 100vh !important;
+        display: block;
+        animation: adminItemRise 360ms ease-out 220ms both;
+      }
+
+      @keyframes adminShellRise {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes adminItemRise {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <template id="admin-ui">
+      <div id="disguise-info"></div>
+
+      <div id="admin-wrapper">
+        <h1 id="admin-title">Adminisztrációs felület</h1>
+
+        <nav id="admin-nav">
+          <button id="backBtn" onclick="window.top.location.href = '/'">
+            &#8592; Vissza
+          </button>
+          <remove-disguise-button></remove-disguise-button>
+          <logout-button></logout-button>
+        </nav>
+
+        <div id="full-profile-container">
+          <div>
+            <span id="full-profile-target-create-text" hidden></span>
+            <button onclick="closeFullProfileContainer()">Bezár</button>
+          </div>
+          <admin-module>
+            <full-profile style="overflow-y: scroll" admin></full-profile>
+          </admin-module>
+        </div>
+
+        <div class="admin-panel admin-panel--search">
+          <h1>Felhasználó keresése</h1>
+          <search-bar class="admin-search">
+            <search-bar-result-list
+              controls="pagination"
+              page-size="6"
+            ></search-bar-result-list>
+          </search-bar>
+        </div>
+
+        <p id="disguise-required-message">
+          Először válassz ki egy felhasználót az "Álcázás mint" gombbal.
+        </p>
+
+        <admin-module class="disguise-gated">
+          <div class="admin-panel">
+            <h1>Fiók kezelése</h1>
+
+            <account-form-restorer user-id>
+              <admin-account-form
+                action="update"
+                admin
+                restore
+              ></admin-account-form>
+            </account-form-restorer>
+
+            <div class="friend-manager">
+              <div class="admin-panel admin-panel--incoming">
+                <h1>Beérkező barátkérelmek kezelése</h1>
+                <friend-list-full
+                  class="admin-user-list admin-user-list--incoming"
+                  controls="pagination"
+                  page-size="5"
+                  filter="status=pending&direction=incoming"
+                  user-id
+                  admin
+                  with-refresh-button
+                >
+                </friend-list-full>
+              </div>
+
+              <div class="admin-panel admin-panel--outgoing">
+                <h1>Kimenő barátkérelmek kezelése</h1>
+                <friend-list-full
+                  class="admin-user-list admin-user-list--outgoing"
+                  controls="pagination"
+                  page-size="5"
+                  filter="status=pending&direction=outgoing"
+                  user-id
+                  admin
+                  with-refresh-button
+                ></friend-list-full>
+              </div>
+            </div>
+
+            <div class="friend-manager">
+              <div class="admin-panel admin-panel--friends">
+                <h1>Barátok kezelése</h1>
+                <friend-list-full
+                  class="admin-user-list admin-user-list--friends"
+                  controls="pagination"
+                  page-size="5"
+                  user-id
+                  admin
+                  with-refresh-button
+                >
+                </friend-list-full>
+              </div>
+
+              <div class="admin-panel admin-panel--blocked">
+                <h1>Letiltott felhasználók kezelése</h1>
+                <blocked-user-list
+                  class="admin-user-list admin-user-list--blocked"
+                  controls="pagination"
+                  page-size="5"
+                  user-id
+                  admin
+                  with-refresh-button
+                ></blocked-user-list>
+              </div>
+            </div>
+
+            <div class="admin-panel admin-panel--sessions">
+              <h1>Aktív munkamenetek kezelése</h1>
+              <active-refresh-token-list
+                controls="pagination"
+                page-size="6"
+                user-id
+                with-refresh-button
+              ></active-refresh-token-list>
+            </div>
+          </div>
+        </admin-module>
+      </div>
+
+      <toast-manager event-controlled></toast-manager>
+    </template>
+
+    <script>
+      function onSearchboxItemClick(event) {
+        event.currentTarget.parentElement.hidden = true;
+
+        const userId = event.currentTarget?.querySelector(
+          "input[type='hidden']",
+        )?.value;
+
+        if (userId) {
+          const modules = document.querySelectorAll("admin-module");
+
+          for (const module of modules) {
+            if (module.getAttribute("target-user-id") !== userId) {
+              module.setAttribute("target-user-id", userId);
+            }
+          }
+        }
+      }
+
+      function closeFullProfileContainer() {
+        const container = document.querySelector("#full-profile-container");
+        if (!container) return;
+
+        const commentComposeForm = container.querySelector(
+          "full-profile comment-form form",
+        );
+        if (commentComposeForm) {
+          commentComposeForm.reset();
+          const commentInput = commentComposeForm.querySelector(
+            "textarea[name='content']",
+          );
+          if (commentInput) {
+            commentInput.value = "";
+          }
+        }
+
+        container.classList.remove("active");
+
+        const headerText = document.querySelector(
+          "#full-profile-target-create-text",
+        );
+        if (headerText) {
+          headerText.textContent = "";
+          headerText.hidden = true;
+        }
+      }
+    </script>
+
+    <script type="module">
+      import Searchbox from "/ui/js/Searchbox.js";
+      import {
+        autologin,
+        onDOMContentLoaded,
+        isLoggedIn,
+      } from "/common/common.js";
+      import { on, off } from "/common/eventhub.js";
+      import "/ui/component/feedback/ToastManager.js";
+      import "/ui/component/profile/FullProfile.js";
+      import "/ui/component/auth/LogoutButton.js";
+      import "/ui/component/account/BlockedUserList.js";
+      import "/ui/component/profile/ProfileForm.js";
+      import "/ui/component/profile/ProfileFormRestorer.js";
+      import "/ui/component/profile/FriendListFull.js";
+      import "/ui/component/form/SearchBar.js";
+      import "/ui/component/account/ActiveRefreshTokenList.js";
+      import "/ui/component/feedback/ToastManager.js";
+      import "/ui/component/admin/SearchBarResultList.js";
+      import "/ui/component/admin/AdminAccountForm.js";
+      import "/ui/component/account/AccountFormRestorer.js";
+      import "/ui/component/admin/AdminModule.js";
+      import "/ui/component/admin/RemoveDisguiseButton.js";
+
+      (async () => {
+        const ok = await autologin();
+
+        // if not logged in and not admin
+        if (!ok || window?.VoidVanguard?.user?.role < 1) {
+          window.top.location.href = "/";
+          return;
+        }
+
+        const template = document.querySelector("#admin-ui");
+        const fragment = template.content.cloneNode(true);
+
+        document.body.appendChild(fragment);
+      })();
+
+      on("logout", function () {
+        window.top.location.href = "/";
+      });
+
+      // if (document.readyState === "loading") {
+      //   document.addEventListener("DOMContentLoaded", () =>
+      //     onDOMContentLoaded({ requireAuth: true }),
+      //   );
+      // } else {
+      //   onDOMContentLoaded({ requireAuth: true });
+      // }
+
+      // Searchbox(
+      //   ".searchbox",
+      //   "/api/profiles?search=",
+      //   (response) => response.result.profiles,
+      // );
+    </script>
+  </body>
+</html>

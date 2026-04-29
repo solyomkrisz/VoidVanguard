@@ -629,6 +629,19 @@ search-bar-result-list .item-container > search-bar-result-item > img {
 search-bar-result-list
   .item-container
   > search-bar-result-item
+  > img.no-profile-avatar {
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(160, 172, 194, 0.16),
+      transparent 45%
+    ),
+    linear-gradient(180deg, #434956 0%, #2e3440 100%);
+}
+
+search-bar-result-list
+  .item-container
+  > search-bar-result-item
   > div:nth-child(2) {
   min-width: 0;
 }

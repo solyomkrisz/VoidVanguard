@@ -43,7 +43,8 @@ friend-list-item img {
 }
 
 .friend-avatar-shell.no-profile-avatar,
-.friend-preview-avatar-shell.no-profile-avatar {
+.friend-preview-avatar-shell.no-profile-avatar,
+.friend-search-avatar.no-profile-avatar {
   background:
     radial-gradient(
       circle at 50% 30%,
@@ -55,7 +56,8 @@ friend-list-item img {
 
 .friend-avatar-shell img.no-profile-avatar,
 .friend-preview-avatar.no-profile-avatar,
-.friend-preview-avatar-shell img.no-profile-avatar {
+.friend-preview-avatar-shell img.no-profile-avatar,
+.friend-search-avatar.no-profile-avatar {
   opacity: 0;
 }
 

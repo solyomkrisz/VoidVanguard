@@ -11,87 +11,95 @@
     <title>Felhasználó kezelése</title>
   </head>
   <body>
-    <button id="backBtn">&#8592; Vissza</button>
-    <h1>Fiókkezelő központ</h1>
+    <template id="me-ui">
+      <back-button></back-button>
+      <h1>Fiókkezelő központ</h1>
 
-    <view-switcher layout="sidebar" initial="account-manager" no-cache>
-      <template id="profile-manager" data-name="Profil szerkesztése">
-        <h1>Atiranyitas...</h1>
-      </template>
+      <view-switcher layout="sidebar" initial="account-manager" no-cache>
+        <template id="profile-manager" data-name="Profil szerkesztése">
+          <h1>Atiranyitas...</h1>
+        </template>
 
-      <template id="account-manager" data-name="Fiók szerkesztése">
-        <h1>Fiók szerkesztése</h1>
-        <p class="account-edit-note">
-          Az üresen hagyott mezők nem kerülnek módosításra!
-        </p>
-        <account-form-restorer user-id auto>
-          <account-form action="update" restore with-validator></account-form>
-        </account-form-restorer>
-        <account-delete-button></account-delete-button>
-      </template>
+        <template id="account-manager" data-name="Fiók szerkesztése">
+          <h1>Fiók szerkesztése</h1>
+          <p class="account-edit-note">
+            Az üresen hagyott mezők nem kerülnek módosításra!
+          </p>
+          <account-form-restorer user-id auto>
+            <account-form action="update" restore with-validator></account-form>
+          </account-form-restorer>
+          <account-delete-button></account-delete-button>
+        </template>
 
-      <template id="session-control" data-name="Aktív munkamenetek">
-        <h1>Aktív munkamenetek kezelése</h1>
-        <destroy-all-sessions-button></destroy-all-sessions-button>
-        <active-refresh-token-list
-          src="/api/tokens/active"
-          controls="pagination"
-          with-refresh-button
-        ></active-refresh-token-list>
-      </template>
+        <template id="session-control" data-name="Aktív munkamenetek">
+          <h1>Aktív munkamenetek kezelése</h1>
+          <destroy-all-sessions-button></destroy-all-sessions-button>
+          <active-refresh-token-list
+            src="/api/tokens/active"
+            controls="pagination"
+            with-refresh-button
+          ></active-refresh-token-list>
+        </template>
 
-      <template id="accepted-friend-requests" data-name="Barátok">
-        <h1>Barátok</h1>
-        <friend-list-full controls="scroll" page-size="10" user-id auto>
-        </friend-list-full>
-      </template>
+        <template id="accepted-friend-requests" data-name="Barátok">
+          <h1>Barátok</h1>
+          <friend-list-full controls="scroll" page-size="10" user-id auto>
+          </friend-list-full>
+        </template>
 
-      <template id="add-friend" data-name="Barát hozzáadása">
-        <h1>Barát hozzáadása</h1>
-        <input
-          id="friendSearchInput"
-          type="text"
-          placeholder="Felhasználónév keresése..."
-          autocomplete="off"
-        />
-        <div id="friendSearchResults"></div>
-      </template>
+        <template id="add-friend" data-name="Barát hozzáadása">
+          <h1>Barát hozzáadása</h1>
+          <input
+            id="friendSearchInput"
+            type="text"
+            placeholder="Felhasználónév keresése..."
+            autocomplete="off"
+          />
+          <div id="friendSearchResults"></div>
+        </template>
 
-      <template id="incoming-friend-requests" data-name="Bejövő barátkérelmek">
-        <h1>Bejövő barátkérelmek</h1>
-        <friend-list-full
-          controls="scroll"
-          page-size="10"
-          filter="status=pending&direction=incoming"
-          user-id
-          auto
+        <template
+          id="incoming-friend-requests"
+          data-name="Bejövő barátkérelmek"
         >
-        </friend-list-full>
-      </template>
+          <h1>Bejövő barátkérelmek</h1>
+          <friend-list-full
+            controls="scroll"
+            page-size="10"
+            filter="status=pending&direction=incoming"
+            user-id
+            auto
+          >
+          </friend-list-full>
+        </template>
 
-      <template id="outgoing-friend-requests" data-name="Kimenő barátkérelmek">
-        <h1>Kimenő barátkérelmek</h1>
-        <friend-list-full
-          controls="scroll"
-          page-size="10"
-          filter="status=pending&direction=outgoing"
-          user-id
-          auto
-        ></friend-list-full>
-      </template>
+        <template
+          id="outgoing-friend-requests"
+          data-name="Kimenő barátkérelmek"
+        >
+          <h1>Kimenő barátkérelmek</h1>
+          <friend-list-full
+            controls="scroll"
+            page-size="10"
+            filter="status=pending&direction=outgoing"
+            user-id
+            auto
+          ></friend-list-full>
+        </template>
 
-      <template id="blocked-users" data-name="Letiltott felhasználók">
-        <h1>Letiltott felhasználók</h1>
-        <blocked-user-list
-          controls="scroll"
-          page-size="10"
-          user-id
-          auto
-        ></blocked-user-list>
-      </template>
-    </view-switcher>
+        <template id="blocked-users" data-name="Letiltott felhasználók">
+          <h1>Letiltott felhasználók</h1>
+          <blocked-user-list
+            controls="scroll"
+            page-size="10"
+            user-id
+            auto
+          ></blocked-user-list>
+        </template>
+      </view-switcher>
 
-    <toast-manager event-controlled></toast-manager>
+      <toast-manager event-controlled></toast-manager>
+    </template>
 
     <script type="module">
       import "/ui/component/layout/ViewSwitcher.js";
@@ -105,8 +113,38 @@
       import "/ui/component/feedback/ToastManager.js";
       import "/ui/component/account/ActiveRefreshTokenList.js";
       import "/ui/component/auth/DestroyAllSessionsButton.js";
-      import { onDOMContentLoaded } from "/common/common.js";
+      import "/ui/component/button/BackButton.js";
+      import { onDOMContentLoaded, autologin } from "/common/common.js";
       import { on, off } from "/common/eventhub.js";
+
+      (async () => {
+        const ok = await autologin();
+
+        // if not logged in and not admin
+        if (!ok) {
+          window.top.location.href = "/";
+          return;
+        }
+
+        const template = document.querySelector("#me-ui");
+        const fragment = template.content.cloneNode(true);
+
+        document.body.appendChild(fragment);
+      })().then(() => {
+        const viewSwitcher = document.querySelector("view-switcher");
+        const _setActive = viewSwitcher?.setActive?.bind(viewSwitcher);
+
+        if (_setActive) {
+          viewSwitcher.setActive = (id) => {
+            if (id === "profile-manager") {
+              redirectToOwnProfile();
+              return;
+            }
+
+            _setActive(id);
+          };
+        }
+      });
 
       function getCurrentUserId(loginEvent = null) {
         return (
@@ -132,10 +170,6 @@
         await bootstrapUserContext();
       });
 
-      window.addEventListener("pageshow", async () => {
-        await bootstrapUserContext();
-      });
-
       on("login", (e) => {
         syncUserScopedComponents(e);
       });
@@ -144,12 +178,8 @@
         window.top.location.href = "/";
       });
 
-      document.getElementById("backBtn").addEventListener("click", () => {
-        window.top.location.href = "/";
-      });
-
       async function redirectToOwnProfile() {
-        await onDOMContentLoaded({ requireAuth: true });
+        // await onDOMContentLoaded({ requireAuth: true }); // mert a .then-ben van az await autologin után
 
         const userId = getCurrentUserId();
         if (!userId) {
@@ -231,6 +261,13 @@
         img.src = user.avatar || "/image/defaultPfp.png";
         img.alt = `${user.username} profilképe`;
         img.draggable = false;
+        const span = document.createElement("span");
+        span.classList.add("friend-avatar-shell");
+        if (!user.avatar) {
+          img.classList.add("no-profile-avatar");
+          span.classList.add("no-profile-avatar");
+        }
+        span.appendChild(img);
 
         const nameContainer = document.createElement("div");
         nameContainer.classList = "friend-search-meta-names";
@@ -251,7 +288,7 @@
 
         nameContainer.append(name);
 
-        meta.appendChild(img);
+        meta.appendChild(span);
         meta.appendChild(nameContainer);
 
         const btn = document.createElement("friendship-action-button");

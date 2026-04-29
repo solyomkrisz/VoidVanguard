@@ -16,6 +16,15 @@ export const POST = {
       },
       errorMessage: "Username must be 3-20 characters long",
     },
+    trim: true,
+    notEmpty: {
+      errorMessage: "Username cannot be empty or just spaces",
+    },
+    matches: {
+      options: /^[a-zA-Z0-9_]+$/,
+      errorMessage:
+        "Username must be one word and contain only letters, numbers, or underscores",
+    },
   },
   email: {
     in: ["body"],
@@ -54,13 +63,19 @@ export const POST = {
 export const PATCH = {
   username: {
     in: ["body"],
-    optional: { options: { nullable: true } },
+    customSanitizer: {
+      options: (value) => (value === "" ? undefined : value),
+    },
+    optional: true,
+    trim: true,
     isLength: {
-      options: {
-        min: 3,
-        max: 20,
-      },
+      options: { min: 3, max: 20 },
       errorMessage: "Username must be 3-20 characters long",
+    },
+    matches: {
+      options: /^[a-zA-Z0-9_]+$/,
+      errorMessage:
+        "Username must be one word and contain only letters, numbers, or underscores",
     },
   },
   email: {

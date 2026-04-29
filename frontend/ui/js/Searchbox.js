@@ -8,18 +8,20 @@ function listResults(results, container, template, { append = false } = {}) {
   }
 
   for (const result of results) {
+    console.log(result);
     const fragment = template.content.cloneNode(true);
 
     Array.from(fragment.querySelectorAll("[data-bind]")).forEach((e) => {
       const bindTarget = e.getAttribute("bind-target") || "textContent";
-      e[bindTarget] = result[e.dataset.bind] ?? e.dataset.default ?? '';
+      e[bindTarget] = result[e.dataset.bind] ?? e.dataset.default ?? "";
     });
 
     const avatarShell = fragment.querySelector(".searchbox-avatar-shell");
     const avatarImage = avatarShell?.querySelector("img");
 
     if (avatarShell && avatarImage) {
-      const hasProfile = result?.has_profile !== false && result?.has_profile !== 0;
+      const hasProfile =
+        result?.has_profile !== false && result?.has_profile !== 0;
 
       avatarShell.classList.toggle("no-profile-avatar", !hasProfile);
       avatarImage.classList.toggle("no-profile-avatar", !hasProfile);
@@ -119,7 +121,8 @@ export default function Searchbox(target, url, getIterable, options = {}) {
     if (loading || !hasNext) return;
 
     const threshold = 48;
-    const nearBottom = div.scrollTop + div.clientHeight >= div.scrollHeight - threshold;
+    const nearBottom =
+      div.scrollTop + div.clientHeight >= div.scrollHeight - threshold;
     if (nearBottom) {
       fetchPage({ reset: false });
     }

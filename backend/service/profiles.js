@@ -146,6 +146,7 @@ export async function searchFor({ query, page = 1, limit = 20 }) {
   const total = await Users.countForSearch(query);
 
   const profiles = rows.map((row) => ({
+    username: row.username,
     user_id: row.id,
     avatar: row.has_profile ? row.avatar || "/image/defaultPfp.png" : "",
     display_name: row.display_name || row.username,

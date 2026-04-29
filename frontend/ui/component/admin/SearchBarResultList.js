@@ -1,5 +1,5 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
-import "/protected/ui/component/data/SearchBarResultItem.js";
+import "/ui/component/admin/SearchBarResultItem.js";
 
 class SearchBarResultList extends LazyItemList {
   static get observedAttributes() {

@@ -345,6 +345,8 @@ export default class SearchBarResultItem extends HTMLElement {
 
     if (this.data.avatar) {
       img.src = this.data.avatar;
+    } else {
+      img.classList.add("no-profile-avatar");
     }
 
     username.textContent = `@${this.data.username}`;

@@ -46,7 +46,7 @@ export default class SearchBar extends HTMLElement {
         "src",
         `/api/users?search=${encodeURIComponent(value)}`,
       );
-    }, 1000);
+    }, 150);
 
     input.addEventListener("input", handleInput);
 

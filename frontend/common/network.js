@@ -17,7 +17,8 @@ function shouldSuppressErrorToast(url, options = {}, isProtected = true) {
 
   const onAuthPage = window.location.pathname === "/";
   const isAuthAction =
-    method === "POST" && (pathname === "/api/sessions" || pathname === "/api/users");
+    method === "POST" &&
+    (pathname === "/api/sessions" || pathname === "/api/users");
 
   // Autologin/session probe calls intentionally send no credentials.
   // If they fail for guests, avoid noisy validation toasts.
@@ -160,15 +161,7 @@ export async function send(
 
   const promise = (async () => {
     if (isProtected) {
-      const refreshResult = await refreshAccessToken();
-
-      if (!refreshResult?.success) {
-        return {
-          success: false,
-          result: null,
-          message: "Unauthorized",
-        };
-      }
+      await refreshAccessToken();
 
       const token = localStorage.getItem("access_token");
 
@@ -220,7 +213,12 @@ export async function send(
     }
 
     if (!data?.success) {
-      requestErrorToast(data?.message || "Unexpected request failure", url, requestOptions, isProtected);
+      requestErrorToast(
+        data?.message || "Unexpected request failure",
+        url,
+        requestOptions,
+        isProtected,
+      );
     }
 
     return data;

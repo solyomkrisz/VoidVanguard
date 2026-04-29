@@ -37,11 +37,8 @@ router.get("/profile/:id", (request, response) => {
 });
 
 // Én oldal
-// router.get("/me", (request, response) => {
-//   response.sendFile(path.join(__dirname, "../frontend/ui/html/me.html"));
-// });
 router.get("/me", (request, response) => {
-  response.sendFile(path.join(__dirname, "../frontend/ui/html/me-loader.html"));
+  response.sendFile(path.join(__dirname, "../frontend/ui/html/me.html"));
 });
 
 // Functional test oldal
@@ -80,35 +77,8 @@ router.get("/leaderboard", (request, response) => {
   );
 });
 
-// Refresh oldal
-// router.get("/refresh", (request, response) => {
-//   response.sendFile(path.join(__dirname, "../frontend/ui/html/refresh.html"));
-// });
-
-// Admin oldal
-// router.get(
-//   "/admin",
-//   authenticate({
-//     onValidAccessToken: (request, _1, next) => next(),
-//     onInvalidAccessToken: (request, response, _1) => {
-//       response.redirect("/refresh?original=/admin");
-//     },
-//   }),
-//   authorize(Role.ADMIN, {
-//     onMatch: (_, _1, next) => next(),
-//     onMismatch: (_, response, _1) => {
-//       response.sendFile(path.join(__dirname, "../frontend/ui/html/error.html"));
-//     },
-//   }),
-//   (request, response) => {
-//     response.sendFile(path.join(__dirname, "../protected/ui/html/admin.html"));
-//   },
-// );
-
 router.get("/admin", (request, response) => {
-  response.sendFile(
-    path.join(__dirname, "../frontend/ui/html/admin-loader.html"),
-  );
+  response.sendFile(path.join(__dirname, "../frontend/ui/html/admin.html"));
 });
 
 // Teszt oldal
@@ -120,23 +90,6 @@ app.use("/", router);
 app.use("/api", endpoints);
 
 app.use(express.static(path.join(__dirname, "../frontend"))); //?frontend mappa tartalmának betöltése az oldal működéséhez
-
-app.use(
-  "/protected",
-  authenticate({
-    onValidAccessToken: (_, _1, next) => next(),
-    onInvalidAccessToken: (_, response, _1) => {
-      response.redirect("/");
-    },
-  }),
-  authorize(Role.ADMIN, {
-    onMatch: (_, _1, next) => next(),
-    onMismatch: (_, response, _1) => {
-      response.sendFile(path.join(__dirname, "../frontend/ui/html/error.html"));
-    },
-  }),
-  express.static(path.join(__dirname, "../protected")),
-);
 
 app.listen(port, ip, () => {
   console.log(`Szerver elérhetősége: http://${ip}:${port}`);

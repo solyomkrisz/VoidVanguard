@@ -24,12 +24,12 @@ export async function login(request, response) {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    response.cookie("access_token", accessToken, {
-      httpOnly: true,
-      sameSite: "Strict",
-      path: "/",
-      maxAge: accessTokenLifetimeMin * 60 * 1000,
-    });
+    // response.cookie("access_token", accessToken, {
+    //   httpOnly: true,
+    //   sameSite: "Strict",
+    //   path: "/",
+    //   maxAge: accessTokenLifetimeMin * 60 * 1000,
+    // });
 
     console.log("Refresh és access token cookie-k beállítva...");
 

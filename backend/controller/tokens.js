@@ -18,12 +18,12 @@ export async function refresh(request, response) {
     const accessToken = await service.refresh(token);
 
     /** */
-    response.cookie("access_token", accessToken, {
-      httpOnly: true,
-      sameSite: "Strict",
-      path: "/",
-      maxAge: accessTokenLifetimeMin * 60 * 1000,
-    });
+    // response.cookie("access_token", accessToken, {
+    //   httpOnly: true,
+    //   sameSite: "Strict",
+    //   path: "/",
+    //   maxAge: accessTokenLifetimeMin * 60 * 1000,
+    // });
     /** */
 
     response
