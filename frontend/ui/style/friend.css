@@ -45,7 +45,11 @@ friend-list-item img {
 .friend-avatar-shell.no-profile-avatar,
 .friend-preview-avatar-shell.no-profile-avatar {
   background:
-    radial-gradient(circle at 50% 30%, rgba(160, 172, 194, 0.16), transparent 45%),
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(160, 172, 194, 0.16),
+      transparent 45%
+    ),
     linear-gradient(180deg, #434956 0%, #2e3440 100%);
 }
 
@@ -98,9 +102,19 @@ friend-list-item > a {
   flex: 1;
 }
 
+.friend-search-meta-names {
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-search-meta-names:has(.friend-search-meta-display-name)
+  .friend-search-meta-user-name {
+  color: #9fd7ff;
+}
+
 .friend-search-avatar {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   object-fit: cover;
   border: 1px solid #2a5a9e;
   background: #0d0d15;
@@ -167,7 +181,11 @@ friendship-action-button button {
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  transition: background 0.1s, color 0.1s, border-color 0.1s, transform 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s,
+    border-color 0.1s,
+    transform 0.1s;
 }
 
 friend-list-item button:hover:not(:disabled),

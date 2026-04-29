@@ -232,15 +232,27 @@
         img.alt = `${user.username} profilképe`;
         img.draggable = false;
 
-        const name = document.createElement("span");
-        name.textContent = user.username;
+        const nameContainer = document.createElement("div");
+        nameContainer.classList = "friend-search-meta-names";
 
-        const dname = document.createElement("span");
-        dname.textContent = user.display_name ?? "";
+        if (user.has_profile) {
+          const dname = document.createElement("span");
+
+          dname.classList = "friend-search-meta-display-name";
+          dname.textContent = user.display_name ?? "";
+
+          nameContainer.appendChild(dname);
+        }
+
+        const name = document.createElement("span");
+
+        name.classList = "friend-search-meta-user-name";
+        name.textContent = (user.has_profile ? "@" : "") + user.username;
+
+        nameContainer.append(name);
 
         meta.appendChild(img);
-        meta.appendChild(name);
-        meta.appendChild(dname);
+        meta.appendChild(nameContainer);
 
         const btn = document.createElement("friendship-action-button");
         btn.setAttribute("user-id", user.id);
