@@ -1,5 +1,6 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import "/ui/component/admin/UserBanListItem.js";
+import { el } from "/ui/UI.js";
 
 export default class UserBanList extends LazyItemList {
   static get observedAttributes() {
@@ -8,6 +9,27 @@ export default class UserBanList extends LazyItemList {
 
   constructor() {
     super();
+  }
+
+  buildContainer() {
+    const thead = el("thead", {}, [
+      el("tr", {}, [
+        el("th", {}, ["Létrehozva"]),
+        el("th", {}, ["Lejár"]),
+        el("th", {}, ["Indok"]),
+        el("th", {}, ["Visszavonva"]),
+        el("th", {}, ["Létrehozó"]),
+        el("th", {}, ["Visszavonó"]),
+      ]),
+    ]);
+
+    const tbody = el("tbody");
+
+    const table = el("table", {}, [thead, tbody]);
+
+    this._container = tbody;
+
+    this.appendChild(table);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -34,9 +56,44 @@ export default class UserBanList extends LazyItemList {
   }
 
   renderItem(item) {
-    const el = document.createElement("user-ban-list-item");
-    el.data = item;
-    return el;
+    const tr = el("tr");
+
+    const createdAtTd = el("td", {}, [item.created_at]);
+    const expiresAtTd = el("td", {}, [item.expires_at ?? "-"]);
+    const reasonTd = el("td", {}, [item.reason ?? "-"]);
+    const revokedAtTd = el("td", {}, [item.revoked_at ?? "-"]);
+    const createdByTd = el("td", {}, [item.created_by_name ?? "-"]);
+    const revokedByTd = el("td", {}, [item.revoked_by_name ?? "-"]);
+
+    tr.append(
+      createdAtTd,
+      expiresAtTd,
+      reasonTd,
+      revokedAtTd,
+      createdByTd,
+      revokedByTd,
+    );
+
+    return tr;
+  }
+
+  renderContent(items, response) {
+    if (!Array.isArray(items)) return;
+
+    if (this._page === 1 && items.length === 0) {
+      this._container.textContent = "";
+
+      const tr = el("tr", {}, [
+        el("td", { class: "ban-list-empty", colspan: "6" }, [
+          "Nincsenek megjeleníthető kitiltások.",
+        ]),
+      ]);
+
+      this._container.appendChild(tr);
+      return;
+    }
+
+    super.renderContent(items, response);
   }
 
   extractItems(response) {

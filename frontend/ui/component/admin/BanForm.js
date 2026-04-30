@@ -2,6 +2,7 @@
 import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
+import AppModal from "/ui/component/feedback/AppModal.js";
 
 export default class BanForm extends HTMLElement {
   static get observedAttributes() {
@@ -15,6 +16,7 @@ export default class BanForm extends HTMLElement {
   constructor() {
     super();
 
+    this._modal = el("app-modal");
     this._pending = false;
     this._status = null;
     this._elements = {};
@@ -58,6 +60,18 @@ export default class BanForm extends HTMLElement {
     if (this._pending || !this.userId) return;
     this._pending = true;
 
+    const result = await this._modal.open({
+      title: "Kitiltás visszavonása",
+      message: "Biztosan vissza szeretnéd vonni ezen felhasználó kitiltását?",
+      confirmButtonText: "Igen",
+      cancelButtonText: "Nem",
+    });
+
+    if (!result) {
+      this._pending = false;
+      return;
+    }
+
     const formData = new FormData();
     formData.set("userId", this.userId);
 
@@ -84,6 +98,18 @@ export default class BanForm extends HTMLElement {
 
     if (this._pending || !this.userId) return;
     this._pending = true;
+
+    const result = await this._modal.open({
+      title: "Kitiltás",
+      message: "Biztos ki szeretnéd tiltani ezt a felhasználót?",
+      confirmButtonText: "Igen",
+      cancelButtonText: "Nem",
+    });
+
+    if (!result) {
+      this._pending = false;
+      return;
+    }
 
     const formData = new FormData(this._elements.banForm);
     formData.set("userId", this.userId);

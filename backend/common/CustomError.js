@@ -243,6 +243,24 @@ export const UNABLE_TO_END_SESSION = new CustomError({
   },
 });
 
+export const CANNOT_BAN_YOURSELF = new CustomError({
+  statusCode: 400,
+  definition: {
+    name: "CannotBanYourselfError",
+    code: "ER_CANNOT_BAN_YOURSELF",
+    message: "Cannot ban yourself",
+  },
+});
+
+export const BAN_HIGHER_ROLE_ERROR = new CustomError({
+  statusCode: 400,
+  definition: {
+    name: "BanHigherRoleError",
+    code: "ER_BAN_HIGHER_ROLE",
+    message: "You cannot ban someone with the same or higher role as yourself",
+  },
+});
+
 export function isCustomError(error) {
   return error instanceof CustomError;
 }

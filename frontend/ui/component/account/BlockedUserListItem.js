@@ -64,7 +64,17 @@ export default class BlockedUserListItem extends HTMLElement {
   build() {
     if (this._built) return;
 
-    this._elements.name = this.appendChild(el("div"));
+    this._elements.avatar = el("img", { class: "blocked-user-avatar" });
+    this._elements.avatarShell = el("span", { class: "blocked-user-avatar" }, [
+      this._elements.avatar,
+    ]);
+    this._elements.name = el("div", { class: "blocked-user-name" });
+    this._elements.meta = this.appendChild(
+      el("div", { class: "blocked-user-meta" }, [
+        this._elements.avatarShell,
+        this._elements.name,
+      ]),
+    );
     this._elements.unblockButton = this.appendChild(
       el(
         "button",
@@ -80,7 +90,24 @@ export default class BlockedUserListItem extends HTMLElement {
 
   update() {
     if (!this._built) return;
+
+    const hasProfile = this.data?.has_profile !== 0;
+
     this._elements.name.textContent = this.data?.name;
+
+    this.data?.avatar && (this._elements.avatar.src = this.data?.avatar);
+    this._elements.avatar.classList.toggle(
+      "no-profile-avatar",
+      !this.data?.avatar,
+    );
+    this._elements.avatarShell.classList.toggle(
+      "no-profile-avatar",
+      !this.data?.avatar,
+    );
+
+    this._elements.avatar
+      .closest(".friend-avatar-shell")
+      ?.classList.toggle("no-profile-avatar", !hasProfile);
   }
 }
 

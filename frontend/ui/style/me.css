@@ -749,3 +749,20 @@ account-delete-button > button:disabled {
     0 0 0 2px #0d0d15,
     0 2px 0 0 #2a2a33;
 }
+
+active-refresh-token-list table {
+  width: 100%;
+  text-align: center;
+}
+
+active-refresh-token-list table .current-marker-td {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+active-refresh-token-list table .session-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}

@@ -2,6 +2,7 @@ import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import "/ui/component/form/InputGroup.js";
 import "/ui/component/validator/PasswordInputValidator.js";
+import InputValidator from "/ui/component/form/InputValidator.js";
 
 function getResetToken() {
   const params = new URLSearchParams(window.location.search);
@@ -29,6 +30,11 @@ export default class PasswordResetForm extends HTMLElement {
 
     const resetToken = getResetToken();
     if (!resetToken) return;
+
+    const result = InputValidator.RUN_ALL(this._elements.form);
+    if (!result) {
+      return;
+    }
 
     const formData = new FormData(this._elements.form);
     formData.set("token", resetToken);
@@ -99,7 +105,8 @@ export default class PasswordResetForm extends HTMLElement {
         <button id="password-reset-form-submit-button">Jelszó beállítása</button>
       </form>
       <div id="message"></div>
-      <a href="/" hidden>Vissza a bejelentkezésre</a>
+      <hr />
+      <button>Nem kaptad meg az emailt? Kattins ide az újraküldéshez</button>
     `;
 
     this._elements.form = this.querySelector("form");

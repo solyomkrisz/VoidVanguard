@@ -96,6 +96,12 @@ export default class LazyItemList extends HTMLElement {
     this.partialRefresh();
   }
 
+  buildContainer() {
+    this._container = this.appendChild(document.createElement("div"));
+    this._container.setAttribute("aria-live", "polite");
+    this._container.classList.add("item-container");
+  }
+
   build() {
     if (this._built) return;
 
@@ -107,9 +113,7 @@ export default class LazyItemList extends HTMLElement {
       this._refreshButton.addEventListener("click", this.onRefreshButtonClick);
     }
 
-    this._container = this.appendChild(document.createElement("div"));
-    this._container.setAttribute("aria-live", "polite");
-    this._container.classList.add("item-container");
+    this.buildContainer();
 
     this._controllerContainer = this.appendChild(document.createElement("div"));
     this._controllerContainer.classList.add("controller-container");

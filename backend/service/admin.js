@@ -3,14 +3,27 @@ import Bans from "../sql/table/Bans.js";
 import RefreshTokens from "../sql/table/RefreshTokens.js";
 import * as CustomError from "../common/CustomError.js";
 import { v4 as uuidv4 } from "uuid";
+import Role from "../common/Role.js";
 
-export async function banUser({ userId, reason, expiresAt, createdBy }) {
-  const user = await Users.exists(userId);
+export async function banUser({
+  userId,
+  reason,
+  expiresAt,
+  createdBy,
+  creatorRole,
+}) {
+  if (userId === createdBy) {
+    throw CustomError.CANNOT_BAN_YOURSELF;
+  }
+
+  const user = await Users.select(userId);
   if (!user) {
     throw CustomError.USER_NOT_FOUND;
   }
 
-  console.log("UID: ", userId);
+  if (parseInt(user.role) >= creatorRole) {
+    throw CustomError.BAN_HIGHER_ROLE_ERROR;
+  }
 
   // prevent duplicate active bans
   const alreadyBanned = await Bans.isBanned(userId);

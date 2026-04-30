@@ -1,9 +1,10 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { isLoggedIn, isUserSet, logout } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
-import "/ui/component/account/TokenListItem.js";
+import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
+import AppModal from "/ui/component/feedback/AppModal.js";
 
 export default class ActiveRefreshTokenList extends LazyItemList {
   static get observedAttributes() {
@@ -14,10 +15,32 @@ export default class ActiveRefreshTokenList extends LazyItemList {
     super();
 
     this._hasOngoingSessionDestroy = false;
+    this._modal = el("app-modal");
 
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
     this.onSessionDestroy = this.onSessionDestroy.bind(this);
+  }
+
+  buildContainer() {
+    const thead = el("thead", {}, [
+      el("tr", {}, [
+        el("th"),
+        el("th", {}, ["Azonosító"]),
+        el("th", {}, ["Kezdeményezve"]),
+        el("th", {}, ["Érvényes eddig"]),
+        el("th", {}, ["Utoljára aktív"]),
+        el("th"),
+      ]),
+    ]);
+
+    const tbody = el("tbody");
+
+    const table = el("table", {}, [thead, tbody]);
+
+    this._container = tbody;
+
+    this.appendChild(table);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -59,6 +82,19 @@ export default class ActiveRefreshTokenList extends LazyItemList {
     const id = e?.detail?.id;
     if (!id || this._hasOngoingSessionDestroy || this._loading) return;
     this._hasOngoingSessionDestroy = true;
+
+    const result = await this._modal.open({
+      title: "Munkamenet felfüggesztése",
+      message:
+        "Biztosan fel szeretnéd függeszteni a kiválasztott munkamenetet?",
+      confirmButtonText: "Igen",
+      cancelButtonText: "Nem",
+    });
+
+    if (!result) {
+      this._hasOngoingSessionDestroy = false;
+      return;
+    }
 
     let url = "/api/tokens/" + id;
 
@@ -104,9 +140,45 @@ export default class ActiveRefreshTokenList extends LazyItemList {
   }
 
   renderItem(item) {
-    const el = document.createElement("token-list-item");
-    el.data = item;
-    return el;
+    const tr = el("tr");
+
+    const onButtonClick = () => {
+      tr.dispatchEvent(
+        new CustomEvent("session-destroy", {
+          detail: { id: item.id },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    };
+
+    const isCurrentMarkerTd = el("td", { class: "current-marker-td" }, [
+      el("div", { class: "is-current-marker", hidden: !item.current }),
+    ]);
+    const idTd = el("td", {}, [item.id]);
+    const issuedAtTd = el("td", {}, [item.issued_at]);
+    const expiresAtTd = el("td", {}, [item.expires_at]);
+    const lastUsedAtTd = el("td", {}, [item.last_used_at]);
+
+    const revokeButton = el("button", { onClick: onButtonClick }, [
+      "Munkamenet felfüggesztése",
+    ]);
+    const detailsButton = el("button", {}, ["Részletek"]);
+    const buttonTd = el("td", { class: "session-controls" }, [
+      revokeButton,
+      detailsButton,
+    ]);
+
+    tr.append(
+      isCurrentMarkerTd,
+      idTd,
+      issuedAtTd,
+      expiresAtTd,
+      lastUsedAtTd,
+      buttonTd,
+    );
+
+    return tr;
   }
 
   extractItems(response) {

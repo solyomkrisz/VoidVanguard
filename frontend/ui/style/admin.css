@@ -629,14 +629,16 @@ search-bar-result-list .item-container > search-bar-result-item > img {
 search-bar-result-list
   .item-container
   > search-bar-result-item
-  > img.no-profile-avatar {
+  > img.no-profile-avatar,
+friend-list-item .no-profile-avatar,
+.blocked-user-row .no-profile-avatar {
   background:
     radial-gradient(
       circle at 50% 30%,
       rgba(160, 172, 194, 0.16),
       transparent 45%
     ),
-    linear-gradient(180deg, #434956 0%, #2e3440 100%);
+    linear-gradient(180deg, #434956 0%, #2e3440 100%) !important;
 }
 
 search-bar-result-list
@@ -966,7 +968,8 @@ body:has(#full-profile-container.active) {
 }
 
 /**/
-active-refresh-token-list .lazy-item-list-refresh-button {
+active-refresh-token-list .lazy-item-list-refresh-button,
+user-ban-list .lazy-item-list-refresh-button {
   margin: 0.2rem 0 0.55rem;
 }
 
@@ -985,4 +988,36 @@ active-refresh-token-list .lazy-item-list-refresh-button {
   background: rgba(17, 31, 54, 0.5);
   box-shadow: inset 0 0 0 1px rgba(13, 13, 21, 0.6);
   text-shadow: 1px 1px 0 #000;
+}
+
+active-refresh-token-list table,
+user-ban-list table {
+  width: 100%;
+  text-align: center;
+}
+
+active-refresh-token-list table .current-marker-td {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+active-refresh-token-list table .session-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+user-ban-list pagination-controls div {
+  justify-content: center;
+}
+
+.ban-list-empty {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(123, 214, 255, 0.34);
+  background: rgba(10, 18, 30, 0.76);
+  color: #c7e8ff;
+  line-height: 1.4;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.65);
 }

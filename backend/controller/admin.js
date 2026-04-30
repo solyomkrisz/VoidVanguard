@@ -55,6 +55,7 @@ export async function banUser(request, response) {
       reason: request.body.reason,
       expiresAt,
       createdBy: request.user.id,
+      creatorRole: request.user.role,
     });
 
     response

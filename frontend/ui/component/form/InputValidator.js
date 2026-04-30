@@ -1,6 +1,22 @@
 import { debounce } from "/common/common.js";
 
 export default class InputValidator extends HTMLElement {
+  static RUN_ALL(container) {
+    const validators = Array.from(
+      container.querySelectorAll(".input-validator"),
+    );
+
+    for (const validator of validators) {
+      const result = validator.onInput?.();
+
+      if (!result) {
+        return result;
+      }
+    }
+
+    return true;
+  }
+
   get disableOnInvalid() {
     return this.getAttribute("disable-on-invalid");
   }
@@ -62,7 +78,7 @@ export default class InputValidator extends HTMLElement {
 
   onInput() {
     const value = this._elements.input.value;
-    this.validate(value);
+    return this.validate(value);
   }
 
   handleNotification(valid = true) {
@@ -81,7 +97,7 @@ export default class InputValidator extends HTMLElement {
 
     if (value === "" && this.canBeEmpty) {
       this.handleNotification(true);
-      return;
+      return true;
     }
 
     for (const rule of this._rules) {
@@ -92,10 +108,11 @@ export default class InputValidator extends HTMLElement {
       this.handleNotification(false);
       this.showMessage(rule.message);
 
-      return;
+      return false;
     }
 
     this.handleNotification(true);
+    return true;
   }
 
   emitEvent(event) {

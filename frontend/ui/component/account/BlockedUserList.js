@@ -154,6 +154,7 @@ export default class BlockedUserList extends LazyItemList {
 
   renderItem(item) {
     const el = document.createElement("blocked-user-list-item");
+    el.classList.add("blocked-user-row");
     el.data = item;
     return el;
   }
