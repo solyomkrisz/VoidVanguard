@@ -1230,8 +1230,6 @@ export default class FullProfile extends HTMLElement {
       return;
     }
 
-    console.log(response.result);
-
     this.updateContent(meta, response.result);
   }
 
@@ -1328,7 +1326,6 @@ export default class FullProfile extends HTMLElement {
       meta?.origin === "onLogout" ||
       meta?.origin === "attributeChangedCallback"
     ) {
-      console.error("FriendListFull refreshed");
       elements.friendListFull.refresh?.(); // if someone friend the user, it must show up on that list.
       elements.friendList.refresh?.();
     }
@@ -1371,7 +1368,6 @@ export default class FullProfile extends HTMLElement {
 
     const hasProfile = state?.has_profile !== false;
 
-    console.log("STATE: ", state);
     if (
       !isEqual(state, prev, "avatar") ||
       !isEqual(state, prev, "has_profile")

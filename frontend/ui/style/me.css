@@ -755,6 +755,14 @@ active-refresh-token-list table {
   text-align: center;
 }
 
+active-refresh-token-list table .dropdown-tr {
+  text-align: left;
+}
+
+active-refresh-token-list table .dropdown-tr p {
+  margin: 0;
+}
+
 active-refresh-token-list table .current-marker-td {
   display: flex;
   justify-content: center;

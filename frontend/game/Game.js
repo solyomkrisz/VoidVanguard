@@ -462,7 +462,6 @@ export default class Game extends WebGLCanvas {
   }
 
   resume() {
-    console.log("resume, running: ", this.running);
     if (this.running) return;
     this.running = true;
 
@@ -474,7 +473,6 @@ export default class Game extends WebGLCanvas {
   }
 
   update() {
-    console.log("Game.running: ", this.running);
     this.now = window.performance.now();
     this.vdt = this.now - this.last;
     this.last = this.now;

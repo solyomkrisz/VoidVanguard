@@ -71,12 +71,10 @@ export default class Keyboard {
     } else if (key === Keyboard.Escape && !event.repeat) {
       const pauseMenu = this.game?.UI?.pauseMenu;
 
-      console.log("isRunning: ", this.game.running);
       if (this.game.running) {
         this.game.stop();
       } else if (pauseMenu && !pauseMenu.hidden) {
         this.game.resume();
-        console.log("JÁTÉK FOLYTATVA");
       }
     }
   }
