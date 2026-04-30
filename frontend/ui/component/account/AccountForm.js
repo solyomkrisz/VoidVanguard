@@ -5,6 +5,7 @@ import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
+import "/ui/component/validator/UsernameInputValidator.js";
 import "/ui/component/validator/EmailInputValidator.js";
 import "/ui/component/validator/PasswordInputValidator.js";
 
@@ -29,12 +30,14 @@ const _innerHTML = `
 <form>
   <input-group class="input-group">
     <label>Felhasználónév</label>
-    <input type="text" name="username" placeholder="Felhasználónév" />
+    <username-input-validator can-be-empty>
+      <input type="text" name="username" placeholder="Felhasználónév" />
+    </username-input-validator>
   </input-group>
 
   <input-group class="input-group">
     <label>Email cím</label>
-    <email-input-validator>
+    <email-input-validator can-be-empty>
       <input type="email" name="email" placeholder="email@email.email" />
     </email-input-validator>
   </input-group>

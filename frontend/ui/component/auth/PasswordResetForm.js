@@ -99,12 +99,14 @@ export default class PasswordResetForm extends HTMLElement {
         <button id="password-reset-form-submit-button">Jelszó beállítása</button>
       </form>
       <div id="message"></div>
+      <a href="/" hidden>Vissza a bejelentkezésre</a>
     `;
 
     this._elements.form = this.querySelector("form");
     this._elements.form.addEventListener("submit", this.onSubmit);
     this._elements.submitButton = this.querySelector("button");
     this._elements.message = this.querySelector("#message");
+    this._elements.backLink = this.querySelector("a");
 
     this._built = true;
   }

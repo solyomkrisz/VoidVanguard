@@ -9,6 +9,10 @@ export default class InputValidator extends HTMLElement {
     return this.hasAttribute("validate-immediately");
   }
 
+  get canBeEmpty() {
+    return this.hasAttribute("can-be-empty");
+  }
+
   get for() {
     return this.getAttribute("for");
   }
@@ -61,36 +65,37 @@ export default class InputValidator extends HTMLElement {
     this.validate(value);
   }
 
+  handleNotification(valid = true) {
+    if (this.disableOnInvalid) {
+      const toDisable = document.querySelector(this.disableOnInvalid);
+      if (toDisable) {
+        toDisable.disabled = !valid;
+      }
+    } else {
+      this.emitEvent(valid ? "submit-enable" : "submit-disable");
+    }
+  }
+
   validate(value) {
     this._elements.message.textContent = "";
+
+    if (value === "" && this.canBeEmpty) {
+      this.handleNotification(true);
+      return;
+    }
 
     for (const rule of this._rules) {
       if (rule?.test(value)) {
         continue;
       }
 
-      if (this.disableOnInvalid) {
-        const toDisable = document.querySelector(this.disableOnInvalid);
-        if (toDisable) {
-          toDisable.disabled = true;
-        }
-      } else {
-        this.emitEvent("submit-disable");
-      }
-
+      this.handleNotification(false);
       this.showMessage(rule.message);
 
       return;
     }
 
-    if (this.disableOnInvalid) {
-      const toDisable = document.querySelector(this.disableOnInvalid);
-      if (toDisable) {
-        toDisable.disabled = false;
-      }
-    } else {
-      this.emitEvent("submit-enable");
-    }
+    this.handleNotification(true);
   }
 
   emitEvent(event) {

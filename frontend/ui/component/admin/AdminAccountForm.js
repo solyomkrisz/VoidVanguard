@@ -5,12 +5,14 @@ const _innerHTML = `
 <form>
   <input-group class="input-group">
     <label>Felhasználónév</label>
-    <input type="text" name="username" placeholder="Felhasználónév" />
+    <username-input-validator can-be-empty>
+      <input type="text" name="username" placeholder="Felhasználónév" />
+    </username-input-validator>
   </input-group>
 
   <input-group class="input-group">
     <label>Email cím</label>
-    <email-input-validator>
+    <email-input-validator can-be-empty>
       <input type="email" name="email" placeholder="email@email.email" />
     </email-input-validator>
   </input-group>
@@ -26,20 +28,20 @@ const _innerHTML = `
   <div class="password-input-group">
     <input-group class="input-group">
       <label>Jelszó</label>
-      <password-input-validator>
+      <password-input-validator can-be-empty>
         <input type="password" name="password" placeholder="Jelszó" />
       </password-input-validator>
     </input-group>
     
     <input-group class="input-group">
       <label>Jelszó megerősítése</label>
-      <password-input-validator>
+      <password-input-validator can-be-empty>
         <input type="password" name="passwordConfirm" placeholder="Jelszó megerősítése" />
       </password-input-validator>
     </input-group>
   </div>
 
-  <button>Fiókadatok módosítása</button>
+  <button id="admin-account-form-submit-button">Fiókadatok módosítása</button>
 </form>
 `;
 

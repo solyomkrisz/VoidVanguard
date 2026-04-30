@@ -973,3 +973,16 @@ active-refresh-token-list .lazy-item-list-refresh-button {
 .admin-panel--sessions pagination-controls > div {
   justify-content: center;
 }
+
+.account-edit-note {
+  margin: -0.35vmin 0 0.75vmin;
+  padding: 0.65vmin 1vmin;
+  color: #d6ecff;
+  font-size: clamp(0.9rem, 1.45vmin, 1rem);
+  letter-spacing: 0.03em;
+  text-align: center;
+  border: 1px solid rgba(106, 184, 255, 0.45);
+  background: rgba(17, 31, 54, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(13, 13, 21, 0.6);
+  text-shadow: 1px 1px 0 #000;
+}

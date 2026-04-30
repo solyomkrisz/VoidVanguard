@@ -52,6 +52,7 @@ export default class FormRestorer extends HTMLElement {
     const token = Symbol();
     this._loadToken = token;
 
+    console.log("URL: ", url, this);
     const response = await net.send(url);
 
     if (this._loadToken !== token) {
