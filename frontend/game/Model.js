@@ -20,7 +20,14 @@ export default class Model {
 
       this.objects = [];
       for (const object of objects) {
-        this.objects.push(Object.assign(Object.create(Object.getPrototypeOf(object)), object));
+
+        if (typeof object.clone === "function") {
+          this.objects.push(object.clone(object));
+
+        } else {
+          this.objects.push(Object.assign(Object.create(Object.getPrototypeOf(object)), object));
+        }
+
       }
       
     } else {

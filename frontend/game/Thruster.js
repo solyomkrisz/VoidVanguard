@@ -72,6 +72,38 @@ export default class Thruster extends Block {
     this.controller = null;
   }
 
+  clone(thruster) {
+    const newThruster = new Thruster({
+      x: thruster.localPosition[0],
+      y: thruster.localPosition[1],
+      shape: thruster.shape,
+      spriteID: thruster.spriteID,
+      mass: thruster.mass,
+      health: thruster.health,
+      adjacencyRules: vec.clone(thruster.adjacencyRules),
+    });
+
+    newThruster.id = thruster.id;
+    newThruster.description = thruster.description;
+    newThruster.Isp = thruster.Isp;
+    newThruster.massFlowRate = thruster.massFlowRate;
+    newThruster.defaultExhaustDirection = vec2.clone(
+      thruster.defaultExhaustDirection,
+    );
+    newThruster.thrustVector = vec2.clone(thruster.thrustVector);
+    newThruster.thrust = thruster.thrust;
+    newThruster.hasGimbal = thruster.hasGimbal;
+    newThruster.gimbalRange = thruster.gimbalRange;
+    newThruster._gimbal = thruster._gimbal;
+    newThruster.previousGimbal = thruster.previousGimbal;
+    newThruster.throttle = thruster.throttle;
+    newThruster.torque = thruster.torque;
+    newThruster.dirty = thruster.dirty;
+    newThruster.controller = null;
+
+    return newThruster;
+  }
+
   exportSave() {
     return {
       ...super.exportSave(),

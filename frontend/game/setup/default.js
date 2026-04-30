@@ -3,7 +3,7 @@ import Mouse from "/game/Mouse.js";
 import Keyboard from "/game/Keyboard.js";
 import DebugOverlay from "/game/DebugOverlay.js";
 import DebugPanel from "/game/DebugPanel.js";
-import Models from "/game/SpaceShipModels.js";
+import Models, { MODELFACTORY } from "/game/SpaceShipModels.js";
 import TextureManager from "/game/TextureManager.js";
 import * as UI from "/ui/UI.js";
 import Sprite from "/game/Sprite.js";
@@ -14,7 +14,7 @@ import EngineThrottleController from "/ui/component/game/EngineThrottleControlle
 import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
 import AudioManager from "/common/AudioManager.js";
 
-export function setupGame(game, playerModel = Models.PLAYER) {
+export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
   if (game.running) return;
 
   //#region setup tooltip templates

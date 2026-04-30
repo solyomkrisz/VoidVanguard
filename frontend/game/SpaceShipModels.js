@@ -53,4 +53,11 @@ const MODELS = {
     DEBUG_MODEL: new Model(DEBUG_MODEL),
 };
 
+export const MODELFACTORY = {
+  PLAYER: () => new Model(PLAYER),
+  SCOUT1: () => new Model(SCOUT1),
+  SCOUT2: () => new Model(SCOUT2),
+  DEBUG_MODEL: () => new Model(DEBUG_MODEL),
+}
+
 export default MODELS;

@@ -228,6 +228,20 @@ export default class Block {
     this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
   }
 
+  clone(block) {
+    const newBlock = new Block({
+      x: block.localPosition[0],
+      y: block.localPosition[1],
+      shape: block.shape,
+      spriteID: block.spriteID,
+      gradeID: block.gradeID,
+      mass: block.mass,
+      health: block.health,
+      adjacencyRules: vec.clone(block.adjacencyRules),
+    });
+    return newBlock;
+  }
+
   exportSave() {
     return {
       type: this.type,
