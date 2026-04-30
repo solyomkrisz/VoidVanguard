@@ -90,6 +90,7 @@ export default class BanForm extends HTMLElement {
 
     ToastManager.REQUEST("Felhasználó kitiltása sikeresen visszavonva");
     this._pending = false;
+    this.dispatchEvent(new CustomEvent("ban-changed", { bubbles: true, composed: true }));
     this.updateStatus();
   }
 
@@ -129,6 +130,7 @@ export default class BanForm extends HTMLElement {
 
     ToastManager.REQUEST("A felhasználó sikeresen kitiltva");
     this._pending = false;
+    this.dispatchEvent(new CustomEvent("ban-changed", { bubbles: true, composed: true }));
     this.updateStatus();
   }
 

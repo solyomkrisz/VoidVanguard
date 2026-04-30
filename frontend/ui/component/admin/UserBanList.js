@@ -9,6 +9,21 @@ export default class UserBanList extends LazyItemList {
 
   constructor() {
     super();
+    this.onBanChanged = this.onBanChanged.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback?.();
+    document.addEventListener("ban-changed", this.onBanChanged);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback?.();
+    document.removeEventListener("ban-changed", this.onBanChanged);
+  }
+
+  onBanChanged() {
+    this.partialRefresh();
   }
 
   buildContainer() {

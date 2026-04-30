@@ -451,6 +451,8 @@ form a:hover {
   background: none;
   border: none;
   padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
   cursor: pointer;
   z-index: 1001;
   display: block;
@@ -467,6 +469,8 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
   height: 100%;
   display: block;
 }
+
+
 
 #friendsBtn {
   position: fixed;
@@ -569,10 +573,93 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
     transform 0.12s ease;
 }
 
-#settingsPanel label:hover {
-  border-color: #6ab8ff;
-  background: rgba(20, 42, 84, 0.4);
-  transform: translateX(1px);
+
+
+/* Volume controllers */
+#settingsPanel ui-volume-controller,
+#settingsPanel game-volume-controller {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.3rem 0.45rem;
+  background: rgba(13, 13, 21, 0.34);
+  border: 2px solid transparent;
+}
+
+#settingsPanel ui-volume-controller label,
+#settingsPanel game-volume-controller label {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: default;
+  pointer-events: none;
+}
+
+#settingsPanel ui-volume-controller .input-container,
+#settingsPanel game-volume-controller .input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#settingsPanel ui-volume-controller #current-volume,
+#settingsPanel game-volume-controller #current-volume {
+  min-width: 2rem;
+  text-align: right;
+  font-size: clamp(0.75rem, 1.2vmin, 0.9rem);
+  color: #9fd5ff;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.04em;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#settingsPanel input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 0.28rem;
+  background: linear-gradient(90deg, #4a90e2 var(--val, 100%), rgba(42, 58, 90, 0.9) var(--val, 100%));
+  border: none;
+  border-radius: 0;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.6), 0 -1px 0 rgba(106,184,255,0.12);
+}
+
+#settingsPanel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: #9fd5ff;
+  border: 2px solid #4a90e2;
+  border-radius: 0;
+  box-shadow: 0 0 0 1px #0d0d15, 0 0 6px rgba(106, 184, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.1s, box-shadow 0.1s;
+}
+
+#settingsPanel input[type="range"]::-moz-range-thumb {
+  width: 0.75rem;
+  height: 0.75rem;
+  background: #9fd5ff;
+  border: 2px solid #4a90e2;
+  border-radius: 0;
+  box-shadow: 0 0 0 1px #0d0d15, 0 0 6px rgba(106, 184, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.1s, box-shadow 0.1s;
+}
+
+#settingsPanel input[type="range"]:hover::-webkit-slider-thumb {
+  background: #c8eaff;
+  box-shadow: 0 0 0 1px #0d0d15, 0 0 10px rgba(106, 184, 255, 0.9);
+}
+
+#settingsPanel input[type="range"]:hover::-moz-range-thumb {
+  background: #c8eaff;
+  box-shadow: 0 0 0 1px #0d0d15, 0 0 10px rgba(106, 184, 255, 0.9);
 }
 
 #settingsPanel input[type="checkbox"] {

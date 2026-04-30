@@ -169,10 +169,16 @@ export default class ActiveRefreshTokenList extends LazyItemList {
 
   renderItem(item) {
     // dropdown tr
+    const makeDetail = (label, value) =>
+      el("div", { class: "dropdown-detail" }, [
+        el("span", { class: "dropdown-detail-label" }, [label]),
+        el("span", { class: "dropdown-detail-value" }, [value ?? "-"]),
+      ]);
+
     const dropdownTr = el("tr", { class: "dropdown-tr", hidden: true }, [
       el("td", { colspan: "6" }, [
-        el("p", {}, [`IP cím: ${item.ip}`]),
-        el("p", {}, [`Böngésző: ${parseUserAgent(item.user_agent).label}`]),
+        makeDetail("IP cím", item.ip),
+        makeDetail("Böngésző", parseUserAgent(item.user_agent).label),
       ]),
     ]);
 
@@ -193,21 +199,39 @@ export default class ActiveRefreshTokenList extends LazyItemList {
       dropdownTr.hidden = !dropdownTr.hidden;
     };
 
-    const isCurrentMarkerTd = el("td", { class: "current-marker-td" }, [
+    const isCurrentMarkerTd = el(
+      "td",
+      { class: "current-marker-td", "data-label": "Aktív" },
+      [
       el("div", { class: "is-current-marker", hidden: !item.current }),
+      ],
+    );
+    const idTd = el("td", { class: "session-id-cell", "data-label": "Azonosító" }, [
+      item.id,
     ]);
-    const idTd = el("td", {}, [item.id]);
-    const issuedAtTd = el("td", {}, [item.issued_at]);
-    const expiresAtTd = el("td", {}, [item.expires_at]);
-    const lastUsedAtTd = el("td", {}, [item.last_used_at]);
+    const issuedAtTd = el("td", { "data-label": "Kezdeményezve" }, [
+      item.issued_at,
+    ]);
+    const expiresAtTd = el("td", { "data-label": "Érvényes eddig" }, [
+      item.expires_at,
+    ]);
+    const lastUsedAtTd = el("td", { "data-label": "Utoljára aktív" }, [
+      item.last_used_at,
+    ]);
 
-    const revokeButton = el("button", { onClick: onButtonClick }, [
+    const revokeButton = el(
+      "button",
+      { class: "session-action-button session-action-button--revoke", onClick: onButtonClick },
+      [
       "Munkamenet felfüggesztése",
-    ]);
-    const detailsButton = el("button", { onClick: onDetailsButtonClick }, [
-      "Részletek",
-    ]);
-    const buttonTd = el("td", { class: "session-controls" }, [
+      ],
+    );
+    const detailsButton = el(
+      "button",
+      { class: "session-action-button session-action-button--details", onClick: onDetailsButtonClick },
+      ["Részletek"],
+    );
+    const buttonTd = el("td", { class: "session-controls", "data-label": "Műveletek" }, [
       revokeButton,
       detailsButton,
     ]);
