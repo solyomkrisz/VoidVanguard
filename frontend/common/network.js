@@ -80,6 +80,7 @@ export function refreshAccessToken() {
       const token = localStorage.getItem("access_token");
 
       if (token && !isExpired(token, 10)) {
+        console.log("Token is not expired, refresh aborted...");
         return { success: true, refreshed: false };
       }
 

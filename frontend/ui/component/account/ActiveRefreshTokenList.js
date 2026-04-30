@@ -6,6 +6,34 @@ import * as net from "/common/network.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 import AppModal from "/ui/component/feedback/AppModal.js";
 
+function parseUserAgent(userAgent = "") {
+  userAgent = userAgent.toLowerCase();
+
+  let os = "Unknown";
+
+  if (userAgent.includes("windows")) os = "Windows";
+  else if (userAgent.includes("mac os")) os = "Mac";
+  else if (userAgent.includes("iphone")) os = "iPhone";
+  else if (userAgent.includes("ipad")) os = "iPad";
+  else if (userAgent.includes("android")) os = "Android";
+  else if (userAgent.includes("linux")) os = "Linux";
+
+  let browser = "Unknown";
+
+  if (userAgent.includes("chrome") && !userAgent.includes("edg"))
+    browser = "Chrome";
+  else if (userAgent.includes("safari") && !userAgent.includes("chrome"))
+    browser = "Safari";
+  else if (userAgent.includes("firefox")) browser = "Firefox";
+  else if (userAgent.includes("edg")) browser = "Edge";
+
+  return {
+    os,
+    browser,
+    label: `${os} • ${browser}`,
+  };
+}
+
 export default class ActiveRefreshTokenList extends LazyItemList {
   static get observedAttributes() {
     return [...super.observedAttributes, "user-id"];
@@ -140,6 +168,15 @@ export default class ActiveRefreshTokenList extends LazyItemList {
   }
 
   renderItem(item) {
+    // dropdown tr
+    const dropdownTr = el("tr", { class: "dropdown-tr", hidden: true }, [
+      el("td", { colspan: "6" }, [
+        el("p", {}, [`IP cím: ${item.ip}`]),
+        el("p", {}, [`Böngésző: ${parseUserAgent(item.user_agent).label}`]),
+      ]),
+    ]);
+
+    // normal main tr
     const tr = el("tr");
 
     const onButtonClick = () => {
@@ -150,6 +187,10 @@ export default class ActiveRefreshTokenList extends LazyItemList {
           composed: true,
         }),
       );
+    };
+
+    const onDetailsButtonClick = () => {
+      dropdownTr.hidden = !dropdownTr.hidden;
     };
 
     const isCurrentMarkerTd = el("td", { class: "current-marker-td" }, [
@@ -163,7 +204,9 @@ export default class ActiveRefreshTokenList extends LazyItemList {
     const revokeButton = el("button", { onClick: onButtonClick }, [
       "Munkamenet felfüggesztése",
     ]);
-    const detailsButton = el("button", {}, ["Részletek"]);
+    const detailsButton = el("button", { onClick: onDetailsButtonClick }, [
+      "Részletek",
+    ]);
     const buttonTd = el("td", { class: "session-controls" }, [
       revokeButton,
       detailsButton,
@@ -178,7 +221,11 @@ export default class ActiveRefreshTokenList extends LazyItemList {
       buttonTd,
     );
 
-    return tr;
+    // final return value
+    const fragment = document.createDocumentFragment();
+    fragment.append(tr, dropdownTr);
+
+    return fragment;
   }
 
   extractItems(response) {

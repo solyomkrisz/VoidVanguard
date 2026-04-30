@@ -473,7 +473,7 @@ hr {
   .admin-user-list--friends friend-list-item > div > button,
   .admin-user-list--blocked .blocked-user-row > button
 ) {
-  min-height: 2.35rem;
+  /* min-height: 2.35rem; */
 }
 
 @media (max-width: 900px) {
@@ -994,6 +994,16 @@ active-refresh-token-list table,
 user-ban-list table {
   width: 100%;
   text-align: center;
+}
+
+active-refresh-token-list table .dropdown-tr,
+user-ban-list table .dropdown-tr {
+  text-align: left;
+}
+
+active-refresh-token-list table .dropdown-tr p,
+user-ban-list table .dropdown-tr p {
+  margin: 0;
 }
 
 active-refresh-token-list table .current-marker-td {
