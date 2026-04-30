@@ -120,6 +120,21 @@
             </account-form-restorer>
 
             <div class="friend-manager">
+              <div class="admin-panel">
+                <h1>Jelenlegi kitiltás kezelése</h1>
+                <ban-form user-id></ban-form>
+              </div>
+              <div class="admin-panel">
+                <h1>Kitiltáselőzmények</h1>
+                <user-ban-list
+                  controls="pagination"
+                  user-id
+                  with-refresh-button
+                ></user-ban-list>
+              </div>
+            </div>
+
+            <div class="friend-manager">
               <div class="admin-panel admin-panel--incoming">
                 <h1>Beérkező barátkérelmek kezelése</h1>
                 <friend-list-full
@@ -187,11 +202,11 @@
           </div>
         </admin-module>
       </div>
-
-      <toast-manager event-controlled></toast-manager>
     </template>
 
     <div class="admin-wrapper"></div>
+
+    <toast-manager event-controlled></toast-manager>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
@@ -280,6 +295,8 @@
       import "/ui/component/account/AccountFormRestorer.js";
       import "/ui/component/admin/AdminModule.js";
       import "/ui/component/admin/RemoveDisguiseButton.js";
+      import "/ui/component/admin/BanForm.js";
+      import "/ui/component/admin/UserBanList.js";
 
       (async () => {
         const ok = await autologin();

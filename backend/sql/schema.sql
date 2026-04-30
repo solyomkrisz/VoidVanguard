@@ -27,6 +27,27 @@ BEGIN
 END //
 DELIMITER ;
 
+CREATE TABLE bans(
+    id CHAR(36) PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
+    reason TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NULL,
+    revoked_at TIMESTAMP NULL,
+    created_by CHAR(36) NULL,
+    revoked_by CHAR(36) NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (created_by) REFERENCES users(id)
+        ON DELETE SET NULL
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (revoked_by) REFERENCES users(id)
+        ON DELETE SET NULL
+        ON UPDATE RESTRICT
+);
+
 CREATE TABLE password_resets (
     user_id CHAR(36) NOT NULL,
     token_hash CHAR(64) NOT NULL,

@@ -34,19 +34,19 @@ export default class BlockedUserList extends LazyItemList {
     this.refresh();
   }
 
-  async onUnblockUser(e) {
-    e.stopPropagation();
+  onSignSuccess(data) {
+    const { formData } = data;
+    this.sendRequest(formData);
+  }
 
+  onSignError() {
+    console.error("Unable to sign data.");
+  }
+
+  async sendRequest(formData) {
     // ha tölt az oldal akkor is visszalépünk (LazyItemList-ből jön)
     if (this._hasOngoingUnblock || this._loading) return;
-
-    const userId = e?.detail?.userId;
-    if (!userId) return;
-
     this._hasOngoingUnblock = true;
-
-    const formData = new FormData();
-    formData.set("userId", userId);
 
     const response = await net.send("/api/blocks", {
       method: "DELETE",
@@ -63,6 +63,30 @@ export default class BlockedUserList extends LazyItemList {
     this._hasOngoingUnblock = false;
 
     this.partialRefresh();
+  }
+
+  async onUnblockUser(e) {
+    e.stopPropagation();
+
+    const userId = e?.detail?.userId;
+    if (!userId) return;
+
+    const formData = new FormData();
+    formData.set("userId", userId);
+
+    if (this.admin) {
+      this.dispatchEvent(
+        new CustomEvent("sign-request", {
+          detail: { formData },
+          bubbles: true,
+          composed: false,
+        }),
+      );
+
+      return;
+    }
+
+    this.sendRequest(formData);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
