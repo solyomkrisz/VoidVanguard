@@ -31,9 +31,9 @@
           <password-input-validator disable-on-invalid="#register-button" validate-immediately>
             <input autocomplete="off" name="passwordConfirm" id="reg-passwordConfirm" type="password" required />
           </password-input-validator>
-          <button type="submit" id="register-button">Regisztráció</button>
+          <button type="submit" id="register-button" data-sfx="click_1">Regisztráció</button>
           <div id="regFormMsg" class="form-message"></div>
-          <a>Van már fiókod? Jelentkezz be itt!</a>
+          <a data-sfx="click_1">Van már fiókod? Jelentkezz be itt!</a>
         </form>
 
         <form id="logForm">
@@ -42,10 +42,10 @@
           <input autocomplete="off" name="username" id="log-username" type="text" required />
           <label for="log-password">Jelszó</label>
           <input autocomplete="off" name="password" id="log-password" type="password" required />
-          <button type="submit">Bejelentkezés</button>
+          <button type="submit" data-sfx="click_1">Bejelentkezés</button>
           <div id="logFormMsg" class="form-message"></div>
-          <a>Nincs fiókod? Regisztrálj!</a>
-          <a>Elfelejtettem a jelszavam!</a>
+          <a data-sfx="click_1">Nincs fiókod? Regisztrálj!</a>
+          <a data-sfx="click_1">Elfelejtettem a jelszavam!</a>
         </form>
       </div>
     </div>
@@ -56,24 +56,24 @@
       <div id="gameMenuPanel">
         <div id="gameMenuMain">
           <h2>Főmenü</h2>
-          <button id="newGameBtn">Új játék indítása</button>
-          <button id="loadGameBtn">Játékmenet betöltése</button>
-          <button id="adminPanelBtn" hidden>Admin panel</button>
-          <button id="gameMenuLogoutBtn">Kijelentkezés</button>
+          <button id="newGameBtn" data-sfx="click_1">Új játék indítása</button>
+          <button id="loadGameBtn" data-sfx="click_1">Játékmenet betöltése</button>
+          <button id="adminPanelBtn" hidden data-sfx="click_1">Admin panel</button>
+          <button id="gameMenuLogoutBtn" data-sfx="click_1">Kijelentkezés</button>
         </div>
         <div id="gameMenuLoad" class="hidden">
           <h2>Játékmenet betöltése</h2>
           <div id="gameMenuSaveSlot"></div>
-          <button id="backBtn">Vissza</button>
+          <button id="backBtn" data-sfx="click_1">Vissza</button>
         </div>
       </div>
     </div>
 
-    <button id="settingsBtn">
+    <button id="settingsBtn" data-sfx="click_1">
       <img src="/image/SettingsButton.png" alt="Settings" />
     </button>
 
-     <button id="friendsBtn">
+     <button id="friendsBtn" data-sfx="click_1">
        <img src="/image/FriendsButton.png" alt="Friends" />
      </button>
 
@@ -84,6 +84,8 @@
       <label><input type="checkbox" id="toggleEntityIds" checked /> Entity IDs</label>
       <label><input type="checkbox" id="toggleSpaceshipCircle" checked /> Spaceship Circle</label>
       <label><input type="checkbox" id="toggleSpaceshipHitbox" checked /> Spaceship Hitbox</label>
+      <ui-volume-controller></ui-volume-controller>
+      <game-volume-controller></game-volume-controller>
     </div>
 
     <toast-manager event-controlled></toast-manager>
@@ -254,10 +256,15 @@
     </script>
     <script type="module" src="./App.js"></script>
     <script type="module">
+
       import "/ui/component/validator/UsernameInputValidator.js"
       import "/ui/component/validator/PasswordInputValidator.js";
       import "/ui/component/validator/EmailInputValidator.js";
+      import "/ui/component/misc/UIVolumeController.js";
+      import "/ui/component/game/GameVolumeController.js";
       import { onDOMContentLoaded } from "/common/common.js";
+      import { attachGlobalAudioListeners } from "/common/globalAudio.js";
+      attachGlobalAudioListeners();
       document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
     </script>
   </body>

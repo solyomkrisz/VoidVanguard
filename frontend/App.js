@@ -259,6 +259,12 @@ document.addEventListener("exit-game", () => {
   showGameMenu();
 });
 
+document.addEventListener("game-volume-change", (e) => {
+  const volume = e?.detail?.volume;
+  if (!volume || !game) return;
+  game.setVolume(volume);
+});
+
 document.addEventListener("logout", () => {
   applyAuthState();
 });
