@@ -288,7 +288,7 @@
         const name = document.createElement("span");
 
         name.classList = "friend-search-meta-user-name";
-        name.textContent = (user.has_profile ? "@" : "") + user.username;
+        name.textContent = "@" + user.username;
 
         nameContainer.append(name);
 

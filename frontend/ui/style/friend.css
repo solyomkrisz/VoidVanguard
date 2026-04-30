@@ -109,8 +109,7 @@ friend-list-item > a {
   flex-direction: column;
 }
 
-.friend-search-meta-names:has(.friend-search-meta-display-name)
-  .friend-search-meta-user-name {
+.friend-search-meta-names .friend-search-meta-user-name {
   color: #9fd7ff;
 }
 

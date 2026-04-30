@@ -149,7 +149,7 @@ export async function searchFor({ query, page = 1, limit = 20 }) {
     username: row.username,
     user_id: row.id,
     avatar: row.has_profile ? row.avatar || "/image/defaultPfp.png" : "",
-    display_name: row.display_name || row.username,
+    display_name: row.display_name,
     has_profile: row.has_profile === 1,
   }));
 

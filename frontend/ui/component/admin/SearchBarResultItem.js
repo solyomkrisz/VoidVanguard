@@ -231,7 +231,7 @@ export default class SearchBarResultItem extends HTMLElement {
     };
 
     this.appendChild(img);
-    this.appendChild(el("div", {}, [username, displayName]));
+    this.appendChild(el("div", {}, [displayName, username]));
     this.appendChild(el("div", {}, [disguiseButton, profileButton]));
     this.appendChild(el("div", {}, [friendButton, blockButton]));
 
@@ -343,13 +343,13 @@ export default class SearchBarResultItem extends HTMLElement {
 
     const { img, username, displayName, profileButton } = this._elements;
 
+    username.textContent = `@${this.data.username}`;
+
     if (this.data.avatar) {
       img.src = this.data.avatar;
     } else {
       img.classList.add("no-profile-avatar");
     }
-
-    username.textContent = `@${this.data.username}`;
 
     if (this.data.display_name) {
       if (displayName.hidden) {
