@@ -32,7 +32,7 @@ export async function get(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Profile fetched successfully"));
+      .json(createResponse(true, result, "A profil sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -53,7 +53,7 @@ export async function search(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Search successfully completed"));
+      .json(createResponse(true, result, "A keresés sikeresen befejeződött"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -69,12 +69,12 @@ export async function create(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Profile created successfully"));
+      .json(createResponse(true, result, "A profil sikeresen létrehozva"));
   } catch (error) {
     if (isSequelizeUniqueConstraintError(error)) {
       return handleSequelizeUniqueConstraintError(
         response,
-        "Profile for this user already exists",
+        "Ehhez a felhasználóhoz már létezik profil",
       );
     }
     handleCaughtError(response, error);
@@ -93,7 +93,7 @@ export async function update(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Profile updated successfully"));
+      .json(createResponse(true, null, "A profil sikeresen frissítve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -105,7 +105,7 @@ export async function remove(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Profile deleted successfully"));
+      .json(createResponse(true, null, "A profil sikeresen törölve"));
   } catch (error) {
     handleCaughtError(response, error);
   }

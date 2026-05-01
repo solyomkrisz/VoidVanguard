@@ -13,6 +13,7 @@ import "/ui/component/profile/ProfileForm.js";
 import "/ui/component/decorative/DashedBorderBox.js";
 import "/ui/component/form/InlineEditor.js";
 import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 import "/ui/component/validator/DisplayNameInputValidator.js";
 import "/ui/component/validator/DescriptionInputValidator.js";
@@ -157,23 +158,6 @@ function getVisibilityLabel(value) {
   if (normalized === "public") return "Nyilvános";
   if (normalized === "friends-only") return "Csak barátok";
   return "Privát";
-}
-
-function requestToast(message, variant = "info", delay = 0, duration = 3000) {
-  if (!message) return;
-
-  document.dispatchEvent(
-    new CustomEvent("toast-request", {
-      detail: {
-        toast: {
-          message,
-          variant,
-          delay,
-          duration,
-        },
-      },
-    }),
-  );
 }
 
 function toggleEventListeners(instance, initializerName) {
@@ -446,7 +430,7 @@ export default class FullProfile extends HTMLElement {
       return;
     }
 
-    requestToast(response?.message || "Profil sikeresen mentve.", "success");
+    ToastManager.SUCCESS(response?.message || "Profil sikeresen mentve");
 
     this._changed.clear();
     this.toggleEditing();

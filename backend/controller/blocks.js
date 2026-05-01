@@ -12,7 +12,7 @@ export async function lazySelectByTarget(request, response) {
   if (!request.valid) {
     return response
       .status(400)
-      .json(createResponse(false, null, "Invalid user ID"));
+      .json(createResponse(false, null, "Érvénytelen felhasználóazonosító"));
   }
 
   try {
@@ -32,7 +32,13 @@ export async function lazySelectByTarget(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Blocked users fetched successfully"));
+      .json(
+        createResponse(
+          true,
+          result,
+          "A letiltott felhasználók sikeresen lekérve",
+        ),
+      );
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -48,7 +54,7 @@ export async function summary(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Data successfully fetched"));
+      .json(createResponse(true, result, "Az adatok sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -58,7 +64,7 @@ export async function getBlockedUsers(request, response) {
   if (!request.valid) {
     return response
       .status(400)
-      .json(createResponse(false, null, "Invalid user ID"));
+      .json(createResponse(false, null, "Érvénytelen felhasználóazonosító"));
   }
 
   try {
@@ -69,7 +75,11 @@ export async function getBlockedUsers(request, response) {
     response
       .status(200)
       .json(
-        createResponse(true, result, "Blocked users retrieved successfully"),
+        createResponse(
+          true,
+          result,
+          "A letiltott felhasználók sikeresen lekérve",
+        ),
       );
   } catch (error) {
     handleCaughtError(response, error);
@@ -80,7 +90,7 @@ export async function blockUser(request, response) {
   if (!request.valid) {
     return response
       .status(400)
-      .json(createResponse(false, null, "Invalid user ID"));
+      .json(createResponse(false, null, "Érvénytelen felhasználóazonosító"));
   }
 
   try {
@@ -91,12 +101,12 @@ export async function blockUser(request, response) {
 
     response
       .status(201)
-      .json(createResponse(true, null, "User blocked successfully"));
+      .json(createResponse(true, null, "A felhasználó sikeresen letiltva"));
   } catch (error) {
     if (isSequelizeUniqueConstraintError(error)) {
       return handleSequelizeUniqueConstraintError(
         response,
-        "This user has already been blocked",
+        "Ez a felhasználó már le van tiltva",
       );
     }
     handleCaughtError(response, error);
@@ -107,7 +117,7 @@ export async function unblockUser(request, response) {
   if (!request.valid) {
     return response
       .status(400)
-      .json(createResponse(false, null, "Invalid user ID"));
+      .json(createResponse(false, null, "Érvénytelen felhasználóazonosító"));
   }
 
   try {
@@ -118,7 +128,9 @@ export async function unblockUser(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "User unblocked successfully"));
+      .json(
+        createResponse(true, null, "A felhasználó tiltása sikeresen feloldva"),
+      );
   } catch (error) {
     handleCaughtError(response, error);
   }

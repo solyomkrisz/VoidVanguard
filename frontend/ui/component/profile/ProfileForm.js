@@ -7,23 +7,7 @@ import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
-
-function requestToast(message, variant = "info", delay = 0, duration = 3000) {
-  if (!message) return;
-
-  document.dispatchEvent(
-    new CustomEvent("toast-request", {
-      detail: {
-        toast: {
-          message,
-          variant,
-          delay,
-          duration,
-        },
-      },
-    }),
-  );
-}
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 const METHOD = {
   create: "POST",
@@ -121,12 +105,11 @@ export default class ProfileForm extends BaseCustomElement {
       this.action = "update";
     }
 
-    requestToast(
+    ToastManager.SUCCESS(
       response?.message ||
         (performedAction === "update"
-          ? "Profil sikeresen módosítva."
-          : "Profil sikeresen létrehozva."),
-      "success",
+          ? "Profil sikeresen módosítva"
+          : "Profil sikeresen létrehozva"),
     );
 
     this.dispatchEvent(
@@ -146,7 +129,7 @@ export default class ProfileForm extends BaseCustomElement {
   /** Needed to be compatible with <admin-module> */
   onSignError() {
     console.error("Unable to send signed data");
-    requestToast("Hiba: Nem sikerült elküldeni az adatokat.", "error");
+    ToastManager.ERROR("Nem sikerült az adatok aláíratása");
   }
 
   update() {

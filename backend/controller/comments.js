@@ -12,7 +12,7 @@ export async function lazySelectComments(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Comments fetched successfully"));
+      .json(createResponse(true, result, "Hozzászólások sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -27,7 +27,7 @@ export async function getComment(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Comment fetched successfully"));
+      .json(createResponse(true, result, "Hozzászólás sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -46,7 +46,7 @@ export async function createComment(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, comment, "Comment posted successfully"));
+      .json(createResponse(true, comment, "A hozzászólás sikeresen elküldve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -67,7 +67,11 @@ export async function updateComment(request, response) {
     response
       .status(200)
       .json(
-        createResponse(true, updatedComment, "Comment successfully updated"),
+        createResponse(
+          true,
+          updatedComment,
+          "A hozzászólás sikeresen frissítve",
+        ),
       );
   } catch (error) {
     handleCaughtError(response, error);
@@ -84,7 +88,7 @@ export async function deleteComment(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Comment successfully deleted"));
+      .json(createResponse(true, null, "A hozzászólás sikeresen törölve"));
   } catch (error) {
     handleCaughtError(response, error);
   }

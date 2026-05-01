@@ -167,8 +167,12 @@ export default class CommentItem extends HTMLElement {
     const author = this.comment.author ?? "User";
     const authorId = this.comment.author_id;
     const hasProfile = this.comment.author_has_profile !== 0;
-    const avatarClass = hasProfile ? "comment-author-avatar" : "comment-author-avatar no-profile-avatar";
-    const linkClass = hasProfile ? "comment-author-avatar-link" : "comment-author-avatar-link no-profile-avatar";
+    const avatarClass = hasProfile
+      ? "comment-author-avatar"
+      : "comment-author-avatar no-profile-avatar";
+    const linkClass = hasProfile
+      ? "comment-author-avatar-link"
+      : "comment-author-avatar-link no-profile-avatar";
     const image = `<img class="${avatarClass}" src="${avatar}" alt="${author} profilkep" loading="lazy" decoding="async">`;
 
     if (!authorId) return image;
@@ -200,8 +204,8 @@ export default class CommentItem extends HTMLElement {
           <div class="comment-actions">
             <comment-reactions controls="both"></comment-reactions>
             <div class="comment-owner-actions">
-              <button id="save" type="button" hidden>Mentés</button>
-              <button id="delete" type="button">Törlés</button>
+              <button id="save" type="button" data-sfx="click_1" hidden>Mentés</button>
+              <button id="delete" type="button" data-sfx="click_1">Törlés</button>
             </div>
           </div>
       </form>

@@ -9,23 +9,7 @@ import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 import "/ui/component/validator/UsernameInputValidator.js";
 import "/ui/component/validator/EmailInputValidator.js";
 import "/ui/component/validator/PasswordInputValidator.js";
-
-function requestToast(message, variant = "info", delay = 0, duration = 3000) {
-  if (!message) return;
-
-  document.dispatchEvent(
-    new CustomEvent("toast-request", {
-      detail: {
-        toast: {
-          message,
-          variant,
-          delay,
-          duration,
-        },
-      },
-    }),
-  );
-}
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 const _innerHTML = `
 <form>
@@ -159,12 +143,11 @@ export default class AccountForm extends BaseCustomElement {
       return;
     }
 
-    requestToast(
+    ToastManager.SUCCESS(
       message ||
         (this.action === "update"
-          ? "Fiókadatok sikeresen módosítva."
-          : "Fiók sikeresen létrehozva."),
-      "success",
+          ? "Fiókadatok sikeresen módosítva"
+          : "Fiók sikeresen létrehozva"),
     );
 
     this.dispatchEvent(
@@ -184,10 +167,7 @@ export default class AccountForm extends BaseCustomElement {
   /** Needed to be compatible with <admin-module> */
   onSignError(detail) {
     console.error("Unable to send signed data.");
-    requestToast(
-      detail?.message || "Hiba: Nem sikerült elküldeni az adatokat.",
-      "error",
-    );
+    ToastManager.ERROR("Nem sikerült az adatok aláíratása");
   }
 
   build() {

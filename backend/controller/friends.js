@@ -22,7 +22,7 @@ export async function lazySelectByTarget(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Friends fetched successfully"));
+      .json(createResponse(true, result, "Az ismerősök sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -38,7 +38,7 @@ export async function summary(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Data successfully fetched"));
+      .json(createResponse(true, result, "Az adatok sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -53,17 +53,19 @@ export async function sendFriendRequest(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Friend request sent successfully."));
+      .json(
+        createResponse(true, null, "Ismerősnek jelölés sikeresen elküldve"),
+      );
   } catch (error) {
     if (error.code === "ER_NO_REFERENCED_ROW_2") {
       return response
         .status(404)
-        .json(createResponse(false, null, "Target user not found."));
+        .json(createResponse(false, null, "A célfelhasználó nem található"));
     }
     if (isSequelizeUniqueConstraintError(error)) {
       return handleSequelizeUniqueConstraintError(
         response,
-        "A friend request already exists or you are already friends with this user.",
+        "Már létezik ismerősnek jelölés, vagy már ismerősök vagytok",
       );
     }
     handleCaughtError(response, error);
@@ -79,7 +81,9 @@ export async function acceptFriendRequest(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Friend request accepted successfully"));
+      .json(
+        createResponse(true, null, "Ismerősnek jelölés sikeresen elfogadva"),
+      );
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -94,7 +98,7 @@ export async function removeFriend(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Friendship deleted successfully"));
+      .json(createResponse(true, null, "Ismeretség sikeresen törölve"));
   } catch (error) {
     handleCaughtError(response, error);
   }

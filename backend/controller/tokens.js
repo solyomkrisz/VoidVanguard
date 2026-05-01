@@ -32,7 +32,7 @@ export async function refresh(request, response) {
         createResponse(
           true,
           { access_token: accessToken },
-          "Access token refreshed successfully",
+          "Access token sikeresen frissítve",
         ),
       );
   } catch (error) {
@@ -54,7 +54,7 @@ export async function lazySelectActiveTokens(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Active tokens fetched successfully"));
+      .json(createResponse(true, result, "Aktív tokenek sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -72,7 +72,7 @@ export async function revokeSessionById(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Session destroyed successfully"));
+      .json(createResponse(true, result, "Munkamenet sikeresen megszüntetve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -90,7 +90,7 @@ export async function revokeSessionByToken(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Successfully logged out"));
+      .json(createResponse(true, null, "Sikeres kijelentkezés"));
   } catch (error) {
     handleCaughtError(response, error);
   }

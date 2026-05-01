@@ -36,7 +36,11 @@ export async function login(request, response) {
     response
       .status(200)
       .json(
-        createResponse(true, { access_token: accessToken }, "Login successful"),
+        createResponse(
+          true,
+          { access_token: accessToken },
+          "Sikeres bejelentkezés",
+        ),
       );
   } catch (error) {
     handleCaughtError(response, error);
@@ -55,7 +59,7 @@ export async function destroyAllSessions(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Successfully ended all sessions"));
+      .json(createResponse(true, null, "Minden munkamenet sikeresen lezárva"));
   } catch (error) {
     handleCaughtError(response, error);
   }

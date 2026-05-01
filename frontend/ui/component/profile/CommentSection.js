@@ -5,23 +5,7 @@ import * as net from "/common/network.js";
 import "/ui/component/form/InlineEditor.js";
 import "/ui/component/profile/CommentItem.js";
 import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
-
-function requestToast(message, variant = "info", delay = 0, duration = 3000) {
-  if (!message) return;
-
-  document.dispatchEvent(
-    new CustomEvent("toast-request", {
-      detail: {
-        toast: {
-          message,
-          variant,
-          delay,
-          duration,
-        },
-      },
-    }),
-  );
-}
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 function _push(array, item) {
   array.push(item);
@@ -283,7 +267,7 @@ export default class CommentSection extends LazyItemList {
     }
 
     this.removeFromMaps(comment);
-    requestToast(response?.message || "Komment sikeresen torolve.", "success");
+    ToastManager.SUCCESS(response?.message || "Hozzászólás sikeresen törölve");
   }
 
   async onCommentUpdate(e) {
@@ -318,9 +302,9 @@ export default class CommentSection extends LazyItemList {
     }
 
     e.target.comment = response.result; // Lehet később külön kéne lekérni az updatelt kommentet.
-    requestToast(
-      response?.message || "Komment sikeresen modositva.",
-      "success",
+
+    ToastManager.SUCCESS(
+      response?.message || "Hozzászólás sikeresen módosítva",
     );
   }
 

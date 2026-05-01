@@ -8,7 +8,7 @@ export async function get(request, response) {
       targetId: request.params.targetId,
     });
 
-    response.status(200).json(createResponse(true, result, "Reaction fetched"));
+    response.status(200).json(createResponse(true, result, "Reakció lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -24,7 +24,7 @@ export async function create(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Reaction added or updated"));
+      .json(createResponse(true, result, "Reakció hozzáadva vagy frissítve"));
   } catch (error) {
     handleCaughtError(response, error);
   }

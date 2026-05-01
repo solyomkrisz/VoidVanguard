@@ -17,7 +17,11 @@ export async function getBanStatus(request, response) {
     response
       .status(200)
       .json(
-        createResponse(true, result, "User ban status successfully retrieved"),
+        createResponse(
+          true,
+          result,
+          "A felhasználó kitiltási állapota sikeresen lekérve",
+        ),
       );
   } catch (error) {
     handleCaughtError(response, error);
@@ -36,7 +40,13 @@ export async function lazySelectUserBans(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "User bans successfully retrieved"));
+      .json(
+        createResponse(
+          true,
+          result,
+          "A felhasználó kitiltásai sikeresen lekérve",
+        ),
+      );
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -60,7 +70,7 @@ export async function banUser(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "User successfully banned"));
+      .json(createResponse(true, null, "A felhasználó sikeresen kitiltva"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -75,7 +85,13 @@ export async function unbanUser(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "User successfully unbanned"));
+      .json(
+        createResponse(
+          true,
+          null,
+          "A felhasználó kitiltása sikeresen feloldva",
+        ),
+      );
   } catch (error) {
     handleCaughtError(response, error);
   }

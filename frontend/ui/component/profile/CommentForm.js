@@ -1,23 +1,7 @@
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 import { isLoggedIn, isAdmin } from "/common/common.js";
 import * as net from "/common/network.js";
 import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
-
-function requestToast(message, variant = "info", delay = 0, duration = 3000) {
-  if (!message) return;
-
-  document.dispatchEvent(
-    new CustomEvent("toast-request", {
-      detail: {
-        toast: {
-          message,
-          variant,
-          delay,
-          duration,
-        },
-      },
-    }),
-  );
-}
 
 export default class CommentForm extends HTMLElement {
   set targetId(value) {
@@ -121,9 +105,8 @@ export default class CommentForm extends HTMLElement {
       }),
     );
 
-    requestToast(
-      response?.message || "Komment sikeresen közzétéve.",
-      "success",
+    ToastManager.SUCCESS(
+      response?.message || "Hozzászólás sikeresen közzétéve",
     );
 
     this.querySelector(".comment-compose-form")?.reset();

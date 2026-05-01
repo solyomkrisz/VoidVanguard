@@ -34,7 +34,7 @@ export async function requestPasswordReset(request, response) {
         createResponse(
           true,
           { retryAfter },
-          "An email has been sent to the provided email address",
+          "Az emailt elküldtük a megadott címre",
         ),
       );
   }
@@ -44,13 +44,7 @@ export async function requestPasswordReset(request, response) {
 
     response
       .status(200)
-      .json(
-        createResponse(
-          true,
-          null,
-          "An email has been sent to the provided email address",
-        ),
-      );
+      .json(createResponse(true, null, "Az emailt elküldtük a megadott címre"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -65,7 +59,7 @@ export async function resetPassword(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Password successfully resetted"));
+      .json(createResponse(true, null, "A jelszó sikeresen visszaállítva"));
   } catch (error) {
     handleCaughtError(response, error);
   }
