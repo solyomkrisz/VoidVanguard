@@ -43,7 +43,12 @@ export default class BanForm extends HTMLElement {
       "/api/admin/ban?targetUserId=" + this.userId,
     );
 
-    if (NetworkErrorHandler.handle(response, true)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        context: "BanForm.updateStatus",
+      })
+    ) {
       this._pending = false;
       return;
     }
@@ -77,7 +82,11 @@ export default class BanForm extends HTMLElement {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "BanForm.onUnbanButtonClick",
+      })
+    ) {
       this._pending = false;
       this.updateStatus();
       return;
@@ -117,7 +126,7 @@ export default class BanForm extends HTMLElement {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (NetworkErrorHandler.handle(response, { context: "BanForm.onSubmit" })) {
       this._pending = false;
       this.updateStatus();
       return;

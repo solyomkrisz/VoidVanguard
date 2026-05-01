@@ -91,7 +91,12 @@ export default class CommentForm extends HTMLElement {
   }
 
   async onResponse(response) {
-    if (NetworkErrorHandler.handle(response, true)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        context: "CommentForm.onResponse",
+      })
+    ) {
       return;
     }
 

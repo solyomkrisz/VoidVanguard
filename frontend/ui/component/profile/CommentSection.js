@@ -113,7 +113,7 @@ export default class CommentSection extends LazyItemList {
     this.removeEventListener("comment-post", this.onCommentPost);
     this.removeEventListener("comment-update", this.onCommentUpdate);
     this.removeEventListener("comment-delete", this.onCommentDelete);
-    this.addEventListener("comment-reaction", this.onCommentReaction);
+    this.removeEventListener("comment-reaction", this.onCommentReaction);
 
     off("login", this.onLogin);
     off("logout", this.onLogout);
@@ -130,8 +130,19 @@ export default class CommentSection extends LazyItemList {
   }
 
   async refreshAllComments() {
+    let forceReSync = false;
+
     for (const entry of this._byId.values()) {
-      await this.refreshComment(entry.comment.id);
+      const ok = await this.refreshComment(entry.comment.id);
+
+      if (!ok) {
+        forceReSync = true;
+        break;
+      }
+    }
+
+    if (forceReSync) {
+      this.refresh();
     }
   }
 
@@ -151,14 +162,21 @@ export default class CommentSection extends LazyItemList {
 
     const response = await net.send(url, { method: "GET" }, hasUserContext);
 
-    if (NetworkErrorHandler.handle(response)) {
-      return;
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        context: "CommentSection.refreshComment",
+      })
+    ) {
+      return false;
     }
 
     const entry = this._byId.get(commentId);
-    if (!entry) return;
+    if (!entry) return false;
 
     entry.element.comment = response.result;
+
+    return true;
   }
 
   async sendReaction(commentId, type) {
@@ -181,7 +199,9 @@ export default class CommentSection extends LazyItemList {
       body: formData,
     });
 
-    NetworkErrorHandler.handle(response);
+    NetworkErrorHandler.handle(response, {
+      context: "CommentSection.sendReaction",
+    });
   }
 
   async onCommentReaction(e) {
@@ -211,9 +231,13 @@ export default class CommentSection extends LazyItemList {
       await this.sendReaction(commentId, current);
     }
 
-    await this.refreshComment(commentId);
+    const ok = await this.refreshComment(commentId);
 
     state.pending = false;
+
+    if (!ok) {
+      this.refresh();
+    }
   }
 
   onCommentPost(e) {
@@ -256,7 +280,11 @@ export default class CommentSection extends LazyItemList {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "CommentSection.onCommentDelete",
+      })
+    ) {
       return;
     }
 
@@ -297,7 +325,11 @@ export default class CommentSection extends LazyItemList {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "CommentSection.onCommentUpdate",
+      })
+    ) {
       return;
     }
 
@@ -381,6 +413,13 @@ export default class CommentSection extends LazyItemList {
     }
 
     return url;
+  }
+
+  reset() {
+    super.reset?.();
+    this._byId.clear();
+    this._byAuthor.clear();
+    this._reactionStates.clear();
   }
 }
 

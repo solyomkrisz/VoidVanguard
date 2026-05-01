@@ -59,7 +59,12 @@ export default class FormRestorer extends HTMLElement {
       return;
     }
 
-    if (NetworkErrorHandler.handle(response, true)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        context: "FormRestorer.load",
+      })
+    ) {
       return;
     }
 

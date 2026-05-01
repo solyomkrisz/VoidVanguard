@@ -54,7 +54,11 @@ export default class BlockedUserList extends LazyItemList {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "BlockedUserList.sendRequest",
+      })
+    ) {
       this._hasOngoingUnblock = false;
       return;
     }

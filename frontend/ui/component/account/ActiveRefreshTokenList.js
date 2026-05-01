@@ -134,7 +134,11 @@ export default class ActiveRefreshTokenList extends LazyItemList {
     const response = await net.send(url, { method: "DELETE" });
 
     if (
-      NetworkErrorHandler.handle(response, false, (r) => !r?.result?.deleted)
+      NetworkErrorHandler.handle(response, {
+        strict: false,
+        failureFn: (r) => !r?.result?.deleted,
+        conext: "ActiveRefreshTokenList.onSessionDestroy",
+      })
     ) {
       this._hasOngoingSessionDestroy = false;
       return;

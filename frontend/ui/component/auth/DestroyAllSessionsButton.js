@@ -70,7 +70,11 @@ export default class DestroyAllSessionsButton extends HTMLElement {
 
       localStorage.removeItem("access_token");
 
-      if (NetworkErrorHandler.handle(response)) {
+      if (
+        NetworkErrorHandler.handle(response, {
+          context: "DestroyAllSessionsButton.onClick",
+        })
+      ) {
         throw new Error("Logout failed");
       }
     } catch (error) {

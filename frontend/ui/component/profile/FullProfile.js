@@ -385,6 +385,8 @@ export default class FullProfile extends HTMLElement {
     if (this._elements.profileCreateForm) {
       this._elements.profileCreateForm.hidden = true;
     }
+
+    this._elements.commentSection?.refresh?.();
   }
 
   async onDelete(e) {
@@ -400,7 +402,11 @@ export default class FullProfile extends HTMLElement {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "FullProfile.onDelete",
+      })
+    ) {
       return;
     }
 
@@ -426,7 +432,11 @@ export default class FullProfile extends HTMLElement {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "FullProfile.onSave",
+      })
+    ) {
       return;
     }
 
@@ -1220,7 +1230,11 @@ export default class FullProfile extends HTMLElement {
     if (this._activeLoadToken !== loadToken) return;
     // if (currentUserId !== this.userId) return;
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "FullProfile.update",
+      })
+    ) {
       this.onError(response?.result);
       return;
     }
@@ -1314,7 +1328,6 @@ export default class FullProfile extends HTMLElement {
     }
 
     if (
-      true ||
       meta?.origin === "friendshipStatusChangeHandler" ||
       meta?.origin === "blockStatusChangeHandler" ||
       meta?.origin === "onLogin" ||
@@ -1324,11 +1337,6 @@ export default class FullProfile extends HTMLElement {
       elements.friendListFull.refresh?.(); // if someone friend the user, it must show up on that list.
       elements.friendList.refresh?.();
     }
-
-    // friendlist
-    // if (state.friend_list_preview) {
-    //   elements.friendList.data = state.friend_list_preview;
-    // }
 
     if (Object.keys(state).length > 0) {
       elements.profileContainer.hidden = false;

@@ -300,10 +300,7 @@ export default class Game extends WebGLCanvas {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
-      console.error(
-        `Unable to save game: ${response?.message ? response.message : ""}`,
-      );
+    if (NetworkErrorHandler.handle(response, { context: "Game.remoteSave" })) {
       this.inSavingProcess = false;
       return false;
     }
@@ -315,7 +312,6 @@ export default class Game extends WebGLCanvas {
       this.loadedSave.save_name = saveName;
     }
 
-    console.log("Game state has been saved remotely as " + saveName);
     ToastManager.REQUEST(`Játékállás sikeresen feltöltve "${saveName}" néven`);
 
     this.inSavingProcess = false;

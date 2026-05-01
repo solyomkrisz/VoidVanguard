@@ -261,6 +261,15 @@ export const BAN_HIGHER_ROLE_ERROR = new CustomError({
   },
 });
 
+export const COMMENT_NOT_FOUND = new CustomError({
+  statusCode: 404,
+  definition: {
+    name: "CommentNotFoundError",
+    code: "ER_COMMENT_NOT_FOUND",
+    message: "Comment not found",
+  },
+});
+
 export function isCustomError(error) {
   return error instanceof CustomError;
 }

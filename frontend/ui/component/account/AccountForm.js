@@ -136,10 +136,11 @@ export default class AccountForm extends BaseCustomElement {
   onResponse(response) {
     const { success, result, message } = response;
 
-    if (NetworkErrorHandler.handle(response)) {
-      console.error(
-        `Failed to ${this.action === "update" ? "modify" : "create"} account.`,
-      );
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "AccountForm.onResponse",
+      })
+    ) {
       return;
     }
 

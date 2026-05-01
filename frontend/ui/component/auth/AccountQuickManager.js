@@ -11,7 +11,11 @@ async function getIncomingFriendRequestCount(userId) {
     `/api/friends/${userId}?include=incomingCount`,
   );
 
-  if (NetworkErrorHandler.handle(response)) {
+  if (
+    NetworkErrorHandler.handle(response, {
+      context: "AccountQuickManager.getIncomingFriendRequestCount",
+    })
+  ) {
     return null;
   }
 

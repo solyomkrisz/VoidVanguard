@@ -160,7 +160,11 @@ export default class FriendListFull extends LazyItemList {
         body: formData,
       });
 
-      if (NetworkErrorHandler.handle(response)) {
+      if (
+        NetworkErrorHandler.handle(response, {
+          context: "FriendListFull.handleRelationshipAction",
+        })
+      ) {
         return;
       }
 

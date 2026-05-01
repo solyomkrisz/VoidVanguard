@@ -97,7 +97,11 @@ export default class ProfileForm extends BaseCustomElement {
   onResponse(response) {
     const performedAction = this.action;
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "ProfileForm.onResponse",
+      })
+    ) {
       return;
     }
 

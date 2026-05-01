@@ -36,7 +36,11 @@ export default class AccountDeleteButton extends HTMLElement {
       method: "DELETE",
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "AccountDeleteButton.onClick",
+      })
+    ) {
       console.warn(`Unable to delete account: ${response?.message ?? ""}`);
       return;
     }

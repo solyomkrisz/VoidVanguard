@@ -133,7 +133,12 @@ export default class LeaderboardElement extends LazyItemList {
   async getUserBestScoreWithRank() {
     const response = await net.send("/api/scores/");
 
-    if (NetworkErrorHandler.handle(response, true)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        context: "LeaderboardElement.getUserBestScoreWithRank",
+      })
+    ) {
       return null;
     }
 

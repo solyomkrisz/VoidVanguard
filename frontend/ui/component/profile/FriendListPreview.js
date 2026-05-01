@@ -79,7 +79,12 @@ export default class FriendListPreview extends HTMLElement {
       isLoggedIn(),
     );
 
-    if (NetworkErrorHandler.handle(response, true)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        context: "FriendListPreview.update",
+      })
+    ) {
       this.reset();
       return;
     }

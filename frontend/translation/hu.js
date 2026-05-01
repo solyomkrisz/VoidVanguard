@@ -38,5 +38,7 @@ export default {
   "SessionDestroyError": "Nem sikerült lezárni a munkamenetet",
 
   "CannotBanYourselfError": "Nem bannolhatod saját magad",
-  "BanHigherRoleError": "Nem bannolhatsz ugyanilyen vagy magasabb rangú felhasználót"
+  "BanHigherRoleError": "Nem bannolhatsz ugyanilyen vagy magasabb rangú felhasználót",
+
+  "CommentNotFoundError": "A hozzászólás nem található",
 }

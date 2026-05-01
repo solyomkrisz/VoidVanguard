@@ -112,6 +112,8 @@ class Comments extends Table {
           AND user_reaction.user_id = ?
 
         WHERE comments.id = ?
+
+        GROUP BY comments.id
       `,
       [requesterId ?? -1, id],
     );

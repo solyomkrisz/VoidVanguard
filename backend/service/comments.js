@@ -72,10 +72,10 @@ export async function lazySelectByTarget({
 }
 
 export async function select({ requesterId = null, commentId }) {
-  const row = Comments.select(requesterId, commentId);
+  const row = await Comments.select(requesterId, commentId);
 
   if (!row) {
-    throw CustomError.TEST;
+    throw CustomError.COMMENT_NOT_FOUND;
   }
 
   return row;

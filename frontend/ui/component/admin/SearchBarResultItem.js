@@ -138,7 +138,11 @@ export default class SearchBarResultItem extends HTMLElement {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "SearchBarResultItem.sendRelationshipChangeRequest",
+      })
+    ) {
       this.syncRelationshipButtons();
       return;
     }
@@ -257,7 +261,13 @@ export default class SearchBarResultItem extends HTMLElement {
 
     const response = await net.send(url);
 
-    if (NetworkErrorHandler.handle(response, true, (r) => !r?.result?.status)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        failureFn: (r) => !r?.result?.status,
+        context: "SearchBarResultItem.getStatus",
+      })
+    ) {
       return null;
     }
 

@@ -34,7 +34,11 @@ export default class RemoteSaveList extends LazyItemList {
       body: formData,
     });
 
-    if (NetworkErrorHandler.handle(response)) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "RemoteSaveList.onSaveDelete",
+      })
+    ) {
       return;
     }
 
