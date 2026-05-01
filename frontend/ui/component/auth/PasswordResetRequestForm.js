@@ -10,6 +10,7 @@ export default class PasswordResetRequestForm extends HTMLElement {
     this._loading = false;
     this._elements = {};
     this._built = false;
+    this._intervalId = null;
 
     this.onSubmit = this.onSubmit.bind(this);
     this.onSubmitDisable = this.onSubmitDisable.bind(this);
@@ -35,7 +36,39 @@ export default class PasswordResetRequestForm extends HTMLElement {
     this._elements.message.textContent = response?.message;
     this._elements.form.reset?.();
 
+    if (response?.success) {
+      this.startCooldown(response?.result?.retryAfter ?? 300);
+    }
+
     this._loading = false;
+  }
+
+  startCooldown(seconds = 300) {
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      this._intervalId = null;
+    }
+
+    let remaining = seconds;
+
+    const button = this._elements.submitButton;
+
+    button.disabled = true;
+    button.textContent = "Próbáld újra " + remaining + " másodperc múlva";
+
+    this._intervalId = setInterval(() => {
+      remaining--;
+
+      if (remaining <= 0) {
+        clearInterval(this._intervalId);
+        this._intervalId = null;
+        button.disabled = false;
+        button.textContent = "Jelszóvisszaállítás kérése";
+        return;
+      }
+
+      button.textContent = "Próbáld újra " + remaining + " másodperc múlva";
+    }, 1000);
   }
 
   onSubmitDisable(e) {
