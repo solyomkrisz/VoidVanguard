@@ -19,13 +19,16 @@ class PasswordResets extends Table {
   }
 
   async canRequestPasswordReset(userId) {
-    const [rows] = await execute(`
+    const [rows] = await execute(
+      `
       SELECT 1
       FROM password_resets
       WHERE user_id = ?
         AND issued_at > NOW() - INTERVAL 5 MINUTE
       LIMIT 1
-    `);
+    `,
+      [userId],
+    );
     return rows.length ? false : true;
   }
 

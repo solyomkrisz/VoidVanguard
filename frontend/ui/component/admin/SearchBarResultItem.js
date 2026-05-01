@@ -209,16 +209,25 @@ export default class SearchBarResultItem extends HTMLElement {
     const img = this.appendChild(el("img"));
     const username = el("div", { class: "username" });
     const displayName = el("div", { class: "display-name", hidden: true });
-    const disguiseButton = el("button", { onClick: this.onDisguise }, [
-      "Álcázás mint",
-    ]);
-    const profileButton = el("button", { onClick: this.onProfileAction });
-    const friendButton = el("button", { onClick: this.onFriendButtonClick }, [
-      "Barát hozzáadása",
-    ]);
-    const blockButton = el("button", { onClick: this.onBlockButtonClick }, [
-      "Felhasználó letiltása",
-    ]);
+    const disguiseButton = el(
+      "button",
+      { onClick: this.onDisguise, "data-sfx": "click_1" },
+      ["Álcázás mint"],
+    );
+    const profileButton = el("button", {
+      onClick: this.onProfileAction,
+      "data-sfx": "click_1",
+    });
+    const friendButton = el(
+      "button",
+      { onClick: this.onFriendButtonClick, "data-sfx": "click_1" },
+      ["Barát hozzáadása"],
+    );
+    const blockButton = el(
+      "button",
+      { onClick: this.onBlockButtonClick, "data-sfx": "click_1" },
+      ["Felhasználó letiltása"],
+    );
 
     this._elements = {
       img,

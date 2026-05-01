@@ -19,9 +19,7 @@ export default class RemoveDisguiseButton extends HTMLElement {
 
     const active = this.hasDisguise();
     button.disabled = !active;
-    button.title = active
-      ? "Aktív álca eltávolítása"
-      : "Nincs aktív álca";
+    button.title = active ? "Aktív álca eltávolítása" : "Nincs aktív álca";
   }
 
   onClick() {
@@ -84,6 +82,7 @@ export default class RemoveDisguiseButton extends HTMLElement {
 
     const button = this.appendChild(document.createElement("button"));
 
+    button.dataset.sfx = "click_1";
     button.textContent = "Álca eltávolítása";
     button.addEventListener("click", this.onClick);
 

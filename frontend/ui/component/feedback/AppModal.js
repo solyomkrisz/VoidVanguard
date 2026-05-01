@@ -91,12 +91,20 @@ export default class AppModal extends BaseCustomElement {
     ]);
     this._elements.confirmButton = el(
       "button",
-      { class: "modal-confirm-button", onClick: this.onConfirmButtonClick },
+      {
+        class: "modal-confirm-button",
+        onClick: this.onConfirmButtonClick,
+        "data-sfx": "click_1",
+      },
       ["Ok"],
     );
     this._elements.cancelButton = el(
       "button",
-      { class: "modal-cancel-button", onClick: this.onCancelButtonClick },
+      {
+        class: "modal-cancel-button",
+        onClick: this.onCancelButtonClick,
+        "data-sfx": "click_1",
+      },
       ["Mégse"],
     );
 

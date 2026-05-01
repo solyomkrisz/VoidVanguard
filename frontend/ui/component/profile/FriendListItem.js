@@ -57,7 +57,9 @@ export default class FriendListItem extends HTMLElement {
   onAccept(e) {
     const userId = getFriendUserId(this.friend);
     if (!userId) {
-      console.error("Unable to resolve target user id for friend-accept action.");
+      console.error(
+        "Unable to resolve target user id for friend-accept action.",
+      );
       return;
     }
 
@@ -73,7 +75,9 @@ export default class FriendListItem extends HTMLElement {
   onDelete(e) {
     const userId = getFriendUserId(this.friend);
     if (!userId) {
-      console.error("Unable to resolve target user id for friend-delete action.");
+      console.error(
+        "Unable to resolve target user id for friend-delete action.",
+      );
       return;
     }
 
@@ -152,6 +156,7 @@ export default class FriendListItem extends HTMLElement {
       if (typeof handler !== "function") continue;
 
       const button = document.createElement("button");
+      button.dataset.sfx = "click_1";
       button.textContent = def.text;
       button.addEventListener("click", handler);
 
@@ -196,7 +201,9 @@ export default class FriendListItem extends HTMLElement {
     if (elements.img) {
       elements.img.src = this.friend?.avatar || "/image/defaultPfp.png";
       elements.img.classList.toggle("no-profile-avatar", !hasProfile);
-      elements.img.closest(".friend-avatar-shell")?.classList.toggle("no-profile-avatar", !hasProfile);
+      elements.img
+        .closest(".friend-avatar-shell")
+        ?.classList.toggle("no-profile-avatar", !hasProfile);
     }
   }
 

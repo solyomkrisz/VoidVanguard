@@ -1,5 +1,4 @@
 import LazyItemList from "/ui/component/data/LazyItemList.js";
-import "/ui/component/admin/UserBanListItem.js";
 import { el } from "/ui/UI.js";
 
 export default class UserBanList extends LazyItemList {
@@ -75,7 +74,7 @@ export default class UserBanList extends LazyItemList {
 
     const createdAtTd = el("td", {}, [item.created_at]);
     const expiresAtTd = el("td", {}, [item.expires_at ?? "-"]);
-    const reasonTd = el("td", {}, [item.reason ?? "-"]);
+    const reasonTd = el("td", {}, [item.reason || "-"]);
     const revokedAtTd = el("td", {}, [item.revoked_at ?? "-"]);
     const createdByTd = el("td", {}, [item.created_by_name ?? "-"]);
     const revokedByTd = el("td", {}, [item.revoked_by_name ?? "-"]);

@@ -90,7 +90,9 @@ export default class BanForm extends HTMLElement {
 
     ToastManager.REQUEST("Felhasználó kitiltása sikeresen visszavonva");
     this._pending = false;
-    this.dispatchEvent(new CustomEvent("ban-changed", { bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent("ban-changed", { bubbles: true, composed: true }),
+    );
     this.updateStatus();
   }
 
@@ -130,7 +132,9 @@ export default class BanForm extends HTMLElement {
 
     ToastManager.REQUEST("A felhasználó sikeresen kitiltva");
     this._pending = false;
-    this.dispatchEvent(new CustomEvent("ban-changed", { bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent("ban-changed", { bubbles: true, composed: true }),
+    );
     this.updateStatus();
   }
 
@@ -143,7 +147,7 @@ export default class BanForm extends HTMLElement {
 
     this._elements.unbanButton = el(
       "button",
-      { onClick: this.onUnbanButtonClick },
+      { onClick: this.onUnbanButtonClick, "data-sfx": "click_1" },
       ["Kitiltás feloldása"],
     );
     this._elements.unbanFormContainer = el(
@@ -155,7 +159,7 @@ export default class BanForm extends HTMLElement {
     this._elements.banForm = el("form", { onSubmit: this.onSubmit }, [
       el("textarea", { name: "reason", placeholder: "Kitiltás oka" }),
       el("input", { type: "datetime-local", name: "expiresAt" }),
-      el("button", {}, ["Kitiltás"]),
+      el("button", { "data-sfx": "click_1" }, ["Kitiltás"]),
     ]);
     this._elements.banFormContainer = el("div", { class: "ban-form" }, [
       this._elements.banForm,

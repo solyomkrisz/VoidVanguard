@@ -72,6 +72,10 @@ app-modal {
   display: block;
 }
 
+body:has(app-modal[open]) {
+  overflow: hidden !important;
+}
+
 destroy-all-sessions-button {
   display: block;
 }

@@ -71,9 +71,7 @@
         <h1 id="admin-title">Adminisztrációs felület</h1>
 
         <nav id="admin-nav">
-          <button id="backBtn" onclick="window.top.location.href = '/'">
-            &#8592; Vissza
-          </button>
+          <back-button></back-button>
           <remove-disguise-button></remove-disguise-button>
           <logout-button></logout-button>
         </nav>
@@ -297,6 +295,9 @@
       import "/ui/component/admin/RemoveDisguiseButton.js";
       import "/ui/component/admin/BanForm.js";
       import "/ui/component/admin/UserBanList.js";
+      import "/ui/component/button/BackButton.js";
+      import { attachGlobalAudioListeners } from "/common/globalAudio.js";
+      attachGlobalAudioListeners();
 
       (async () => {
         const ok = await autologin();

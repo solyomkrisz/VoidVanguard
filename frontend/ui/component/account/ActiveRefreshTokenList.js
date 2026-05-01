@@ -242,6 +242,7 @@ export default class ActiveRefreshTokenList extends LazyItemList {
       {
         class: "session-action-button session-action-button--revoke",
         onClick: onButtonClick,
+        "data-sfx": "click_1",
       },
       ["Munkamenet felfüggesztése"],
     );
@@ -250,6 +251,7 @@ export default class ActiveRefreshTokenList extends LazyItemList {
       {
         class: "session-action-button session-action-button--details",
         onClick: onDetailsButtonClick,
+        "data-sfx": "click_1",
       },
       ["Részletek"],
     );
