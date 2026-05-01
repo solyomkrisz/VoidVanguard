@@ -167,6 +167,24 @@ export default class ActiveRefreshTokenList extends LazyItemList {
     off("logout", this.onLogout);
   }
 
+  renderContent(items, response) {
+    if (!Array.isArray(items)) return;
+
+    if (this._page === 1 && items.length === 0) {
+      this._container.textContent = "";
+
+      const td = el("td", { colspan: "6", class: "token-list-empty" }, [
+        "Nincsenek megjeleníthető munkamenetek.",
+      ]);
+      const tr = el("tr", {}, [td]);
+
+      this._container.appendChild(tr);
+      return;
+    }
+
+    super.renderContent(items, response);
+  }
+
   renderItem(item) {
     // dropdown tr
     const makeDetail = (label, value) =>
@@ -202,13 +220,13 @@ export default class ActiveRefreshTokenList extends LazyItemList {
     const isCurrentMarkerTd = el(
       "td",
       { class: "current-marker-td", "data-label": "Aktív" },
-      [
-      el("div", { class: "is-current-marker", hidden: !item.current }),
-      ],
+      [el("div", { class: "is-current-marker", hidden: !item.current })],
     );
-    const idTd = el("td", { class: "session-id-cell", "data-label": "Azonosító" }, [
-      item.id,
-    ]);
+    const idTd = el(
+      "td",
+      { class: "session-id-cell", "data-label": "Azonosító" },
+      [item.id],
+    );
     const issuedAtTd = el("td", { "data-label": "Kezdeményezve" }, [
       item.issued_at,
     ]);
@@ -221,20 +239,25 @@ export default class ActiveRefreshTokenList extends LazyItemList {
 
     const revokeButton = el(
       "button",
-      { class: "session-action-button session-action-button--revoke", onClick: onButtonClick },
-      [
-      "Munkamenet felfüggesztése",
-      ],
+      {
+        class: "session-action-button session-action-button--revoke",
+        onClick: onButtonClick,
+      },
+      ["Munkamenet felfüggesztése"],
     );
     const detailsButton = el(
       "button",
-      { class: "session-action-button session-action-button--details", onClick: onDetailsButtonClick },
+      {
+        class: "session-action-button session-action-button--details",
+        onClick: onDetailsButtonClick,
+      },
       ["Részletek"],
     );
-    const buttonTd = el("td", { class: "session-controls", "data-label": "Műveletek" }, [
-      revokeButton,
-      detailsButton,
-    ]);
+    const buttonTd = el(
+      "td",
+      { class: "session-controls", "data-label": "Műveletek" },
+      [revokeButton, detailsButton],
+    );
 
     tr.append(
       isCurrentMarkerTd,

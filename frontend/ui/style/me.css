@@ -819,7 +819,11 @@ active-refresh-token-list table {
       rgba(106, 184, 255, 0.12) 0%,
       transparent 42%
     ),
-    linear-gradient(180deg, rgba(13, 13, 21, 0.84) 0%, rgba(10, 16, 30, 0.9) 100%);
+    linear-gradient(
+      180deg,
+      rgba(13, 13, 21, 0.84) 0%,
+      rgba(10, 16, 30, 0.9) 100%
+    );
   box-shadow:
     inset 0 0 0 1px rgba(13, 13, 21, 0.78),
     0 0 0 1px rgba(13, 13, 21, 0.96),
@@ -877,7 +881,11 @@ active-refresh-token-list table th {
   color: #a5dbff;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: linear-gradient(180deg, rgba(43, 79, 130, 0.78) 0%, rgba(28, 53, 90, 0.85) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(43, 79, 130, 0.78) 0%,
+    rgba(28, 53, 90, 0.85) 100%
+  );
 }
 
 active-refresh-token-list table tr:not(.dropdown-tr):nth-child(even) {
@@ -1054,7 +1062,9 @@ active-refresh-token-list table .session-action-button:hover:not(:disabled) {
     0 5px 12px rgba(74, 144, 226, 0.4);
 }
 
-active-refresh-token-list table .session-action-button--revoke:hover:not(:disabled) {
+active-refresh-token-list
+  table
+  .session-action-button--revoke:hover:not(:disabled) {
   background: #2a161d;
   color: #ffd5dc;
   border-color: #b34b5b;
@@ -1071,7 +1081,9 @@ active-refresh-token-list table .session-action-button:active:not(:disabled) {
     0 0 0 0 #1a2a4e;
 }
 
-active-refresh-token-list table .session-action-button--revoke:active:not(:disabled) {
+active-refresh-token-list
+  table
+  .session-action-button--revoke:active:not(:disabled) {
   box-shadow:
     inset 0 0 0 1px #0d0d15,
     0 0 0 0 #3d1f27;
@@ -1087,7 +1099,9 @@ active-refresh-token-list table tr:last-child {
   }
 }
 
-@media (max-width: 980px), (max-aspect-ratio: 3/4), (orientation: portrait) and (max-width: 1280px) {
+@media (max-width: 980px),
+  (max-aspect-ratio: 3/4),
+  (orientation: portrait) and (max-width: 1280px) {
   active-refresh-token-list table {
     border: none;
     background: transparent;
@@ -1147,7 +1161,10 @@ active-refresh-token-list table tr:last-child {
     white-space: normal;
   }
 
-  active-refresh-token-list table tr:not(.dropdown-tr) > td[data-label]::before {
+  active-refresh-token-list
+    table
+    tr:not(.dropdown-tr)
+    > td[data-label]::before {
     content: attr(data-label);
     color: #8ecfff;
     font-size: 0.72rem;
@@ -1156,27 +1173,45 @@ active-refresh-token-list table tr:last-child {
     flex-shrink: 0;
   }
 
-  active-refresh-token-list table tr:not(.dropdown-tr) > td:not([data-label]):nth-child(1)::before {
+  active-refresh-token-list
+    table
+    tr:not(.dropdown-tr)
+    > td:not([data-label]):nth-child(1)::before {
     content: "Aktív";
   }
 
-  active-refresh-token-list table tr:not(.dropdown-tr) > td:not([data-label]):nth-child(2)::before {
+  active-refresh-token-list
+    table
+    tr:not(.dropdown-tr)
+    > td:not([data-label]):nth-child(2)::before {
     content: "Azonosító";
   }
 
-  active-refresh-token-list table tr:not(.dropdown-tr) > td:not([data-label]):nth-child(3)::before {
+  active-refresh-token-list
+    table
+    tr:not(.dropdown-tr)
+    > td:not([data-label]):nth-child(3)::before {
     content: "Kezdeményezve";
   }
 
-  active-refresh-token-list table tr:not(.dropdown-tr) > td:not([data-label]):nth-child(4)::before {
+  active-refresh-token-list
+    table
+    tr:not(.dropdown-tr)
+    > td:not([data-label]):nth-child(4)::before {
     content: "Érvényes eddig";
   }
 
-  active-refresh-token-list table tr:not(.dropdown-tr) > td:not([data-label]):nth-child(5)::before {
+  active-refresh-token-list
+    table
+    tr:not(.dropdown-tr)
+    > td:not([data-label]):nth-child(5)::before {
     content: "Utoljára aktív";
   }
 
-  active-refresh-token-list table tr:not(.dropdown-tr) > td:not([data-label]):nth-child(6)::before {
+  active-refresh-token-list
+    table
+    tr:not(.dropdown-tr)
+    > td:not([data-label]):nth-child(6)::before {
     content: "Műveletek";
   }
 
@@ -1237,4 +1272,14 @@ active-refresh-token-list table tr:last-child {
   active-refresh-token-list table .session-controls button {
     width: 100%;
   }
+}
+
+.token-list-empty {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(123, 214, 255, 0.34);
+  background: rgba(10, 18, 30, 0.76);
+  color: #c7e8ff;
+  line-height: 1.4;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.65);
 }

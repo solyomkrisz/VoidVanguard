@@ -1350,10 +1350,10 @@ user-ban-list pagination-controls div {
   justify-content: center;
 }
 
-.ban-list-empty {
+.ban-list-empty,
+.token-list-empty {
   margin: 0;
   padding: 0.85rem 0.92rem;
-  border: 1px solid rgba(123, 214, 255, 0.4);
   background: rgba(10, 18, 30, 0.86);
   color: #d7efff;
   line-height: 1.4;

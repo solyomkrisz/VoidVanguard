@@ -271,8 +271,15 @@ export default class Game extends WebGLCanvas {
 
     window.localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
 
+    // frissítjük mert ha van akkor a <save-form> a <pause-menu>-n keresztül innen tölti be a nevet
+    if (this.loadedSave) {
+      this.loadedSave.save_name = saveName;
+    }
+
     console.log("Game state has been saved locally as " + saveName);
-    ToastManager.REQUEST("Game state has been saved locally as " + saveName);
+    ToastManager.REQUEST(
+      `Játékállás sikeresen mentve helyileg "${saveName}" néven`,
+    );
 
     this.inSavingProcess = false;
 
@@ -306,8 +313,13 @@ export default class Game extends WebGLCanvas {
 
     const saveName = formData.get("save_name");
 
+    // frissítjük mert ha van akkor a <save-form> a <pause-menu>-n keresztül innen tölti be a nevet
+    if (this.loadedSave) {
+      this.loadedSave.save_name = saveName;
+    }
+
     console.log("Game state has been saved remotely as " + saveName);
-    ToastManager.REQUEST("Game state has been saved remotely as " + saveName);
+    ToastManager.REQUEST(`Játékállás sikeresen feltöltve "${saveName}" néven`);
 
     this.inSavingProcess = false;
 
