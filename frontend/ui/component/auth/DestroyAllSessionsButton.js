@@ -85,6 +85,7 @@ export default class DestroyAllSessionsButton extends HTMLElement {
       element("button", text("Kijelentkezés mindenhonnan")),
     );
 
+    button.dataset.sfx = "click_1";
     button.addEventListener("click", this.onClick);
 
     if (!isLoggedIn()) button.hidden = true;

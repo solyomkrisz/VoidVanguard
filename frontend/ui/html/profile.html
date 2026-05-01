@@ -118,6 +118,8 @@
       import "/ui/component/auth/AccountQuickManager.js";
       import "/ui/component/auth/LogoutButton.js";
       import "/ui/component/button/BackButton.js";
+      import { attachGlobalAudioListeners } from "/common/globalAudio.js";
+      attachGlobalAudioListeners();
 
       await autologin();
 

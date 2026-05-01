@@ -49,8 +49,8 @@ export default class CommentForm extends HTMLElement {
       <form class="comment-compose-form">
         <label class="comment-compose-label" for="profile-comment-input">Hozzászólás a profilhoz</label>
         <textarea id="profile-comment-input" name="content" placeholder="Írj egy hozzászólást ehhez a profilhoz..."></textarea>
-        <button type="submit">Közzététel</button>
-        </form>
+        <button data-sfx="click_1" type="submit">Közzététel</button>
+      </form>
     `;
 
     const form = this.querySelector("form");

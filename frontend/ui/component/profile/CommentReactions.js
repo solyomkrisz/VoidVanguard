@@ -116,6 +116,7 @@ export default class CommentReactions extends HTMLElement {
   createButton(type) {
     const button = document.createElement("button");
     button.dataset.type = type;
+    button.dataset.sfx = "click_1";
     button.setAttribute("type", "button");
 
     const label = document.createElement("span");

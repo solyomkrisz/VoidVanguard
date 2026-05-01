@@ -1474,7 +1474,7 @@ user-ban-list pagination-controls div {
   active-refresh-token-list
     table
     tr:not(.dropdown-tr)
-    > td:not([data-label]):nth-child(1)::before {
+    > td:not([data-label], .token-list-empty):nth-child(1)::before {
     content: "Aktív";
   }
 
@@ -1570,8 +1570,4 @@ user-ban-list pagination-controls div {
   active-refresh-token-list table .session-controls button {
     width: 100%;
   }
-}
-
-body:has(#full-profile-container.active) {
-  overflow: hidden !important;
 }

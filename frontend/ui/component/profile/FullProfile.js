@@ -744,6 +744,7 @@ export default class FullProfile extends HTMLElement {
             "button",
             {
               type: "button",
+              "data-sfx": "click_1",
               class: "profile-avatar-editor-close",
               onClick: this.onAvatarEditorCloseClick,
             },
@@ -845,6 +846,7 @@ export default class FullProfile extends HTMLElement {
             "button",
             {
               type: "button",
+              "data-sfx": "click_1",
               class: "profile-visibility-toggle",
             },
             [getVisibilityLabel(data.visibility)],
@@ -903,13 +905,18 @@ export default class FullProfile extends HTMLElement {
           "button",
           {
             id: "friendship-controller",
+            "data-sfx": "click_1",
             onClick: this.onFriendshipButtonClick,
           },
           ["Barát hozzáadása"],
         ),
         el(
           "button",
-          { id: "block-controller", onClick: this.onBlockButtonClick },
+          {
+            id: "block-controller",
+            "data-sfx": "click_1",
+            onClick: this.onBlockButtonClick,
+          },
           ["Felhasználó letiltása"],
         ),
       ]);
@@ -922,17 +929,26 @@ export default class FullProfile extends HTMLElement {
           {
             id: "save",
             hidden: true,
+            "data-sfx": "click_1",
             onClick: this.onSave,
           },
           ["Mentés"],
         ),
-        el("button", { id: "cancel", hidden: true, onClick: this.onCancel }, [
-          "Mégse",
-        ]),
+        el(
+          "button",
+          {
+            id: "cancel",
+            "data-sfx": "click_1",
+            hidden: true,
+            onClick: this.onCancel,
+          },
+          ["Mégse"],
+        ),
         el(
           "button",
           {
             id: "delete",
+            "data-sfx": "click_1",
             onClick: this.onDelete,
           },
           ["Törlés"],
@@ -950,6 +966,7 @@ export default class FullProfile extends HTMLElement {
               "button",
               {
                 type: "button",
+                "data-sfx": "click_1",
                 class: "profile-visibility-toggle",
               },
               [getVisibilityLabel(this._profileData?.visibility)],
@@ -1144,8 +1161,8 @@ export default class FullProfile extends HTMLElement {
           <div class="profile-body">
             <div>
               <div class="profile-body-actions">
-                <button id="friend-list-full-toggle" type="button" hidden>Összes barát megtekintése</button>
-                <button id="profile-body-create" type="button" hidden>Profil létrehozása</button>
+                <button id="friend-list-full-toggle" data-sfx="click_1" type="button" hidden>Összes barát megtekintése</button>
+                <button id="profile-body-create" type="button" data-sfx="click_1" hidden>Profil létrehozása</button>
               </div>
               <p class="friend-list-preview-label">Barátok előnézete</p>
               <friend-list-preview></friend-list-preview>
@@ -1163,9 +1180,9 @@ export default class FullProfile extends HTMLElement {
       <div>
         <fullscreen-overlay id="profile-form" no-close hidden>
           <p id="missing-profile-message" hidden></p>
-          <button id="open-profile-create" type="button">Profil létrehozása</button>
+          <button id="open-profile-create" type="button" data-sfx="click_1">Profil létrehozása</button>
           <profile-form id="profile-create-form" ${this.admin ? "admin" : ""} self-sign hidden></profile-form>
-          <button id="continue-without-profile" type="button">Folytatás profil létrehozása nélkül</button>
+          <button id="continue-without-profile" type="button" data-sfx="click_1">Folytatás profil létrehozása nélkül</button>
         </fullscreen-overlay>
         <fullscreen-overlay id="friend-list-full" hidden>
           <friend-list-full controls="pagination" page-size="6"></friend-list-full>
@@ -1208,7 +1225,7 @@ export default class FullProfile extends HTMLElement {
   async update(meta) {
     if (!this._built) this.build();
 
-    console.log("UPDATE META: ", meta);
+    // console.log("UPDATE META: ", meta);
 
     const currentUserId = this.userId;
     const loadToken = Symbol();

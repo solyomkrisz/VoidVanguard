@@ -130,6 +130,8 @@
       import "/ui/component/button/BackButton.js";
       import { onDOMContentLoaded, autologin } from "/common/common.js";
       import { on, off } from "/common/eventhub.js";
+      import { attachGlobalAudioListeners } from "/common/globalAudio.js";
+      attachGlobalAudioListeners();
 
       (async () => {
         const ok = await autologin();
