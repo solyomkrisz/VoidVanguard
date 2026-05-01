@@ -1,6 +1,7 @@
 import * as net from "/common/network.js";
 import { on, off } from "/common/eventhub.js";
 import { isLoggedIn } from "/common/common.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 const PREVIEW_LIMIT = 5;
 
@@ -78,15 +79,12 @@ export default class FriendListPreview extends HTMLElement {
       isLoggedIn(),
     );
 
-    const { success, result, message } = response;
-
-    if (!success || !result) {
-      console.error(message);
+    if (NetworkErrorHandler.handle(response, true)) {
       this.reset();
       return;
     }
 
-    const data = result.preview;
+    const data = response.result.preview;
 
     if (!data) {
       this.reset();
@@ -99,8 +97,12 @@ export default class FriendListPreview extends HTMLElement {
   renderItem(item) {
     const el = document.createElement("template");
     const hasProfile = item?.has_profile !== 0;
-    const avatarShellClass = hasProfile ? "friend-preview-avatar-shell" : "friend-preview-avatar-shell no-profile-avatar";
-    const avatarClass = hasProfile ? "friend-preview-avatar" : "friend-preview-avatar no-profile-avatar";
+    const avatarShellClass = hasProfile
+      ? "friend-preview-avatar-shell"
+      : "friend-preview-avatar-shell no-profile-avatar";
+    const avatarClass = hasProfile
+      ? "friend-preview-avatar"
+      : "friend-preview-avatar no-profile-avatar";
 
     el.innerHTML = `
       <div class="friend-list-item">

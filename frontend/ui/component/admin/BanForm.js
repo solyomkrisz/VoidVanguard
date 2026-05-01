@@ -3,6 +3,7 @@ import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 import AppModal from "/ui/component/feedback/AppModal.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class BanForm extends HTMLElement {
   static get observedAttributes() {
@@ -42,11 +43,7 @@ export default class BanForm extends HTMLElement {
       "/api/admin/ban?targetUserId=" + this.userId,
     );
 
-    if (!response?.success || !response?.result) {
-      console.warn("Unable to get ban status");
-      ToastManager.REQUEST(
-        "Nem sikerült a felhasználó kitiltási állapotát lekérni",
-      );
+    if (NetworkErrorHandler.handle(response, true)) {
       this._pending = false;
       return;
     }
@@ -80,9 +77,7 @@ export default class BanForm extends HTMLElement {
       body: formData,
     });
 
-    if (!response?.success) {
-      console.warn("Unable to unban user.");
-      ToastManager.REQUEST("Nem sikerült a felhasználó kitiltását visszavonni");
+    if (NetworkErrorHandler.handle(response)) {
       this._pending = false;
       this.updateStatus();
       return;
@@ -122,9 +117,7 @@ export default class BanForm extends HTMLElement {
       body: formData,
     });
 
-    if (!response?.success) {
-      console.warn("Unable to ban user.");
-      ToastManager.REQUEST("A felhasználó kitiltása sikertelen");
+    if (NetworkErrorHandler.handle(response)) {
       this._pending = false;
       this.updateStatus();
       return;

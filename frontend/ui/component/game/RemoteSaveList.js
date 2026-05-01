@@ -4,6 +4,7 @@ import "/ui/component/game/SaveListSlot.js";
 import * as net from "/common/network.js";
 import { el } from "/ui/UI.js";
 import { on, off } from "/common/eventhub.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class RemoteSaveList extends LazyItemList {
   get itemControls() {
@@ -33,16 +34,12 @@ export default class RemoteSaveList extends LazyItemList {
       body: formData,
     });
 
-    if (response?.message) {
-      console.log(response.message);
-      ToastManager.REQUEST(response.message);
+    if (NetworkErrorHandler.handle(response)) {
+      return;
     }
 
-    if (!response?.success) {
-      console.error("Unable to delete save.");
-      ToastManager.REQUEST("Unable to delete save");
-
-      return;
+    if (response?.message) {
+      ToastManager.REQUEST(response.message);
     }
 
     this._byGameId.get(gameId)?.remove?.();

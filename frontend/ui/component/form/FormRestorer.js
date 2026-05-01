@@ -1,5 +1,6 @@
 import { setFieldValue } from "/common/common.js";
 import * as net from "/common/network.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class FormRestorer extends HTMLElement {
   static get observedAttributes() {
@@ -58,16 +59,13 @@ export default class FormRestorer extends HTMLElement {
       return;
     }
 
-    const { success, result, message } = response;
-
-    if (!success || !result) {
-      console.error(message);
+    if (NetworkErrorHandler.handle(response, true)) {
       return;
     }
 
-    this._data = result;
+    this._data = response?.result;
 
-    const mapped = this.mapDataToFields(result);
+    const mapped = this.mapDataToFields(response?.result);
     this.restore(mapped);
 
     this.dispatchEvent(

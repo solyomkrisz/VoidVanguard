@@ -3,6 +3,7 @@ import { on, off } from "/common/eventhub.js";
 import { element, text } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import AppModal from "/ui/component/feedback/AppModal.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class DestroyAllSessionsButton extends HTMLElement {
   constructor() {
@@ -69,8 +70,8 @@ export default class DestroyAllSessionsButton extends HTMLElement {
 
       localStorage.removeItem("access_token");
 
-      if (!response?.success) {
-        throw new Error(`Global logout failed: ${response?.message}`);
+      if (NetworkErrorHandler.handle(response)) {
+        throw new Error("Logout failed");
       }
     } catch (error) {
       console.error(error);

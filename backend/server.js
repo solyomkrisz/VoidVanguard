@@ -41,13 +41,6 @@ router.get("/me", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/ui/html/me.html"));
 });
 
-// Functional test oldal
-router.get("/functionaltest", (request, response) => {
-  response.sendFile(
-    path.join(__dirname, "../frontend/ui/html/functionaltest.html"),
-  );
-});
-
 // Game oldal
 router.get("/game", (request, response) => {
   response.sendFile(path.join(__dirname, "../frontend/ui/html/game.html"));
@@ -82,8 +75,14 @@ router.get("/admin", (request, response) => {
 });
 
 // Teszt oldal
-router.get("/test", (request, response) => {
-  response.sendFile(path.join(__dirname, "../frontend/test.html"));
+router.get("/test/functional", (request, response) => {
+  response.sendFile(
+    path.join(__dirname, "../frontend/ui/html/functionaltest.html"),
+  );
+});
+
+router.get("/test/unit", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/ui/html/unittest.html"));
 });
 
 app.use("/", router);

@@ -94,7 +94,16 @@ export function authorize(
       next();
     },
     onMismatch: (_, response, _1) => {
-      response.status(403).json(createResponse(false, null, "Forbidden"));
+      const error = CustomError.FORBIDDEN;
+      response
+        .status(403)
+        .json(
+          createResponse(
+            error.statusCode,
+            error.definition,
+            error.definition.message,
+          ),
+        );
     },
   },
 ) {

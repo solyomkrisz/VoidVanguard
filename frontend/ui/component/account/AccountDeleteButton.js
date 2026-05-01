@@ -2,6 +2,7 @@ import { isLoggedIn, logout } from "/common/common.js";
 import * as net from "/common/network.js";
 import AppModal from "/ui/component/feedback/AppModal.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class AccountDeleteButton extends HTMLElement {
   constructor() {
@@ -35,9 +36,8 @@ export default class AccountDeleteButton extends HTMLElement {
       method: "DELETE",
     });
 
-    if (!response?.success) {
+    if (NetworkErrorHandler.handle(response)) {
       console.warn(`Unable to delete account: ${response?.message ?? ""}`);
-      ToastManager.REQUEST("Hiba történt a fiók törlése közben");
       return;
     }
 

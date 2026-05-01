@@ -5,7 +5,7 @@ export const POST = {
       options: {
         min: 1,
       },
-      errorMessage: "Username must not be empty",
+      errorMessage: "A felhasználónév nem lehet üres",
     },
   },
   password: {
@@ -14,7 +14,7 @@ export const POST = {
       options: {
         min: 1,
       },
-      errorMessage: "Password must no be empty",
+      errorMessage: "A jelszó nem lehet üres",
     },
   },
 };

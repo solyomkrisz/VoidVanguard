@@ -5,6 +5,7 @@ import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 import AppModal from "/ui/component/feedback/AppModal.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 function parseUserAgent(userAgent = "") {
   userAgent = userAgent.toLowerCase();
@@ -132,13 +133,14 @@ export default class ActiveRefreshTokenList extends LazyItemList {
 
     const response = await net.send(url, { method: "DELETE" });
 
-    if (!response?.success || !response?.result?.deleted) {
-      ToastManager.REQUEST("Nem sikerült a kívánt munkamenet felfüggesztése.");
+    if (
+      NetworkErrorHandler.handle(response, false, (r) => !r?.result?.deleted)
+    ) {
       this._hasOngoingSessionDestroy = false;
       return;
     }
 
-    ToastManager.REQUEST("Munkamenet sikeresen felfüggesztve.");
+    ToastManager.SUCCESS("Munkamenet sikeresen felfüggesztve.");
     this._hasOngoingSessionDestroy = false;
 
     if (response?.result?.logout) {

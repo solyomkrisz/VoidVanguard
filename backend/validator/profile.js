@@ -15,7 +15,7 @@ function validateAvatarPath(value) {
   }
 
   if (!ALLOWED_AVATAR_PATHS.includes(value)) {
-    throw new Error("Invalid avatar value");
+    throw new Error("Érvénytelen avatar érték");
   }
 
   return true;
@@ -42,7 +42,7 @@ export const POST = {
         min: 1,
         max: 60,
       },
-      errorMessage: "Display name must be 1-60 characters long",
+      errorMessage: "A megjelenítési név hossza 1 és 60 karakter között lehet",
     },
   },
   description: {
@@ -52,6 +52,7 @@ export const POST = {
       options: {
         max: 250,
       },
+      errorMessage: "A profil leírása maximum 250 karakter hosszú lehet",
     },
   },
   visibility: {
@@ -60,7 +61,7 @@ export const POST = {
     custom: {
       options: (value) => {
         if (!["public", "private", "friends-only"].includes(value)) {
-          throw new Error("Invalid visibility value");
+          throw new Error("Érvénytelen láthatósági érték");
         }
         return true;
       },
@@ -84,6 +85,7 @@ export const PATCH = {
         min: 1,
         max: 60,
       },
+      errorMessage: "A megjelenítési név hossza 1 és 60 karakter között lehet",
     },
   },
   description: {
@@ -93,6 +95,7 @@ export const PATCH = {
       options: {
         max: 250,
       },
+      errorMessage: "A profil leírása maximum 250 karakter hosszú lehet",
     },
   },
   visibility: {
@@ -101,7 +104,7 @@ export const PATCH = {
     custom: {
       options: (value) => {
         if (!["public", "private", "friends-only"].includes(value)) {
-          throw new Error("Invalid visibility value");
+          throw new Error("Érvénytelen láthatósági érték");
         }
         return true;
       },

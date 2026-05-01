@@ -4,6 +4,7 @@ import * as net from "/common/network.js";
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { el } from "/ui/UI.js";
 import "/ui/component/misc/LeaderboardItem.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class LeaderboardElement extends LazyItemList {
   get view() {
@@ -132,7 +133,7 @@ export default class LeaderboardElement extends LazyItemList {
   async getUserBestScoreWithRank() {
     const response = await net.send("/api/scores/");
 
-    if (!response?.success || !response?.result) {
+    if (NetworkErrorHandler.handle(response, true)) {
       return null;
     }
 

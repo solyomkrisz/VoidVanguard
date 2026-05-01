@@ -3,6 +3,7 @@ import { isLoggedIn, isUserSet } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import "/ui/component/account/BlockedUserListItem.js";
 import * as net from "/common/network.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class BlockedUserList extends LazyItemList {
   static get observedAttributes() {
@@ -53,8 +54,7 @@ export default class BlockedUserList extends LazyItemList {
       body: formData,
     });
 
-    if (!response?.success) {
-      console.error("Unable to unblock user: " + response?.message);
+    if (NetworkErrorHandler.handle(response)) {
       this._hasOngoingUnblock = false;
       return;
     }

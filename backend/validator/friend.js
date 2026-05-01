@@ -6,7 +6,7 @@ export const POST = {
     custom: {
       options: (value) => {
         if (!validate(value)) {
-          throw new Error("Invalid user id");
+          throw new Error("Érvénytelen felhasználóazonosító");
         }
         return true;
       },

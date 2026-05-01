@@ -6,7 +6,7 @@ export const GET = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid target ID");
+          throw new Error("Érvénytelen célazonosító");
         }
         return true;
       },
@@ -20,7 +20,7 @@ export const POST = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid target ID");
+          throw new Error("Érvénytelen célazonosító");
         }
         return true;
       },
@@ -30,7 +30,7 @@ export const POST = {
     in: ["body"],
     isIn: {
       options: [["like", "dislike"]],
-      errorMessage: "Invalid reaction type",
+      errorMessage: "Érvénytelen reakció típus",
     },
   },
 };

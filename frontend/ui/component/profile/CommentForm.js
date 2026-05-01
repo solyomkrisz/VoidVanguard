@@ -1,5 +1,6 @@
 import { isLoggedIn, isAdmin } from "/common/common.js";
 import * as net from "/common/network.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 function requestToast(message, variant = "info", delay = 0, duration = 3000) {
   if (!message) return;
@@ -106,25 +107,24 @@ export default class CommentForm extends HTMLElement {
   }
 
   async onResponse(response) {
-    const { success, result, message } = response;
-
-    if (!success || !result) {
-      console.log(result, message);
-      console.error("An error occured during posting your comment.");
+    if (NetworkErrorHandler.handle(response, true)) {
       return;
     }
 
     this.dispatchEvent(
       new CustomEvent("comment-post", {
         detail: {
-          comment: result,
+          comment: response?.result,
         },
         bubbles: true,
         composed: true,
       }),
     );
 
-    requestToast(message || "Komment sikeresen közzétéve.", "success");
+    requestToast(
+      response?.message || "Komment sikeresen közzétéve.",
+      "success",
+    );
 
     this.querySelector(".comment-compose-form")?.reset();
   }

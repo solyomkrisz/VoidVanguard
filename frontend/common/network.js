@@ -1,71 +1,10 @@
-import { isExpired, decode } from "./jwt.js";
+import { isExpired, decode } from "/common/jwt.js";
 import { logout } from "/common/common.js";
 
 const pendingRequests = new Map();
 const getReqKey = ({ method }, url) => `${method}:${url}`;
 
 let refreshPromise = null;
-function shouldSuppressErrorToast(url, options = {}, isProtected = true) {
-  const method = String(options?.method || "GET").toUpperCase();
-
-  let pathname = "";
-  try {
-    pathname = new URL(url, window.location.origin).pathname;
-  } catch {
-    pathname = String(url || "");
-  }
-
-  const onAuthPage = window.location.pathname === "/";
-  const isAuthAction =
-    method === "POST" &&
-    (pathname === "/api/sessions" || pathname === "/api/users");
-
-  // Autologin/session probe calls intentionally send no credentials.
-  // If they fail for guests, avoid noisy validation toasts.
-  const body = options?.body;
-  const hasSessionCredentials = (() => {
-    if (body == null) return false;
-
-    if (typeof body === "string") {
-      if (!body.trim()) return false;
-      try {
-        const parsed = JSON.parse(body);
-        return Boolean(parsed?.username || parsed?.password);
-      } catch {
-        return false;
-      }
-    }
-
-    if (body instanceof FormData) {
-      return body.has("username") || body.has("password");
-    }
-
-    return false;
-  })();
-
-  const isSessionProbe =
-    method === "POST" && pathname === "/api/sessions" && !hasSessionCredentials;
-
-  return (onAuthPage && isAuthAction && !isProtected) || isSessionProbe;
-}
-
-function requestErrorToast(message, url, options = {}, isProtected = true) {
-  if (!message) return;
-  if (shouldSuppressErrorToast(url, options, isProtected)) return;
-
-  document.dispatchEvent(
-    new CustomEvent("toast-request", {
-      detail: {
-        toast: {
-          message,
-          delay: 0,
-          duration: 3000,
-          variant: "error",
-        },
-      },
-    }),
-  );
-}
 
 export function refreshAccessToken() {
   console.log("Refreshing access token...");
@@ -178,13 +117,11 @@ export async function send(
     try {
       response = await fetch(url, requestOptions);
     } catch (error) {
-      const failure = {
+      return {
         success: false,
         result: null,
         message: "Network error",
       };
-      requestErrorToast(failure.message, url, requestOptions, isProtected);
-      return failure;
     }
 
     let data;
@@ -192,13 +129,11 @@ export async function send(
     try {
       data = await response.json();
     } catch {
-      const failure = {
+      return {
         success: false,
         result: null,
         message: "Server returned an invalid response",
       };
-      requestErrorToast(failure.message, url, requestOptions, isProtected);
-      return failure;
     }
 
     if (isProtected && response.status === 401 && retry) {
@@ -211,15 +146,6 @@ export async function send(
       }
 
       return send(url, requestOptions, isProtected, false);
-    }
-
-    if (!data?.success) {
-      requestErrorToast(
-        data?.message || "Unexpected request failure",
-        url,
-        requestOptions,
-        isProtected,
-      );
     }
 
     return data;

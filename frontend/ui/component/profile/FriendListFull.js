@@ -3,6 +3,7 @@ import { on, off } from "/common/eventhub.js";
 import { isLoggedIn, isUserSet } from "/common/common.js";
 import * as net from "/common/network.js";
 import "/ui/component/profile/FriendListItem.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 const CONTROL_MAP = {
   pending: {
@@ -91,7 +92,11 @@ export default class FriendListFull extends LazyItemList {
     const userId = e?.detail?.userId || e?.target?.friend?.user_id || null;
 
     if (!userId) {
-      console.error("Missing or invalid userId for relationship action:", e.type, e?.detail);
+      console.error(
+        "Missing or invalid userId for relationship action:",
+        e.type,
+        e?.detail,
+      );
       return;
     }
 
@@ -155,12 +160,7 @@ export default class FriendListFull extends LazyItemList {
         body: formData,
       });
 
-      const { success, message } = response;
-
-      console.log(message);
-
-      if (!success) {
-        console.error(`Action '${type}' failed: ${message || "Unknown error"}`);
+      if (NetworkErrorHandler.handle(response)) {
         return;
       }
 

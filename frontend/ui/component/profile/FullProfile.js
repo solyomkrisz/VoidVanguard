@@ -12,6 +12,7 @@ import "/ui/component/layout/FullscreenOverlay.js";
 import "/ui/component/profile/ProfileForm.js";
 import "/ui/component/decorative/DashedBorderBox.js";
 import "/ui/component/form/InlineEditor.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 import "/ui/component/validator/DisplayNameInputValidator.js";
 import "/ui/component/validator/DescriptionInputValidator.js";
@@ -415,10 +416,7 @@ export default class FullProfile extends HTMLElement {
       body: formData,
     });
 
-    const { success, message } = response;
-
-    if (!success) {
-      console.error("Error during profile deletion: " + message);
+    if (NetworkErrorHandler.handle(response)) {
       return;
     }
 
@@ -444,14 +442,11 @@ export default class FullProfile extends HTMLElement {
       body: formData,
     });
 
-    const { success, message } = response;
-
-    if (!success) {
-      console.error("Error during profile update: " + message);
+    if (NetworkErrorHandler.handle(response)) {
       return;
     }
 
-    requestToast(message || "Profil sikeresen mentve.", "success");
+    requestToast(response?.message || "Profil sikeresen mentve.", "success");
 
     this._changed.clear();
     this.toggleEditing();
@@ -1241,8 +1236,7 @@ export default class FullProfile extends HTMLElement {
     if (this._activeLoadToken !== loadToken) return;
     // if (currentUserId !== this.userId) return;
 
-    if (!response?.success) {
-      console.error("Unable to fetch profile.");
+    if (NetworkErrorHandler.handle(response)) {
       this.onError(response?.result);
       return;
     }

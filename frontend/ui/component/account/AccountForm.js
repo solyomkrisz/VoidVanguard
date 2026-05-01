@@ -4,6 +4,7 @@ import * as net from "/common/network.js";
 import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 import "/ui/component/validator/UsernameInputValidator.js";
 import "/ui/component/validator/EmailInputValidator.js";
@@ -140,7 +141,6 @@ export default class AccountForm extends BaseCustomElement {
   }
 
   async sendRequest(formData) {
-    console.log(formData);
     const response = await net.send("/api/users", {
       method: METHOD[this.action] || "POST",
       body: formData,
@@ -152,15 +152,12 @@ export default class AccountForm extends BaseCustomElement {
   onResponse(response) {
     const { success, result, message } = response;
 
-    if (!success) {
+    if (NetworkErrorHandler.handle(response)) {
       console.error(
         `Failed to ${this.action === "update" ? "modify" : "create"} account.`,
       );
-
       return;
     }
-
-    console.log(response);
 
     requestToast(
       message ||

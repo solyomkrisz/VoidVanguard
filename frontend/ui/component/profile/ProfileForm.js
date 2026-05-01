@@ -6,6 +6,7 @@ import * as net from "/common/network.js";
 import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 function requestToast(message, variant = "info", delay = 0, duration = 3000) {
   if (!message) return;
@@ -110,14 +111,9 @@ export default class ProfileForm extends BaseCustomElement {
   }
 
   onResponse(response) {
-    const { success, result, message } = response;
     const performedAction = this.action;
 
-    if (!success) {
-      console.error(
-        `Failed to ${this.action === "update" ? "modify" : "create"} profile.`,
-      );
-
+    if (NetworkErrorHandler.handle(response)) {
       return;
     }
 
@@ -126,7 +122,7 @@ export default class ProfileForm extends BaseCustomElement {
     }
 
     requestToast(
-      message ||
+      response?.message ||
         (performedAction === "update"
           ? "Profil sikeresen módosítva."
           : "Profil sikeresen létrehozva."),
@@ -135,7 +131,7 @@ export default class ProfileForm extends BaseCustomElement {
 
     this.dispatchEvent(
       new CustomEvent(this.getEventName(performedAction), {
-        detail: { result },
+        detail: { result: response?.result },
         bubbles: true,
         composed: true,
       }),

@@ -6,7 +6,7 @@ export const BAN_STATUS = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid user ID");
+          throw new Error("Érvénytelen felhasználóazonosító");
         }
         return true;
       },
@@ -20,7 +20,7 @@ export const BAN = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid user ID");
+          throw new Error("Érvénytelen felhasználóazonosító");
         }
         return true;
       },
@@ -32,11 +32,11 @@ export const BAN = {
       options: { nullable: true },
     },
     isString: {
-      errorMessage: "Reason must be a string",
+      errorMessage: "Az indok szövegnek kell lennie",
     },
     isLength: {
       options: { max: 60 },
-      errorMessage: "Reason must be at most 60 characters",
+      errorMessage: "Az indok legfeljebb 60 karakter hosszú lehet",
     },
     customSanitizer: {
       options: (value) => value ?? null,
@@ -47,18 +47,10 @@ export const BAN = {
     optional: {
       options: { nullable: true, checkFalsy: true },
     },
-    // customSanitizer: {
-    //   options: (value) => {
-    //     if (value === "" || value === undefined || value === null) {
-    //       return null;
-    //     }
-
-    //     return value.replace("T", " ") + ":00";
-    //   },
-    // },
     isISO8601: {
       options: { strict: true },
-      errorMessage: "expiresAt must be a valid datetime",
+      errorMessage:
+        "A lejárati időpont mező érvényes dátum-idő érték kell legyen",
     },
     custom: {
       options: (value) => {
@@ -68,11 +60,13 @@ export const BAN = {
         const minAllowed = new Date(Date.now() + 5 * 60 * 1000);
 
         if (isNaN(date.getTime())) {
-          throw new Error("Invalid date");
+          throw new Error("Érvénytelen dátum");
         }
 
         if (date < minAllowed) {
-          throw new Error("expiresAt must be at least 5 minutes in the future");
+          throw new Error(
+            "A lejárati időpont legalább 5 perccel a jövőben kell legyen",
+          );
         }
 
         return true;
@@ -87,7 +81,7 @@ export const UNBAN = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid user ID");
+          throw new Error("Érvénytelen felhasználóazonosító");
         }
         return true;
       },

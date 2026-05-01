@@ -4,6 +4,7 @@ import { isLoggedIn, isAdmin } from "/common/common.js";
 import * as net from "/common/network.js";
 import "/ui/component/form/InlineEditor.js";
 import "/ui/component/profile/CommentItem.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 function requestToast(message, variant = "info", delay = 0, duration = 3000) {
   if (!message) return;
@@ -166,17 +167,14 @@ export default class CommentSection extends LazyItemList {
 
     const response = await net.send(url, { method: "GET" }, hasUserContext);
 
-    const { success, result } = response;
-
-    if (!success) {
-      console.error("Unable to refresh comment.");
+    if (NetworkErrorHandler.handle(response)) {
       return;
     }
 
     const entry = this._byId.get(commentId);
     if (!entry) return;
 
-    entry.element.comment = result;
+    entry.element.comment = response.result;
   }
 
   async sendReaction(commentId, type) {
@@ -199,9 +197,7 @@ export default class CommentSection extends LazyItemList {
       body: formData,
     });
 
-    if (!response.success) {
-      console.warn("Reaction failed");
-    }
+    NetworkErrorHandler.handle(response);
   }
 
   async onCommentReaction(e) {
@@ -276,10 +272,7 @@ export default class CommentSection extends LazyItemList {
       body: formData,
     });
 
-    const { success, result } = response;
-
-    if (!success) {
-      console.error("Failed to delete comment.");
+    if (NetworkErrorHandler.handle(response)) {
       return;
     }
 
@@ -320,14 +313,11 @@ export default class CommentSection extends LazyItemList {
       body: formData,
     });
 
-    const { success, result } = response;
-
-    if (!success) {
-      console.error("Failed to update comment.");
+    if (NetworkErrorHandler.handle(response)) {
       return;
     }
 
-    e.target.comment = result; // Lehet később külön kéne lekérni az updatelt kommentet.
+    e.target.comment = response.result; // Lehet később külön kéne lekérni az updatelt kommentet.
     requestToast(
       response?.message || "Komment sikeresen modositva.",
       "success",

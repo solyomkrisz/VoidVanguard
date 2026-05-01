@@ -2,6 +2,7 @@ import { isLoggedIn } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import * as net from "/common/network.js";
 import "/ui/component/auth/LogoutButton.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 async function getIncomingFriendRequestCount(userId) {
   if (!userId) return null;
@@ -10,15 +11,12 @@ async function getIncomingFriendRequestCount(userId) {
     `/api/friends/${userId}?include=incomingCount`,
   );
 
-  const { success, result, message } = response;
-
-  if (!success) {
-    console.error(message);
+  if (NetworkErrorHandler.handle(response)) {
     return null;
   }
 
-  if (result.incomingCount != null) {
-    return result.incomingCount;
+  if (response?.result?.incomingCount != null) {
+    return response?.result.incomingCount;
   }
 
   return null;

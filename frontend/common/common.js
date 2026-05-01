@@ -1,5 +1,5 @@
-import * as net from "./network.js";
-import { isExpired, decode } from "./jwt.js";
+import * as net from "/common/network.js";
+import { isExpired, decode } from "/common/jwt.js";
 
 if (!window.VoidVanguard) {
   window.VoidVanguard = {};
@@ -342,4 +342,37 @@ export function isInViewport(element) {
   if (!element) return false;
   const rect = element.getBoundingClientRect();
   return rect.top >= 0 && rect.bottom <= window.innerHeight;
+}
+
+//#region for testing
+export function result() {
+  this.init = function () {
+    this.features = 0;
+    this.tests = 0;
+    this.failed = 0;
+    this.successful = 0;
+
+    return this;
+  };
+
+  this.see = function () {
+    const maxLabelLength = Math.max(
+      "Features tested".length,
+      "Total tests".length,
+      "Successful".length,
+      "Failed".length,
+    );
+
+    const addPadding = function (label) {
+      return label + ".".repeat(maxLabelLength - label.length + 3);
+    };
+
+    console.log(`\n${addPadding("Features tested")}: ${this.features}
+${addPadding("Total tests")}: ${this.tests}
+${addPadding("Successful")}: ${this.tests} / ${this.successful} (${((this.successful / this.tests) * 100).toFixed(2)}%)
+${addPadding("Failed")}: ${this.tests} / ${this.failed} (${((this.failed / this.tests) * 100).toFixed(2)}%)\n
+`);
+  };
+
+  this.init();
 }

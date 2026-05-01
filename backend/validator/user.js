@@ -9,27 +9,27 @@ export function GET(request, response, next) {
 export const POST = {
   username: {
     in: ["body"],
+    trim: true,
     isLength: {
       options: {
         min: 3,
         max: 20,
       },
-      errorMessage: "Username must be 3-20 characters long",
+      errorMessage: "A felhasználónév 3 és 20 karakter között kell legyen",
     },
-    trim: true,
     notEmpty: {
-      errorMessage: "Username cannot be empty or just spaces",
+      errorMessage: "A felhasználónév nem lehet üres vagy csak szóköz",
     },
     matches: {
       options: /^[a-zA-Z0-9_]+$/,
       errorMessage:
-        "Username must be one word and contain only letters, numbers, or underscores",
+        "A felhasználónév csak egy szó lehet, és csak betűket, számokat vagy alulvonást tartalmazhat",
     },
   },
   email: {
     in: ["body"],
     isEmail: {
-      errorMessage: "Invalid email address",
+      errorMessage: "Érvénytelen e-mail cím",
     },
     normalizeEmail: true,
   },
@@ -39,12 +39,12 @@ export const POST = {
       options: {
         min: 8,
       },
-      errorMessage: "Password must be at least 8 characters",
+      errorMessage: "A jelszónak legalább 8 karakter hosszúnak kell lennie",
     },
     matches: {
       options: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/],
       errorMessage:
-        "Password must include at least one of all the following: uppercase, lowercase letter, number, special character (!@#$%^&*)",
+        "A jelszónak tartalmaznia kell legalább egyet a következők közül: nagybetű, kisbetű, szám, speciális karakter (!@#$%^&*)",
     },
   },
   passwordConfirm: {
@@ -52,7 +52,7 @@ export const POST = {
     custom: {
       options: (value, { req }) => {
         if (value !== req.body.password) {
-          throw new Error("Passwords do not match");
+          throw new Error("A jelszavak nem egyeznek meg");
         }
         return true;
       },
@@ -70,19 +70,22 @@ export const PATCH = {
     trim: true,
     isLength: {
       options: { min: 3, max: 20 },
-      errorMessage: "Username must be 3-20 characters long",
+      errorMessage: "A felhasználónév 3 és 20 karakter között kell legyen",
+    },
+    notEmpty: {
+      errorMessage: "A felhasználónév nem lehet üres vagy csak szóköz",
     },
     matches: {
       options: /^[a-zA-Z0-9_]+$/,
       errorMessage:
-        "Username must be one word and contain only letters, numbers, or underscores",
+        "A felhasználónév csak egy szó lehet, és csak betűket, számokat vagy alulvonást tartalmazhat",
     },
   },
   email: {
     in: ["body"],
     optional: { options: { nullable: true } },
     isEmail: {
-      errorMessage: "Invalid email address",
+      errorMessage: "Érvénytelen e-mail cím",
     },
     normalizeEmail: true,
   },
@@ -98,12 +101,12 @@ export const PATCH = {
       options: {
         min: 8,
       },
-      errorMessage: "Password must be at least 8 characters",
+      errorMessage: "A jelszónak legalább 8 karakter hosszúnak kell lennie",
     },
     matches: {
       options: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/],
       errorMessage:
-        "Password must include at least one of all the following: uppercase, lowercase letter, number, special character (!@#$%^&*)",
+        "A jelszónak tartalmaznia kell legalább egyet a következők közül: nagybetű, kisbetű, szám, speciális karakter (!@#$%^&*)",
     },
     custom: {
       options: (value, { req }) => {
@@ -111,7 +114,7 @@ export const PATCH = {
           (value && !req.body?.passwordConfirm) ||
           value !== req.body?.passwordConfirm
         ) {
-          throw new Error("Passwords do not match");
+          throw new Error("A jelszavak nem egyeznek meg");
         }
         return true;
       },
@@ -123,7 +126,7 @@ export const PATCH = {
     custom: {
       options: (value, { req }) => {
         if ((value && !req.body?.password) || value !== req.body?.password) {
-          throw new Error("Passwords do not match");
+          throw new Error("A jelszavak nem egyeznek meg");
         }
         return true;
       },

@@ -2,6 +2,7 @@ import "/ui/component/profile/FriendshipActionButton.js";
 import "/ui/component/profile/BlockActionButton.js";
 import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class SearchBarResultItem extends HTMLElement {
   get searchBar() {
@@ -137,10 +138,7 @@ export default class SearchBarResultItem extends HTMLElement {
       body: formData,
     });
 
-    const { success, message } = response;
-
-    if (!success) {
-      console.error(`Unable to modify relationship: ${message}`);
+    if (NetworkErrorHandler.handle(response)) {
       this.syncRelationshipButtons();
       return;
     }
@@ -259,14 +257,11 @@ export default class SearchBarResultItem extends HTMLElement {
 
     const response = await net.send(url);
 
-    const { success, result, message } = response;
-
-    if (!success || !result || !result.status) {
-      console.error(`Unable to update relationship status: ${message}`);
+    if (NetworkErrorHandler.handle(response, true, (r) => !r?.result?.status)) {
       return null;
     }
 
-    return result.status;
+    return response?.result?.status;
   }
 
   async updateRelationshipStatus(name) {

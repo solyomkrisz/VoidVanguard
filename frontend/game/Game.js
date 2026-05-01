@@ -28,6 +28,7 @@ import ToastManager from "/ui/component/feedback/ToastManager.js";
 import "/ui/component/game/GameControllerContainer.js";
 import "/ui/component/game/PauseButton.js";
 import AudioManager from "/common/AudioManager.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class Game extends WebGLCanvas {
   static from(save = null) {
@@ -299,14 +300,10 @@ export default class Game extends WebGLCanvas {
       body: formData,
     });
 
-    if (!response?.success) {
+    if (NetworkErrorHandler.handle(response)) {
       console.error(
         `Unable to save game: ${response?.message ? response.message : ""}`,
       );
-      ToastManager.REQUEST(
-        `Unable to save game: ${response?.message ? response.message : ""}`,
-      );
-
       this.inSavingProcess = false;
       return false;
     }

@@ -1,31 +1,4 @@
-function result() {
-  this.init = function () {
-    this.tests = 0;
-    this.failed = 0;
-    this.successful = 0;
-
-    return this;
-  };
-
-  this.see = function () {
-    const maxLabelLength = Math.max(
-      "Total tests".length,
-      "Successful".length,
-      "Failed".length,
-    );
-
-    const addPadding = function (label) {
-      return label + ".".repeat(maxLabelLength - label.length + 3);
-    };
-
-    console.log(`\n${addPadding("Total tests")}: ${this.tests}
-${addPadding("Successful")}: ${this.tests} / ${this.successful} (${((this.successful / this.tests) * 100).toFixed(2)}%)
-${addPadding("Failed")}: ${this.tests} / ${this.failed} (${((this.failed / this.tests) * 100).toFixed(2)}%)\n
-`);
-  };
-
-  this.init();
-}
+import { result } from "/common/common.js";
 
 export function $(selector) {
   return Array.from(document.querySelectorAll(selector));

@@ -6,7 +6,7 @@ export const DELETE = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid ID");
+          throw new Error("Érvénytelen azonosító");
         }
         return true;
       },
