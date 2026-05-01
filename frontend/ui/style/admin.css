@@ -1571,3 +1571,7 @@ user-ban-list pagination-controls div {
     width: 100%;
   }
 }
+
+body:has(#full-profile-container.active) {
+  overflow: hidden !important;
+}
