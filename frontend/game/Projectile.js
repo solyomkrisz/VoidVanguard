@@ -4,6 +4,8 @@ import { SpriteID } from "/game/texture/Texture.js";
 import * as vec2 from "/common/vec2.js";
 import Model from "/game/Model.js";
 import Shape from "/game/Shape.js";
+import * as Type from "/game/Type.js";
+import { GlobalState } from "/game/State.js";
 
 export default class Projectile extends Rigidbody {
   // prettier-ignore
@@ -13,6 +15,7 @@ export default class Projectile extends Rigidbody {
 
   constructor({ game, x, y, vx, vy, dmg = 0 } = {}) {
     super({
+      type: Type.PROJECTILE,
       game,
       model: new Model(Projectile.MODEL),
       x: x,
@@ -38,5 +41,10 @@ export default class Projectile extends Rigidbody {
 
   onNarrowCollision() {
     return true;
+  }
+
+  onContact(collision, object) {
+    if (collision.is(Type.INTERACTION)) return;
+    this.setState(GlobalState.DEAD);
   }
 }

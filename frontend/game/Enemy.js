@@ -4,6 +4,7 @@ import * as vec2 from "/common/vec2.js";
 import { getAngleDiff } from "/common/common.js";
 import * as mat2 from "/common/mat2.js";
 import * as Type from "/game/Type.js";
+import { GlobalState } from "/game/State.js";
 
 export default class Enemy extends Spaceship {
   // prettier-ignore
@@ -112,10 +113,19 @@ export default class Enemy extends Spaceship {
   onContact(collision, object) {
     if (collision.is(Type.INTERACTION)) {
       object.showDetails(this);
+      return;
     }
-    // object.health = 0;
-    // this.model.clear();
-    // this.proxyCollider.onGeometryChange();
-    // this.shapeCollider.onGeometryChange();
+
+    object.health = 0;
+    const geometryChanged = this.model.clear();
+
+    if (geometryChanged) {
+      this.proxyCollider.onGeometryChange();
+      this.shapeCollider.onGeometryChange();
+
+      if (this.model.objects.length === 0) {
+        this.setState(GlobalState.DEAD);
+      }
+    }
   }
 }

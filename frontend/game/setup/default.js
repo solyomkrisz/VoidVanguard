@@ -13,6 +13,7 @@ import EngineIgnitionController from "/ui/component/game/EngineIgnitionControlle
 import EngineThrottleController from "/ui/component/game/EngineThrottleController.js";
 import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
 import AudioManager from "/common/AudioManager.js";
+import Enemy from "/game/Enemy.js";
 
 export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
   if (game.running) return;
@@ -211,4 +212,15 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
     turretSprite.addFrame(TextureID[`TURRET${i === 1 ? "" : i}`], 2);
     tm.addSprite(SpriteID[`TURRET${i === 1 ? "" : i}`], turretSprite);
   }
+
+  //#region test enemy
+  const enemy = new Enemy({
+    game,
+    model: MODELFACTORY.SCOUT2(),
+    x: 0,
+    y: 10,
+    maxSpeed: 2,
+  });
+
+  game.enemies.add(enemy);
 }
