@@ -346,6 +346,8 @@ export function isInViewport(element) {
 
 //#region for testing
 export function result() {
+  this.title = "Untitled";
+
   this.init = function () {
     this.features = 0;
     this.tests = 0;
@@ -367,7 +369,8 @@ export function result() {
       return label + ".".repeat(maxLabelLength - label.length + 3);
     };
 
-    console.log(`\n${addPadding("Features tested")}: ${this.features}
+    console.log(`\n===== ${this.title} =====\n
+${addPadding("Features tested")}: ${this.features}
 ${addPadding("Total tests")}: ${this.tests}
 ${addPadding("Successful")}: ${this.tests} / ${this.successful} (${((this.successful / this.tests) * 100).toFixed(2)}%)
 ${addPadding("Failed")}: ${this.tests} / ${this.failed} (${((this.failed / this.tests) * 100).toFixed(2)}%)\n

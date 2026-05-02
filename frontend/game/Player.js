@@ -27,6 +27,8 @@ export default class Player extends Spaceship {
       maxSpeed: 5,
     });
 
+    this.contextMenuTemplate = game.contextMenu.template.PLAYER_CONTEXT_MENU;
+
     this.score = 0;
     this.scoreTimer = 3;
 

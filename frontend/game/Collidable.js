@@ -7,7 +7,7 @@ export default class Collidable {
     this.halfDiagonal = Math.SQRT2 / 2;
 
     this.game = game;
-    this.contextMenuTemplate = game.contextMenu.template.PLAYER_CONTEXT_MENU;
+    // this.contextMenuTemplate = game.contextMenu.template.PLAYER_CONTEXT_MENU;
     this.model = model;
 
     this.id = null;
@@ -64,7 +64,7 @@ export default class Collidable {
 
   getDefaultPenetrationCorrection() {
     console.warn(
-      "getDefaultPenetrationCorrection() must be implemented by the subclass!"
+      "getDefaultPenetrationCorrection() must be implemented by the subclass!",
     );
   }
 

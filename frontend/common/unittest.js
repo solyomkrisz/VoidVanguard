@@ -1,37 +1,47 @@
 import { result } from "/common/common.js";
 
-export const results = new result().init();
+export function createTestSuite(title = "Test Suite") {
+  const results = new result().init();
+  results.title = title;
 
-/** Group related tests together */
-export function describe(feature, callback, log = false) {
-  log && console.log(`Feature: ${feature}`);
-  results.features++;
-  callback();
-}
+  /** Group related tests together */
+  function describe(feature, callback, log = false) {
+    log && console.log(`Feature: ${feature}`);
+    results.features++;
+    callback();
+  }
 
-/** A specific test */
-export function it(expectation, callback, log = false) {
-  log && console.log(`Test: ${expectation}`);
-  results.tests++;
-  callback();
-}
+  /** A specific test */
+  function it(expectation, callback, log = false) {
+    log && console.log(`Test: ${expectation}`);
+    results.tests++;
+    callback();
+  }
 
-export function expect(result, log = false) {
+  function expect(result, log = false) {
+    return {
+      result,
+      toBe: (value) => {
+        if (result === value) {
+          log && console.log("Test passed");
+          results.successful++;
+          return true;
+        } else {
+          log &&
+            console.error(
+              `Test failed: Expected the result to be ${value}, but got ${result}`,
+            );
+          results.failed++;
+          return false;
+        }
+      },
+    };
+  }
+
   return {
-    result,
-    toBe: (value) => {
-      if (result === value) {
-        log && console.log("Test passed");
-        results.successful++;
-        return true;
-      } else {
-        log &&
-          console.error(
-            `Test failed: Expected the result to be ${value}, but got ${result}`,
-          );
-        results.failed++;
-        return false;
-      }
-    },
+    results,
+    describe,
+    it,
+    expect,
   };
 }

@@ -1,4 +1,4 @@
-import { results, describe, it, expect } from "/common/unittest.js";
+import { createTestSuite } from "/common/unittest.js";
 import {
   LERP,
   getAngleDiff,
@@ -12,7 +12,10 @@ import {
   isInViewport,
 } from "/common/common.js"; // Function to test
 
-results.init(); // Must call to reset it
+const { results, describe, it, expect } = createTestSuite(
+  "common.js function tests",
+);
+results.init();
 
 describe("LERP", () => {
   it("should return a value in the interval [a, b] if alpha is in [0, 1], and extrapolate beyond [a, b] when alpha is not in [0, 1]", () => {
