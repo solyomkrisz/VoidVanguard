@@ -8,7 +8,7 @@ import Shape from "/game/Shape.js";
 export default class Projectile extends Rigidbody {
   // prettier-ignore
   static MODEL = [
-    new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0, 0, 0, 0, 0, 0, 0, 0), spriteID: SpriteID.TEST })
+    new Block({ x: 0, y: 0, shape: new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5), spriteID: SpriteID.BLOCK_0 })
   ];
 
   constructor({ game, x, y, vx, vy, dmg = 0 } = {}) {
@@ -21,6 +21,7 @@ export default class Projectile extends Rigidbody {
       vy: vy,
     });
 
+    this.id = game.idManager.get();
     this.dmg = dmg;
   }
 
@@ -28,10 +29,14 @@ export default class Projectile extends Rigidbody {
     const dt = this.game.fdt;
     const _b = this.game.buffer;
 
-    vec2.copy(_b.vec2_1, this.velocity);
-    vec2.mul(_b.vec2_1, _b.vec2_1, this.forward);
-    vec2.scale(_b.vec2_1, _b.vec2_1, dt);
+    this.updatePosition();
+  }
 
-    vec2.add(this.position, this.position, _b.vec2_1);
+  onBroadCollision() {
+    return true;
+  }
+
+  onNarrowCollision() {
+    return true;
   }
 }

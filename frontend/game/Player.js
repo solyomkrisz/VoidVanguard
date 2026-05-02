@@ -101,7 +101,7 @@ export default class Player extends Spaceship {
     this.chunk[1] = Math.floor(this.position[1] / this.game.chunkSize / this.game.backgroundZoom);
   }
 
-  shoot(muzzle, projectileSpeed, cooldown) {
+  shoot(muzzle, projectileSpeedX, projectileSpeedY, cooldown) {
     vec2.rotate(muzzle, this.rotation);
     vec2.add(muzzle, muzzle, this.position);
 
@@ -109,8 +109,8 @@ export default class Player extends Spaceship {
       game: this.game,
       x: muzzle[0],
       y: muzzle[1],
-      vx: projectileSpeed,
-      vy: projectileSpeed,
+      vx: projectileSpeedX,
+      vy: projectileSpeedY,
     });
 
     vec2.copy(projectile.forward, this.forward);
@@ -256,7 +256,7 @@ export default class Player extends Spaceship {
 
     if (this.shootCooldown <= 0 && activeControls.has(Keyboard.Space)) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
-      this.shoot(muzzle, 2, 1);
+      this.shoot(muzzle, 0, 1, 1);
     }
 
     if (this.scoreTimer <= 0) {

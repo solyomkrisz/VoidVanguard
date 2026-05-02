@@ -121,7 +121,6 @@ test("renders multiple pages of blocked users", async () => {
   });
 
   const nextButton = getByText(blockedUserList, "Következő");
-  console.log(nextButton);
   nextButton.click();
 
   // simulate clicking "Következő" to load the second page
