@@ -26,7 +26,7 @@ await run2();
 results2.see();
 fetchMock2.restore();
 
-fetchMock2.install();
+fetchMock3.install();
 await run3();
 results3.see();
 fetchMock3.restore();

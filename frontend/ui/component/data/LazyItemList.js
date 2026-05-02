@@ -272,7 +272,7 @@ export default class LazyItemList extends HTMLElement {
       }
     } catch (error) {
       // console.error(error);
-      console.error(error.message);
+      console.error(error);
     } finally {
       // this._loading = false;
       // this.onLoadFinish();

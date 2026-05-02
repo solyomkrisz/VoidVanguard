@@ -35,22 +35,22 @@ export default class BlockedUserListItem extends HTMLElement {
   }
 
   onLogin(e) {
-    this.hidden = false;
+    // this.hidden = false;
   }
 
   onLogout(e) {
-    this.hidden = true;
+    // this.hidden = true;
   }
 
   connectedCallback() {
     this.build();
     this.update();
 
-    if (!isLoggedIn()) {
-      this.hidden = true;
-    } else {
-      this.hidden = false;
-    }
+    // if (!isLoggedIn()) {
+    //   this.hidden = true;
+    // } else {
+    //   this.hidden = false;
+    // }
 
     on("login", this.onLogin);
     on("logout", this.onLogout);
