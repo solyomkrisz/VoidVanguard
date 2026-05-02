@@ -26,9 +26,9 @@ class TestComponent extends HTMLElement {
 window.customElements.define("test-component", TestComponent);
 
 const fetchMock = createFetchMock();
-fetchMock.install();
 
 beforeEach(() => {
+  fetchMock.install();
   fetchMock.clear();
   document.body.innerHTML = "";
 });

@@ -22,6 +22,7 @@ export function createTestSuite(title = "Test Suite") {
 
   function createFetchMock() {
     const routes = [];
+    let calls = 0;
 
     function matchRoute(rawUrl, method) {
       const url = normalizeUrl(rawUrl);
@@ -55,6 +56,8 @@ export function createTestSuite(title = "Test Suite") {
         };
       }
 
+      calls++;
+
       return {
         ok: true,
         status: 200,
@@ -83,6 +86,11 @@ export function createTestSuite(title = "Test Suite") {
 
       clear() {
         routes.length = 0;
+        calls = 0;
+      },
+
+      getCallCount() {
+        return calls;
       },
     };
   }

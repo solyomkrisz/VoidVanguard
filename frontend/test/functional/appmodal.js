@@ -14,9 +14,9 @@ const {
 } = createTestSuite("App Modal Tests");
 
 const fetchMock = createFetchMock();
+fetchMock.install();
 
 beforeEach(() => {
-  fetchMock.install();
   fetchMock.clear();
   document.body.innerHTML = "";
 });
