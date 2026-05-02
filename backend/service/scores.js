@@ -1,4 +1,6 @@
 import Scores from "../sql/table/Scores.js";
+import Saves from "../sql/table/Saves.js";
+import * as CustomError from "../common/CustomError.js";
 
 export async function lazySelectBestUserScores({
   userId = null,
@@ -47,14 +49,21 @@ export async function selectByUserAndGameId({ userId, gameId }) {
 }
 
 export async function setOrUpdateScoreForGame({ gameId, userId, score }) {
-  const currentEntryForGameId = await Scores.select(gameId, userId);
+  // ownership check
+  const save = await Saves.selectByIdForUser(gameId, userId);
 
-  if (!currentEntryForGameId) {
-    return await Scores.insert(gameId, userId, score);
+  if (!save) {
+    throw CustomError.FORBIDDEN;
   }
 
-  if (Number(currentEntryForGameId.score) !== Number(score)) {
-    return await Scores.update(gameId, userId, score);
+  const currentEntryForGameId = await Scores.select(gameId);
+
+  if (!currentEntryForGameId) {
+    return await Scores.insert(gameId, score);
+  }
+
+  if (Number(currentEntryForGameId.score) !== Number(score ?? 0)) {
+    return await Scores.update(gameId, score);
   }
 
   return null;
