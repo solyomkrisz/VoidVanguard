@@ -77,9 +77,11 @@
         </nav>
 
         <div id="full-profile-container">
-          <div>
+          <div style="position: relative; z-index: 1000">
             <span id="full-profile-target-create-text" hidden></span>
-            <button onclick="closeFullProfileContainer()">Bezár</button>
+            <button onclick="closeFullProfileContainer()" data-sfx="click_1">
+              Bezár
+            </button>
           </div>
           <admin-module>
             <full-profile style="overflow-y: scroll" admin></full-profile>

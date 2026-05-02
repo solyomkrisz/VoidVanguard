@@ -214,6 +214,7 @@ export default class ProfileForm extends BaseCustomElement {
 
     const displayNameField = form.elements.namedItem("display_name");
     if (
+      !this.admin /* new -> admin oldalon ne töltse ki*/ &&
       this.action !== "update" &&
       displayNameField &&
       !displayNameField.value
