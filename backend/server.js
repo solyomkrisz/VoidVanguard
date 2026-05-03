@@ -90,6 +90,12 @@ app.use("/api", endpoints);
 
 app.use(express.static(path.join(__dirname, "../frontend"))); //?frontend mappa tartalmának betöltése az oldal működéséhez
 
+app.use((request, response, next) => {
+  response
+    .status(404)
+    .sendFile(path.join(__dirname, "../frontend/ui/html/error.html"));
+});
+
 app.listen(port, ip, () => {
   console.log(`Szerver elérhetősége: http://${ip}:${port}`);
 });
