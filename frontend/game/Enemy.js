@@ -131,7 +131,7 @@ export default class Enemy extends Spaceship {
       return;
     }
 
-    object.health = 0;
+    // object.health = 0;
     const geometryChanged = this.model.clear();
 
     if (geometryChanged) {

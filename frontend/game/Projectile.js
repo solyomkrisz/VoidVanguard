@@ -51,6 +51,6 @@ export default class Projectile extends Rigidbody {
 
   onContact(collision, object) {
     if (collision.is(Type.INTERACTION)) return;
-    this.setState(GlobalState.DEAD);
+    // this.setState(GlobalState.DEAD);
   }
 }

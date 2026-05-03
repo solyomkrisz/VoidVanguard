@@ -231,5 +231,5 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
     maxSpeed: 2,
   });
 
-  // game.enemies.add(enemy);
+  game.enemies.add(enemy);
 }

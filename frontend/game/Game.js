@@ -75,7 +75,7 @@ export default class Game extends WebGLCanvas {
 
     this.running = false;
 
-    this.tickrate = 30;
+    this.tickrate = 60;
     this.ticks = 0;
     this.frames = 0;
     this.timestep = 1000 / this.tickrate;
