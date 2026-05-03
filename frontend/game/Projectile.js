@@ -32,7 +32,13 @@ export default class Projectile extends Rigidbody {
     const dt = this.game.fdt;
     const _b = this.game.buffer;
 
-    this.updatePosition();
+    vec2.copy(_b.vec2_1, this.velocity);
+    vec2.mul(_b.vec2_1, _b.vec2_1, this.forward);
+    vec2.scale(_b.vec2_1, _b.vec2_1, dt);
+
+    vec2.add(this.position, this.position, _b.vec2_1);
+
+    this.onPositionChange(); // no if check because we assume that a projectile is either moving or got destroyed
   }
 
   onBroadCollision() {
