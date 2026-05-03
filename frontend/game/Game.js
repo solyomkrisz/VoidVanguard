@@ -103,7 +103,7 @@ export default class Game extends WebGLCanvas {
       this.sg = new StarGenerator(this.noise, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT);
     }
 
-    this.tileSize = 14;
+    this.tileSize = this.getDefaultTileSize();
     this.backgroundZoom = 2;
     this.nebulaParallax = 0.15;
     // Minimum star parallax — must match the lower bound of the formula in DecorationBlock
@@ -146,6 +146,31 @@ export default class Game extends WebGLCanvas {
     this.showSpaceshipHitbox = false;
 
     this.update = this.update.bind(this);
+
+    this.inBuilderView = false;
+  }
+
+  getDefaultTileSize() {
+    if ((this.player?.proxyCollider?.r ?? 0) > 14) {
+      return this.player.proxyCollider.r;
+    }
+
+    return 14;
+  }
+
+  setTileSize(tileSize) {
+    this.tileSize = tileSize;
+    this.scale = 1 / this.tileSize;
+  }
+
+  toggleBuilderView() {
+    if (this.inBuilderView) {
+      this.setTileSize(this.getDefaultTileSize());
+    } else {
+      this.setTileSize(Math.ceil(this.player.proxyCollider.r + 3));
+    }
+
+    this.inBuilderView = !this.inBuilderView;
   }
 
   async finishSave() {

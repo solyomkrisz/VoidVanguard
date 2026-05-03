@@ -13,6 +13,7 @@ import EngineIgnitionController from "/ui/component/game/EngineIgnitionControlle
 import EngineThrottleController from "/ui/component/game/EngineThrottleController.js";
 import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
 import ShootButton from "/ui/component/game/ShootButton.js";
+import ZoomController from "/ui/component/game/ZoomController.js";
 import AudioManager from "/common/AudioManager.js";
 import Enemy from "/game/Enemy.js";
 
@@ -101,6 +102,9 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
     const shootButton = document.createElement("shoot-button");
     shootButton.observeControl(ShootButton.SHOOT);
     game.addController(shootButton);
+
+    const zoomController = document.createElement("zoom-controller");
+    game.addController(zoomController);
   } else {
     const keyboard = new Keyboard();
 
