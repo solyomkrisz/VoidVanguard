@@ -10,11 +10,6 @@ import * as controller from "../controller/admin.js";
 import * as validator from "../validator/admin.js";
 import { check, checkSchema } from "express-validator";
 
-import path from "path";
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const router = express.Router();
 
 // get ban status for user

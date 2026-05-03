@@ -21,15 +21,15 @@ router.get("/test", (request, response) => {
   });
 });
 
-router.use("/users", users);
-router.use("/sessions", sessions);
-router.use("/tokens", tokens);
-router.use("/profiles", profiles);
-router.use("/friends", friends);
-router.use("/blocks", blocks);
-router.use("/comments", comments);
-router.use("/reactions", reactions);
-router.use("/admin", admin);
+router.use("/users", users); //
+router.use("/sessions", sessions); //
+router.use("/tokens", tokens); //
+router.use("/profiles", profiles); //
+router.use("/friends", friends); //
+router.use("/blocks", blocks); //
+router.use("/comments", comments); //
+router.use("/reactions", reactions); //
+router.use("/admin", admin); //
 router.use("/saves", saves);
 router.use("/reset-password", passwordresets);
 router.use("/scores", scores);
