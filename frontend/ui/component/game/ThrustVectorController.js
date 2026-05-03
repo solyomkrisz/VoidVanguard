@@ -1,9 +1,9 @@
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import GameControllerElement from "/ui/component/game/GameControllerElement.js";
 import Game from "/game/Game.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
-export default class ThrustVectorController extends BaseCustomElement {
+export default class ThrustVectorController extends GameControllerElement {
   static GIMBAL_LEFT = "GimbalLeft";
   static GIMBAL_RIGHT = "GimbalRight";
   static GIMBAL_RESET = "GimbalReset";
@@ -64,11 +64,13 @@ export default class ThrustVectorController extends BaseCustomElement {
   }
 
   connectedCallback() {
+    super.connectedCallback?.();
     this.build();
     this.enableListening();
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback?.();
     this.disableListening();
   }
 

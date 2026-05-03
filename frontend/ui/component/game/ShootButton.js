@@ -1,9 +1,9 @@
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import GameControllerElement from "/ui/component/game/GameControllerElement.js";
 import Game from "/game/Game.js";
 import { dir, el } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
-export default class ShootButton extends BaseCustomElement {
+export default class ShootButton extends GameControllerElement {
   static SHOOT = "Shoot";
 
   setGame(value) {
@@ -34,11 +34,13 @@ export default class ShootButton extends BaseCustomElement {
   }
 
   connectedCallback() {
+    super.connectedCallback?.();
     this.build();
     this.enableListening();
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback?.();
     this.disableListening();
   }
 
