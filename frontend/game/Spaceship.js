@@ -15,6 +15,14 @@ export default class Spaceship extends Rigidbody {
     this.shootCooldown = 0;
   }
 
+  onGeometryChange() {
+    super.onGeometryChange();
+
+    for (const thruster of this.thrusters.values()) {
+      thruster.dirty = true;
+    }
+  }
+
   shoot() {
     console.warn("shoot() must be implemented by the subclass!");
   }

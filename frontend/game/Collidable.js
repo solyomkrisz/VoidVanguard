@@ -35,6 +35,10 @@ export default class Collidable {
     return this;
   }
 
+  onDeath() {
+    this.game.idManager.release(this.id);
+  }
+
   onPositionChange() {
     this.proxyCollider.onPositionChange();
     this.shapeCollider.onPositionChange();

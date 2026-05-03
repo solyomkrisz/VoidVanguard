@@ -96,8 +96,9 @@ export default class BuildingBlock extends Rigidbody {
       this.model.reset();
       this.game.mouse.reset();
 
-      other.proxyCollider.onGeometryChange();
-      other.shapeCollider.onGeometryChange();
+      // other.proxyCollider.onGeometryChange();
+      // other.shapeCollider.onGeometryChange();
+      other.onGeometryChange();
 
       this.setState(GlobalState.DEAD);
     }

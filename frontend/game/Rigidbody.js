@@ -8,6 +8,8 @@ import CompositeCollider from "/game/collider/CompositeCollider.js";
 import Force from "/game/Force.js";
 import * as Type from "/game/Type.js";
 
+const EPSILON = 1e-8;
+
 export default class Rigidbody extends Collidable {
   static from(saved, recoveredModel, game) {
     const rigidbody = new Rigidbody({
@@ -54,6 +56,12 @@ export default class Rigidbody extends Collidable {
     this.netForce = new Force();
     this.previousNetForce = new Force();
 
+    this.setMassAndCoM();
+    this.setMomentOfInertia();
+  }
+
+  onGeometryChange() {
+    super.onGeometryChange();
     this.setMassAndCoM();
     this.setMomentOfInertia();
   }
@@ -116,6 +124,9 @@ export default class Rigidbody extends Collidable {
     }
 
     vec2.scale(this.CoM, this.CoM, 1 / this.mass);
+
+    if (Math.abs(this.CoM[0]) < EPSILON) this.CoM[0] = 0;
+    if (Math.abs(this.CoM[1]) < EPSILON) this.CoM[1] = 0;
   }
 
   setMomentOfInertia() {
