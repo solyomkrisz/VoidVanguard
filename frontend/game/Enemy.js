@@ -7,12 +7,27 @@ import * as Type from "/game/Type.js";
 import { GlobalState } from "/game/State.js";
 
 export default class Enemy extends Spaceship {
+  static from(saved, recoveredModel, game) {
+    const enemy = new Enemy({
+      type: saved.type,
+      game,
+      model: recoveredModel,
+      maxSpeed: saved.maxSpeed,
+    });
+    enemy.teleportTo(saved.position[0], saved.position[1]);
+    return enemy;
+  }
+
   // prettier-ignore
   constructor({ game, model, x, y, maxSpeed } = {}) {
     super({ type: Type.ENEMY, game, model, x, y, vx: 0, vy: 0, maxSpeed });
   }
 
-  exportSave() {}
+  exportSave() {
+    return {
+      ...super.exportSave(),
+    };
+  }
 
   aim(targetPosition) {
     const _b = this.game.buffer;

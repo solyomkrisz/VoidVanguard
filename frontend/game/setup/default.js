@@ -12,6 +12,7 @@ import "/ui/component/game/ContextMenuTemplate.js";
 import EngineIgnitionController from "/ui/component/game/EngineIgnitionController.js";
 import EngineThrottleController from "/ui/component/game/EngineThrottleController.js";
 import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
+import ShootButton from "/ui/component/game/ShootButton.js";
 import AudioManager from "/common/AudioManager.js";
 import Enemy from "/game/Enemy.js";
 
@@ -96,6 +97,10 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
       "thrust-vector-controller",
     );
     game.addController(thrustVectorController);
+
+    const shootButton = document.createElement("shoot-button");
+    shootButton.observeControl(ShootButton.SHOOT);
+    game.addController(shootButton);
   } else {
     const keyboard = new Keyboard();
 
@@ -222,5 +227,5 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
     maxSpeed: 2,
   });
 
-  game.enemies.add(enemy);
+  // game.enemies.add(enemy);
 }

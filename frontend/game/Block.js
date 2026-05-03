@@ -4,6 +4,7 @@ import * as MATRIX from "/common/common.js";
 import * as vec from "/common/vec.js";
 import DynamicTooltip from "/ui/component/game/DynamicTooltip.js";
 import Shape from "/game/Shape.js";
+import * as Type from "/game/Type.js";
 
 export default class Block {
   // prettier-ignore
@@ -213,7 +214,7 @@ export default class Block {
 
   // prettier-ignore
   constructor({ x, y, shape, spriteID, gradeID = 0, mass = 1, health = 100, adjacencyRules = vec.create(0) } = {}) {
-    this.type = 0;
+    this.type = Type.BLOCK;
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
     this.spriteID = spriteID;

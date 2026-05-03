@@ -25,7 +25,7 @@ export async function selectSave(request, response) {
     }
 
     const save = await service.selectUserSave({
-      saveId: request.params.id,
+      gameId: request.params.id,
       userId: request.targetUser.id,
     });
 

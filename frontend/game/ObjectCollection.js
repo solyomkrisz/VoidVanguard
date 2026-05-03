@@ -63,4 +63,14 @@ export default class ObjectCollection {
 
     return this;
   }
+
+  exportSave() {
+    const result = [];
+
+    for (const object of this.objects) {
+      result.push(object.exportSave());
+    }
+
+    return result;
+  }
 }

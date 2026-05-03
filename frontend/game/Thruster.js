@@ -51,7 +51,7 @@ export default class Thruster extends Block {
     gimbalRange = 0,
   } = {}) {
     super({ x, y, shape, spriteID, mass, health, adjacencyRules });
-    this.type = 1; // for recovery from saves
+    this.type = Type.THRUSTER; // for recovery from saves
 
     this.id = null;
     this.description = description;

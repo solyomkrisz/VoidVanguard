@@ -45,7 +45,11 @@ export default class Game extends WebGLCanvas {
 
     const game = new Game(parsed.seed, parsed.game_id);
     game.loadedSave = save;
-    setupGame(game, new Model(Save.recoverPlayerModel(parsed.player.model)));
+    setupGame(game, new Model(Save.recoverModelObjects(parsed.player.model)));
+
+    for (const enemy of parsed.enemies) {
+      game.enemies.add(Save.recoverEntity(enemy, game));
+    }
 
     game.player.score = parsed.player.score;
     game.player.teleportTo(...parsed.player.position);
@@ -245,7 +249,7 @@ export default class Game extends WebGLCanvas {
       game_id: this.game_id,
       seed: this.seed,
       player: this.player.exportSave(),
-      // enemies: this.enemies,
+      enemies: this.enemies.exportSave(),
       // buildingBlocks: this.buildingBlocks,
     };
   }

@@ -13,6 +13,7 @@ import BuildingBlock from "/game/BuildingBlock.js";
 import EngineIgnitionController from "/ui/component/game/EngineIgnitionController.js";
 import EngineThrottleController from "/ui/component/game/EngineThrottleController.js";
 import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
+import ShootButton from "/ui/component/game/ShootButton.js";
 
 export default class Player extends Spaceship {
   constructor(game, model) {
@@ -76,11 +77,8 @@ export default class Player extends Spaceship {
 
   exportSave() {
     return {
+      ...super.exportSave(),
       score: this.score,
-      state: [...this.state],
-      position: [...this.position],
-      rotation: this.rotation,
-      model: this.model.exportSave(),
     };
   }
 
@@ -254,7 +252,11 @@ export default class Player extends Spaceship {
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
     this.scoreTimer = Math.max(0, this.scoreTimer - dt);
 
-    if (this.shootCooldown <= 0 && activeControls.has(Keyboard.Space)) {
+    if (
+      this.shootCooldown <= 0 &&
+      (activeControls.has(Keyboard.Space) ||
+        activeControls.has(ShootButton.SHOOT))
+    ) {
       const muzzle = vec2.set(_b.vec2_1, 0, 3);
       this.shoot(muzzle, 0, 1, 1);
     }

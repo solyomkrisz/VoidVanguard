@@ -9,6 +9,20 @@ import Force from "/game/Force.js";
 import * as Type from "/game/Type.js";
 
 export default class Rigidbody extends Collidable {
+  static from(saved, recoveredModel, game) {
+    const rigidbody = new Rigidbody({
+      type: saved.type,
+      game,
+      model: recoveredModel,
+      x: saved.position[0],
+      y: saved.position[1],
+      maxSpeed: saved.maxSpeed,
+      maxAngularSpeed: saved.maxAngularSpeed,
+    });
+
+    return rigidbody;
+  }
+
   // prettier-ignore
   constructor({ type = Type.UNKNOWN, game, model, parent = null, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1, maxAngularSpeed = 1 } = {}) {
     super(game, model);
@@ -42,6 +56,18 @@ export default class Rigidbody extends Collidable {
 
     this.setMassAndCoM();
     this.setMomentOfInertia();
+  }
+
+  exportSave() {
+    return {
+      type: this.type,
+      maxSpeed: this.maxSpeed,
+      maxAngularSpeed: this.maxAngularSpeed,
+      state: [...this.state],
+      position: [...this.position],
+      rotation: this.rotation,
+      model: this.model.exportSave(),
+    };
   }
 
   teleportTo(x, y) {

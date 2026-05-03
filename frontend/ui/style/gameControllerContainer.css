@@ -27,6 +27,7 @@
     ". . ."
     ". . propulsion"
     ". . ."
+    ". . shoot"
     ". . throttle"
     "igniter computer joystick";
 }
@@ -67,6 +68,12 @@ engine-throttle-controller {
 
 thrust-vector-controller {
   grid-area: joystick;
+  justify-self: end;
+  align-self: end;
+}
+
+shoot-button {
+  grid-area: shoot;
   justify-self: end;
   align-self: end;
 }
