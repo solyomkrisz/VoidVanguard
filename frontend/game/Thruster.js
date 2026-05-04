@@ -5,12 +5,15 @@ import * as vec2 from "/common/vec2.js";
 import * as Type from "/game/Type.js";
 import * as UI from "/ui/UI.js";
 import _ from "/ui/component/game/ThrusterController.js";
+import Collidable from "/game/Collidable.js";
+
+const DEFAULT_THRUST_VECTOR = [0, 1];
 
 export default class Thruster extends Block {
   static g0 = 9.81;
 
   // prettier-ignore
-  static LISTED_PROPERTIES = ["localPosition", "exhaustDirection", "_gimbal", "throttle", "Isp"];
+  static LISTED_PROPERTIES = ["localPosition", "_gimbal", "thrustVector", "throttle", "Isp"];
 
   static from(thrusterState) {
     const [x, y] = thrusterState.localPosition;
@@ -31,6 +34,15 @@ export default class Thruster extends Block {
       hasGimbal: thrusterState.hasGimbal,
       gimbalRange: thrusterState.gimbalRange,
     });
+
+    thruster.defaultThrustVector = vec2.fromValues(
+      thrusterState.defaultThrustVector[0],
+      thrusterState.defaultThrustVector[1],
+    );
+    thruster.thrustVector = vec2.fromValues(
+      thrusterState.thrustVector[0],
+      thrusterState.thrustVector[1],
+    );
 
     return thruster;
   }
@@ -58,9 +70,8 @@ export default class Thruster extends Block {
     this.fuelType = fuelType;
     this.Isp = Isp;
     this.massFlowRate = massFlowRate;
-    this.defaultExhaustDirection = vec2.fromValues(0, -1);
-    this.exhaustDirection = vec2.fromValues(0, -1);
-    this.thrustVector = vec2.fromValues(0, 1);
+    this.defaultThrustVector = vec2.fromValues(...DEFAULT_THRUST_VECTOR);
+    this.thrustVector = vec2.fromValues(...DEFAULT_THRUST_VECTOR);
     this.thrust = 0;
     this.hasGimbal = hasGimbal;
     this.gimbalRange = gimbalRange;
@@ -87,10 +98,8 @@ export default class Thruster extends Block {
     newThruster.description = thruster.description;
     newThruster.Isp = thruster.Isp;
     newThruster.massFlowRate = thruster.massFlowRate;
-    newThruster.defaultExhaustDirection = vec2.clone(
-      thruster.defaultExhaustDirection,
-    );
-    newThruster.thrustVector = vec2.clone(thruster.thrustVector);
+    newThruster.defaultThrustVector = vec2.clone(thruster.defaultThrustVector);
+    newThruster.thrustVector = vec2.clone(thruster.defaultThrustVector);
     newThruster.thrust = thruster.thrust;
     newThruster.hasGimbal = thruster.hasGimbal;
     newThruster.gimbalRange = thruster.gimbalRange;
@@ -114,6 +123,8 @@ export default class Thruster extends Block {
       massFlowRate: this.massFlowRate,
       hasGimbal: this.hasGimbal,
       gimbalRange: this.gimbalRange,
+      defaultThrustVector: [...this.defaultThrustVector],
+      thrustVector: [...this.thrustVector],
     };
   }
 
@@ -136,10 +147,31 @@ export default class Thruster extends Block {
   }
 
   // prettier-ignore
+  alignThrustVector(parent) {
+    // always reset to canonical direction to avoid compounding errors on re-insertion
+    this.defaultThrustVector[0] = DEFAULT_THRUST_VECTOR[0];
+    this.defaultThrustVector[1] = DEFAULT_THRUST_VECTOR[1];
+
+    const lpToModelCenter = vec2.sub(vec2.create(), Collidable.MODEL_CENTER, this.localPosition);
+    const dotProduct = vec2.dot(this.defaultThrustVector, lpToModelCenter);
+
+    if (dotProduct < 0) {
+      vec2.scale(this.defaultThrustVector, this.defaultThrustVector, -1);
+    } else if (dotProduct === 0) {
+      // cross product (z-component) determines which 90° rotation points toward center
+      const crossProduct = this.defaultThrustVector[0] * lpToModelCenter[1] - this.defaultThrustVector[1] * lpToModelCenter[0];
+      vec2.rotate(this.defaultThrustVector, (Math.PI / 2) * Math.sign(crossProduct));
+    }
+
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
+  }
+
+  // prettier-ignore
   onInsert(parent) {
     this.dirty = true; // Lehet, hogy új localPosition-t kapott szóval a nyomatékot újra kell számolni!
 
     if (parent.is(Type.PLAYER)) {
+      this.alignThrustVector(parent);
       !this.controller && (this.controller = UI.element("thruster-controller").setSource(this)).build();
       parent.UI.propulsionPanel.dispatchEvent(
         new CustomEvent("thruster-insert", {
@@ -158,13 +190,12 @@ export default class Thruster extends Block {
   }
 
   reset() {
-    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
     this._gimbal = 0;
     this.throttle = 1;
 
     // prettier-ignore
     {
-      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
       this.controller._gimbal.textContent = this._gimbal.toFixed(4);
       this.controller.throttle.textContent = this.throttle.toFixed(4);
     }
@@ -182,14 +213,13 @@ export default class Thruster extends Block {
 
     if (this._gimbal === this.previousGimbal) return;
 
-    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
 
-    vec2.rotate(this.exhaustDirection, this._gimbal * (Math.PI / 180));
+    vec2.rotate(this.thrustVector, this._gimbal * (Math.PI / 180));
     this.previousGimbal = this._gimbal;
 
     // prettier-ignore
     {
-      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
       this.controller._gimbal.textContent = this._gimbal.toFixed(4);
     }
 
@@ -203,14 +233,13 @@ export default class Thruster extends Block {
 
     if (this._gimbal === this.previousGimbal) return;
 
-    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
 
-    vec2.rotate(this.exhaustDirection, this._gimbal * (Math.PI / 180));
+    vec2.rotate(this.thrustVector, this._gimbal * (Math.PI / 180));
     this.previousGimbal = this._gimbal;
 
     // prettier-ignore
     {
-      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
       this.controller._gimbal.textContent = this._gimbal.toFixed(4);
     }
 
@@ -222,8 +251,8 @@ export default class Thruster extends Block {
   }
 
   getThrustVector() {
-    vec2.copy(this.thrustVector, this.exhaustDirection);
-    vec2.scale(this.thrustVector, this.thrustVector, -1);
+    // vec2.copy(this.thrustVector, this.exhaustDirection);
+    // vec2.scale(this.thrustVector, this.thrustVector, -1);
 
     return this.thrustVector;
   }

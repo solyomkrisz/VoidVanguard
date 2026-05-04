@@ -29,6 +29,8 @@ export default {
 
   "SaveError": "A játékállapot mentése nem sikerült",
   "DuplicateSaveStateError": "Ezzel az állapottal már létezik mentés",
+  "SaveNotFoundError": "A mentés nem található",
+  "GameIsFinishedError": "A mentés nem módosítható, mert a játék már véget ért",
 
   "PasswordUpdateError": "A jelszó frissítése nem sikerült",
 

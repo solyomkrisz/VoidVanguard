@@ -11,12 +11,12 @@ const PLAYER = [
   createBlock(0, 0, "BLOCK_12"),
   createBlock(1 - offset, 0, "BLOCK_12"),
   createBlock(-1 + offset, 0, "BLOCK_12"),
-  createBlock(0, 1 - offset, "TURRET_12"),
+  // createBlock(0, 1 - offset, "TURRET_12"),
   new Thruster({
-    x: -1, y: -1, shape: new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5), spriteID: TextureID.BLOCK_1, mass: 1, health: 1, Isp: 100, massFlowRate: 100, hasGimbal: true, gimbalRange: 15
+    x: -1, y: 1, shape: new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5), spriteID: TextureID.BLOCK_1, mass: 1, health: 1, Isp: 100, massFlowRate: 100, hasGimbal: true, gimbalRange: 15
   }),
   new Thruster({
-    x: 1, y: -1, shape: new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5), spriteID: TextureID.BLOCK_1, mass: 1, health: 1, Isp: 100, massFlowRate: 100, hasGimbal: true, gimbalRange: 15
+    x: 1, y: 1, shape: new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5), spriteID: TextureID.BLOCK_1, mass: 1, health: 1, Isp: 100, massFlowRate: 100, hasGimbal: true, gimbalRange: 15
   })
 ];
 

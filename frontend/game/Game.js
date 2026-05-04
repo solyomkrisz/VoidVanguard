@@ -53,6 +53,7 @@ export default class Game extends WebGLCanvas {
 
     game.player.score = parsed.player.score;
     game.player.teleportTo(...parsed.player.position);
+    game.player.rotation = parsed.player.rotation;
 
     return game;
   }
@@ -192,7 +193,9 @@ export default class Game extends WebGLCanvas {
   async finishSave() {
     // Játék befejezése ha nem volt mentve
     if (!["local", "remote"].includes(this.saveType)) {
-      ToastManager.REQUEST("Unable to finish game");
+      ToastManager.REQUEST(
+        "A játékot nem lehet befejezne: ismeretlen mentéstípus",
+      );
       return;
     }
 
@@ -224,19 +227,11 @@ export default class Game extends WebGLCanvas {
       body: formData,
     });
 
-    if (!response?.success) {
-      console.error(
-        `Unable to finish game: ${response?.message ? response.message : ""}`,
-      );
-      ToastManager.REQUEST(
-        `Unable to finish game: ${response?.message ? response.message : ""}`,
-      );
-
+    if (NetworkErrorHandler.handle(response)) {
       return;
     }
 
-    console.log("Game has been marked as finished remotely.");
-    ToastManager.REQUEST("Game has been marked as finished remotely.");
+    ToastManager.REQUEST("A játék meg lett jelölve befejezettként");
 
     // kiléptetés vagy endscreen mutatása
   }

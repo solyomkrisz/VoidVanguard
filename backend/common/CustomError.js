@@ -207,6 +207,24 @@ export const DUPLICATE_SAVE_STATE = new CustomError({
   },
 });
 
+export const GAME_IS_FINISHED = new CustomError({
+  statusCode: 400,
+  definition: {
+    name: "GameIsFinishedError",
+    code: "ER_GAME_FINISHED",
+    message: "Cannot save the new state, this game has already finished",
+  },
+});
+
+export const SAVE_NOT_FOUND = new CustomError({
+  statusCode: 404,
+  definition: {
+    name: "SaveNotFoundError",
+    code: "ER_GAME_NOT_FOUND",
+    message: "Save not found",
+  },
+});
+
 export const PASSWORD_UPDATE = new CustomError({
   statusCode: 500,
   definition: {
