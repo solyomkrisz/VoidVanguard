@@ -48,6 +48,17 @@ CREATE TABLE bans(
         ON UPDATE RESTRICT
 );
 
+DELIMITER //
+CREATE TRIGGER bans_before_insert
+BEFORE INSERT ON bans
+FOR EACH ROW
+BEGIN
+  IF NEW.expires_at = '0000-00-00 00:00:00' THEN
+    SET NEW.expires_at = NULL;
+  END IF;
+END //
+DELIMITER ;
+
 CREATE TABLE password_resets (
     user_id CHAR(36) NOT NULL,
     token_hash CHAR(64) NOT NULL,

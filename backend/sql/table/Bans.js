@@ -30,7 +30,7 @@ class Bans extends Table {
         FROM bans
         WHERE user_id = ?
             AND revoked_at IS NULL
-            AND (expires_at IS NULL OR expires_at > NOW())
+            AND (expires_at IS NULL OR expires_at = '0000-00-00 00:00:00' OR expires_at > NOW())
         `,
       [userId],
     );
@@ -65,7 +65,7 @@ class Bans extends Table {
             revoked_by = ?
         WHERE user_id = ?
             AND revoked_at IS NULL
-            AND (expires_at IS NULL OR expires_at > NOW())
+            AND (expires_at IS NULL OR expires_at = '0000-00-00 00:00:00' OR expires_at > NOW())
     `,
       [adminId, userId],
     );
