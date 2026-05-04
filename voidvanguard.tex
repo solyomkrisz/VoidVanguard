@@ -1,0 +1,1335 @@
+\documentclass[12pt]{report}
+
+\usepackage{enumitem}
+\usepackage{breakurl}
+\usepackage{hyperref}
+\hypersetup{
+    linktoc=none,
+    colorlinks=true,    % Kattintható linkek színesek legyenek
+    linkcolor=blue,     % A linkek színe
+    filecolor=magenta,  % Helyi fájlok linkjének színe
+    urlcolor=blue,      % URL linkek színe
+    pdfborder={0 0 0}   % Nincs keret a linkek körül
+}
+\usepackage{xurl}
+
+\usepackage{tcolorbox}
+\usepackage{graphicx}
+\usepackage{array}        % Részletes cellaformázás
+\usepackage{booktabs}     % Tiszta vonalak
+\usepackage{longtable}    % Nagy táblázatok több oldalon
+\usepackage{multirow}     % Többsoros cellák
+\usepackage{tabularx}  % A tabularx csomag betöltése
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[magyar]{babel}
+\usepackage{xcolor}\usepackage[table,xcdraw]{xcolor}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{fancyhdr}
+\usepackage{etoolbox}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage[a4paper, margin=2.5cm]{geometry} % Normál margó = 2.5cm
+\usepackage{mathptmx}
+\usepackage[backend=biber, style=authoryear, sorting=nyt, citestyle=authoryear]{biblatex}
+\addbibresource{sources.bib}
+
+% \renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\newcommand{\fullpagetitle}[1]{%
+    \clearpage
+    \thispagestyle{empty}
+    \vspace*{\fill}
+    \begin{center}
+        {\Huge\bfseries #1\par}
+    \end{center}
+    \vspace*{\fill}
+    \clearpage
+    \setcounter{section}{0}
+}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+
+\makeatletter
+\newcommand{\customtoc}{%
+    \clearpage
+    \thispagestyle{empty}
+    \begingroup
+        \setlength{\parindent}{0pt}
+        \setlength{\leftskip}{0pt}
+        \setlength{\cftbeforetoctitleskip}{0pt}
+        \setlength{\cftaftertoctitleskip}{0pt}
+        \setlength{\cftsecnumwidth}{1.5em}
+        \setlength{\cftsubsecnumwidth}{2.5em}
+        \setlength{\cftsubsubsecnumwidth}{3.5em}
+        \tableofcontents
+    \endgroup
+    \clearpage
+}
+\makeatother
+
+\title{VoidVanguard}
+\author{Sólyom Krisztián, Csongrádi Richárd, Tövissi-Nagy Ábel Boldizsár}
+\date{\today}
+
+\begin{document}
+
+\fullpagetitle{VoidVanguard}
+
+\customtoc
+% \clearpage
+% \thispagestyle{empty}
+% \tableofcontents
+% \clearpage
+
+\newpage
+
+\section*{Bevezetés}
+
+\subsection*{Téma ismertetése}
+Az applikáció egy 2D-s JavaScript játék megvalósítása. A felhasználó egy űrhajó kapitánya. A játékmenet során a játékossal szembeszálló ellenséges űrjárművek legyőzése a cél, melyet a játék tapasztalatpontokkal (XP) jutalmaz. A játék online felülete lehetővé teszi a felhasználó számára a barátok keresését, barátként való bejelölésüket, illetve ezen barátok közötti versenyek indítását. A versenyek célja, hogy egy adott határidőig a lehető legtöbb tapasztalatpontot szerezzék a játékosok.
+
+\subsection*{Szakmai cél}
+A valós idejű játékok fejlesztése komoly kihívásokat állít a fejlesztők elé, elsősorban matematikai és optimalizálási szempontból. Mindannyian kíváncsiak voltunk, hogy hogyan épülnek fel az ilyen játékok, és szerettük volna első kézből megtapasztalni, valamint megoldani ezeket a kihívásokat. Ezen 2D-s játék fejlesztése során lehetőségünk nyílt megismerkedni a játékkészítés technikáival, és biztos alapot szerezni a fejlesztés alapvető folyamataiban.
+
+\subsection*{Témaválasztás indoklása}
+A projekt Csongrádi Richárd játékkészítés iránti lelkesedését és Sólyom Krisztián rakéták iránti szenvedélyét tükrözi.
+
+\newpage
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{
+    \nouppercase{\rightmark}
+}
+\fancyhead[R]{\thepage}
+
+\addcontentsline{toc}{chapter}{Fejlesztői dokumentáció}
+\fullpagetitle{Fejlesztői dokumentáció}
+
+%\newpage
+
+\section{A játék alapjai}
+
+\subsection{A szimuláció frissítési üteme}
+
+A játéklogika frissítését kétféleképpen valósíthatjuk meg:
+
+\begin{enumerate}
+    \item \textbf{Fix időlépésű szimuláció} - a logika minden frissítése azonos időközönként történik.
+    \item \textbf{Változó időlépésű szimuláció} - a frissítés az eltelt valós időhöz igazodik.
+\end{enumerate}
+
+A gyakorlatban a legtöbb motor kombinált megközelítést alkalmaz: a fizika fix időlépésben, a megjelenítés (render) pedig változó időlépésben fut, így mindkét terület optimális működése biztosított.\\
+A fizika fix időlépésenkénti frissítése garantálja a szimuláció determinisztikus viselkedését.
+
+\subsection{Animálás böngészőben}
+
+Mivel böngészős játékról beszélünk így muszáj említést tenni a \textit{window} objektum \textit{requestAnimationFrame} (\textit{rAF}) metódusáról.\\
+A \textit{rAF} egy a fejlesztő által megadott callback függvényt hív meg. A függvényhívásokat a böngésző a kijelző frissítési frekvenciájához igyekszik igazítani, így ideális animációkhoz. Használatának egyik nagy előnye, hogy a \textit{rAF} hívások automatikusan szünetelnek, ha a lap nem látható vagy a böngésző a háttérben van, ezzel csökkentve a CPU/GPU terhelést, és ezáltal hordozható eszközök esetén növelve az akkumulátor élettartamát.
+
+A fentiek alapján a játékunk alap infrastruktúrája egyszerűen meghatározható: a fizikai szimuláció fix időlépésenként, a vizuális megjelenítés pedig változó időlépésenként történik, mindezek a \textit{rAF} használatával szinkronizálva.
+
+\newpage
+
+\section{Merev testek fizikai jellemzői}
+
+A merev testek azon tulajdonsága, hogy bármely rajtuk választott két pont távolsága állandó marad, függetlenül a testre ható erőktől, különösen előnyössé teszi a játékban való alkalmazásukat.
+
+A mi esetünkben ezek a merev testek összetett objektumok, vagyis kisebb merev testek alkotják őket, melyek egymáshoz viszonyított pozíciójuk állandó.
+
+Most ismertetésre kerül, hogyan lehet meghatározni ezeknek a testeknek bizonyos fizikai jellemzőit, melyek szükségesek a későbbi számításokhoz.
+
+\subsection{Lineáris tehetetlenség}
+
+A test lineáris tehetetlensége megegyezik a test össztömegével. Mivel a mi esetünkben a testeket kisebb objektumok alkotják, melyek tömege ismert, így ezek összegzésével megkapjuk az összetett test tehetetlenségét.
+
+Egy $n$ darab objektumból álló merev test esetében ez a következőképpen határozható meg:
+\[
+    M = \sum_{i = 1}^{n} m_i,
+\]
+ahol $m_i$ az összetett testet alkotó i-edik objektum tömege, $M$ peidg az összetett merev test tömege.
+
+\subsection{Tömegközéppont}
+
+A tömegközéppont egy rendszer azon pontja, melynek mozgása jellemzi az egész rendszer mozgását. Emellett megállapítása elengedhetetlen ha valósághűen szeretnénk modellezni egy test forgását. A következő képlet segítségével megállapítható egy rendszer, vagy összetett test tömegközéppontja:
+\[
+    \mathbf{G} =
+    \frac{1}{M} \sum_{i = 1}^{n} m_i (\mathbf{r}_i + \mathbf{G}_i),
+\]
+ahol $m_i$ az i-edik objektum tömege, $\mathbf{r}_i$ az i-edik objektum lokális pozíciója, $\mathbf{G}_i$ az i-edik objektum tömegközéppontja, $M$ pedig az összetett test teljes tömege.
+
+\subsection{Tehetetlenségi nyomaték}
+
+A tehetetlenségi nyomaték ($I$) azt fejezi ki, hogy egy test mennyire áll ellen a szögsebességében bekövetkező változásoknak, vagyis mennyire nehéz megváltoztatni annak forgását egy adott tengely körül.
+
+Egy testnek többféle tehetetlenségi nyomatéka is lehet, hisz azok relatívak egy adott tengelyhez viszonyítva.
+
+\subsubsection{Párhuzamos tengely tétel}
+
+A tény, hogy egy test tehetetlenségi nyomatéka minden tengely esetén más elsőre nagyon bonyolultnak érezteti a témát. Itt segítségünkre siet a "párhuzamos tengely tétel", mely segítségével bármilyen tengelyre meghatározható a test tehetetlenségi nyomatéka, ha az ismert a test tömegközéppontján átmenő tengelyhez viszonítva.
+
+A tehetetlenségi nyomaték így tehát a következőképpen számítható ki:
+\[
+    I = I_{\text{cm}} + md^2,
+\]
+ahol $I$ a kívánt tengelyhez viszonított tehetetlenségi nyomaték, $I_{\text{cm}}$ a test tehetetlenségi nyomatéka a tömegközéppontján átmenő tengely körül, $m$ a test tömege, $d$ pedig a két tengely távolsága.
+
+\subsubsection{Tetszőleges sokszög tehetetlenségi nyomatéka}
+
+A merev testünket ilyen sokszögek alkotják, vagyis a teljes test tehetetlenségi nyomatékának meghatározásához először az azt alkotó kisebb objektumokét kell meghatározni. Ezek az értékek pedig a későbbiek során a "párhuzamos tengely tétel" segítségével felhasználhatóak lesznek bármilyen más tengelyhez viszonyítva.
+
+Célszerű tehát ezen sokszögek tehetetlenségi nyomatákát a tömegközéppontjukhoz viszonyítva meghatározni. Ehhez, nem meglepő módon meg kell határoznunk azok tömegközéppontját, illetve területét. Erre egy könnyen algoritmizálható megoldást nyújt a cipőfűző képlet (shoelace formula).
+
+Egy $n - 1$ csúcsú sokszög területe:
+\[
+    A = \frac{1}{2} \left|\sum_{i = 1}^{n - 1} x_i y_{i + 1} - x_{i + 1} y_i\right|, \tag{1} \label{eq:shoelace}
+\]
+\fancyfoot[L]{
+    \small%
+    \eqref{eq:shoelace}: az abszolútérték jelek elhagyhatók, ha a sokszög csúcsai az óramutató járásával ellentétes irányba vannak rendezve.
+}
+tömegközéppontja:
+\[
+    \mathbf{G} = \frac{1}{6A}
+    \begin{bmatrix}
+        \sum_{i = 1}^{n - 1} (x_i + x_{i + 1}) \cdot (x_i \cdot y_{i + 1} - x_{i + 1} \cdot y_i) \\
+        \sum_{i = 1}^{n - 1} (y_i + y_{i + 1}) \cdot (x_i \cdot y_{i + 1} - x_{i + 1} \cdot y_i)
+    \end{bmatrix},
+\]
+ha csúcsai:
+\[
+    \begin{bmatrix}
+        x_1 \\
+        y_1
+    \end{bmatrix},
+    \begin{bmatrix}
+        x_2 \\
+        y_2
+    \end{bmatrix},
+    \dots,
+    \begin{bmatrix}
+        x_{n - 1} \\
+        y_{n - 1}
+    \end{bmatrix},
+    \begin{bmatrix}
+        x_n \\
+        y_n
+    \end{bmatrix}=
+    \begin{bmatrix}
+        x_1 \\
+        y_1
+    \end{bmatrix}
+\]
+
+Most, hogy meghatároztuk a sokszög területét és tömegközéppontját meghatározhatjuk annak tehetetlenségi nyomatékát a következő módon:
+\[
+    I = \frac{m}{6A} \sum_{i = 1}^{n - 1} ({x'}_i^2 + {y'}_i^2 + x'_i x'_{i + 1} + y'_i y'_{i + 1} + {x'}_{i + 1}^2 + {y'}_{i + 1}^2)(x'_i y'_{i + 1} - x'_{i + 1} y'_i),
+\]
+ha $x'_i = x_i - \mathbf{G}_{\text{x}}$ és $y'_i = y_i - \mathbf{G}_{\text{y}}$, ahol $i$ a sokszög csúcsait indexeli.
+
+\subsubsection{Összetett test tehetetlenségi nyomatéka}
+
+Az összetett testet alkotó objektumok tehetetlenségi nyomatékát és lokális pozícióját ismerve egy $n$ objektumot tartalmazó összetett merev test tehetetlenségi nyomatéka a következő módon állapítható meg:
+\[
+    I = \sum_{i = 1}^{n} I_i + m_i \|\mathbf{r}_i - \mathbf{G}\|_2^2,
+\]
+ahol $G$ az összetett test tömegközéppontja.
+
+\fancyfoot{}
+
+\newpage
+\section{Játékmechanika}
+
+\subsection{Rakétahajtóművek}
+
+Mivel játékunk a világűrben, rakétákkal zajlik, a rakétahajtóművek hozzáadása természetes és nélkülözhetetlen eleme a játéknak.
+A valóságban az ilyen hajtóművek végtelenül komplex szerkezetek, így annak érdekében, hogy a játék élvezhető legyen és ne igényeljen átfogó tudást a témában némi egyszerűsítést eszközöltünk.
+
+\subsubsection{Lineáris gyorsulás}
+
+Egy test akkor tapasztal lineáris gyorsulást, ha a rá ható erők összege nem nulla.
+\[
+    \mathbf{F} \neq \mathbf{0}, \text{ ahol } \mathbf{F} = \sum_{i} \mathbf{F}_i
+\]
+
+Ahhoz tehát, hogy meghatározzuk az adott test gyorsulását, összegezni kell az egyes hajtóművek által generált tolóerőt.
+
+Amint ez megtörtént a gyorsulás a következő képlet segítségével határozható meg:
+\[
+    \mathbf{a} = \frac{\mathbf{F}}{m},
+\]
+ahol $\mathbf{F}$ a testre ható erők összege, $m$ pedig a test tömege. A gyorsulás nagysága $\frac{\|\mathbf{F}\|_2}{m}$, iránya pedig megegyezik $\mathbf{F}$ irányával.
+
+\subsubsection{Tolóerő}
+
+A tolóerő a hajtóműből kiáramló nagysebességű gázok által a rakétára generált ellenerő, melynek meghatározására számos képlet áll rendelkezésünkre. Implementációnkban a hajtóművek fajlagos impulzusa ($I_{\text{sp}}$) és tömegárama ($\dot{m}$) adott. Ezek tekintetében a tolóerő a következőképpen határozható meg:
+\[
+    \mathbf{T} = \mathbf{v}_e \cdot \dot{m},
+\]
+ahol $\mathbf{v}_e$ a hajtóműből kiáramló gáz sebessége, mely a következő módon számítható ki:
+\[
+    \mathbf{v}_e = I_{\text{sp}} \cdot g_0,
+\]
+ahol $g_0$ a gravitáció által kifejtett gyorsulás a Föld felszínén ($\sim9,81 m/s^2$).
+
+\subsubsection{Forgatónyomaték}
+
+A forgató nyomaték kiszámítása a következő képlettel történik:
+\[
+    \mathcal{T} = \mathbf{r} \times \mathbf{F},
+\]
+ahol $\mathbf{F}$ a hajtómű által kifejtett erő, $\mathbf{r}$ pedig a forgástengelytől az erő hatáspontjáig mutató vektor.
+
+A képletből a következő megállapítás vonható le:
+\[
+    \mathbf{F} \parallel \mathbf{r} \Leftrightarrow \mathcal{T} = \mathbf{0},
+\]
+vagyis ha az erő párhuzamos az $\mathbf{r}$ helyvektorral, akkor az nem járul hozzá a testre ható forgatónyomatékhoz.
+
+Mivel kétdimenziós térben vagyunk, így az $\mathbf{r}$ és $\mathbf{F}$ vektorokat fel kell írnunk háromdimenziós alakra. Ez a következőképpen néz ki:
+\[
+    \mathbf{r} =
+    \begin{bmatrix}
+        \mathbf{r}_{\text{x}} \\
+        \mathbf{r}_{\text{y}} \\
+        \mathbf{r}_{\text{z}}
+    \end{bmatrix}
+    \text{ és }
+    \mathbf{F} =
+    \begin{bmatrix}
+        \mathbf{F}_{\text{x}} \\
+        \mathbf{F}_{\text{y}} \\
+        \mathbf{F}_{\text{z}}
+    \end{bmatrix},
+\]
+ahol $x$ és $y$ mindkét esetben az eredeti kétdimenziós vektor $x$ és $y$ értéke, míg $z$ 0, így a vektorális szorzat értelmezhető a két, immár háromdimenziós vektor között.
+A nyomatékot tehát a következő képlet adja meg:
+\[
+    \mathcal{T} =
+    \begin{bmatrix}
+        \mathbf{r}_{\text{y}} \mathbf{F}_{\text{z}} - \mathbf{r}_{\text{z}} \mathbf{F}_{\text{y}} \\
+        \mathbf{r}_{\text{z}} \mathbf{F}_{\text{x}} - \mathbf{r}_{\text{x}} \mathbf{F}_{\text{z}} \\
+        \mathbf{r}_{\text{x}} \mathbf{F}_{\text{y}} - \mathbf{r}_{\text{y}} \mathbf{F}_{\text{x}}
+    \end{bmatrix},
+    \text{ viszont mivel } \mathbf{r}_{\text{z}} \text{ és } \mathbf{F}_{\text{z}} = 0 \Rightarrow
+    \mathcal{T} =
+    \begin{bmatrix}
+        0 \\
+        0 \\
+        \mathbf{r}_{\text{x}} \mathbf{F}_{\text{y}} - \mathbf{r}_{\text{y}} \mathbf{F}_{\text{x}}
+    \end{bmatrix}
+\]
+
+A képlet tehát kétdimenziós kiindulási vektorok esetén egy egyszerűbb formában is felírható, miképpen a nyomaték ($\mathcal{T}$) egy skalár lesz:
+\[
+    \mathcal{T} = \mathbf{r}_{\text{x}} \mathbf{F}_{\text{y}} - \mathbf{r}_{\text{y}} \mathbf{F}_{\text{x}}
+\]
+
+\subsubsection{Szöggyorsulás}
+
+Egy kétdimenziós test szöggyorsulása a következőképpen számítható ki:
+\[
+    \alpha = \frac{1}{I} \sum_{i} \mathcal{T}_i,
+\]
+ahol $\alpha$ a szöggyorsulás, $\mathcal{T}_i$ az $i$-edik hajtómű által generált forgatónyomaték, $I$ pedig a test tehetetlenségi nyomatéka.
+
+\subsubsection{Szögsebesség}
+
+Egy kétdimenziós test szögsebessége a következőképpen adható meg:
+\[
+    \omega = \omega_0 + \alpha \cdot t,
+\]
+ahol a test végső szögsebessége $\omega$, kezdeti szögsebessége $\omega_0$, szöggyorsulása pedig $\alpha$.
+
+\subsection{Lövés}
+Egy lövöldözős játék esetében elengedhetetlen, hogy mind a játékos, mind pedig az őt támadó ellenséges karakterek rendelkezzenek a lövedékek valamilyen formában történő kibocsátásának képességével. Ennek implementálása attól függően, hogy a játékos vagy az ellenséges karakterek számára történik nagyban eltér.
+
+\subsubsection{Játékos lövésmechanikája}
+A játékos esetében nincs nehéz dolgunk. Itt teljesen elfogadható, hogy a lövedék arra meg amerre a játékos nézett, így némi kihívással megfűszerezve a játékot.
+
+\subsubsection{Ellenségek lövésmechanikája}
+Az ellenségek esetében kissé változik a helyzet. A felmerülő probléma az, hogy ha az ellenségek egy mozgó játékos esetében a játékos konkrét pozíciójára céloz, akkor semmi esélye nincs eltalálni azt. A játék ennek köszönhetően semmilyen kihívást nem fog nyújtani a felhasználó számára.\\
+A megoldást az úgynevezett \textit{előtartás} nyújta.
+
+\subsubsection{Előtartás}
+A probléma tehát adott: a játékos jelenlegi, világbeli pozíciója (\(\mathbf{r}_{\text{játékos}}\)), sebességének iránya és nagysága (\(\mathbf{v}_{\text{játékos}}\)), illetve a lövedék kiinduló, világbeli pocíziója (\(\mathbf{r}_{\text{lövedék}}\)) és sebességének nagysága (\(\mathbf{v}_{\text{lövedék}}\)) ismeretében meg kell találni azt a $t \ge 0$ időpontot, amikor a lövedék és a célpont ugyanabban a pontban lesznek.
+
+\newpage
+% \vspace*{\baselineskip}
+\noindent Az megoldandó egyenlet tehát a következő:
+\[
+\mathbf{r}_{\text{játékos}} + \mathbf{v}_{\text{játékos}} \cdot t = \mathbf{r}_{\text{lövedék}} + \mathbf{v}_{\text{lövedék}} \cdot t
+\]
+egy kis átrendezés:
+\[
+\noindent\makebox[\textwidth]{%
+    $\mathbf{r} = (\mathbf{v}_{\text{lövedék}} - \mathbf{v}_{\text{játékos}}) \cdot t$, ahol $\mathbf{r} = \mathbf{r}_{\text{játékos}} - \mathbf{r}_{\text{lövedék}}$
+}
+\]
+\[
+    \mathbf{r} = (\mathbf{v}_{\text{lövedék}} - \mathbf{v}_{\text{játékos}}) \cdot t \Rightarrow \mathbf{v}_{\text{lövedék}} = \mathbf{v}_{\text{játékos}} + \frac{\mathbf{r}}{t}
+\]
+mivel a lövedék sebességének csak a nagyságát ismerjük:
+\[
+    \|\mathbf{v}_{\text{lövedék}}\|_2 = s
+\]
+helyettesítve:
+\[
+    \|\mathbf{v}_{\text{játékos}} + \frac{\mathbf{r}}{t}\|_2 = s
+\]
+mindkét oldalt szorozva t-vel:
+\[
+    \|\mathbf{r} + \mathbf{v}_{\text{játékos}} \cdot t\|_2 = s \cdot t
+\]
+a gyökjel eltüntetéséhez négyzetre emelünk:
+\[
+    \|\mathbf{r} + \mathbf{v}_{\text{játékos}} \cdot t\|_2^2 = (s \cdot t)^2 \Rightarrow (\mathbf{r} + \mathbf{v}_{\text{játékos}} \cdot t) \cdot (\mathbf{r} + \mathbf{v}_{\text{játékos}} \cdot t) = s^2t^2
+\]
+felbontva:
+\[
+    \mathbf{r}^2 + 2(\mathbf{r} \cdot \mathbf{v}_{\text{játékos}})t + (\mathbf{v}_{\text{játékos}} \cdot \mathbf{v}_{\text{játékos}})t^2 = s^2t^2
+\]
+nullára rendezve:
+\[
+    \|\mathbf{v}_{\text{játékos}}\|_2^2t^2 - s^2t^2 + 2(\mathbf{r} \cdot \mathbf{v}_{\text{játékos}})t + \|\mathbf{r}\|_2^2 = 0
+    \Leftrightarrow
+    (\|\mathbf{v}_{\text{játékos}}\|_2^2 - s^2)t^2 + 2(\mathbf{r} \cdot \mathbf{v}_{\text{játékos}})t + \|\mathbf{r}\|_2^2 = 0
+\]
+az egyenlet megoldásai:
+\begin{itemize}
+    \item a = $\|\mathbf{v}_{\text{játékos}}\|_2^2 - s^2$
+    \item b = $2(\mathbf{r} \cdot \mathbf{v}_{\text{játékos}})$
+    \item c = $\|\mathbf{r}\|_2^2$
+\end{itemize}
+\[
+    t_{1}, t_{2} = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+\]
+Ha $t > 0$, akkor a lövedék sebességének irányát a következőképpen kaphatjuk meg:
+\[
+    \mathbf{d} = (\mathbf{v}_{\text{játékos}} \cdot t + \mathbf{r}_{\text{játékos}}) - \mathbf{r}_{\text{lövedék}}
+\]
+az irányvektor tehát: $\hat{\mathbf{d}} = \frac{\mathbf{d}}{\|\mathbf{d}\|_2}$
+
+\newpage
+\subsection{Játékosmodell módosítása}
+
+Játékunkban a felhasználónak lehetősége van űrhajójának modelljét módosítani blokkok lecsatolásával vagy hozzáadásával. Ehhez egerével meg kell ragadnia az űrben lebegő gazdátlan egységeket, majd hajójához húznia mindaddig míg nem kerül kontaktusba a blokkal.
+
+\subsubsection{Leendő lokális pozíció meghatározása}
+
+Amint az egér irányítása alatt álló blokk ütközik a játékos űrhajójával a játék meghatároz neki egy leendő, a modellhez lokális pozíciót a következő módon:
+\[
+    {}^{\text{L}}\mathbf{r}_{\text{blokk}} = \lfloor {}^{\text{V}}\mathbf{r}_{\text{blokk}} - {}^{\text{V}}\mathbf{r}_{\text{játékos}} \rfloor,
+\]
+
+ahol ${}^L\mathbf{r}$ az adott entitás lokális pozíciója, ${}^V\mathbf{r}$ pedig az annak világbeli pozíciója. A meghatározott pozíció ezután ellenőrzésre kerül, hogy megfelel-e minden megszorításnak.
+
+\subsubsection{Megszorítások alkalmazása}
+
+A szóban forgó modellmódosításokra természetesen megszorításokat alkalmaztunk, melyek a következők:
+
+\begin{itemize}
+    \item A csatolásra kerülő blokk nem helyezhető fel úgy, hogy legalább az egyik oldalán ne érintkezzen egy már a modellben lévő blokkal.
+    \item Olyan blokk nem távolítható el, melynek nincs legalább egy szabad oldala.
+\end{itemize}
+
+\noindent Az első megszorítás biztosításához a következő feltételnek kell teljesülnie:
+\[
+    \{ blokk \in M \mid \|\mathbf{r}_{\text{hozzáadandó}} - \mathbf{r}_{blokk}\|_1 = 1 \} \neq \emptyset
+    \wedge
+    \{ blokk \in M \mid \mathbf{r}_{\text{hozzáadandó}} = \mathbf{r}_{blokk} \} = \emptyset,
+\]
+ahol $M$ a játékosmodell blokkjainak halmaza, $\mathbf{r}_{\text{hozzáadandó}}$ a hozzáadni kívánt blokk leendő lokális pozíciója, $\mathbf{r}_{blokk}$ pedig a modell egyik blokkjának a modellhez lokális pozíciója.
+
+Blokkok eltávolítása esetén megvizsgálásra kerül az eltávolítandó elem négy oldala. Amennyiben legalább az egyik nincs fedésben a modell egy másik eleme által a blokk lecsatlakoztatható a játékosmodellről. A négy vizsgálandó irány esetén
+\[
+    \hat{\mathbf{d}}_{\uparrow} =
+    \begin{bmatrix}
+        0 \\
+        1
+    \end{bmatrix}
+    \text{, }
+    \hat{\mathbf{d}}_{\rightarrow} =
+    \begin{bmatrix}
+        1 \\
+        0
+    \end{bmatrix}
+    \text{, }
+    \hat{\mathbf{d}}_{\downarrow} =
+    \begin{bmatrix}
+        0 \\
+        -1
+    \end{bmatrix}
+    \text{, }
+    \hat{\mathbf{d}}_{\leftarrow} =
+    \begin{bmatrix}
+        -1 \\
+        0
+    \end{bmatrix}
+\]
+a következő feltételnek kell teljesülnie, hogy a blokk eltávolítható legyen, ha $\mathbf{r}_{\text{eltávolítandó}}$ az eltávolítandó blokk lokális pozíciója:
+\[
+    \exists i \in \{\uparrow, \rightarrow, \downarrow, \leftarrow\} \colon \{blokk \in M \mid \mathbf{r}_{\text{eltávolítandó}} + \hat{\mathbf{d}}_{i} = \mathbf{r}_{blokk} \} = \emptyset
+\]
+
+\newpage
+\section{Ütközésdetektálás}
+
+Az ütközésdetektálás (collision detection) a játékok és fizikai szimulációk egyik alapvető rendszere, amely meghatározza, hogy két objektum érintkezik-e, metszi-e egymást, vagy közvetlenül közelednek-e oly módon, hogy interakció lépjen fel közöttük.\\
+Feladata felismerni minden olyan helyzetet, ahol két modell, hitbox vagy fizikai test átfedésbe kerül, illetve ahol az átfedés a következő lépésben bekövetkezhet.
+
+A rendszer tipikusan két szakaszra oszlik: széles fázisra (broad phase), amely gyorsan szűri a potenciálisan ütköző objektumokat, és szűk fázisra (narrow phase), amely részletesen vizsgálja a valódi geometriai metszéseket.
+
+\subsection{Széles fázis}
+
+A széles fázis célja, hogy gyorsan kiszűrje a biztosan nem ütköző objektumokat, és azonosítsa azokat a potenciálisan ütköző párokat, amelyeket a szűk fázisban részletesebben kell vizsgálni. Ezzel a megközelítéssel elkerülhető, hogy a szűk fázis, amely jóval összetettebb és erőforrás-igényesebb algoritmusokat használ, feleslegesen dolgozzon olyan objektumokon, amelyekről már a széles fázis könnyű ellenőrzése megállapítja, hogy nem ütközhetnek egymással.
+
+A mi megvalósításunkban az objektumok széles fázisú ütközésvizsgálatához az objektum köré írható legkisebb sugarú kör szolgál ütközőtesttül.\\
+A végrehajtandó ellenőzés tehát a következő:
+\[
+    \|\mathbf{r}_{\text{a}} - \mathbf{r}_{\text{b}}\|_2 < R_{\text{a}} + R_{\text{b}}
+\]
+vagy
+\[
+    (\mathbf{r}_{\text{a}} - \mathbf{r}_{\text{b}}) \cdot (\mathbf{r}_{\text{a}} - \mathbf{r}_{\text{b}}) < (R_{\text{a}} + R_{\text{b}})^2 \tag{2} \label{eq:distance}
+\]
+ahol $\mathbf{r}_{\text{a}}$ és $\mathbf{r}_{\text{b}}$ a két objektum világbeli pozíciója, $R_{\text{a}}$ és $R_{\text{b}}$ pedig a két objektum köré írható legkisebb sugarú kör sugara.
+
+Ha a kifejezés logikai értéke igaz, a két objektumot potenciálisan ütköző párnak tekintjük; ha hamis, akkor biztosan nem ütközhetnek.
+
+\fancyfoot[L]{
+    \small%
+    \eqref{eq:distance}: az egyenlet megegyezik az őt megelőző formulával, azonban mivel nem tartalmaz vektorhossz-számítást, négyzetgyökmentes formában van, ami számítási szemponból hatékonyabb.
+}
+
+\subsection{Szűk fázis}
+
+A szűk fázis során pontosan meghatározásra kerül, hogy az adott objektum-pár ütközik-e, vagy nem. Ennek meghatározására két elterjedt megoldás létezik: a SAT (Separating Axis Theorem) és a GJK (Gilbert-Johnson-Keerthi) algoritmusok. A SAT algoritmus kezdőbarátabb és sok esetben optimálisabb megoldás is, így mi ezen algoritmus használata mellett döntöttünk. A későbbiekben ezen algoritmus működése lesz ismertetve.
+
+Itt már az ütközőtest nem feltétlen egy kör, hanem egy olyan alakzat, amely pontosan körbehatárolja a kívánt területet. Ez az alakzat egyszerűbb platformer játékok esetében egy AABB (Axis-Aligned Bounding Box), szabadabb mozgást megengedő játékok esetében pedig általában egy OBB (Oriented Bounding Box). A mi esetünkben a szűk fázisú ütközőtestek bármilyen OBP-k (Oriented Bounding Polygon) lehetnek, a lehető legnagyobb alkotói szabadság megengedése érdekében.
+
+\fancyfoot{}
+
+\subsection{További optimalizáció}
+
+Az ütközésdetektálás széles és szűk fázisra való felosztásán felül további lehetőségek is rendelkezésünkre állnak, melyekkel tovább csökkenthetjük a rendszer terheltségét. Ezek közül csak egyet alkalmaztunk, így csak azt fogjuk megemlíteni.
+
+Az egyenletes térbeli felosztású rács (Uniform Spatial Subdivision Grid) alkalmazásával a világot egyenlő méretű cellákra osztjuk. Ezekbe a cellákba aztán később regisztráljuk azon entitásokat, melyeket teljesen vagy részlegesen tartalmaznak. Csak azok az objektumok ütközhetnek, amelyek közös cellán osztoznak, így csak az egy cellában lévő objektumokat kell ellenőrizni egymással. Az előny magától értetődő: az egymástól távol lévő objektumok nem ütközhetnek, és a rács használatával még a széles fázis könnyű algoritmusának futtatását is megspóroltuk.
+
+\newpage
+\section{SAT}
+
+A SAT (Separating Axis Theorem) az ütközésérzékelés szűk fázisa során használt algoritmus, matematikai tétel, mely a következőt mondja ki:
+
+\begin{center}
+    \textit{Ha két alakzat között található olyan tengely, amelyre vetítve azok nem metszik egymást, akkor biztosan kimondható, hogy a két alakzat nincs átfedésben.}
+\end{center}
+
+\subsection{Tengelyek meghatározása}
+
+Első lépésként a tengelyek meghatározása a feladatunk. AABB ütközőtestek esetén ez könnyű, hiszen a jól ismert \textbf{x} és \textbf{y} tengelyen kívül nincs is másra szükségünk. Amennyiben azonban ütközőtesteink tetszőleges számú oldallal rendelkeznek, illetve oldalaik nem párhuzamosak, vagy merőlegesek az \textbf{x} és \textbf{y} tengelyre a dolgunk már kissé nehezebb.
+
+Egy tetszőleges $\text{a}$ \textit{n - 1} darab csúccsal rendelkező sokszögből a következő képpen állíthatóak elő a szükséges tengelyek, ha a sokszög csúcsai 
+\[
+    \begin{bmatrix}
+        x_1 \\
+        y_1
+    \end{bmatrix},
+    \begin{bmatrix}
+        x_2 \\
+        y_2
+    \end{bmatrix},
+    \dots,
+    \begin{bmatrix}
+        x_{n - 1} \\
+        y_{n - 1}
+    \end{bmatrix},
+    \begin{bmatrix}
+        x_n \\
+        y_n
+    \end{bmatrix}=
+    \begin{bmatrix}
+        x_1 \\
+        y_1
+    \end{bmatrix}
+\]    
+akkor az i-edik élvektor
+\[
+    \mathbf{e}_i =
+    \begin{bmatrix}
+        x_{i + 1} - x_{i} \\
+        y_{i + 1} - y_{i}
+    \end{bmatrix}
+\]
+az i-edik élvektor normálvektora
+\[
+    \mathbf{n}_i = \mathbf{e}_i \cdot
+    \begin{bmatrix}
+        0 & -1 \\
+        1 & 0
+    \end{bmatrix}\text{ vagy }
+    \mathbf{n}_i = \mathbf{e}_i \cdot
+    \begin{bmatrix}
+        0 & 1 \\
+        -1 & 0
+    \end{bmatrix}
+\]
+a tengelyek tehát:
+\[
+    A_{\text{a}} = \{\mathbf{n}_i \mid i = 1, \dots, n - 1\},
+\]
+ahol $A_{\text{a}}$ a tetszőleges $\text{a}$ sokszögből előállított tengelyek halmaza.
+
+A vizsgálandó tengelyek tehát a fentebb látható módon előállíthatóak mindkét sokszög csúcsaiból. Az összes vizsgálandó tengely $\text{a}$ és $\text{b}$ objektumok esetén:
+\[
+    A = A_{\text{a}} \cup A_{\text{b}},
+\]
+ahol $A$ az összes vizsgálandó tengely halmaza, $A_{\text{a}}$ az egyik sokszögből előállított tengelyek halmaza, $A_{\text{b}}$ pedig a másik sokszög tengelyeinek halmaza.
+
+\subsection{Ütközés megállapítása}
+
+Következő feladatunk a két sokszög összes csúcsát rávetíteni az előzőleg definiált tengelyekre. Minden tengely esetén nyomon kell követni az adott sokszög csúcsainak vetítési minimum és maximum értékét. Amint végeztünk egy tengelyre való vetítéssel és megkaptuk a végleges minimum és maximum értékeket a következő reláció teljesülése esetén a két alakzat nem fedi egymást:
+\[
+    \text{a}_{\text{max}} \leq \text{b}_{\text{min}} \lor \text{b}_{\text{max}} \leq \text{a}_{\text{min}}
+\]
+A fentebb látható reláció teljesülése esetén tehát a tengelyek további vizsgálata fölösleges, hisz biztosan megállapítható, hogy a két alakzat nincs átfedésben.
+
+A tengelyre vetítés a következőképpen történik:
+\[
+    \mathbf{P}_j \cdot \mathbf{n}_i,
+\]
+ahol $\mathbf{P}_j$ az adott sokszög $j$-edik csúcsa, $\mathbf{n}_i$ pedig az $i$-edik tengely. Ezen skaláris szorzat eredménye az, amelyet aztán össze kell hasonlítani a jelenleg legkisebbnek és legnagyobbnak tartott eredménnyel és megfelelően frissíteni azokat.
+
+\subsection{Átfedés mértékének meghatározása}
+
+Az átfedés mértéke a következő képlettel adható meg:
+\[
+    \min(\text{a}_{\text{max}}, \text{b}_{\text{max}}) - \max(\text{a}_{\text{min}}, \text{b}_{\text{min}}),
+\]
+
+Ez az érték később használható a két objektum szétválasztására, vagyis az átfedés megszüntetésére.
+
+\subsection{Ütközésnormál előállítása}
+
+Az ütközés normálja (collision normal), vagyis az a tengely, vagy irány, mely mentén a két objektum szétválasztandó a vizsgált tengelyek közül az, amelyiken a két objektum átfedése a legkisebb volt.
+
+Egyszerű, vagyis olyan testek esetén melyek ütközésében csakis két ütközőtest vesz részt ennek meghatározása könnyű: azt a tengelyt keressük, amelyen az ütköző objektumok átfedése a legkisebb volt.
+Komplex testek esetén, mint például a konkáv alakzatok, melyek esetén két test ütközése több kisebb alütközéssel jár ezen normál megállapítása kissé bonyolultabbá válik.
+Ez esetben a leghatékonyabbnak bizonyuló megoldás a főnormál, vagyis azon normál előállítására mely az ütközésfeloldás során használatos az alütközések normálisának összegzése.
+\[
+    \mathbf{N} = \sum_{i} \mathbf{n}_i,
+\]
+ahol $\mathbf{N}$ a főnormál, $\mathbf{n}_i$ pedig az $i$-edik alütközés normálisa.
+
+Ezzel a megoldással a konkáv alakzatok esetén - melyek konvex dekompozícióra kényszerülnek - az ütközések és azok feloldása ugyanolyan simán, egyenletesen és akadozásmentesen történik, mint az egyszerű testeké.
+
+\newpage
+\section{Ütközésfeloldás}
+
+Az ütközésfeloldás során az átfedésben lévő alakzatokat szétválasztjuk pozíciójuk módosításával, lineáris és szögsebességük pedig az elérni kívánt fizikai valóságszerűség függvényében módosításra kerülnek.
+
+\subsection{Pozíciókorrigálás}
+
+Az ütközésben résztvevő objektumok szétválasztásával, vagyis pozíciójuk módosításával az ütközés megszüntetésre kerül. Ehhez szükségünk van az ütközés normáljára, mint irányra ami mentén az objektumokat mozgatjuk, illetve az átfedés mértékére, amivel az objektumok pozícióját módosítjuk.
+
+Fontos, hogy az ütközés normálját normalizáljuk, ha még nem tettük:
+\[
+    \hat{\mathbf{n}} = \frac{\mathbf{n}}{\|\mathbf{n}\|_2}
+\]
+
+Ha $\text{a}$ és $\text{b}$ objektumok és $x$ az átfedés mértéke, akkor a módosított pozíciójuk a következőképpen adható meg:
+\[
+    \mathbf{r'}_{\text{a}} = \mathbf{r}_{\text{a}} - (x + \varepsilon) \cdot \frac{m_{\text{a}}}{m_{\text{a}} + m_{\text{b}}} \cdot \hat{\mathbf{n}}
+\]
+és
+\[
+    \mathbf{r'}_{\text{b}} = \mathbf{r}_{\text{b}} + (x + \varepsilon) \cdot \frac{m_{\text{b}}}{m_{\text{a}} + m_{\text{b}}} \cdot \hat{\mathbf{n}},
+\]
+ahol $\mathbf{r}$ az adott objektum világbeli pozíciója, $m$ a tömegük, $\varepsilon$ pedig egy kis érték, mint például $0,001$, mely hozzáadásával a lebegőpontos számábrázolás pontatlansága nem okoz "akadozó", vagy "össze-vissza dobálózó" mozgást az objektumok esetében.
+
+\subsection{Sebességmódosítás}
+
+Az objektumok sebességének módosításával valósághűbbé tehetjük szimulációnkat, például azok egymásról való visszapattintásával.
+
+Adott az $\text{a}$ objektum sebessége $\mathbf{v}_{\text{a}}$, a $\text{b}$ objektum sebessége $\mathbf{v}_{\text{b}}$ és az ütközés rugalmassági együtthatója $e \in [0, 1]$, amely meghatározza hogy az objektumok sebességének az ütközés normális irányával párhuzamos komponenséből mennyi marad meg (azaz, hogy az ütközés mennyire rugalmas).
+
+Kiszámoljuk a két test relatív sebességét:
+\[
+    \mathbf{v}_{\text{r}} = \mathbf{v}_{\text{b}} - \mathbf{v}_{\text{a}}
+\]
+Ha a relatív sebesség és az ütközés normálisának skaláris szorzata ($\mathbf{v}_{\text{r}} \cdot \hat{\mathbf{n}}$) nagyobb mint $0$, akkor az azt jelenti, hogy a két test egymástól már távolodik. Ez esetben semmit sem kell tennünk.
+
+Ezután az impulzusváltozást a következő képlettel számolhatjuk ki:
+\[
+    j = \frac{-(1 + e) \cdot (\mathbf{v}_{\text{r}} \cdot \hat{\mathbf{n}})}{\frac{1}{m_{\text{a}}} + \frac{1}{m_{\text{b}}}}
+\]
+
+Az impulzusvektor ebből:
+\[
+    \mathbf{I} = \hat{\mathbf{n}} \cdot j,
+\]
+amivel a két objektum sebességét módosítanunk kell.
+
+Az ütközésben részt vevő két objektum ütközés utáni sebességét a következőképpen kaphajtuk meg:
+\[
+    \mathbf{v'}_{\text{a}} = \mathbf{v}_{\text{a}} - \mathbf{I} \cdot \frac{1}{m_{\text{a}}}
+    \text{ és }
+    \mathbf{v'}_{\text{b}} = \mathbf{v}_{\text{b}} + \mathbf{I} \cdot \frac{1}{m_{\text{b}}}
+\]
+
+\newpage
+\section{Adatbázis}
+
+\begin{figure}[h]
+    \centering
+    \begin{tcolorbox}[colframe=gray!30, colback=white, boxrule=0.8mm, sharp corners=south, title={Adatbázis struktúra áttekintése}]
+        \includegraphics[width=\textwidth]{db.png}
+    \end{tcolorbox}
+    \label{fig:db}
+\end{figure}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        id & CHAR(36) & PRIMARY KEY & Egyedi UUID azonosító \\
+        \hline
+        username & VARCHAR(20) & UNIQUE, NOT NULL & Felhasználó neve \\
+        \hline
+        role & INT(2) & DEFAULT 0, NOT NULL & Felhasználó jogosultságát jelző érték \\
+        \hline
+        email & VARCHAR(255) & UNIQUE, NOT NULL & Email cím \\
+        \hline
+        password\_hash & CHAR(60) & NOT NULL & Felhasználó jelszava hashelve \\
+        \hline
+        created\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+        updated\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord utolsó módosításának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Felhasználók táblája}
+    \label{tab:users}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        user\_id & CHAR(36) & PRIMARY KEY, FOREIGN KEY & A birtokló felhasználó azonosítója \\
+        \hline
+        avatar & VARCHAR(60) & DEFAULT NULL & Profilkép elérési útvonala \\
+        \hline
+        display\_name & VARCHAR(60) & NOT NULL & Megjelenítési név \\
+        \hline
+        description & TEXT & DEFAULT NULL & Profil leírása \\
+        \hline
+        visibility & VARCHAR(30) & NOT NULL, DEFAULT 'public" & Profil láthatósági beállítása \\
+        \hline
+        created\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+        updated\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord utolsó módosításának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Profilok táblája}
+    \label{tab:profiles}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        id & CHAR(32) & PRIMARY KEY & A barátság kapcsolat egyedi azonosítója \\
+        \hline
+        initiator\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Kezdeményező felhasználó azonosítója \\
+        \hline
+        recipient\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Kezdeményezett felhasználó azonosítója \\
+        \hline
+        status & VARCHAR(30) & NOT NULL, DEFAULT 'pending' & Kapcsolat állapota \\
+        \hline
+        created\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+        updated\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord utolsó módosításának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Barátkapcsolatok táblája}
+    \label{tab:friends}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        blocker\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Letiltó felhasználó azonosítója \\
+        \hline
+        blocked\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Letiltott felhasználó azonosítója \\
+        \hline
+        created\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Letiltások táblája}
+    \label{tab:blocks}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        game\_id & CHAR(36) & PRIMARY KEY & Játékmenet azonosítója \\
+        \hline
+        user\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Birtokló felhasználó azonosítója \\
+        \hline
+        save\_name & VARCHAR(30) & & Mentés neve\\
+        \hline
+        game\_state & JSON & & Játékállapot \\
+        \hline
+        is\_finished & BOOLEAN & DEFAULT FALSE & Befejezettségi állapotot jelző mező \\
+        \hline
+        created\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+        updated\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord utolsó módosításának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Mentések táblája}
+    \label{tab:saves}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        game\_id & CHAR(36) & PRIMARY KEY, FOREIGN KEY & Játékmenet azonosítója \\
+        \hline
+        score & INT & NOT NULL & Pontszám \\
+        \hline
+        created\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+        updated\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord utolsó módosításának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Pontszámok táblája}
+    \label{tab:scores}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        user\_id & CHAR(36) & PRIMARY KEY, FOREIGN KEY & Felhasználó azonosítója \\
+        \hline
+        token\_hash & CHAR(64) & NOT NULL & Jelszóvisszaállító token hashe \\
+        \hline
+        expires\_at & TIMESTAMP & NOT NULL & Token lejárati ideje \\
+        \hline
+        issued\_at & TIMESTAMP & NOT NULL, DEFAULT CURRENT\_TIMESTAMP & Token kiadásának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Jelszóvisszaigénylő tokenek táblája}
+    \label{tab:password_resets}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        id & CHAR(36) & PRIMARY KEY & Token (munkamenet) azonosítója \\
+        \hline
+        user\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Token birtokosának azonosítója \\
+        \hline
+        token\_hash & CHAR(64) & NOT NULL, UNIQUE & Token hashelt változata \\
+        \hline
+        expires\_at & TIMESTAMP & NOT NULL, DEFAULT CURRENT\_TIMESTAMP & Token lejárati időpontja \\
+        \hline
+        issued\_at & TIMESTAMP & NOT NULL, DEFAULT CURRENT\_TIMESTAMP & Token kiadásának időpontja \\
+        \hline
+        last\_used\_at & TIMESTAMP & NOT NULL, DEFAULT CURRENT\_TIMESTAMP & Utolsó használat időpontja \\
+        \hline
+        ip & VARCHAR(45) &  & Tokent kérő kliens IP címe \\
+        \hline
+        user\_agent & TEXT & & Tokent kérő kliens felhasználói ügynöke \\
+        \hline
+        revoked & BOOLEAN & DEFAULT FALSE & Visszavonást jelző mező \\
+        \hline
+    \end{tabularx}
+    \caption{Refresh tokenek táblája}
+    \label{tab:refresh_tokens}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        id & CHAR(36) & PRIMARY KEY & Kitiltás azonosítója \\
+        \hline
+        user\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Kitiltás tárgyák képező felhasználó azonosítója \\
+        \hline
+        reason & TEXT & & Indok \\
+        \hline
+        created\_at & TIMESTAMP & NOT NULL, DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+        expires\_at & TIMESTAMP & NULL & Kitiltás lejárati időpontja \\
+        \hline
+        revoked\_at & TIMESTAMP & NULL & Kitiltás visszavonási időpontja \\
+        \hline
+        created\_by & CHAR(36) & FOREIGN KEY, NULL & Létrehozó felhasználó azonosítója \\
+        \hline
+        revoked\_by & CHAR(36) & FOREIGN KEY, NULL & Kitiltást visszavonó felhasználó azonosítója \\
+        \hline
+    \end{tabularx}
+    \caption{Kitiltások táblája}
+    \label{tab:bans}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        id & CHAR(36) & PRIMARY KEY, FOREIGN KEY & Hozzászólás azonosítója \\
+        \hline
+        author\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Szerző azonosítója \\
+        \hline
+        target\_id & CHAR(36) & FOREIGN KEY, NOT NULL & Célpont azonosítója \\
+        \hline
+        parent\_id & CHAR(36) & FOREIGN KEY, DEFAULT NULL & Szölő azonosítója \\
+        \hline
+        content & TEXT & NOT NULL & Hozzászólás tartalma \\
+        \hline
+        created\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+        updated\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord utolsó módosításának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Hozzászólások táblája}
+    \label{tab:comments}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        user\_id & CHAR(36) & PRIMARY KEY (user\_id, target\_id), NOT NULL & Reakciót birtokló felhasználó azonosítója \\
+        \hline
+        target\_id & CHAR(36) & PRIMARY KEY (user\_id, target\_id), FOREIGN KEY & Célpont azonosítója \\
+        \hline
+        type & VARCHAR(20) & NOT NULL & Reakció típusa \\
+        \hline
+        created\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord beszúrásának ideje \\
+        \hline
+        updated\_at & TIMESTAMP & DEFAULT CURRENT\_TIMESTAMP & Rekord utolsó módosításának ideje \\
+        \hline
+    \end{tabularx}
+    \caption{Reakciók táblája}
+    \label{tab:reactions}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \arrayrulecolor{gray!30}  % A keret színe megegyezik a fejléc háttérszínével
+    \renewcommand{\arraystretch}{1.5}  % A sor magasságának növelése (több hely a szöveg körül)
+    \begin{tabularx}{\textwidth}{|c|c|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}  % A 'X' oszlopok balra igazítva
+        \hline
+        \rowcolor{gray!30} \textcolor{white}{\textbf{Mező}} & \textcolor{white}{\textbf{Típus}} & \textcolor{white}{\textbf{Korlátok}} & \textcolor{white}{\textbf{Leírás}} \\
+        \hline
+        id & CHAR(36) & PRIMARY KEY & Egyedi UUID azonosító \\
+        \hline
+    \end{tabularx}
+    \caption{Entitások táblája}
+    \label{tab:entities}
+\end{table}
+
+\addcontentsline{toc}{chapter}{Felhasználói dokumentáció}
+\fullpagetitle{Felhasználói dokumentáció}
+
+\addcontentsline{toc}{chapter}{Csapatmunka részletei}
+\fullpagetitle{Csapatmunka részletei}
+
+\newpage
+\markboth{}{}
+
+\noindent\textbf{Tövissi-Nagy Ábel}
+
+A backend fejlesztés során egy komplex közösségi rendszer került kialakításra, amely számos felhasználói funkciót integrál. Ennek részeként megvalósult a barátrendszer, a profilkezelés, valamint a kommentek és reakciók kezelése is. A rendszer tartalmaz felhasználó blokkolási lehetőséget és egy adminfelületet, amely hatékonyabbá teszi az üzemeltetést és moderációt. A biztonság érdekében kidolgozásra került a regisztrációs és bejelentkezési folyamat, token alapú hitelesítéssel. Emellett egy hangrendszer fejlesztése is megtörtént, amely növeli az alkalmazás interaktivitását. A frontend és backend közötti kommunikáció optimalizálására egy egyedi \textit{fetch} segédfüggvény került kialakításra.
+
+\vspace{3mm}
+\noindent\textbf{Csongrádi Richárd}
+
+A frontend fejlesztés során megvalósult egyedi design, többek között a Profilközpont, Bejelentkezési/Regisztrációs/Admin felületnél, és számos más oldalon.
+A játékmenet logikája valamit annak esztétikailag való megvalósulása, ebbe beleértve az űrhajó blokkjainak textúrája, a lövés és és a thruster nyomvonal effektusa Canvas használatának segítségével.
+
+A játékmenet élvezhetőségének megvalósítása, az erre szolgáló nehézségi fokozatokkal, valamint a különböző viselkedésű és felépítésű ellenséges űrhajók logikájának megírásával. Ez biztosítja, hogy a játék előrehaladtával a játékos egyre nehezebb kihívások elé kerüljön.
+
+\vspace{3mm}
+\noindent\textbf{Sólyom Krisztián}
+
+A WebGL-renderelés implementálása biztosította a játék vizuális alapját, lehetővé téve a dinamikus elemek és környezetek részletes megjelenítését. A fizikai rendszerek, köztük az ütközésdetektálás, ütközésfeloldás és rakétahajtóművek integrálása szintén a feladatok közé tartozott.
+
+A lövésmechanika kialakítása szintén kulcsfontosságú feladat volt, mivel biztosította a megfelelő játékélményt. Ennek során a játékos és az ellenséges entitások lövésmechanikáját egyaránt implementálni kellett. Az erőalapú mozgásrendszer implementálása a karakterek fizikai mozgását és dinamikáját tette realisztikussá.
+
+A játék reszponzivitásának megvalósítása érintőképernyős eszközök és különböző kijelzőméretek támogatásával szintén alapvető feladat volt.
+
+A játékvilág dinamikus generálása (csillagköd háttér), amely a játék vizuális élményének fokozását szolgálja is a feladatok egyike volt.
+
+A backend fejlesztésében egységes hibakezelés, mentési és pontszámítási végpontok, valamint adatbázis elemek készítése szerepelt. A frontend oldalon custom webkomponensek implementálása és azok tesztelése biztosította a felhasználói és backend logika közötti összekapcsolást.
+
+Utolsó sorban pedig a fejlesztői dokumentáció elkészítése is a feladatokat sokszínűsítette.
+
+\addcontentsline{toc}{chapter}{Összefoglalás}
+\fullpagetitle{Összefoglalás}
+
+\newpage
+\markboth{}{}
+
+A projekt megkezdése előtt megfogalmazott célunk – hogy új technológiákat és megközelítéseket sajátítsunk el – teljes mértékben megvalósult. A fejlesztés során nemcsak az előzetes elvárásainkat sikerült teljesíteni, hanem számos olyan területen is tapasztalatot szereztünk, amelyekre kezdetben nem is számítottunk. Ide tartozik többek között a token alapú hitelesítés alkalmazása is, amelynek megvalósítása során a modern webalkalmazások egyik alapvető biztonsági megközelítését sajátítottuk el.
+
+A létrehozott rendszer összességében egy rendkívül komplex megoldás. Ez a komplexitás azonban nem elsősorban a funkciók számából fakad, hanem abból, hogy egy valós idejű, determinisztikus fizikára épülő szimulációt valósítottunk meg, illetve hogy már az alapoktól kezdve tudatosan törekedtünk az általánosíthatóságra. Ennek eredményeként mind a játéklogika, mind a backend architektúra olyan módon került kialakításra, hogy más, hasonló problémák megoldására is alkalmas alapot nyújthat. További rendelkezésre álló idő esetén a rendszer funkcionalitásának bővítését, valamint a játékélmény további gazdagítását tartanánk elsődleges iránynak.
+
+A fejlesztés során számos kihívással szembesültünk. Az egyik legmeghatározóbb ezek közül a játék alapját képező, determinisztikus fizikai szimuláció és az arra épülő vezérlési rendszer kialakítása volt, amely különösen a projekt kezdeti szakaszában bizonyult nehéznek, amikor még nem rendelkeztünk számottevő tapasztalattal játékkészítés terén. Emellett jelentős kihívást jelentett a JavaScript webkomponensek életciklusának mélyebb megértése és tudatos kezelése, valamint egy olyan rugalmas rendszer megtervezése, amely biztosítja az egyes komponensek közötti kompatibilitást és bővíthetőséget.
+
+Nehéz egyetlen területet kiemelni, ahol a legtöbbet tanultuk, azonban összességében a frontend fejlesztés bizonyult a legtanulságosabbnak. Mind a játékkészítés, mind a felhasználói felület kialakítása során számos új technológiát és szemléletmódot sajátítottunk el. Amennyiben a jövőben leginkább hasznosítható tudást tekintjük mérvadónak, akkor a webkomponensek alkalmazását emelnénk ki, mivel ez a megközelítés széles körben felhasználható modern webalkalmazások fejlesztése során. Emellett a token alapú autentikáció gyakorlati megvalósítása is olyan tapasztalatot adott, amely a későbbi backend fejlesztések során közvetlenül hasznosítható.
+
+A projekt nemcsak egy működő játék és a hozzá kapcsolódó teljes rendszer létrehozását eredményezte, hanem egy olyan átfogó fejlesztési tapasztalatot is, amely a jövőbeni munkáink során is stabil alapot biztosít.
+
+\addcontentsline{toc}{chapter}{Irodalomjegyzék}
+\fullpagetitle{Irodalomjegyzék}
+
+\newpage
+\markboth{}{}
+
+\subsection*{Projekt-specifikus források}
+Azon források, melyek kifejezetten a projekt által nyújtott problémák megoldásának céljából lettek felkeresve.
+\bigskip
+
+\noindent\textbf{2025. 09. 15.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://chriscourses.com/blog/standardize-your-javascript-games-framerate-for-different-monitors}
+\end{itemize}
+
+\noindent\textbf{2025. 09. 19.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=y2UsQB3WSvo}
+    \item \url{https://www.youtube.com/watch?v=lLa6XkVLj0w}
+    \item \url{https://www.youtube.com/watch?v=sWBt5WrQTfE}
+    \item \url{https://www.youtube.com/watch?v=hUxw5Ni0l78}
+    \item \url{https://www.youtube.com/watch?v=C6BztStktJY}
+    \item \url{https://www.youtube.com/watch?v=e5qwESME00E}
+\end{itemize}
+
+\noindent\textbf{2025. 09. 21.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=yGhfUcPjXuE}
+    \item \url{https://www.youtube.com/watch?v=KSbY518HNWQ}
+\end{itemize}
+
+\noindent\textbf{2025. 09. 26.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=IsyHfmq18ec}
+    \item \url{https://www.youtube.com/watch?v=Ude1zZbf20s}
+\end{itemize}
+
+\noindent\textbf{2025. 09. 27.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=0nZn5YPNf5k}
+    \item \url{https://www.youtube.com/watch?v=ocGDNM0AL3c}
+    \item \url{https://www.youtube.com/watch?v=R2Y6vb3z_Hw}
+\end{itemize}
+
+\noindent\textbf{2025. 10. 03.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=w3im_9qbM18}
+    \item \url{https://www.youtube.com/watch?v=FCkMPkgWClo}
+\end{itemize}
+
+\noindent\textbf{2025. 10. 12.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://science.howstuffworks.com/rocket.htm}
+    \item \url{https://phys.libretexts.org/Bookshelves/University_Physics/Physics_%28Boundless%29/7%3A_Linear_Momentum_and_Collisions/7.4%3A_Rocket_Propulsion}
+\end{itemize}
+
+\noindent\textbf{2025. 11. 12.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://stephendoddtech.com/blog/game-design/spiral-of-death-game-loop-javascript}
+\end{itemize}
+
+\noindent\textbf{2025. 11. 12.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://gafferongames.com/post/fix_your_timestep/}
+\end{itemize}
+
+\noindent\textbf{2025. 11. 12.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://peerdh.com/blogs/programming-insights/optimizing-game-loop-with-fixed-time-steps}
+\end{itemize}
+
+\noindent\textbf{2025. 11. 14.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www3.ntu.edu.sg/home/ehchua/programming/howto/Regexe.html#zz-2.}
+\end{itemize}
+
+\noindent\textbf{2025. 11. 15.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame}
+\end{itemize}
+
+\noindent\textbf{2025. 11. 18.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=0nZn5YPNf5k}
+\end{itemize}
+
+\noindent\textbf{2025. 12. 09.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://phys.libretexts.org/Bookshelves/University_Physics/Physics_(Boundless)/7%3A_Linear_Momentum_and_Collisions/7.4%3A_Rocket_Propulsion}
+\end{itemize}
+
+\noindent\textbf{2025. 12. 12.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode}
+\end{itemize}
+
+\noindent\textbf{2025. 12. 18.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-phy-centre-of-mass/v/center-of-mass}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-phy-centre-of-mass/v/center-of-mass-equation}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-phy-centre-of-mass/a/what-is-center-of-mass}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-phy-centre-of-mass/a/center-of-mass-ap1}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-introduction-to-angular-motion-ap/v/angular-motion-variables}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-introduction-to-angular-motion-ap/v/relating-angular-and-regular-motion-variables}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-introduction-to-angular-motion-ap/a/angular-quantities-ap1}
+\end{itemize}
+
+\noindent\textbf{2025. 12. 20.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-angular-kinematics/v/rotational-kinematic-formulas}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-angular-kinematics/a/angular-kinematics-ap-physics-1}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-torque-and-equilibrium-ap/v/introduction-to-torque}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-torque-and-equilibrium-ap/v/moments}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-torque-and-equilibrium-ap/v/moments-part-2}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-torque-and-equilibrium-ap/v/finding-torque-for-angled-forces}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-torque-and-equilibrium-ap/a/torque}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-torque-and-equilibrium-ap/a/torque-and-equilibrium}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-cross-product/v/cross-product-1}
+\end{itemize}
+
+\noindent\textbf{2025. 12. 21.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-cross-product/v/cross-product-2}
+    \item \url{https://www.khanacademy.org/science/in-in-class11th-physics/in-in-system-of-particles-and-rotational-motion/in-in-cross-product/v/cross-product-and-torque}
+\end{itemize}
+
+\noindent\textbf{2025. 12. 29.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=5gDC1GU3Ivg}
+    \item \url{https://www.youtube.com/watch?v=egmZJU-1zPU}
+\end{itemize}
+
+\noindent\textbf{2025. 12. 30.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.toptal.com/developers/game/video-game-physics-part-ii-collision-detection-for-solid-objects}
+    \item \url{https://www.youtube.com/watch?v=VbvdoLQQUPs}
+\end{itemize}
+
+\noindent\textbf{2025. 12. 31.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=RSXM9bgqxJM}
+    \item \url{https://www.youtube.com/watch?v=VbvdoLQQUPs}
+\end{itemize}
+
+\noindent\textbf{2026. 01. 01.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.chrishecker.com/Rigid_Body_Dynamics}
+    \item \url{https://kitemetric.com/blogs/point-in-convex-polygon-a-deep-dive}
+\end{itemize}
+
+\noindent\textbf{2026. 01. 15.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=Zgf1DYrmSnk}
+    \item \url{https://dyn4j.org/2010/01/sat/}
+    \item \url{https://dyn4j.org/2011/11/contact-points-using-clipping/}
+\end{itemize}
+
+\noindent\textbf{2026. 01. 17.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL}
+    \item \url{https://www.w3schools.com/graphics/canvas_clock_numbers.asp}
+\end{itemize}
+
+\noindent\textbf{2026. 01. 22.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=DxUY42r_6Cg}
+    \item \url{https://rene.ruhr/gfx/gpuhash/}
+\end{itemize}
+
+\noindent\textbf{2026. 01. 23.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=lY6icfhap2o}
+    \item \url{https://sidorares.github.io/node-mysql2/docs}
+    \item \url{https://www.youtube.com/watch?v=oExWh86IgHA}
+\end{itemize}
+
+\noindent\textbf{2026. 01. 24.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://adrianb.io/2014/08/09/perlinnoise.html}
+    \item \url{https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/procedural-patterns-noise-part-1/introduction.html}
+    \item \url{https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/procedural-patterns-noise-part-1/creating-simple-1D-noise.html}
+    \item \url{https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/procedural-patterns-noise-part-1/creating-simple-2D-noise.html}
+    \item \url{https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/procedural-patterns-noise-part-1/simple-pattern-examples.html}
+\end{itemize}
+
+\noindent\textbf{2026. 01. 25.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/perlin-noise-part-2/perlin-noise.html}
+    \item \url{https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/perlin-noise-part-2/perlin-noise-terrain-mesh.html}
+    \item \url{https://www.geeksforgeeks.org/dsa/shuffle-a-given-array-using-fisher-yates-shuffle-algorithm/}
+    \item \url{https://emanueleferonato.com/2026/01/08/understanding-how-to-use-mulberry32-to-achieve-deterministic-randomness-in-javascript/}
+\end{itemize}
+
+\noindent\textbf{2026. 02. 01.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=9J3UQYcro-U}
+\end{itemize}
+
+\noindent\textbf{2026. 02. 02.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=4ugw5yRwhR0}
+    \item \url{https://www.youtube.com/watch?v=MgzVe_MJ7S8}
+    \item \url{https://www.youtube.com/watch?v=7Q17ubqLfaM}
+    \item \url{https://www.youtube.com/watch?v=mbsmsi7l3r4}
+\end{itemize}
+
+\noindent\textbf{2026. 02. 08.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.youtube.com/watch?v=x5gLL8-M9Fo}
+    \item \url{https://www.youtube.com/watch?v=EIYCJKR0I_g}
+    \item \url{https://stackoverflow.com/questions/38552003/how-to-decode-jwt-token-without-using-a-library}
+\end{itemize}
+
+\noindent\textbf{2026. 02. 12.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://medium.com/@yunusemresalcan/unit-test-javascript-93ed9deb250c}
+\end{itemize}
+
+\noindent\textbf{2026. 03. 16.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_components}
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements}
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM}
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_templates_and_slots}
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry}
+\end{itemize}
+
+\noindent\textbf{2026. 03. 19.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API}
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Basic_concepts_behind_Web_Audio_API}
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Using_Web_Audio_API}
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Best_practices}
+    \item \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Advanced_techniques#dial-up_—_loading_a_sound_sample}
+\end{itemize}
+
+\noindent\textbf{2026. 05. 03.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://en.wikipedia.org/wiki/Shoelace_formula}
+    \item \url{https://mathworld.wolfram.com/ShoelaceFormula.html}
+    \item \url{https://en.wikipedia.org/wiki/Second_moment_of_area}
+\end{itemize}
+
+\noindent\textbf{2026. 05. 04.}
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://chatgpt.com/}
+\end{itemize}
+
+\subsection*{Háttérirodalom}
+Szakmailag befolyásoló források, melyek közvetetten alakították a projekt során alkalmazott gondolkodásmódot és megközelítéseket.
+\bigskip
+
+\begin{itemize}[left=0pt, topsep=0pt]
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:model-situations-with-matrices/v/using-matrices-to-represent-data-payoffs}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:matrices-as-transformations/v/matrices-as-transformations-of-the-plane}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:matrices-as-transformations/a/matrices-as-transformations}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:using-matrices-to-transform-the-plane/v/using-matrices-to-transform-the-plane-composing-matrices}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:multiplying-matrices-by-matrices/a/multiplying-matrices}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:properties-of-matrix-multiplication/a/intro-to-identity-matrices}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:representing-systems-with-matrices/v/representing-systems-of-equations-with-matrices}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:intro-to-matrix-inverses/v/invertible-matrices-and-determinants}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:intro-to-matrix-inverses/v/inverse-matrices-and-matrix-equations}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:practice-finding-inverses-of-2x2-matrices/v/inverse-of-a-2x2-matrix}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:solving-equations-with-inverse-matrices/v/solving-matrix-equation}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:solving-equations-with-inverse-matrices/a/matrices-faq}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:vectors-intro/v/introduction-to-vectors-and-scalars}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:vector-components/v/introduction-to-vector-components}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:vec-mag/v/vector-magnitude-from-initial-and-terminal-points}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:vector-add-sub/v/adding-and-subtracting-vectors}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:vector-add-sub/v/visually-adding-and-subtracting-vectors}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:component-form/v/vector-component-in-direction}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:vec-add-mag-dir/e/adding-vectors-in-magnitude-and-direction-form-2}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:vec-models/v/vector-word-problem-resultant-force}
+    \item \url{https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:vec-models/e/vector-word-problems}
+\end{itemize}
+
+\noindent
+Mindezek mellett pedig a \url{https://www.physicsclassroom.com/} weboldal "1-D Kinematics", "Newton's Laws", "Vectors - Motion and Forces in Two Dimensions", "Momentum and Its Conservation" és "Work and Energy" fejezeteinek tanulmányozása nélkül ezen játék ötlete fel sem merült volna.
+
+\bigskip
+
+\noindent
+Az ebben a szakaszban felsorolt hivatkozások utolsó megtekintési dátuma minden esetben 2026. 05. 04.
+
+\clearpage
+\thispagestyle{empty}
+\printbibliography[title={Irodalomjegyzék}, heading=none]
+\clearpage
+
+\end{document}
