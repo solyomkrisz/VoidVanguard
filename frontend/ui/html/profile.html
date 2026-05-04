@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/global.css" />
+    <link rel="stylesheet" href="/ui/style/searchbox.css" />
+    <link rel="stylesheet" href="/ui/style/profile.css" />
+    <link rel="stylesheet" href="/ui/style/friend.css" />
+    <link rel="stylesheet" href="/ui/style/dashedBorderBox.css" />
+    <link rel="stylesheet" href="/ui/style/skeleton.css" />
+    <link rel="stylesheet" href="/ui/style/dropdownMenu.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
+    <link rel="stylesheet" href="/ui/style/profilePage.css" />
+    <title>Profil</title>
+  </head>
+  <body class="profile-page">
+    <div class="profile-bg profile-bg-grid" aria-hidden="true"></div>
+    <div class="profile-bg profile-bg-glow" aria-hidden="true"></div>
+
+    <back-button mode="to-previous"></back-button>
+
+    <div class="profile-shell">
+      <header class="profile-topbar">
+        <div class="profile-title-wrap">
+          <p class="profile-kicker">VoidVanguard</p>
+          <h1>Közösségi Profilok</h1>
+          <p class="profile-subtitle">
+            Keress játékosokra, nézd meg a profiljukat, és kezeld a
+            kapcsolataidat egy helyen.
+          </p>
+        </div>
+
+        <nav class="profile-toolbar">
+          <div class="searchbox" aria-label="Profil kereső">
+            <input type="text" placeholder="Felhasználó keresése..." />
+            <div class="searchbox-item-list"></div>
+            <template>
+              <div
+                class="searchbox-list-item"
+                onclick="onSearchboxItemClick(event)"
+              >
+                <input type="hidden" data-bind="user_id" bind-target="value" />
+                <div class="searchbox-avatar-shell">
+                  <img data-bind="avatar" bind-target="src" />
+                </div>
+                <div>
+                  <div data-bind="display_name"></div>
+                  <div class="profile-username">
+                    @<span data-bind="username"></span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+          <account-quick-manager></account-quick-manager>
+        </nav>
+      </header>
+
+      <main class="profile-content" aria-live="polite">
+        <full-profile></full-profile>
+      </main>
+    </div>
+
+    <toast-manager event-controlled></toast-manager>
+
+    <template id="dashed-box-template">
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        style="
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        "
+      >
+        <rect
+          x="0"
+          y="0"
+          width="100"
+          height="100"
+          fill="none"
+          stroke="#333"
+          stroke-width="4"
+          vector-effect="non-scaling-stroke"
+          stroke-dasharray="10 5"
+          style="animation: dash 1s infinite linear"
+        />
+      </svg>
+    </template>
+
+    <script>
+      function onSearchboxItemClick(event) {
+        event.currentTarget.parentElement.hidden = true;
+
+        const userId = event.currentTarget?.querySelector(
+          "input[type='hidden']",
+        )?.value;
+
+        if (userId) {
+          window.history.replaceState({}, "", `/profile/${userId}`);
+          document.querySelector("full-profile").userId = userId;
+        }
+      }
+    </script>
+
+    <script type="module">
+      import {
+        onDOMContentLoaded,
+        autologin,
+        isLoggedIn,
+      } from "/common/common.js";
+      import Searchbox from "/ui/js/Searchbox.js";
+      import "/ui/component/feedback/ToastManager.js";
+      import "/ui/component/profile/FullProfile.js";
+      import "/ui/component/auth/AccountQuickManager.js";
+      import "/ui/component/auth/LogoutButton.js";
+      import "/ui/component/button/BackButton.js";
+      import { attachGlobalAudioListeners } from "/common/globalAudio.js";
+      attachGlobalAudioListeners();
+
+      await autologin();
+
+      Searchbox(
+        ".searchbox",
+        "/api/profiles?search=",
+        (response) => response.result.profiles,
+        { isProtected: false },
+      );
+
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      const userId =
+        pathParts.length > 1 ? pathParts[pathParts.length - 1] : "";
+
+      if (userId && userId !== "profile") {
+        document.querySelector("full-profile").userId = userId;
+      }
+
+      if (
+        isLoggedIn() &&
+        pathParts.length === 1 &&
+        pathParts[0] === "profile"
+      ) {
+        const userId = window.VoidVanguard?.user?.id;
+        document.querySelector("full-profile").userId = userId;
+        history.replaceState({}, "", "/profile/" + userId);
+      }
+    </script>
+  </body>
+</html>

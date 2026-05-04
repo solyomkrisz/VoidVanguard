@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/global.css" />
+    <link rel="stylesheet" href="/ui/style/game.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
+    <title>VoidVanguard</title>
+  </head>
+  <body>
+    <logout-button
+      style="position: absolute; left: 0; top: 0; z-index: 2002"
+    ></logout-button>
+    <ui-volume-controller
+      style="position: absolute; left: 0; top: 0; z-index: 2002"
+    ></ui-volume-controller>
+    <main-menu></main-menu>
+    <toast-manager event-controlled></toast-manager>
+
+    <script type="module">
+      import { onDOMContentLoaded } from "/common/common.js";
+      import "/ui/component/main/MainMenu.js";
+      import "/ui/component/feedback/ToastManager.js";
+      import "/ui/component/auth/LogoutButton.js";
+      import "/ui/component/misc/UIVolumeController.js";
+
+      import { attachGlobalAudioListeners } from "/common/globalAudio.js";
+      attachGlobalAudioListeners();
+
+      document.addEventListener("DOMContentLoaded", () => onDOMContentLoaded({ requireAuth: true }));
+    </script>
+  </body>
+</html>

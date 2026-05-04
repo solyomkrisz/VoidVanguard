@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/ui/style/error.css" />
+    <title>VoidVanguard - Hiba</title>
+  </head>
+  <body>
+    <canvas id="stars"></canvas>
+
+    <div class="error-page">
+      <a href="/"><img src="/image/VoidVanguardTitlePixelart.png" alt="VoidVanguard" class="error-title-img" /></a>
+
+      <div class="error-card">
+        <h2 class="error-heading">Hiba történt!</h2>
+        <p class="error-code" id="errorCode"></p>
+        <p class="error-message" id="errorMessage">Valami nem várt hiba történt.</p>
+        <a class="error-back-btn" href="/">Vissza a főoldalra</a>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("stars");
+      const ctx = canvas.getContext("2d");
+      const stars = [];
+      const STAR_COUNT = 120;
+
+      function createStars() {
+        stars.length = 0;
+        for (let i = 0; i < STAR_COUNT; i++) {
+          const star = {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() < 0.75 ? 1 : 2,
+            opacity: Math.random(),
+            delta: Math.random() * 0.003 + 0.001,
+          };
+          if (Math.random() < 0.5) star.delta = -star.delta;
+          stars.push(star);
+        }
+      }
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        createStars();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const star of stars) {
+          star.opacity += star.delta;
+          if (star.opacity <= 0 || star.opacity >= 1) star.delta = -star.delta;
+          ctx.fillStyle = "rgba(190,215,255," + star.opacity.toFixed(2) + ")";
+          ctx.fillRect(star.x, star.y, star.size, star.size);
+        }
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      draw();
+      window.addEventListener("resize", resize);
+
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      const msg = params.get("message");
+      if (code) document.getElementById("errorCode").textContent = code;
+      if (msg) document.getElementById("errorMessage").textContent = msg;
+    </script>
+  </body>
+</html>

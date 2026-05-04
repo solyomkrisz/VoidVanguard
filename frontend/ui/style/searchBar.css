@@ -1,0 +1,15 @@
+search-bar-result-list .item-container > * {
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+search-bar-result-list .item-container > * img {
+  width: 36px;
+  height: 36px;
+}
+
+search-bar-result-list .username {
+  color: #9fd7ff;
+}

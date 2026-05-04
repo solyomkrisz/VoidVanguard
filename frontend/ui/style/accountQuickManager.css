@@ -1,0 +1,13 @@
+:host {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+span {
+  color: steelblue;
+}
+
+a {
+  color: black;
+}

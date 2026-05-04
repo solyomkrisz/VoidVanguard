@@ -1,0 +1,54 @@
+:host {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse 55% 38% at 14% 84%, rgba(58, 116, 208, 0.16) 0%, transparent 68%),
+    radial-gradient(ellipse 48% 34% at 86% 16%, rgba(82, 120, 194, 0.13) 0%, transparent 70%),
+    linear-gradient(160deg, rgba(10, 13, 25, 0.74) 0%, rgba(7, 10, 18, 0.7) 100%);
+  backdrop-filter: blur(1.5px);
+  color: #eaf6ff;
+  font-family: "Jersey", "Courier New", monospace;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Save menu ── */
+save-menu {
+  display: block;
+  width: 100%;
+}
+
+save-menu > div {
+  padding: 0.5rem 0;
+}
+
+save-menu h1 {
+  font-size: clamp(1rem, 2.6vmin, 1.4rem);
+  color: #6ab8ff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 1px 1px 0 #000, 0 0 10px rgba(106, 184, 255, 0.3);
+  margin: 0.3rem 0 0.6rem;
+  border-bottom: 2px solid rgba(74, 144, 226, 0.3);
+  padding-bottom: 0.3rem;
+}
+
+save-menu h3 {
+  font-size: clamp(0.8rem, 1.8vmin, 1rem);
+  color: #7aa8d8;
+  text-align: center;
+  margin: 0.5rem 0;
+  opacity: 0.8;
+}
+
+save-menu hr {
+  border: none;
+  border-top: 2px solid rgba(74, 144, 226, 0.2);
+  margin: 0.4rem 0;
+}

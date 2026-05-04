@@ -1,0 +1,238 @@
+@font-face {
+  font-family: "Jersey";
+  src: url("/font/Jersey10-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 65% 45% at 10% 90%, rgba(15, 35, 145, 0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 40% at 90% 10%, rgba(75, 15, 145, 0.3) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(10, 20, 60, 0.5) 0%, transparent 80%),
+    linear-gradient(160deg, #0d0d22 0%, #06060f 100%);
+  font-family: "Jersey", "Courier New", monospace;
+  font-weight: normal;
+  color: #eaf6ff;
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+  overflow-x: hidden;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent, transparent 2px,
+    rgba(0, 0, 0, 0.025) 2px, rgba(0, 0, 0, 0.025) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+#stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Page layout ── */
+.error-page {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 3vh 3vw 8vh;
+  animation: pageRise 420ms ease-out both;
+}
+
+/* ── Logo ── */
+.error-title-img {
+  width: 50vmin;
+  height: auto;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  animation:
+    pageRise 420ms ease-out 60ms both,
+    titleFeny 10s ease-in-out 520ms infinite;
+}
+
+/* ── Error card ── */
+.error-card {
+  background: #1a1a28;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 3rem 2rem;
+  border-top: 4px solid #4a90e2;
+  border-bottom: 4px solid #4a90e2;
+  border-left: none;
+  border-right: none;
+  box-shadow:
+    inset 0 0 0 2px #0d0d15,
+    inset 0 0 0 6px #2a2a3e,
+    0 8px 0 0 #0d0d15,
+    0 8px 20px rgba(0, 0, 0, 0.9);
+  width: min(480px, 90vw);
+  gap: 0.8rem;
+  animation:
+    pageRise 420ms ease-out 120ms both,
+    formFeny 4.5s ease-in-out 620ms infinite;
+}
+
+/* ── Heading — matches .lb-heading / form h2 ── */
+.error-heading {
+  width: 100%;
+  margin: 0 0 0.4rem;
+  text-align: center;
+  color: #fff;
+  font-size: clamp(1.1rem, 3.5vmin, 1.7rem);
+  text-shadow: 1px 1px 0px #000, -1px -1px 0px #6ab8ff;
+  letter-spacing: 0.05vmin;
+  padding: 1.2vmin 1.5vmin;
+  background: #dc2626;
+  border: 0.25rem solid #ef4444;
+  box-shadow:
+    inset 0 0 0 2px #7f1d1d,
+    0 0 0 2px #0d0d15,
+    0 4px 0 0 #7f1d1d,
+    0 0 16px rgba(239, 68, 68, 0.4);
+  animation: pageRise 420ms ease-out 170ms both;
+}
+
+/* ── Error code ── */
+.error-code {
+  margin: 0;
+  font-size: clamp(2.5rem, 10vmin, 5rem);
+  color: #ef4444;
+  text-shadow:
+    2px 2px 0 #000,
+    0 0 24px rgba(239, 68, 68, 0.5);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  animation: pageRise 420ms ease-out 200ms both;
+}
+
+.error-code:empty {
+  display: none;
+}
+
+/* ── Message text ── */
+.error-message {
+  margin: 0;
+  text-align: center;
+  color: #9dcfff;
+  font-size: clamp(0.9rem, 2.2vmin, 1.1rem);
+  text-shadow: 1px 1px 0 #000;
+  letter-spacing: 0.04em;
+  animation: pageRise 420ms ease-out 230ms both;
+}
+
+/* ── Back button — matches form button / #backBtn ── */
+.error-back-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 1.2vmin 2.5vmin;
+  background: #4a90e2;
+  color: #ffffff;
+  border: 4px solid #6ab8ff;
+  box-shadow:
+    inset 0 0 0 2px #2a5a9e,
+    0 0 0 2px #0d0d15,
+    0 6px 0 0 #2a5a9e,
+    0 6px 16px rgba(0, 0, 0, 0.7);
+  font-size: clamp(0.9rem, 1.8vmin, 1.1rem);
+  font-family: "Jersey", "Courier New", monospace;
+  cursor: pointer;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.2vmin;
+  text-shadow: 1px 1px 0px #000000;
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+  transition: all 0.1s;
+  animation: pageRise 420ms ease-out 270ms both;
+}
+
+.error-back-btn:hover {
+  background: #6ab8ff;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 2px #4a90e2,
+    0 0 0 2px #0d0d15,
+    0 8px 0 0 #2a5a9e,
+    0 8px 18px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(106, 184, 255, 0.5);
+}
+
+.error-back-btn:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 0 0 2px #2a5a9e,
+    0 0 0 2px #0d0d15,
+    0 3px 0 0 #2a5a9e,
+    0 3px 12px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Animations ── */
+@keyframes pageRise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes titleFeny {
+  0%, 100% {
+    filter:
+      drop-shadow(0 10px 15px rgba(150, 1, 187, 0.4))
+      drop-shadow(0 0 20px rgba(74, 144, 226, 0.15));
+  }
+  50% {
+    filter:
+      drop-shadow(0 4px 16px rgba(207, 45, 194, 0.85))
+      drop-shadow(0 0 40px rgba(74, 144, 226, 0.38));
+  }
+}
+
+@keyframes formFeny {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 2px #0d0d15,
+      inset 0 0 0 6px #2a2a3e,
+      0 8px 0 0 #0d0d15,
+      0 8px 20px rgba(0, 0, 0, 0.9),
+      0 0 18px rgba(74, 144, 226, 0.05);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px #0d0d15,
+      inset 0 0 0 6px #2a2a3e,
+      0 8px 0 0 #0d0d15,
+      0 8px 20px rgba(0, 0, 0, 0.9),
+      0 0 45px rgba(74, 144, 226, 0.2);
+  }
+}
+
+@media (max-width: 600px) {
+  .error-title-img {
+    width: min(80vw, 28rem);
+  }
+
+  .error-card {
+    padding: 1.2rem 1.5rem 1.8rem;
+  }
+}

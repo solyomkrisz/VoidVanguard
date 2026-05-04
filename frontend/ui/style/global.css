@@ -1,0 +1,114 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+:host([hidden]),
+*[hidden] {
+  display: none !important;
+}
+
+:host {
+  display: block;
+}
+
+nav {
+  display: flex;
+  gap: 10px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group textarea {
+  resize: vertical;
+}
+
+body:not(admin-module) .input-group label {
+  color: white;
+}
+
+a {
+  color: #333;
+}
+
+fullscreen-overlay a {
+  color: #fff;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.username {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: auto;
+  right: 0;
+  display: none;
+
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px;
+  min-width: 160px;
+  z-index: 1000;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+app-modal {
+  display: block;
+}
+
+body:has(app-modal[open]) {
+  overflow: hidden !important;
+}
+
+destroy-all-sessions-button {
+  display: block;
+}
+
+/**/
+
+token-list-item .token-list-item-main button {
+  border-color: rgba(255, 121, 121, 0.82);
+  background: linear-gradient(
+    180deg,
+    rgba(166, 53, 53, 0.96) 0%,
+    rgba(123, 39, 39, 0.96) 100%
+  );
+  color: #f5fbff;
+  box-shadow:
+    inset 0 0 0 1px rgba(57, 16, 16, 0.95),
+    0 0 0 1px rgba(12, 6, 6, 0.85),
+    0 4px 0 0 rgba(86, 27, 27, 0.95),
+    0 7px 16px rgba(0, 0, 0, 0.38);
+}
+
+token-list-item .token-list-item-main button:hover {
+  border-color: rgba(255, 159, 159, 0.9) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(198, 72, 72, 0.98) 0%,
+    rgba(150, 49, 49, 0.98) 100%
+  ) !important;
+  color: #f5fbff !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(57, 16, 16, 0.95),
+    0 0 0 1px rgba(12, 6, 6, 0.85),
+    0 5px 0 0 rgba(86, 27, 27, 0.95),
+    0 9px 18px rgba(0, 0, 0, 0.42),
+    0 0 16px rgba(255, 103, 103, 0.25) !important;
+}

@@ -1,0 +1,63 @@
+html,
+body,
+canvas {
+  touch-action: none;
+  overflow: hidden;
+}
+
+body {
+  touch-action: manipulation;
+}
+
+/* ha nincs itt akkor a canvas DOMRect.top 22 lesz és az egér in-game pozíciója rosszul lesz kiszámolva */
+game-controller-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  body:has(game-controller-container) {
+    width: 100vw;
+    min-height: 100dvh;
+    height: 100dvh;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+
+  body:has(game-controller-container) > canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+  }
+
+  body:has(game-controller-container) > game-controller-container,
+  body:has(game-controller-container) > pause-menu,
+  body:has(game-controller-container) > death-screen {
+    position: fixed;
+    inset: 0;
+    max-width: 100vw;
+    max-height: 100dvh;
+  }
+
+  body:has(game-controller-container) > ship-propulsion-panel,
+  body:has(game-controller-container) > flight-computer,
+  body:has(game-controller-container) > #settingsBtn,
+  body:has(game-controller-container) > #settingsPanel,
+  body:has(game-controller-container) > #friendsBtn {
+    max-width: 100vw;
+    max-height: 100dvh;
+    pointer-events: auto;
+  }
+
+  body:has(game-controller-container)
+    > :not(canvas):not(game-controller-container):not(pause-menu):not(death-screen):not(ship-propulsion-panel):not(flight-computer):not(#settingsBtn):not(#settingsPanel):not(#friendsBtn):not(context-menu):not(dynamic-tooltip):not(toast-manager) {
+    max-width: 100vw;
+    max-height: 100dvh;
+    pointer-events: none;
+  }
+}

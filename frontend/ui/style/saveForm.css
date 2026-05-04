@@ -1,0 +1,113 @@
+:host {
+  display: block;
+  font-family: "Jersey", "Courier New", monospace;
+  -webkit-font-smoothing: none;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* ── Labels ── */
+.input-group label {
+  font-size: clamp(0.75rem, 1.4vmin, 0.9rem);
+  color: #6ab8ff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 1px 1px 0 #000;
+  margin-bottom: 0.2rem;
+}
+
+/* ── Text input ── */
+.input-group input[type="text"] {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: #0d0d15;
+  border: 2px solid #2a5a9e;
+  color: #eaf6ff;
+  font-size: clamp(0.85rem, 1.6vmin, 1rem);
+  font-family: "Jersey", "Courier New", monospace;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.75), inset -1px -1px 0 rgba(74, 144, 226, 0.18);
+  -webkit-font-smoothing: none;
+  transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+.input-group input[type="text"]:focus {
+  outline: none;
+  border-color: #6ab8ff;
+  background: #15151f;
+  box-shadow:
+    inset 2px 2px 0 rgba(0, 0, 0, 0.75),
+    inset -1px -1px 0 rgba(106, 184, 255, 0.25),
+    0 0 0 2px #4a90e2,
+    0 0 10px rgba(106, 184, 255, 0.5);
+}
+
+/* ── Select ── */
+.input-group select {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  background: #0d0d15;
+  border: 2px solid #2a5a9e;
+  color: #eaf6ff;
+  font-size: clamp(0.85rem, 1.6vmin, 1rem);
+  font-family: "Jersey", "Courier New", monospace;
+  cursor: pointer;
+  -webkit-font-smoothing: none;
+}
+
+.input-group select:focus {
+  outline: none;
+  border-color: #6ab8ff;
+}
+
+/* ── Submit button ── */
+button {
+  margin-top: 0.4rem;
+  padding: 0.65rem 1rem;
+  background: #4a90e2;
+  color: #fff;
+  border: 3px solid #6ab8ff;
+  box-shadow:
+    inset 0 0 0 1px #2a5a9e,
+    0 0 0 1px #0d0d15,
+    0 4px 0 0 #2a5a9e,
+    0 4px 12px rgba(0, 0, 0, 0.6);
+  font-size: clamp(0.85rem, 1.6vmin, 1rem);
+  font-family: "Jersey", "Courier New", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 1px 1px 0 #000;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+  -webkit-font-smoothing: none;
+}
+
+button:hover {
+  background: #6ab8ff;
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px #4a90e2,
+    0 0 0 1px #0d0d15,
+    0 5px 0 0 #2a5a9e,
+    0 5px 14px rgba(0, 0, 0, 0.6),
+    0 0 14px rgba(106, 184, 255, 0.3);
+}
+
+button:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 0 0 1px #2a5a9e,
+    0 0 0 1px #0d0d15,
+    0 2px 0 0 #2a5a9e,
+    0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

@@ -1,0 +1,13 @@
+dropdown-menu .menu {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px;
+  min-width: 160px;
+  z-index: 1000;
+}
+
+dropdown-menu .menu a,
+dropdown-menu .menu logout-button {
+  display: block;
+  padding: 8px;
+}

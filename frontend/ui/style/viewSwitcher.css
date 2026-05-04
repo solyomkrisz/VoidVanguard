@@ -1,0 +1,22 @@
+view-switcher[layout="sidebar"] {
+  display: flex;
+  flex-direction: row;
+}
+
+view-switcher[layout="sidebar"] .view-switcher-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.view-switcher-nav {
+  display: flex;
+  gap: 10px;
+}
+
+.view-switcher-nav > * {
+  cursor: pointer;
+}
+
+.view-switcher-nav .active {
+  font-weight: bold;
+}

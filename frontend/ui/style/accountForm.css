@@ -1,0 +1,169 @@
+@font-face {
+  font-family: "Jersey";
+  src: url("/font/Jersey10-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  font-family: "Jersey", "Courier New", monospace;
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5vmin;
+  margin-top: 1.2vmin;
+}
+
+.input-group label {
+  font-size: 1.5vmin;
+  color: #6ab8ff;
+  text-transform: uppercase;
+  letter-spacing: 0.05vmin;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+email-input-validator,
+password-input-validator {
+  display: block;
+  width: 100%;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 1vmin 1.2vmin;
+  background: #0d0d15;
+  border: 0.15rem solid #2a5a9e;
+  color: #ffffff;
+  font-size: 1.8vmin;
+  font-family: "Jersey", "Courier New", monospace;
+  box-shadow:
+    inset 3px 3px 0px rgba(0, 0, 0, 0.8),
+    inset -2px -2px 0px rgba(74, 144, 226, 0.2);
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #6ab8ff;
+  background: #15151f;
+  box-shadow:
+    inset 3px 3px 0px rgba(0, 0, 0, 0.8),
+    inset -2px -2px 0px rgba(106, 184, 255, 0.3),
+    0 0 0 3px #4a90e2,
+    0 0 16px rgba(106, 184, 255, 0.6);
+}
+
+button {
+  margin-top: 1.5vmin;
+  align-self: center;
+  padding: 1.5vmin 2vmin;
+  background: #4a90e2;
+  color: #ffffff;
+  border: 4px solid #6ab8ff;
+  box-shadow:
+    inset 0 0 0 2px #2a5a9e,
+    0 0 0 2px #0d0d15,
+    0 6px 0 0 #2a5a9e,
+    0 6px 16px rgba(0, 0, 0, 0.7);
+  font-size: 1.8vmin;
+  font-family: "Jersey", "Courier New", monospace;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 0.2vmin;
+  text-shadow: 1px 1px 0px #000000;
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+}
+
+button:hover {
+  background: #6ab8ff;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 2px #4a90e2,
+    0 0 0 2px #0d0d15,
+    0 8px 0 0 #2a5a9e,
+    0 8px 18px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(106, 184, 255, 0.5);
+}
+
+button:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 0 0 2px #2a5a9e,
+    0 0 0 2px #0d0d15,
+    0 3px 0 0 #2a5a9e,
+    0 3px 12px rgba(0, 0, 0, 0.7);
+}
+
+button:disabled {
+  background: #3b3b46;
+  border-color: #5c5c66;
+  color: #b8b8c2;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow:
+    inset 0 0 0 2px #2a2a33,
+    0 0 0 2px #0d0d15,
+    0 2px 0 0 #2a2a33;
+}
+
+@media (max-width: 900px) {
+  .input-group {
+    margin-top: 0.6rem;
+    gap: 0.3rem;
+  }
+
+  .input-group label {
+    font-size: clamp(0.95rem, 3.6vw, 1.15rem);
+    letter-spacing: 0.04em;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    min-height: 2.75rem;
+    padding: 0.62rem 0.75rem;
+  }
+
+  button {
+    margin-top: 0.85rem;
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    min-height: 2.75rem;
+    padding: 0.65rem 0.9rem;
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 600px) {
+    .input-group label {
+      font-size: clamp(0.9rem, 4.2vw, 1.05rem);
+    }
+
+    input,
+    select,
+    textarea {
+      min-height: 2.7rem;
+      padding: 0.58rem 0.68rem;
+    }
+
+    button {
+      min-height: 2.7rem;
+      padding: 0.62rem 0.8rem;
+    }
+  }
+}

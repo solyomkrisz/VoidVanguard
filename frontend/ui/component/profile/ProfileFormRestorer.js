@@ -1,0 +1,18 @@
+import FormRestorer from "/ui/component/form/FormRestorer.js";
+import "/ui/component/profile/ProfileForm.js";
+
+export default class ProfileFormRestorer extends FormRestorer {
+  // key in object from server: form input name
+  static mapping = {
+    avatar: "avatar",
+    display_name: "display_name",
+    description: "description",
+    visibility: "visibility",
+  };
+
+  getEndpoint() {
+    return "/api/profiles/" + this.getAttribute("user-id");
+  }
+}
+
+window.customElements.define("profile-form-restorer", ProfileFormRestorer);
