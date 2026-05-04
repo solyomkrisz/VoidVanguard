@@ -1,4 +1,4 @@
-import Thruster from "/game/Thruster.js";
+import _ from "/ui/component/game/StatusDiagram.js";
 import * as UI from "/ui/UI.js";
 
 export default class ThrusterController extends HTMLElement {
@@ -6,35 +6,54 @@ export default class ThrusterController extends HTMLElement {
     super();
 
     this.source = null;
-    this.shadowDOM = this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: "open" });
 
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
         :host {
-          padding: 0.8vmin 1.5vmin;
-          border-top-left-radius: 8px;
-          border-bottom-left-radius: 8px;
-          background: #1a1a28;
-          border: 2px solid #2a5a9e;
-          border-right: none;
-          box-shadow: -4px 0 0 0 #0d0d15;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 12px;
           color: #6ab8ff;
-          font-size: 1.4vmin;
-          font-family: 'Jersey', 'Courier New', monospace;
-          text-transform: uppercase;
-          letter-spacing: 0.05vmin;
-          text-shadow: 1px 1px 0 #000;
-        }
-        input[type="checkbox"] {
-          accent-color: #4a90e2;
-          width: 1.2vmin;
-          height: 1.2vmin;
+          font-family: 'Courier New', monospace;
           cursor: pointer;
+          user-select: none;
+          transition: background 0.15s ease;
+        }
+
+        :host > * {
+          box-sizing: border-box;
+        }
+
+        :host(:hover) {
+          background: rgba(42, 90, 158, 0.25);
+        }
+
+        :host(.active) {
+          background: rgba(50, 110, 60, 0.35);
+          box-shadow: inset 0 0 0 1px rgba(80, 200, 100, 0.3);
+        }
+
+        .identificator {
+          font-size: 20px;
+          font-weight: bold;
+          color: #c8e0ff;
+          min-width: 28px;
+          text-align: center;
+          text-shadow: 0 0 6px rgba(106, 184, 255, 0.6);
         }
     `);
-    this.shadowDOM.adoptedStyleSheets = [sheet];
+    this.shadowRoot.adoptedStyleSheets = [sheet];
 
-    this.checkbox = null;
+    this.clicked = false;
+
+    this.gimbalDiagram = this.shadowRoot.appendChild(
+      UI.element("status-diagram"),
+    );
+    this.throttleDiagram = this.shadowRoot.appendChild(
+      UI.element("status-diagram"),
+    );
   }
 
   setSource(source) {
@@ -42,41 +61,35 @@ export default class ThrusterController extends HTMLElement {
     return this;
   }
 
-  toggleCheckbox() {
-    this.checkbox && (this.checkbox.checked = false);
-    return this;
-  }
-
   build() {
     if (!this.source) return;
 
-    for (const key of this.source.constructor.LISTED_PROPERTIES) {
-      // prettier-ignore
-      const container = UI.element("div", UI.element("span", UI.text(key + ": ")));
-      this[key] = container.appendChild(
-        UI.element("span", UI.text(this.source[key]))
-      );
+    const id = this.shadowRoot.insertBefore(
+      UI.element("div", UI.text(this.source.id)),
+      this.gimbalDiagram,
+    );
+    id.classList.add("identificator");
 
-      this.shadowDOM.appendChild(container);
-    }
+    this.addEventListener("click", () => {
+      this.clicked = !this.clicked;
 
-    this.checkbox = UI.element("input");
-    this.checkbox.type = "checkbox";
+      this.classList.toggle("active");
 
-    this.checkbox.addEventListener("change", ({ target }) => {
       this.dispatchEvent(
         new CustomEvent("thruster-selection-change", {
           detail: {
-            checked: target.checked,
+            active: this.clicked,
             thruster: this.source,
           },
           bubbles: false,
           composed: true,
-        })
+        }),
       );
     });
+  }
 
-    this.shadowDOM.appendChild(this.checkbox);
+  disconnectedCallback() {
+    this.clicked = false;
   }
 }
 

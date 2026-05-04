@@ -1,6 +1,6 @@
 toast-manager {
   position: fixed;
-  z-index: 2001;
+  z-index: 2200;
   bottom: 0;
   right: 0;
   padding: 10px;

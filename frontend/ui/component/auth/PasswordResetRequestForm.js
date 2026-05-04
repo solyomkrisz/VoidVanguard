@@ -92,21 +92,27 @@ export default class PasswordResetRequestForm extends HTMLElement {
 
     this.innerHTML = `
       <form>
+        <h2>Jelszó visszaállítása</h2>
         <input-group>
           <label>Email cím:</label>
           <email-input-validator>
             <input type="email" name="email" />
           </email-input-validator>
         </input-group>
-        <button>Jelszóvisszaállítás kérése</button>
+        <button id="password-reset-request-submit-button">Jelszóvisszaállítás kérése</button>
+        <div id="message" class="form-message"></div>
+        <a id="back-to-login-link">Vissza a bejelentkezéshez</a>
       </form>
-      <div id="message"></div>
     `;
 
     this._elements.form = this.querySelector("form");
     this._elements.form.addEventListener("submit", this.onSubmit);
-    this._elements.submitButton = this.querySelector("button");
+    this._elements.submitButton = this.querySelector("#password-reset-request-submit-button");
     this._elements.message = this.querySelector("#message");
+
+    this.querySelector("#back-to-login-link").addEventListener("click", () => {
+      this.dispatchEvent(new CustomEvent("password-reset-back", { bubbles: true, composed: true }));
+    });
 
     this._built = true;
   }

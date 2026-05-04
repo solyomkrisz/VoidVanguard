@@ -42,10 +42,19 @@ export default class LocalSaveList extends LazyItemList {
     );
   }
 
+  onGameSaved(e) {
+    if (e?.detail?.saveType !== "local") return;
+    this.parseSaves();
+    this._byGameId.clear();
+    this.reloadCurrentPage();
+  }
+
   connectedCallback() {
     super.connectedCallback?.();
 
     this.addEventListener("save-delete", this.onSaveDelete);
+    this._onGameSaved = this.onGameSaved.bind(this);
+    document.addEventListener("game-saved", this._onGameSaved);
 
     if (this._built) this.refresh();
   }
@@ -54,6 +63,7 @@ export default class LocalSaveList extends LazyItemList {
     super.disconnectedCallback?.();
 
     this.removeEventListener("save-delete", this.onSaveDelete);
+    document.removeEventListener("game-saved", this._onGameSaved);
   }
 
   parseSaves() {

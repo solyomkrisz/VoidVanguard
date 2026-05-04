@@ -35,6 +35,11 @@ export class TextureID {
   static TURRET13 = 29;
   static TURRET14 = 30;
   static TURRET15 = 31;
+
+  // Column 15 - special blocks
+  static THRUSTER = 32;            // row 0 - thruster without connector
+  static THRUSTER_CONNECTOR = 33;  // row 1 - thruster with connector
+  static CORE = 34;                // row 2 - core block
 }
 
 export class SpriteID {
@@ -75,4 +80,11 @@ export class SpriteID {
   static TURRET13 = 29;
   static TURRET14 = 30;
   static TURRET15 = 31;
+
+  // Special block sprites
+  static THRUSTER = 32;
+  static CORE = 33;
+
+  // Projectile bullet sprite
+  static BULLET = 34;
 }

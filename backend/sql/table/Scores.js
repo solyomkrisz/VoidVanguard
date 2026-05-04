@@ -48,7 +48,7 @@ class Scores extends Table {
       SELECT
         t.user_id,
         t.best_score,
-        COALESCE(p.display_name, u.username) AS name,
+        u.username AS name,
         t.rank
       FROM (
         SELECT
@@ -60,7 +60,6 @@ class Scores extends Table {
         GROUP BY sa.user_id
       ) t
       INNER JOIN users u ON u.id = t.user_id
-      LEFT JOIN profiles p ON p.user_id = t.user_id
       WHERE t.user_id = ?
     `,
       [userId],
@@ -76,7 +75,7 @@ class Scores extends Table {
     const sql = `
       SELECT
         t.user_id,
-        COALESCE(p.display_name, u.username) AS name,
+        u.username AS name,
         t.best_score
       FROM (
         SELECT 
@@ -87,9 +86,8 @@ class Scores extends Table {
         GROUP BY sa.user_id
       ) t
       INNER JOIN users u ON u.id = t.user_id
-      LEFT JOIN profiles p ON p.user_id = t.user_id
-      ORDER BY t.best_score DESC
-  `;
+      ORDER BY t.best_score DESC, t.user_id ASC
+    `;
 
     const rows = await runQueryWithPagination(sql, [], { limit, offset });
 
@@ -115,12 +113,11 @@ class Scores extends Table {
     const sql = `
       SELECT 
         sa.user_id,
-        COALESCE(p.display_name, u.username) AS name,
+        u.username AS name,
         MAX(s.score) AS best_score
       FROM scores s
       INNER JOIN saves sa ON sa.game_id = s.game_id
       INNER JOIN users u ON u.id = sa.user_id
-      LEFT JOIN profiles p ON p.user_id = sa.user_id
       LEFT JOIN friends f
         ON (
           (f.initiator_id = ? AND f.recipient_id = sa.user_id)
@@ -130,9 +127,9 @@ class Scores extends Table {
       WHERE 
         (f.status = 'accepted')
         OR sa.user_id = ?
-      GROUP BY sa.user_id, u.username, p.display_name
-      ORDER BY best_score DESC
-  `;
+      GROUP BY sa.user_id, u.username
+      ORDER BY best_score DESC, sa.user_id ASC
+    `;
 
     const rows = await runQueryWithPagination(sql, [userId, userId, userId], {
       limit,

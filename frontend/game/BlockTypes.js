@@ -1,6 +1,7 @@
 import Block from "/game/Block.js";
 import { SpriteID } from "/game/texture/Texture.js";
 import Shape from "/game/Shape.js";
+import * as vec from "/common/vec.js";
 
 // #region SHAPE COLLIDERS
 // BLOCK COLLIDERS
@@ -114,6 +115,10 @@ function generateBlockVariants(
 }
 
 // Define all turret types - these will have their own unique textures and stats
+// bulletDamage: 10 + grade*10  (range 20–160)
+// bulletSpeed:  18 + grade*2.2 (range 18–48.8)
+// shootCooldown: 0.45 - grade*0.02 (range 0.45–0.17, i.e. much faster at higher grade)
+// bulletRange:  14 + grade*2.0 (range 14–42, higher grade travels further)
 const TURRET_TYPES = {
   // Standard Turrets
   TURRET_1: {
@@ -122,6 +127,10 @@ const TURRET_TYPES = {
     mass: 0.5,
     gradeID: 0,
     health: 100,
+    isTurret: true,
+    bulletDamage: 20,
+    bulletSpeed: 4.4,
+    shootCooldown: 1,
   },
   TURRET_2: {
     shape: N1_TURRET_COLLIDER,
@@ -129,6 +138,10 @@ const TURRET_TYPES = {
     mass: 0.7,
     gradeID: 1,
     health: 150,
+    isTurret: true,
+    bulletDamage: 30,
+    bulletSpeed: 4.8,
+    shootCooldown: 0.95,
   },
   TURRET_3: {
     shape: N1_TURRET_COLLIDER,
@@ -136,6 +149,10 @@ const TURRET_TYPES = {
     mass: 1.0,
     gradeID: 2,
     health: 200,
+    isTurret: true,
+    bulletDamage: 40,
+    bulletSpeed: 5.2,
+    shootCooldown: 0.9,
   },
   TURRET_4: {
     shape: N1_TURRET_COLLIDER,
@@ -143,6 +160,10 @@ const TURRET_TYPES = {
     mass: 0.6,
     gradeID: 3,
     health: 120,
+    isTurret: true,
+    bulletDamage: 50,
+    bulletSpeed: 5.6,
+    shootCooldown: 0.85,
   },
   TURRET_5: {
     shape: N1_TURRET_COLLIDER,
@@ -150,6 +171,10 @@ const TURRET_TYPES = {
     mass: 0.8,
     gradeID: 4,
     health: 170,
+    isTurret: true,
+    bulletDamage: 60,
+    bulletSpeed: 6.0,
+    shootCooldown: 0.8,
   },
   TURRET_6: {
     shape: N1_TURRET_COLLIDER,
@@ -157,6 +182,10 @@ const TURRET_TYPES = {
     mass: 1.1,
     gradeID: 5,
     health: 220,
+    isTurret: true,
+    bulletDamage: 70,
+    bulletSpeed: 6.4,
+    shootCooldown: 0.75,
   },
   TURRET_7: {
     shape: N1_TURRET_COLLIDER,
@@ -164,6 +193,10 @@ const TURRET_TYPES = {
     mass: 0.7,
     gradeID: 6,
     health: 140,
+    isTurret: true,
+    bulletDamage: 80,
+    bulletSpeed: 6.8,
+    shootCooldown: 0.7,
   },
   TURRET_8: {
     shape: N2_TURRET_COLLIDER,
@@ -171,6 +204,10 @@ const TURRET_TYPES = {
     mass: 0.9,
     gradeID: 7,
     health: 190,
+    isTurret: true,
+    bulletDamage: 90,
+    bulletSpeed: 7.2,
+    shootCooldown: 0.65,
   },
   TURRET_9: {
     shape: N2_TURRET_COLLIDER,
@@ -178,6 +215,10 @@ const TURRET_TYPES = {
     mass: 1.2,
     gradeID: 8,
     health: 240,
+    isTurret: true,
+    bulletDamage: 100,
+    bulletSpeed: 7.6,
+    shootCooldown: 0.6,
   },
   TURRET_10: {
     shape: N2_TURRET_COLLIDER,
@@ -185,6 +226,10 @@ const TURRET_TYPES = {
     mass: 0.55,
     gradeID: 9,
     health: 110,
+    isTurret: true,
+    bulletDamage: 110,
+    bulletSpeed: 8.0,
+    shootCooldown: 0.55,
   },
   TURRET_11: {
     shape: N2_TURRET_COLLIDER,
@@ -192,6 +237,10 @@ const TURRET_TYPES = {
     mass: 0.75,
     gradeID: 10,
     health: 160,
+    isTurret: true,
+    bulletDamage: 120,
+    bulletSpeed: 8.4,
+    shootCooldown: 0.5,
   },
   TURRET_12: {
     shape: N3_TURRET_COLLIDER,
@@ -199,6 +248,10 @@ const TURRET_TYPES = {
     mass: 1.05,
     gradeID: 11,
     health: 210,
+    isTurret: true,
+    bulletDamage: 130,
+    bulletSpeed: 8.8,
+    shootCooldown: 0.45,
   },
   TURRET_13: {
     shape: N3_TURRET_COLLIDER,
@@ -206,6 +259,10 @@ const TURRET_TYPES = {
     mass: 0.55,
     gradeID: 12,
     health: 110,
+    isTurret: true,
+    bulletDamage: 140,
+    bulletSpeed: 9.2,
+    shootCooldown: 0.4,
   },
   TURRET_14: {
     shape: N3_TURRET_COLLIDER,
@@ -213,6 +270,10 @@ const TURRET_TYPES = {
     mass: 0.75,
     gradeID: 13,
     health: 160,
+    isTurret: true,
+    bulletDamage: 150,
+    bulletSpeed: 9.6,
+    shootCooldown: 0.35,
   },
   TURRET_15: {
     shape: N3_TURRET_COLLIDER,
@@ -220,8 +281,20 @@ const TURRET_TYPES = {
     mass: 1.05,
     gradeID: 14,
     health: 210,
+    isTurret: true,
+    bulletDamage: 160,
+    bulletSpeed: 10.0,
+    shootCooldown: 0.3,
   },
 };
+
+for (const turret of Object.values(TURRET_TYPES)) {
+  turret.adjacencyRules = vec.fromValues(99, 99);
+  turret.bulletSpeed = 18 + turret.gradeID * 2.2;
+  turret.shootCooldown = Math.max(0.17, 0.45 - turret.gradeID * 0.02);
+  turret.bulletRange = (14 + turret.gradeID * 2.0) / 2;
+  turret.health *= 3;
+}
 
 const BLOCK_TYPES = {
   // Rectangle blocks (full mass/health)
@@ -229,6 +302,26 @@ const BLOCK_TYPES = {
 
   // Turret blocks
   ...TURRET_TYPES,
+
+  // Thruster block - propulsion attachment
+  THRUSTER: {
+    shape: RECTCOLLIDER,
+    spriteID: SpriteID.THRUSTER,
+    mass: 1.2,
+    gradeID: 0,
+    health: 300,
+    adjacencyRules: vec.fromValues(99, 99),
+    isThruster: true,
+  },
+
+  // Core block - the non-removable center of every ship
+  CORE: {
+    shape: RECTCOLLIDER,
+    spriteID: SpriteID.CORE,
+    mass: 2.0,
+    gradeID: 0,
+    health: 1000,
+  },
 };
 
 export function createBlock(x, y, typeKey, overrides = {}) {

@@ -45,6 +45,21 @@ function positionSettingsPanel() {
   const viewportPad = Math.max(8, Math.round(window.innerWidth * 0.01));
   const gap = Math.max(8, Math.round(window.innerHeight * 0.01));
 
+   const compactLayout = window.innerWidth <= 900 || window.innerHeight <= 560;
+   if (compactLayout) {
+    settingsPanel.style.left = `${viewportPad}px`;
+    settingsPanel.style.top = `${viewportPad}px`;
+    settingsPanel.style.right = "auto";
+    settingsPanel.style.width = `calc(100vw - ${viewportPad * 2}px)`;
+    settingsPanel.style.maxWidth = `calc(100vw - ${viewportPad * 2}px)`;
+    settingsPanel.style.maxHeight = `calc(100dvh - ${viewportPad * 2}px)`;
+    return;
+  }
+
+  settingsPanel.style.width = "";
+  settingsPanel.style.maxWidth = "";
+  settingsPanel.style.maxHeight = "";
+
   let top = btnRect.bottom + gap;
   let left = btnRect.right - panelRect.width;
 
@@ -216,6 +231,9 @@ document
   .addEventListener("click", () => logout());
 document.getElementById("adminPanelBtn").addEventListener("click", () => {
   window.location.href = "/admin";
+});
+document.getElementById("leaderboardBtn").addEventListener("click", () => {
+  window.location.href = "/leaderboard";
 });
 
 let _saveMenu = null;

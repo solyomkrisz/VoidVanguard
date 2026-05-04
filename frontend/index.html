@@ -47,8 +47,9 @@
           <button type="submit" data-sfx="click_1">Bejelentkezés</button>
           <div id="logFormMsg" class="form-message"></div>
           <a data-sfx="click_1">Nincs fiókod? Regisztrálj!</a>
-          <a data-sfx="click_1">Elfelejtettem a jelszavam!</a>
+          <a id="forgotPasswordLink" data-sfx="click_1">Elfelejtettem a jelszavam!</a>
         </form>
+        <password-reset-request-form id="forgotPasswordForm" style="display:none"></password-reset-request-form>
       </div>
     </div>
 
@@ -60,6 +61,7 @@
           <h2>Főmenü</h2>
           <button id="newGameBtn" data-sfx="click_1">Új játék indítása</button>
           <button id="loadGameBtn" data-sfx="click_1">Játékmenet betöltése</button>
+          <button id="leaderboardBtn" data-sfx="click_1">Ranglétra</button>
           <button id="adminPanelBtn" hidden data-sfx="click_1">Admin panel</button>
           <button id="gameMenuLogoutBtn" data-sfx="click_1">Kijelentkezés</button>
         </div>
@@ -255,6 +257,16 @@
           authContainer.classList.add("reg-active");
         }
       });
+
+      // Elfelejtettem a jelszavam
+      document.getElementById("forgotPasswordLink").addEventListener("click", () => {
+        document.getElementById("logForm").style.display = "none";
+        document.getElementById("forgotPasswordForm").style.display = "block";
+      });
+      document.getElementById("forgotPasswordForm").addEventListener("password-reset-back", () => {
+        document.getElementById("forgotPasswordForm").style.display = "none";
+        document.getElementById("logForm").style.display = "flex";
+      });
     </script>
     <script type="module" src="./App.js"></script>
     <script type="module">
@@ -262,6 +274,7 @@
       import "/ui/component/validator/UsernameInputValidator.js"
       import "/ui/component/validator/PasswordInputValidator.js";
       import "/ui/component/validator/EmailInputValidator.js";
+      import "/ui/component/auth/PasswordResetRequestForm.js";
       import "/ui/component/misc/UIVolumeController.js";
       import "/ui/component/game/GameVolumeController.js";
       import { onDOMContentLoaded } from "/common/common.js";

@@ -3,6 +3,7 @@ import Mouse from "/game/Mouse.js";
 import Keyboard from "/game/Keyboard.js";
 import DebugOverlay from "/game/DebugOverlay.js";
 import DebugPanel from "/game/DebugPanel.js";
+import XPBar from "/game/XPBar.js";
 import Models, { MODELFACTORY } from "/game/SpaceShipModels.js";
 import TextureManager from "/game/TextureManager.js";
 import * as UI from "/ui/UI.js";
@@ -192,14 +193,21 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
   game.setDebugPanel(debug); // ?
   game.startDebugging(); // ?
 
+  //#region xp bar
+  const xpBar = new XPBar();
+  document.body.appendChild(xpBar.container);
+  xpBar.set(0, 100);
+  xpBar.setLevel(1);
+  game.xpBar = xpBar;
+
   //#region texture
   const tm = new TextureManager(game);
   game.addTextureManager(tm);
 
-  // Texture setup - 960x192 atlas (15 columns × 3 rows, 64x64 per texture)
-  // Row 0: Block grades 0-14 with connector texture
-  // Row 1: Block grades 0-14 without connector (unused for now) - reserved for dragging the blocks around, cause they look weird with connectors when not connected to anything
-  // Row 2: Turret textures
+  // Texture setup - 1024x192 atlas (16 columns × 3 rows, 64x64 per texture)
+  // Row 0: Block grades 0-14 with connector texture | col 15: thruster with connector
+  // Row 1: Block grades 0-14 without connector (unused for now) - reserved for dragging | col 15: thruster without connector
+  // Row 2: Turret textures | col 15: core block
   for (let i = 0; i < 15; i++) {
     tm.queueTextureCoordinate(TextureID[`BLOCK_${i}`], TextureManager.S0, i, 0);
   }
@@ -212,7 +220,11 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
       2,
     );
   }
-  tm.addTexture(TextureManager.S0, "/image/atlas.png", 15, 3);
+  // Column 15: special blocks
+  tm.queueTextureCoordinate(TextureID.THRUSTER_CONNECTOR,  TextureManager.S0, 15, 0);
+  tm.queueTextureCoordinate(TextureID.THRUSTER,            TextureManager.S0, 15, 1);
+  tm.queueTextureCoordinate(TextureID.CORE,                TextureManager.S0, 15, 2);
+  tm.addTexture(TextureManager.S0, "/image/atlas.png", 16, 3);
 
   // Wait for textures to load, then add coordinates and sprites
   tm.setActiveSlot(TextureManager.S0);
@@ -231,14 +243,22 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
     tm.addSprite(SpriteID[`TURRET${i === 1 ? "" : i}`], turretSprite);
   }
 
-  //#region test enemy
-  const enemy = new Enemy({
-    game,
-    model: MODELFACTORY.SCOUT2(),
-    x: 0,
-    y: 10,
-    maxSpeed: 2,
-  });
+  // Thruster sprite: shows the "with connector" texture when placed
+  const thrusterSprite = new Sprite();
+  thrusterSprite.addFrame(TextureID.THRUSTER_CONNECTOR, 2);
+  tm.addSprite(SpriteID.THRUSTER, thrusterSprite);
+
+  // Core block sprite
+  const coreSprite = new Sprite();
+  coreSprite.addFrame(TextureID.CORE, 2);
+  tm.addSprite(SpriteID.CORE, coreSprite);
+
+  // Bullet sprite: reuses the first turret texture (narrow elongated shape)
+  const bulletSprite = new Sprite();
+  bulletSprite.addFrame(TextureID.TURRET, 2);
+  tm.addSprite(SpriteID.BULLET, bulletSprite);
 
   // game.enemies.add(enemy);
+
+  game.player.model.applyTextureRotations(tm);
 }

@@ -185,6 +185,12 @@ export default class Rigidbody extends Collidable {
     return vec2.len(vec2_1);
   }
 
+  onGeometryChange() {
+    super.onGeometryChange();
+    this.setMassAndCoM();
+    this.setMomentOfInertia();
+  }
+
   // prettier-ignore
   render() {
     this.previousNetForce.reset();
@@ -206,7 +212,8 @@ export default class Rigidbody extends Collidable {
       vec2.set(_b.vec2_3, u1 - u0, v1 - v0);
 
       this.game.dataCollector.push(
-        ...obj.localPosition,
+        obj.localPosition[0] + (obj.renderOffset?.[0] ?? 0),
+        obj.localPosition[1] + (obj.renderOffset?.[1] ?? 0),
         ...this.interpolatedPosition,
         ...rotationMatrix,
         ..._b.vec2_2,

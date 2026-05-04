@@ -49,7 +49,20 @@ export default class AutopilotToggle extends HTMLElement {
       );
     });
 
+    this._checkbox = checkbox;
     this.shadowDOM.appendChild(checkbox);
+  }
+
+  setChecked(val) {
+    if (!this._checkbox) return;
+    this._checkbox.checked = val;
+    this.dispatchEvent(
+      new CustomEvent("autopilot-toggle", {
+        detail: { checked: val },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
 

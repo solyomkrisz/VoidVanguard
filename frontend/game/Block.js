@@ -203,6 +203,12 @@ export default class Block {
       mass: blockState.mass,
       health: blockState.health,
       adjacencyRules: vec.clone(blockState.adjacencyRules),
+      isTurret: blockState.isTurret ?? false,
+      isThruster: blockState.isThruster ?? false,
+      bulletDamage: blockState.bulletDamage ?? 0,
+      bulletSpeed: blockState.bulletSpeed ?? 0,
+      bulletRange: blockState.bulletRange ?? 0,
+      shootCooldown: blockState.shootCooldown ?? 1,
     });
 
     block.type = blockState.type;
@@ -213,7 +219,7 @@ export default class Block {
   }
 
   // prettier-ignore
-  constructor({ x, y, shape, spriteID, gradeID = 0, mass = 1, health = 100, adjacencyRules = vec.create(0) } = {}) {
+  constructor({ x, y, shape, spriteID, gradeID = 0, mass = 1, health = 100, adjacencyRules = vec.create(0), isTurret = false, isThruster = false, bulletDamage = 0, bulletSpeed = 0, bulletRange = 0, shootCooldown = 1 } = {}) {
     this.type = Type.BLOCK;
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
@@ -225,6 +231,14 @@ export default class Block {
     this.toRemove = false;
     this.health = health;
     this.adjacencyRules = adjacencyRules;
+    this.isTurret = isTurret;
+    this.isThruster = isThruster;
+    this.bulletDamage = bulletDamage;
+    this.bulletSpeed = bulletSpeed;
+    this.bulletRange = bulletRange;
+    this.shootCooldown = shootCooldown;
+    this._shootTimer = 0;
+    this.renderOffset = vec2.create();
     this.CoM = vec2.create();
     this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
   }
@@ -239,7 +253,14 @@ export default class Block {
       mass: block.mass,
       health: block.health,
       adjacencyRules: vec.clone(block.adjacencyRules),
+      isTurret: block.isTurret,
+      isThruster: block.isThruster,
+      bulletDamage: block.bulletDamage,
+      bulletSpeed: block.bulletSpeed,
+      bulletRange: block.bulletRange,
+      shootCooldown: block.shootCooldown,
     });
+    newBlock.isRemovable = block.isRemovable;
     return newBlock;
   }
 
@@ -255,6 +276,12 @@ export default class Block {
       isRemovable: this.isRemovable,
       health: this.health,
       adjacencyRules: [...this.adjacencyRules],
+      isTurret: this.isTurret,
+      isThruster: this.isThruster,
+      bulletDamage: this.bulletDamage,
+      bulletSpeed: this.bulletSpeed,
+      bulletRange: this.bulletRange,
+      shootCooldown: this.shootCooldown,
     };
   }
 

@@ -33,6 +33,13 @@ export default class BuildingBlock extends Rigidbody {
     this.updatePosition();
   }
 
+  onGeometryChange() {
+    super.onGeometryChange();
+    if (this.model.objects.length === 0) {
+      this.setState(GlobalState.DEAD);
+    }
+  }
+
   onBroadCollision(other) {
     if (this.isDragged()) {
       if (other.is(Type.PLAYER)) {
@@ -54,6 +61,8 @@ export default class BuildingBlock extends Rigidbody {
 
     const ml = Math.abs(tx - ox) + Math.abs(ty - oy);
 
+    if (ml === 1) return true;
+
     if (adjacencyRules.length) {
       for (let i = 0; i < adjacencyRules.length; i += 2) {
         const x = adjacencyRules[i];
@@ -71,6 +80,32 @@ export default class BuildingBlock extends Rigidbody {
   }
 
   // prettier-ignore
+  checkNeighborAcceptsAttachment(nLP, neighbor) {
+    if (neighbor.isTurret || neighbor.isThruster) return false;
+    const adjacencyRules = neighbor.adjacencyRules;
+    const [tx, ty] = nLP;
+    const [ox, oy] = neighbor.localPosition;
+
+    const dx = tx - ox;
+    const dy = ty - oy;
+
+    if (Math.abs(dx) + Math.abs(dy) === 1) return true;
+
+    if (adjacencyRules.length) {
+      for (let i = 0; i < adjacencyRules.length; i += 2) {
+        const x = adjacencyRules[i];
+        const y = adjacencyRules[i + 1];
+
+        if (dx === x && dy === y) return true;
+      }
+
+      return false;
+    }
+
+    return Math.abs(dx) + Math.abs(dy) === 1;
+  }
+
+  // prettier-ignore
   onNarrowCollision(other) {
     const _b = this.game.buffer;
     const mouse = this.game.mouse;
@@ -85,10 +120,29 @@ export default class BuildingBlock extends Rigidbody {
       vec2.round(nLP);
 
       let j = 0;
-      while (j < other.model.objects.length && !this.checkNeighbor(nLP, other.model.objects[j])) j++;
+      while (
+        j < other.model.objects.length &&
+        (
+          !this.checkNeighbor(nLP, other.model.objects[j]) ||
+          !this.checkNeighborAcceptsAttachment(nLP, other.model.objects[j])
+        )
+      ) j++;
       if (!(j < other.model.objects.length)) return false;
 
       const [object] = this.model.objects;
+
+      // Orient the sprite so its bottom faces the connection side
+      const neighbor = other.model.objects[j];
+      const dx = neighbor.localPosition[0] - nLP[0];
+      const dy = neighbor.localPosition[1] - nLP[1];
+      const texAngle = Math.atan2(-dx, -dy);
+      const sprite = this.game.textureManager.sprites[object.spriteID];
+      if (sprite) {
+        for (const frame of sprite.frames) {
+          object.rotateTexture(frame.textureName, texAngle);
+        }
+      }
+
       vec2.copy(object.localPosition, nLP);
       other.model.add(other, object);
       object.isRemovable = true;
@@ -96,9 +150,9 @@ export default class BuildingBlock extends Rigidbody {
       this.model.reset();
       this.game.mouse.reset();
 
-      // other.proxyCollider.onGeometryChange();
-      // other.shapeCollider.onGeometryChange();
-      other.onGeometryChange();
+      // other.proxyShader.onGeometryChange();
+      // other.pshapeShader.onGeometryChange();
+      other.onGeometryChange?.();
 
       this.setState(GlobalState.DEAD);
     }
@@ -125,6 +179,18 @@ export default class BuildingBlock extends Rigidbody {
     if (collision.is(Type.INTERACTION)) {
       this.showDetails();
       object.showDetails(this);
+      return;
+    }
+
+    const other = collision.a.parent === this ? collision.b.parent : collision.a.parent;
+
+    if (other?.parent?.is?.(Type.PROJECTILE)) {
+      if (typeof object?.health === "number") {
+        object.health -= other.parent.dmg ?? 0;
+        const geometryChanged = this.model.clear();
+        if (geometryChanged) this.onGeometryChange();
+      }
+      return;
     }
   }
 

@@ -90,6 +90,7 @@ export default class PasswordResetForm extends HTMLElement {
 
     this.innerHTML = `
       <form>
+        <h2>Új jelszó beállítása</h2>
         <input-group>
           <label>Új jelszó</label>
           <password-input-validator disable-on-invalid="#password-reset-form-submit-button">
@@ -103,8 +104,8 @@ export default class PasswordResetForm extends HTMLElement {
           </password-input-validator>
         </input-group>
         <button id="password-reset-form-submit-button">Jelszó beállítása</button>
+        <div id="message" class="form-message"></div>
       </form>
-      <div id="message"></div>
     `;
 
     this._elements.form = this.querySelector("form");

@@ -69,10 +69,18 @@ export default class RemoteSaveList extends LazyItemList {
 
   onLogout(e) {}
 
+  onGameSaved(e) {
+    if (e?.detail?.saveType !== "remote") return;
+    this._byGameId.clear();
+    this.reloadCurrentPage();
+  }
+
   connectedCallback() {
     super.connectedCallback?.();
 
     this.addEventListener("save-delete", this.onSaveDelete);
+    this._onGameSaved = this.onGameSaved.bind(this);
+    document.addEventListener("game-saved", this._onGameSaved);
 
     on("login", this.onLogin);
     on("logout", this.onLogout);
@@ -82,6 +90,7 @@ export default class RemoteSaveList extends LazyItemList {
     super.disconnectedCallback?.();
 
     this.removeEventListener("save-delete", this.onSaveDelete);
+    document.removeEventListener("game-saved", this._onGameSaved);
 
     off("login", this.onLogin);
     off("logout", this.onLogout);
