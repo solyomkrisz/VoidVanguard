@@ -132,6 +132,15 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
     offsetByPlay: [0, 2.2],
   });
 
+  am.queueAudio("backgroundmusic", "/sound/background.mp3", {
+    loop: true,
+  });
+
+  am.queueAudio("lasershootsound", "/sound/laser_1.mp3", {
+    loop: true,
+    type: "pool",
+  });
+
   game.createPlayer(playerModel); // Must be added after mouse or dragging wont work
 
   //#region debug
@@ -231,5 +240,5 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
     maxSpeed: 2,
   });
 
-  game.enemies.add(enemy);
+  // game.enemies.add(enemy);
 }

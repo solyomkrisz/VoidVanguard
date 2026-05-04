@@ -69,6 +69,10 @@ export default class Player extends Spaceship {
     sound.instance.stop();
   }
 
+  onShoot() {
+    this.game.audioManager.getSound("lasershootsound")?.instance?.play?.();
+  }
+
   destroy() {
     for (const key of Object.keys(this.UI)) {
       this.UI[key].remove?.();
@@ -115,6 +119,9 @@ export default class Player extends Spaceship {
     projectile.rotation = this.rotation;
 
     this.game.projectiles.add(projectile);
+
+    this.onShoot();
+
     this.shootCooldown = cooldown;
   }
 

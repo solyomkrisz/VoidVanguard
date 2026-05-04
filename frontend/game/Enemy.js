@@ -29,6 +29,10 @@ export default class Enemy extends Spaceship {
     };
   }
 
+  onShoot() {
+    this.game.audioManager.getSound("lasershootsound")?.instance?.play?.();
+  }
+
   aim(targetPosition) {
     const _b = this.game.buffer;
 
@@ -99,6 +103,9 @@ export default class Enemy extends Spaceship {
     projectile.rotation = this.rotation;
 
     this.game.projectiles.add(projectile);
+
+    this.onShoot();
+
     this.shootCooldown = cooldown;
   }
 

@@ -150,6 +150,22 @@ export default class Game extends WebGLCanvas {
     this.inBuilderView = false;
   }
 
+  startBackgroundMusic() {
+    this.audioManager.getSound("backgroundmusic")?.instance?.start?.();
+  }
+
+  resumeBackgroundMusic() {
+    this.audioManager.getSound("backgroundmusic")?.instance?.resume?.();
+  }
+
+  pauseBackgroundMusic() {
+    this.audioManager.getSound("backgroundmusic")?.instance?.pause?.();
+  }
+
+  stopBackgroundMusic() {
+    this.audioManager.getSound("backgroundmusic")?.instance?.stop?.();
+  }
+
   getDefaultTileSize() {
     if ((this.player?.proxyCollider?.r ?? 0) > 14) {
       return this.player.proxyCollider.r;
@@ -476,6 +492,8 @@ export default class Game extends WebGLCanvas {
 
         error !== gl.NO_ERROR && console.error("WebGL Error: ", error);
 
+        this.startBackgroundMusic();
+
         this.last = window.performance.now();
         this.frameId = window.requestAnimationFrame(this.update);
         this.running = true;
@@ -490,7 +508,9 @@ export default class Game extends WebGLCanvas {
     if (!this.running) return;
     this.running = false;
     window.cancelAnimationFrame(this.frameId);
-    this.audioManager?.stopAll?.();
+    this.pauseBackgroundMusic();
+    this.audioManager?.softStopAll?.();
+    // this.audioManager?.stopAll?.();
     this.tooltip.disable();
     this.UI.pauseMenu?.show();
   }
@@ -504,6 +524,8 @@ export default class Game extends WebGLCanvas {
 
     this.last = window.performance.now();
     this.frameId = window.requestAnimationFrame(this.update);
+
+    this.resumeBackgroundMusic();
   }
 
   update() {
