@@ -66,11 +66,13 @@ export default class VolumeController extends HTMLElement {
   sync() {
     const volume = this.getSavedValue();
     this._elements.input.value = volume;
+    this._elements.input.style.setProperty("--val", `${volume * 100}%`);
     this._elements.currentVolume.textContent = parseInt(volume * 100);
   }
 
   update() {
     const volume = Number(this._elements.input.value);
+    this._elements.input.style.setProperty("--val", `${volume * 100}%`);
     this._elements.currentVolume.textContent = parseInt(volume * 100);
 
     if (this.localStorageKey) {

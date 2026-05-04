@@ -12,7 +12,7 @@ export async function lazySelectByUserId(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Saves fetched successfully"));
+      .json(createResponse(true, result, "A mentések sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -25,13 +25,13 @@ export async function selectSave(request, response) {
     }
 
     const save = await service.selectUserSave({
-      saveId: request.params.id,
+      gameId: request.params.id,
       userId: request.targetUser.id,
     });
 
     response
       .status(200)
-      .json(createResponse(true, save, "Save successfully fetched"));
+      .json(createResponse(true, save, "A mentés sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -47,7 +47,7 @@ export async function patchSave(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Save successfully updated"));
+      .json(createResponse(true, result, "A mentés sikeresen frissítve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -63,13 +63,16 @@ export async function saveOrUpdate(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, gameId, "Game successfully saved"));
+      .json(createResponse(true, gameId, "A játék sikeresen elmentve"));
   } catch (error) {
     if (
       error.code === "ER_DUP_ENTRY" &&
       error.sqlMessage.includes("unique_user_slot")
     ) {
-      throw CustomError.DUPLICATE_SAVE_STATE;
+      return handleSequelizeUniqueConstraintError(
+        response,
+        "A mentés ehhez a játékazonosítóhoz már létezik",
+      );
     }
     handleCaughtError(response, error);
   }
@@ -84,7 +87,7 @@ export async function deleteSave(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Save successfully deleted"));
+      .json(createResponse(true, null, "A mentés sikeresen törölve"));
   } catch (error) {
     handleCaughtError(response, error);
   }

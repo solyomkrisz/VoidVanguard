@@ -21,7 +21,6 @@ export default class ChunkManager {
     const px = Math.floor(player.position[0] * nebulaParallax / (chunkSize * backgroundZoom));
     const py = Math.floor(player.position[1] * nebulaParallax / (chunkSize * backgroundZoom));
 
-    // Star parallax center — lowest-parallax stars barely move, so their visible
     // chunks drift far behind the nebula center as the player moves.
     const spx = Math.floor(player.position[0] * minStarParallax / (chunkSize * backgroundZoom));
     const spy = Math.floor(player.position[1] * minStarParallax / (chunkSize * backgroundZoom));
@@ -37,19 +36,16 @@ export default class ChunkManager {
       }
     };
 
-    // Load chunks around nebula parallax center
     // prettier-ignore
     for (let y = py - ry; y < py + ry; y++)
       for (let x = px - rx; x < px + rx; x++)
         loadChunk(x, y);
 
-    // Load chunks around star parallax center (may be a completely different region)
     // prettier-ignore
     for (let y = spy - ry; y < spy + ry; y++)
       for (let x = spx - rx; x < spx + rx; x++)
         loadChunk(x, y);
 
-    // Only unload if outside BOTH regions
     // prettier-ignore
     for (const [id, chunk] of this.chunks.entries()) {
       const [cx, cy] = chunk.position;

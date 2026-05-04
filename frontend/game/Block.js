@@ -4,6 +4,7 @@ import * as MATRIX from "/common/common.js";
 import * as vec from "/common/vec.js";
 import DynamicTooltip from "/ui/component/game/DynamicTooltip.js";
 import Shape from "/game/Shape.js";
+import * as Type from "/game/Type.js";
 
 export default class Block {
   // prettier-ignore
@@ -202,30 +203,79 @@ export default class Block {
       mass: blockState.mass,
       health: blockState.health,
       adjacencyRules: vec.clone(blockState.adjacencyRules),
+      isTurret: blockState.isTurret ?? false,
+      isThruster: blockState.isThruster ?? false,
+      bulletDamage: blockState.bulletDamage ?? 0,
+      bulletSpeed: blockState.bulletSpeed ?? 0,
+      bulletRange: blockState.bulletRange ?? 0,
+      shootCooldown: blockState.shootCooldown ?? 1,
     });
 
     block.type = blockState.type;
     block.textureRotation = new Map(blockState.textureRotation);
     block.isRemovable = blockState.isRemovable;
 
+    const savedColliderRotation = Number(blockState.colliderRotation);
+    if (Number.isFinite(savedColliderRotation)) {
+      block.colliderRotationRad = savedColliderRotation;
+    } else {
+      const inferredRotation = block._getAnyTextureRotation();
+      if (Number.isFinite(inferredRotation) && Math.abs(inferredRotation) > 1e-6) {
+        const colliderAngle = inferredRotation;
+        block.setColliderRotation(colliderAngle);
+      }
+    }
+
     return block;
   }
 
   // prettier-ignore
-  constructor({ x, y, shape, spriteID, gradeID = 0, mass = 1, health = 100, adjacencyRules = vec.create(0) } = {}) {
-    this.type = 0;
+  constructor({ x, y, shape, spriteID, gradeID = 0, mass = 1, health = 100, adjacencyRules = vec.create(0), isTurret = false, isThruster = false, bulletDamage = 0, bulletSpeed = 0, bulletRange = 0, shootCooldown = 1 } = {}) {
+    this.type = Type.BLOCK;
     this.localPosition = vec2.fromValues(x, y);
     this.shape = shape;
     this.spriteID = spriteID;
     this.gradeID = gradeID;
     this.textureRotation = new Map();
+    this.colliderRotationRad = 0;
+    this._ownsShape = false;
     this.mass = mass;
     this.isRemovable = true;
     this.toRemove = false;
     this.health = health;
     this.adjacencyRules = adjacencyRules;
+    this.isTurret = isTurret;
+    this.isThruster = isThruster;
+    this.bulletDamage = bulletDamage;
+    this.bulletSpeed = bulletSpeed;
+    this.bulletRange = bulletRange;
+    this.shootCooldown = shootCooldown;
+    this._shootTimer = 0;
+    this.renderOffset = vec2.create();
     this.CoM = vec2.create();
     this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
+  }
+
+  clone(block) {
+    const newBlock = new Block({
+      x: block.localPosition[0],
+      y: block.localPosition[1],
+      shape: block.shape,
+      spriteID: block.spriteID,
+      gradeID: block.gradeID,
+      mass: block.mass,
+      health: block.health,
+      adjacencyRules: vec.clone(block.adjacencyRules),
+      isTurret: block.isTurret,
+      isThruster: block.isThruster,
+      bulletDamage: block.bulletDamage,
+      bulletSpeed: block.bulletSpeed,
+      bulletRange: block.bulletRange,
+      shootCooldown: block.shootCooldown,
+    });
+    newBlock.isRemovable = block.isRemovable;
+    newBlock.colliderRotationRad = block.colliderRotationRad ?? 0;
+    return newBlock;
   }
 
   exportSave() {
@@ -236,10 +286,17 @@ export default class Block {
       spriteID: this.spriteID,
       gradeID: this.gradeID,
       textureRotation: [...this.textureRotation],
+      colliderRotation: this.colliderRotationRad,
       mass: this.mass,
       isRemovable: this.isRemovable,
       health: this.health,
       adjacencyRules: [...this.adjacencyRules],
+      isTurret: this.isTurret,
+      isThruster: this.isThruster,
+      bulletDamage: this.bulletDamage,
+      bulletSpeed: this.bulletSpeed,
+      bulletRange: this.bulletRange,
+      shootCooldown: this.shootCooldown,
     };
   }
 
@@ -258,6 +315,50 @@ export default class Block {
     return this.textureRotation.has(textureName)
       ? this.textureRotation.get(textureName)
       : 0;
+  }
+
+  _getAnyTextureRotation() {
+    for (const value of this.textureRotation.values()) {
+      if (Number.isFinite(value)) return value;
+    }
+
+    return 0;
+  }
+
+  _ensureUniqueShape() {
+    if (this._ownsShape) return;
+
+    this.shape = Shape.from(this.shape.exportSave());
+    this._ownsShape = true;
+  }
+
+  setColliderRotation(targetRad = 0) {
+    if (!Number.isFinite(targetRad)) return this;
+
+    const delta = targetRad - (this.colliderRotationRad ?? 0);
+    if (Math.abs(delta) <= 1e-6) {
+      this.colliderRotationRad = targetRad;
+      return this;
+    }
+
+    this._ensureUniqueShape();
+
+    const c = Math.cos(delta);
+    const s = Math.sin(delta);
+    const vertices = this.shape.vertices;
+
+    for (let i = 0; i < vertices.length; i += 2) {
+      const x = vertices[i];
+      const y = vertices[i + 1];
+
+      vertices[i] = x * c - y * s;
+      vertices[i + 1] = x * s + y * c;
+    }
+
+    this.colliderRotationRad = targetRad;
+    this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
+
+    return this;
   }
 
   onRemove(parent) {

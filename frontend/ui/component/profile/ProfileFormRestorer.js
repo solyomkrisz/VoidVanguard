@@ -4,13 +4,14 @@ import "/ui/component/profile/ProfileForm.js";
 export default class ProfileFormRestorer extends FormRestorer {
   // key in object from server: form input name
   static mapping = {
+    avatar: "avatar",
     display_name: "display_name",
     description: "description",
     visibility: "visibility",
   };
 
   getEndpoint() {
-    return "/api/profiles/" + this.getAttribute("user-id") + "?view=admin";
+    return "/api/profiles/" + this.getAttribute("user-id");
   }
 }
 

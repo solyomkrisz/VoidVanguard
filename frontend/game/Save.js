@@ -1,5 +1,8 @@
 import Block from "/game/Block.js";
 import Thruster from "/game/Thruster.js";
+import Enemy from "/game/Enemy.js";
+import Model from "/game/Model.js";
+import * as Type from "/game/Type.js";
 
 export default class Save {
   static parse(stringified) {
@@ -7,16 +10,16 @@ export default class Save {
   }
 
   static recoverModelObject(object) {
-    if (object.type === 0) {
+    if (object.type === Type.BLOCK) {
       return Block.from(object);
     }
 
-    if (object.type === 1) {
+    if (object.type === Type.THRUSTER) {
       return Thruster.from(object);
     }
   }
 
-  static recoverPlayerModel(savedModel) {
+  static recoverModelObjects(savedModel) {
     const objects = savedModel.objects;
 
     const recoveredObjects = [];
@@ -26,5 +29,13 @@ export default class Save {
     }
 
     return recoveredObjects;
+  }
+
+  static recoverEntity(saved, game) {
+    const recoveredModel = new Model(Save.recoverModelObjects(saved.model));
+
+    if (saved.type === Type.ENEMY) {
+      return Enemy.from(saved, recoveredModel, game);
+    }
   }
 }

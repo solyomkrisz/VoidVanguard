@@ -69,7 +69,7 @@ export default class ViewSwitcher extends HTMLElement {
 
   setActive(id) {
     if (!this._built) return;
-    if (this._active === id) return;
+    if (!this.noCache && this._active === id) return;
 
     const template = this._templates.get(id);
     if (!template) return;

@@ -1,6 +1,6 @@
 import VolumeController from "/ui/component/misc/VolumeController.js";
 
-export default class GameVolumeController extends HTMLElement {
+export default class GameVolumeController extends VolumeController {
   constructor() {
     super();
 

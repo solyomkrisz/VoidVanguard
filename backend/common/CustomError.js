@@ -192,7 +192,7 @@ export const FORBIDDEN = new CustomError({
 export const SAVE_ERROR = new CustomError({
   statusCode: 403,
   definition: {
-    name: "SaveErro",
+    name: "SaveError",
     code: "ER_SAVE",
     message: "Unable to save game state",
   },
@@ -204,6 +204,24 @@ export const DUPLICATE_SAVE_STATE = new CustomError({
     name: "DuplicateSaveStateError",
     code: "ER_DUP_SAVE_STATE",
     message: "A save with this game state already exists",
+  },
+});
+
+export const GAME_IS_FINISHED = new CustomError({
+  statusCode: 400,
+  definition: {
+    name: "GameIsFinishedError",
+    code: "ER_GAME_FINISHED",
+    message: "Cannot save the new state, this game has already finished",
+  },
+});
+
+export const SAVE_NOT_FOUND = new CustomError({
+  statusCode: 404,
+  definition: {
+    name: "SaveNotFoundError",
+    code: "ER_GAME_NOT_FOUND",
+    message: "Save not found",
   },
 });
 
@@ -240,6 +258,33 @@ export const UNABLE_TO_END_SESSION = new CustomError({
     name: "SessionDestroyError",
     code: "ER_SESSION_DESTROY",
     message: "Unable to end session",
+  },
+});
+
+export const CANNOT_BAN_YOURSELF = new CustomError({
+  statusCode: 400,
+  definition: {
+    name: "CannotBanYourselfError",
+    code: "ER_CANNOT_BAN_YOURSELF",
+    message: "Cannot ban yourself",
+  },
+});
+
+export const BAN_HIGHER_ROLE_ERROR = new CustomError({
+  statusCode: 400,
+  definition: {
+    name: "BanHigherRoleError",
+    code: "ER_BAN_HIGHER_ROLE",
+    message: "You cannot ban someone with the same or higher role as yourself",
+  },
+});
+
+export const COMMENT_NOT_FOUND = new CustomError({
+  statusCode: 404,
+  definition: {
+    name: "CommentNotFoundError",
+    code: "ER_COMMENT_NOT_FOUND",
+    message: "Comment not found",
   },
 });
 

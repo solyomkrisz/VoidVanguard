@@ -34,6 +34,8 @@ class Comments extends Table {
           DATE_FORMAT(comments.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
           DATE_FORMAT(comments.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
           username AS author,
+          COALESCE(profiles.avatar, '/image/defaultPfp.png') AS author_avatar,
+          CASE WHEN profiles.user_id IS NULL THEN 0 ELSE 1 END AS author_has_profile,
 
           user_reaction.type AS user_reaction_type,
 
@@ -43,6 +45,8 @@ class Comments extends Table {
         FROM comments
 
         INNER JOIN users ON users.id = comments.author_id
+
+        LEFT JOIN profiles ON profiles.user_id = comments.author_id
 
         LEFT JOIN reactions AS likes
           ON likes.target_id = comments.id AND likes.type = 'like'
@@ -83,6 +87,8 @@ class Comments extends Table {
           DATE_FORMAT(comments.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
           DATE_FORMAT(comments.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
           username AS author,
+          COALESCE(profiles.avatar, '/image/defaultPfp.png') AS author_avatar,
+          CASE WHEN profiles.user_id IS NULL THEN 0 ELSE 1 END AS author_has_profile,
 
           user_reaction.type AS user_reaction_type,
 
@@ -92,6 +98,8 @@ class Comments extends Table {
         FROM comments
 
         INNER JOIN users ON users.id = comments.author_id
+
+        LEFT JOIN profiles ON profiles.user_id = comments.author_id
 
         LEFT JOIN reactions AS likes
           ON likes.target_id = comments.id AND likes.type = 'like'
@@ -104,6 +112,8 @@ class Comments extends Table {
           AND user_reaction.user_id = ?
 
         WHERE comments.id = ?
+
+        GROUP BY comments.id
       `,
       [requesterId ?? -1, id],
     );

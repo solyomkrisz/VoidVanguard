@@ -11,5 +11,5 @@ search-bar-result-list .item-container > * img {
 }
 
 search-bar-result-list .username {
-  font-weight: bold;
+  color: #9fd7ff;
 }

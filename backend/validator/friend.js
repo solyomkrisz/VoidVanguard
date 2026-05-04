@@ -1,12 +1,12 @@
-import { isValidUUIDv4 } from "../common/common.js";
+import { validate } from "uuid";
 
 export const POST = {
   userId: {
     in: ["body"],
     custom: {
       options: (value) => {
-        if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid user id");
+        if (!validate(value)) {
+          throw new Error("Érvénytelen felhasználóazonosító");
         }
         return true;
       },

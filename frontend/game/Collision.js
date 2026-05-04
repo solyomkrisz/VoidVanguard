@@ -30,6 +30,35 @@ export default class Collision {
     return this.type === type;
   }
 
+  resolveVelocity(restitution = 1) {
+    vec2.normalize(this.normal, this.normal);
+
+    const rv = vec2.create();
+    vec2.subtract(rv, this.b.velocity, this.a.velocity);
+
+    const velAlongNormal = vec2.dot(rv, this.normal);
+
+    if (velAlongNormal > 0) return this;
+
+    const invMassA = this.a.mass ? 1 / this.a.mass : 1;
+    const invMassB = this.b.mass ? 1 / this.b.mass : 1;
+
+    const j = (-(1 + restitution) * velAlongNormal) / (invMassA + invMassB);
+
+    const impulse = vec2.create();
+    vec2.scale(impulse, this.normal, j);
+
+    const impulseA = vec2.create();
+    vec2.scale(impulseA, impulse, invMassA);
+    vec2.subtract(this.a.velocity, this.a.velocity, impulseA);
+
+    const impulseB = vec2.create();
+    vec2.scale(impulseB, impulse, invMassB);
+    vec2.add(this.b.velocity, this.b.velocity, impulseB);
+
+    return this;
+  }
+
   // prettier-ignore
   resolvePenetration() {
     vec2.normalize(this.normal, this.normal); // Must be normalized here because of the accumulating approach we use

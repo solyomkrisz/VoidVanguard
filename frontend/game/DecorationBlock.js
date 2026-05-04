@@ -34,24 +34,37 @@ export default class DecorationBlock {
 
   onInsert() {
     if (!this.pixels) {
-      setTimeout(() => {
+      this.game._textureBuildQueue.push(() => {
         this.pixels = this.game.ng.get(this.position, true);
 
         // prettier-ignore
-        if (this.density > 0.72) {
-          let radius = 1;
+        {
+          let radius;
+          let starCount;
 
-          if (this.density > 0.9) radius = 6;
-          else if (this.density > 0.8) radius = 2;
+          if      (this.density > 0.9)  { radius = 2; starCount = 10; }
+          else if (this.density > 0.8)  { radius = 2; starCount = 6; }
+          else if (this.density > 0.5) { radius = 1; starCount = 4; }
+          else                          { radius = 1; starCount = 3; }
 
           this.starPixels = new Uint8ClampedArray(DecorationBlock.TEXTURE_WIDTH * DecorationBlock.TEXTURE_HEIGHT * 4);
-          const { distanceFactor } = this.game.sg.populate(this.position, this.starPixels, radius);
-          this.instanceParallax = this.game.nebulaParallax * (0.01 + distanceFactor * 0.15);
+
+          let distanceFactor = 1;
+          // Each call to populate uses a different integer offset so it picks
+          // a different noise bucket, placing a distinct star in the texture.
+          for (let i = 0; i < starCount; i++) {
+            const offsetPos = [this.position[0] + i * 7, this.position[1] + i * 13];
+            ({ distanceFactor } = this.game.sg.populate(offsetPos, this.starPixels, radius));
+          }
+
+          if (this.density > 0.72) {
+            this.instanceParallax = this.game.nebulaParallax * (0.01 + distanceFactor * 0.15);
+          }
         }
 
         this.createTexture();
         if (this.starPixels) this.createStarTexture();
-      }, 10);
+      });
     } else {
       this.createTexture();
       if (this.starPixels) this.createStarTexture();

@@ -127,6 +127,10 @@ export default class PauseMenu extends BaseCustomElement {
     this._built = true;
   }
 
+  destroy() {
+    this.remove();
+  }
+
   show() {
     this.hidden = false;
   }

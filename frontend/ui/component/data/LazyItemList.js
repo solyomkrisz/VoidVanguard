@@ -34,6 +34,10 @@ export default class LazyItemList extends HTMLElement {
     return this.getAttribute("controls");
   }
 
+  get withRefreshButton() {
+    return this.hasAttribute("with-refresh-button");
+  }
+
   constructor() {
     super();
 
@@ -92,16 +96,25 @@ export default class LazyItemList extends HTMLElement {
     this.partialRefresh();
   }
 
-  build() {
-    if (this._built) return;
-
-    this._refreshButton = this.appendChild(document.createElement("button"));
-    this._refreshButton.textContent = "Frissítés";
-    this._refreshButton.addEventListener("click", this.onRefreshButtonClick);
-
+  buildContainer() {
     this._container = this.appendChild(document.createElement("div"));
     this._container.setAttribute("aria-live", "polite");
     this._container.classList.add("item-container");
+  }
+
+  build() {
+    if (this._built) return;
+
+    if (this.withRefreshButton) {
+      this._refreshButton = this.appendChild(document.createElement("button"));
+      this._refreshButton.type = "button";
+      this._refreshButton.classList.add("lazy-item-list-refresh-button");
+      this._refreshButton.textContent = "Frissítés";
+      this._refreshButton.dataset.sfx = "click_1";
+      this._refreshButton.addEventListener("click", this.onRefreshButtonClick);
+    }
+
+    this.buildContainer();
 
     this._controllerContainer = this.appendChild(document.createElement("div"));
     this._controllerContainer.classList.add("controller-container");
@@ -259,7 +272,7 @@ export default class LazyItemList extends HTMLElement {
       }
     } catch (error) {
       // console.error(error);
-      console.error(error.message);
+      console.error(error);
     } finally {
       // this._loading = false;
       // this.onLoadFinish();

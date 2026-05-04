@@ -88,6 +88,19 @@ export default class AudioManager {
     }
   }
 
+  // doesnt do anything to paused musics
+  softStopAll() {
+    for (const sound of this.sounds.values()) {
+      if (sound.type === "pool") {
+        sound.instance.stopAll();
+      } else {
+        if (!sound.instance.paused) {
+          sound.instance.stop();
+        }
+      }
+    }
+  }
+
   whenAllLoaded() {
     return Promise.all(this.loading.values());
   }

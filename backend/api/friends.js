@@ -21,7 +21,15 @@ router.get(
   controller.lazySelectByTarget,
 );
 
-router.get("/:id", authenticate(), modifyTargetUser(), controller.summary);
+router.get(
+  "/:id",
+  authenticate({
+    onValidAccessToken: (_, _1, next) => next(),
+    onInvalidAccessToken: (_, _1, next) => next(),
+  }),
+  modifyTargetUser(),
+  controller.summary,
+);
 
 router.post(
   "/",

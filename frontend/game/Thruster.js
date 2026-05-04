@@ -4,13 +4,20 @@ import * as vec from "/common/vec.js";
 import * as vec2 from "/common/vec2.js";
 import * as Type from "/game/Type.js";
 import * as UI from "/ui/UI.js";
+import { LERP } from "/common/common.js";
+import { General2DCanvas as G2D } from "/game/General2DCanvas.js";
 import _ from "/ui/component/game/ThrusterController.js";
+import Collidable from "/game/Collidable.js";
+
+const DEFAULT_THRUST_VECTOR = [0, 1];
 
 export default class Thruster extends Block {
   static g0 = 9.81;
 
+  static MAX_GIMBAL_RANGE = 15; // degrees
+
   // prettier-ignore
-  static LISTED_PROPERTIES = ["localPosition", "exhaustDirection", "_gimbal", "throttle", "Isp"];
+  static LISTED_PROPERTIES = ["localPosition", "_gimbal", "thrustVector", "throttle", "Isp"];
 
   static from(thrusterState) {
     const [x, y] = thrusterState.localPosition;
@@ -32,6 +39,26 @@ export default class Thruster extends Block {
       gimbalRange: thrusterState.gimbalRange,
     });
 
+    thruster.defaultThrustVector = vec2.fromValues(
+      thrusterState.defaultThrustVector?.[0] ?? DEFAULT_THRUST_VECTOR[0],
+      thrusterState.defaultThrustVector?.[1] ?? DEFAULT_THRUST_VECTOR[1],
+    );
+    thruster.thrustVector = vec2.fromValues(
+      thrusterState.thrustVector?.[0] ?? DEFAULT_THRUST_VECTOR[0],
+      thrusterState.thrustVector?.[1] ?? DEFAULT_THRUST_VECTOR[1],
+    );
+    thruster.textureRotation = new Map(thrusterState.textureRotation);
+
+    const savedColliderRotation = Number(thrusterState.colliderRotation);
+    if (Number.isFinite(savedColliderRotation)) {
+      thruster.colliderRotationRad = savedColliderRotation;
+    } else {
+      const inferredRotation = thruster._getAnyTextureRotation?.() ?? 0;
+      if (Number.isFinite(inferredRotation) && Math.abs(inferredRotation) > 1e-6) {
+        thruster.setColliderRotation?.(inferredRotation);
+      }
+    }
+
     return thruster;
   }
 
@@ -51,16 +78,16 @@ export default class Thruster extends Block {
     gimbalRange = 0,
   } = {}) {
     super({ x, y, shape, spriteID, mass, health, adjacencyRules });
-    this.type = 1; // for recovery from saves
+    this.type = Type.THRUSTER; // for recovery from saves
+    this.isThruster = true;
 
     this.id = null;
     this.description = description;
     this.fuelType = fuelType;
     this.Isp = Isp;
     this.massFlowRate = massFlowRate;
-    this.defaultExhaustDirection = vec2.fromValues(0, -1);
-    this.exhaustDirection = vec2.fromValues(0, -1);
-    this.thrustVector = vec2.fromValues(0, 1);
+    this.defaultThrustVector = vec2.fromValues(...DEFAULT_THRUST_VECTOR);
+    this.thrustVector = vec2.fromValues(...DEFAULT_THRUST_VECTOR);
     this.thrust = 0;
     this.hasGimbal = hasGimbal;
     this.gimbalRange = gimbalRange;
@@ -70,6 +97,89 @@ export default class Thruster extends Block {
     this.torque = 0;
     this.dirty = true;
     this.controller = null;
+  }
+
+  clone(thruster) {
+    const newThruster = new Thruster({
+      x: thruster.localPosition[0],
+      y: thruster.localPosition[1],
+      shape: thruster.shape,
+      spriteID: thruster.spriteID,
+      mass: thruster.mass,
+      health: thruster.health,
+      adjacencyRules: vec.clone(thruster.adjacencyRules),
+    });
+
+    newThruster.id = thruster.id;
+    newThruster.description = thruster.description;
+    newThruster.Isp = thruster.Isp;
+    newThruster.massFlowRate = thruster.massFlowRate;
+    newThruster.defaultThrustVector = vec2.clone(thruster.defaultThrustVector);
+    newThruster.thrustVector = vec2.clone(thruster.defaultThrustVector);
+    newThruster.thrust = thruster.thrust;
+    newThruster.hasGimbal = thruster.hasGimbal;
+    newThruster.gimbalRange = thruster.gimbalRange;
+    newThruster._gimbal = thruster._gimbal;
+    newThruster.previousGimbal = thruster.previousGimbal;
+    newThruster.throttle = thruster.throttle;
+    newThruster.torque = thruster.torque;
+    newThruster.dirty = thruster.dirty;
+    newThruster.colliderRotationRad = thruster.colliderRotationRad ?? 0;
+    newThruster.controller = null;
+
+    return newThruster;
+  }
+
+  // prettier-ignore
+  updateGimbalDiagram() {
+    if (!this.controller) return;
+    G2D.setSize(50, 50).setTileSize(1);
+    G2D.fillRect("#111", 0, 0, G2D.W, G2D.H);
+
+    const d = this._gimbal * (Math.PI / 180);
+    const r = (this.gimbalRange || Thruster.MAX_GIMBAL_RANGE) * (Math.PI / 180);
+
+    let
+      sx = 0, sy = 1,
+      ex = 0, ey = -0.5,
+      px = 0, py = ey - (ex * Math.cos(r) - 1) / Math.sin(r);
+
+    const l = Math.hypot(ex - sx, ey - sy);
+    const c = Math.cos(d), s = Math.sin(d);
+    const rx = (ex - px) * c - (ey - py) * s + px;
+
+    G2D.fillTriangle("#999", 0, 1, rx, ey, 0, ey, true);
+    G2D.line("#555", 2, -1, ey, 1, ey, true);
+    G2D.line("#555", 2, 0, 1, 0, ey, true);
+    G2D.line("#fff", 2, sx, sy, rx, ey, true);
+
+    G2D.setFontFamily("Arial").setFontSize(G2D.toResponsive(0.5)).setTextAlignment("center");
+    G2D.fillText(0, -1 + 0.01, this._gimbal.toFixed(3) + "°", "#fff", true);
+
+    this.controller.gimbalDiagram.set(G2D.canvas, "image/jpeg", 1.0);
+  }
+
+  // prettier-ignore
+  updateThrottleDiagram() {
+    if (!this.controller) return;
+    G2D.setSize(50, 50).setTileSize(1);
+    G2D.fillRect("#111", 0, 0, G2D.W, G2D.H);
+
+    const rad = LERP(Math.PI, 0, this.throttle);
+    const sx = 0, sy = -0.5;
+    const ex = 0.9, ey = -0.5;
+    const rx = (ex - sx) * Math.cos(rad) - (ey - sy) * Math.sin(rad) + sx;
+    const ry = (ex - sx) * Math.sin(rad) + (ey - sy) * Math.cos(rad) + sy;
+
+    G2D.line("#555", 1, -1, -0.5, 1, -0.5, true);
+    G2D.strokeCircle("#555", 2, sx, sy, ex, Math.PI, 0, true);
+    G2D.fillCircle("#999", sx, sy, ex, Math.PI, -rad + 1e-6, true);
+    G2D.line("#fff", 2, sx, sy, rx, ry, true);
+
+    G2D.setFontFamily("Arial").setFontSize(G2D.toResponsive(0.5)).setTextAlignment("center");
+    G2D.fillText(0, -1 + 0.01, (this.throttle * 100).toFixed(1) + "%", "#fff", true);
+
+    this.controller.throttleDiagram.set(G2D.canvas, "image/jpeg", 1.0);
   }
 
   exportSave() {
@@ -82,13 +192,33 @@ export default class Thruster extends Block {
       massFlowRate: this.massFlowRate,
       hasGimbal: this.hasGimbal,
       gimbalRange: this.gimbalRange,
+      defaultThrustVector: [...this.defaultThrustVector],
+      thrustVector: [...this.thrustVector],
     };
+  }
+
+  // prettier-ignore
+  alignThrustVector(parent) {
+    this.defaultThrustVector[0] = DEFAULT_THRUST_VECTOR[0];
+    this.defaultThrustVector[1] = DEFAULT_THRUST_VECTOR[1];
+
+    const lpToModelCenter = vec2.sub(vec2.create(), Collidable.MODEL_CENTER, this.localPosition);
+    const dotProduct = vec2.dot(this.defaultThrustVector, lpToModelCenter);
+
+    if (dotProduct < 0) {
+      vec2.scale(this.defaultThrustVector, this.defaultThrustVector, -1);
+    } else if (dotProduct === 0) {
+      const crossProduct = this.defaultThrustVector[0] * lpToModelCenter[1] - this.defaultThrustVector[1] * lpToModelCenter[0];
+      vec2.rotate(this.defaultThrustVector, (Math.PI / 2) * Math.sign(crossProduct));
+    }
+
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
   }
 
   onRemove(parent) {
     this.toRemove = false;
 
-    if (parent.is(Type.PLAYER)) {
+    if (parent?.is?.(Type.PLAYER)) {
       parent.thrusters.delete(this.id);
       parent.controlledThrusters.delete(this.id);
       console.log(parent.controlledThrusters);
@@ -96,18 +226,39 @@ export default class Thruster extends Block {
       this.id = null;
       if (this.controller) {
         this.controller.remove();
-        this.controller.toggleCheckbox();
+        this.controller = null;
       }
+      parent.updateStatusDiagram?.();
     }
 
     return this;
   }
 
   // prettier-ignore
+  alignThrustVector(parent) {
+    this.defaultThrustVector[0] = DEFAULT_THRUST_VECTOR[0];
+    this.defaultThrustVector[1] = DEFAULT_THRUST_VECTOR[1];
+
+    const lpToModelCenter = vec2.sub(vec2.create(), Collidable.MODEL_CENTER, this.localPosition);
+    const dotProduct = vec2.dot(this.defaultThrustVector, lpToModelCenter);
+
+    if (dotProduct < 0) {
+      vec2.scale(this.defaultThrustVector, this.defaultThrustVector, -1);
+    } else if (dotProduct === 0) {
+      const crossProduct = this.defaultThrustVector[0] * lpToModelCenter[1] - this.defaultThrustVector[1] * lpToModelCenter[0];
+      vec2.rotate(this.defaultThrustVector, (Math.PI / 2) * Math.sign(crossProduct));
+    }
+
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
+  }
+
+  // prettier-ignore
   onInsert(parent) {
     this.dirty = true; // Lehet, hogy új localPosition-t kapott szóval a nyomatékot újra kell számolni!
 
-    if (parent.is(Type.PLAYER)) {
+    if (parent?.is?.(Type.PLAYER)) {
+      this.alignThrustVector(parent);
+      this.id = parent.idManager.get();
       !this.controller && (this.controller = UI.element("thruster-controller").setSource(this)).build();
       parent.UI.propulsionPanel.dispatchEvent(
         new CustomEvent("thruster-insert", {
@@ -118,26 +269,21 @@ export default class Thruster extends Block {
           composed: true,
         }),
       );
-      this.id = parent.idManager.get();
       parent.thrusters.set(this.id, this);
+      this.updateGimbalDiagram();
+      this.updateThrottleDiagram();
     }
 
     return this;
   }
 
   reset() {
-    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
     this._gimbal = 0;
     this.throttle = 1;
-
-    // prettier-ignore
-    {
-      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
-      this.controller._gimbal.textContent = this._gimbal.toFixed(4);
-      this.controller.throttle.textContent = this.throttle.toFixed(4);
-    }
-
     this.dirty = true;
+    this.updateGimbalDiagram();
+    this.updateThrottleDiagram();
   }
 
   gimbal(da) {
@@ -150,39 +296,15 @@ export default class Thruster extends Block {
 
     if (this._gimbal === this.previousGimbal) return;
 
-    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
-
-    vec2.rotate(this.exhaustDirection, this._gimbal * (Math.PI / 180));
+    vec2.copy(this.thrustVector, this.defaultThrustVector);
+    vec2.rotate(this.thrustVector, this._gimbal * (Math.PI / 180));
     this.previousGimbal = this._gimbal;
 
-    // prettier-ignore
-    {
-      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
-      this.controller._gimbal.textContent = this._gimbal.toFixed(4);
-    }
+    this.updateGimbalDiagram();
 
     this.dirty = true;
 
     return this;
-  }
-
-  reset() {
-    this._gimbal = 0;
-
-    if (this._gimbal === this.previousGimbal) return;
-
-    vec2.copy(this.exhaustDirection, this.defaultExhaustDirection);
-
-    vec2.rotate(this.exhaustDirection, this._gimbal * (Math.PI / 180));
-    this.previousGimbal = this._gimbal;
-
-    // prettier-ignore
-    {
-      this.controller.exhaustDirection.textContent = `[${this.exhaustDirection[0].toFixed(4)}, ${this.exhaustDirection[1].toFixed(4)}]`;
-      this.controller._gimbal.textContent = this._gimbal.toFixed(4);
-    }
-
-    this.dirty = true;
   }
 
   getExhaustVelocity() {
@@ -190,8 +312,8 @@ export default class Thruster extends Block {
   }
 
   getThrustVector() {
-    vec2.copy(this.thrustVector, this.exhaustDirection);
-    vec2.scale(this.thrustVector, this.thrustVector, -1);
+    // vec2.copy(this.thrustVector, this.exhaustDirection);
+    // vec2.scale(this.thrustVector, this.thrustVector, -1);
 
     return this.thrustVector;
   }
@@ -206,7 +328,7 @@ export default class Thruster extends Block {
 
   setThrottle(diff) {
     this.throttle = Math.min(1, Math.max(0, this.throttle + diff));
-    this.controller.throttle.textContent = this.throttle.toFixed(4);
+    this.updateThrottleDiagram();
     this.dirty = true;
 
     return this;

@@ -65,6 +65,7 @@ export default class PaginationControls extends HTMLElement {
 
     button.textContent = page;
     button.dataset.page = page;
+    button.dataset.sfx = "click_1";
 
     if (page === this._currentPage) {
       button.disabled = true;
@@ -95,6 +96,7 @@ export default class PaginationControls extends HTMLElement {
     prev.textContent = "Előző";
     prev.disabled = this._currentPage <= 1;
     prev.dataset.page = this._currentPage - 1;
+    prev.dataset.sfx = "click_1";
     prev.addEventListener("click", this.onClick);
     this._container.appendChild(prev);
 
@@ -128,6 +130,7 @@ export default class PaginationControls extends HTMLElement {
     next.textContent = "Következő";
     next.disabled = this._currentPage >= this._totalPages;
     next.dataset.page = this._currentPage + 1;
+    next.dataset.sfx = "click_1";
     next.addEventListener("click", this.onClick);
     this._container.appendChild(next);
   }

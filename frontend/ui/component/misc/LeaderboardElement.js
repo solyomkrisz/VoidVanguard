@@ -4,6 +4,7 @@ import * as net from "/common/network.js";
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { el } from "/ui/UI.js";
 import "/ui/component/misc/LeaderboardItem.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class LeaderboardElement extends LazyItemList {
   get view() {
@@ -17,6 +18,7 @@ export default class LeaderboardElement extends LazyItemList {
     this._userScoreData = null;
     this._userPinNode = null;
     this._byUserId = new Map();
+    this._rankOffset = 0;
 
     this.onLogin = this.onLogin.bind(this);
     this.onLogout = this.onLogout.bind(this);
@@ -30,6 +32,7 @@ export default class LeaderboardElement extends LazyItemList {
   onLogout() {
     this.unpinUser();
     this._userScoreData = null;
+    this._rankOffset = 0;
   }
 
   onScroll(e) {
@@ -43,13 +46,9 @@ export default class LeaderboardElement extends LazyItemList {
       return;
     }
 
-    // ha nem látható és felfele van
-    if (originalNode && originalNode.getBoundingClientRect().top < 0) {
-      this.pinUser("top");
-      // ha nem látható és nem felfele van (akkor is igaz ha szimplán még nem töltődött le, vagyis mindenképpen lentebb van)
-    } else {
-      this.pinUser("bottom");
-    }
+    const rect = originalNode?.getBoundingClientRect();
+    const position = rect && rect.bottom < 0 ? "top" : "bottom";
+    this.pinUser(position);
   }
 
   getOriginalNode() {
@@ -59,27 +58,26 @@ export default class LeaderboardElement extends LazyItemList {
   unpinUser() {
     if (this._userScoreData) {
       const originalNode = this.getOriginalNode();
-
       if (originalNode) {
         originalNode.style.visibility = "visible";
       }
     }
-
-    this._elements.topPinContainer.textContent = "";
-    this._elements.bottomPinContainer.textContent = "";
+    this._userPinNode?.remove();
   }
 
   pinUser(position) {
-    // this.unpinUser(originalNode);
     const originalNode = this.getOriginalNode();
     originalNode && (originalNode.style.visibility = "hidden");
 
     if (!this._userPinNode) return;
 
-    if (position === "top") {
-      this._elements.topPinContainer.appendChild(this._userPinNode);
-    } else if (position === "bottom") {
-      this._elements.bottomPinContainer.appendChild(this._userPinNode);
+    const target =
+      position === "top"
+        ? this._elements.topPinContainer
+        : this._elements.bottomPinContainer;
+
+    if (this._userPinNode.parentNode !== target) {
+      target.appendChild(this._userPinNode);
     }
   }
 
@@ -88,14 +86,22 @@ export default class LeaderboardElement extends LazyItemList {
 
     this.customize();
 
-    this._elements.topPinContainer = this.insertBefore(
-      el("div", { class: "top-pin-container" }),
+    // Column header
+    this._elements.header = this.insertBefore(
+      el("div", { class: "lb-header" }, [
+        el("div", { class: "lb-header-rank" }, ["Helyezés"]),
+        el("div", { class: "lb-header-name" }, ["Játékos"]),
+        el("div", { class: "lb-header-score" }, ["Pont"]),
+      ]),
       this._container,
     );
 
-    this._elements.bottomPinContainer = this.insertBefore(
+    this._elements.topPinContainer = document.body.appendChild(
+      el("div", { class: "top-pin-container" }),
+    );
+
+    this._elements.bottomPinContainer = document.body.appendChild(
       el("div", { class: "bottom-pin-container" }),
-      this._container.nextSibling,
     );
 
     on("login", this.onLogin);
@@ -107,6 +113,10 @@ export default class LeaderboardElement extends LazyItemList {
   disconnectedCallback() {
     super.disconnectedCallback?.();
 
+    // Cancel any in-flight load so a discarded element can never write results
+    this._activeLoadToken = null;
+
+    this._elements.header?.remove();
     this._elements.topPinContainer?.remove();
     this._elements.bottomPinContainer?.remove();
 
@@ -114,6 +124,39 @@ export default class LeaderboardElement extends LazyItemList {
     off("logout", this.onLogout);
 
     window.removeEventListener("scroll", this.onScroll);
+  }
+
+  renderContent(items, response) {
+    if (!Array.isArray(items)) return;
+
+    const hadCurrentUser =
+      this._userScoreData != null &&
+      this._byUserId.has(this._userScoreData.user_id);
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (this._byUserId.has(item.user_id)) continue;
+
+      const rank = this._rankOffset + i + 1;
+      const node = this.renderItem({ ...item, rank }, true);
+
+      if (node) {
+        this.save(node);
+        this._container.appendChild(node);
+      }
+    }
+
+    this._rankOffset += items.length;
+
+    // Once the current user's row lands in the list, sync pin/inline visibility
+    if (
+      !hadCurrentUser &&
+      this._userScoreData != null &&
+      this._byUserId.has(this._userScoreData.user_id)
+    ) {
+      requestAnimationFrame(() => this.onScroll());
+    }
   }
 
   async customize() {
@@ -124,15 +167,18 @@ export default class LeaderboardElement extends LazyItemList {
 
     if (!this._userScoreData) return;
 
-    requestAnimationFrame(() => {
-      this.onScroll();
-    });
+    requestAnimationFrame(() => this.onScroll());
   }
 
   async getUserBestScoreWithRank() {
     const response = await net.send("/api/scores/");
 
-    if (!response?.success || !response?.result) {
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        context: "LeaderboardElement.getUserBestScoreWithRank",
+      })
+    ) {
       return null;
     }
 
@@ -160,6 +206,18 @@ export default class LeaderboardElement extends LazyItemList {
 
   extractItems(response) {
     return response?.result?.scores;
+  }
+
+  onLoadFinish() {
+    super.onLoadFinish?.();
+    this.toggleAttribute("data-all-loaded", !this._hasNext);
+  }
+
+  reset() {
+    this._rankOffset = 0;
+    this._byUserId.clear();
+    this.removeAttribute("data-all-loaded");
+    super.reset();
   }
 
   getURL() {

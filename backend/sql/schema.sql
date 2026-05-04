@@ -13,7 +13,6 @@ CREATE TABLE users(
     username VARCHAR(20) UNIQUE NOT NULL,
     role INT(2) NOT NULL DEFAULT 0,
     email VARCHAR(255) UNIQUE NOT NULL,
-    gender TINYINT UNSIGNED NOT NULL,
     password_hash CHAR(60) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -25,6 +24,38 @@ AFTER DELETE ON users
 FOR EACH ROW
 BEGIN
     DELETE FROM entities WHERE id = OLD.id;
+END //
+DELIMITER ;
+
+CREATE TABLE bans(
+    id CHAR(36) PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
+    reason TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NULL,
+    revoked_at TIMESTAMP NULL,
+    created_by CHAR(36) NULL,
+    revoked_by CHAR(36) NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (created_by) REFERENCES users(id)
+        ON DELETE SET NULL
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (revoked_by) REFERENCES users(id)
+        ON DELETE SET NULL
+        ON UPDATE RESTRICT
+);
+
+DELIMITER //
+CREATE TRIGGER bans_before_insert
+BEFORE INSERT ON bans
+FOR EACH ROW
+BEGIN
+  IF NEW.expires_at = '0000-00-00 00:00:00' THEN
+    SET NEW.expires_at = NULL;
+  END IF;
 END //
 DELIMITER ;
 
@@ -209,15 +240,11 @@ CREATE TABLE saves(
 
 CREATE TABLE scores (
     game_id CHAR(36) PRIMARY KEY,
-    user_id CHAR(36) NOT NULL,
     score INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     FOREIGN KEY (game_id) REFERENCES saves(game_id)
-        ON DELETE CASCADE
-        ON UPDATE RESTRICT,
-    FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
         ON UPDATE RESTRICT
 );

@@ -8,7 +8,23 @@ import CompositeCollider from "/game/collider/CompositeCollider.js";
 import Force from "/game/Force.js";
 import * as Type from "/game/Type.js";
 
+const EPSILON = 1e-8;
+
 export default class Rigidbody extends Collidable {
+  static from(saved, recoveredModel, game) {
+    const rigidbody = new Rigidbody({
+      type: saved.type,
+      game,
+      model: recoveredModel,
+      x: saved.position[0],
+      y: saved.position[1],
+      maxSpeed: saved.maxSpeed,
+      maxAngularSpeed: saved.maxAngularSpeed,
+    });
+
+    return rigidbody;
+  }
+
   // prettier-ignore
   constructor({ type = Type.UNKNOWN, game, model, parent = null, x = 0, y = 0, vx = 0, vy = 0, maxSpeed = 1, maxAngularSpeed = 1 } = {}) {
     super(game, model);
@@ -44,12 +60,30 @@ export default class Rigidbody extends Collidable {
     this.setMomentOfInertia();
   }
 
+  onGeometryChange() {
+    super.onGeometryChange();
+    this.setMassAndCoM();
+    this.setMomentOfInertia();
+  }
+
+  exportSave() {
+    return {
+      type: this.type,
+      maxSpeed: this.maxSpeed,
+      maxAngularSpeed: this.maxAngularSpeed,
+      state: [...this.state],
+      position: [...this.position],
+      rotation: this.rotation,
+      model: this.model.exportSave(),
+    };
+  }
+
   teleportTo(x, y) {
     this.position[0] = x;
     this.position[1] = y;
 
     this.previousPosition[0] = x;
-    this.previousPosition[1] = x;
+    this.previousPosition[1] = y;
   }
 
   setState(state) {
@@ -90,6 +124,9 @@ export default class Rigidbody extends Collidable {
     }
 
     vec2.scale(this.CoM, this.CoM, 1 / this.mass);
+
+    if (Math.abs(this.CoM[0]) < EPSILON) this.CoM[0] = 0;
+    if (Math.abs(this.CoM[1]) < EPSILON) this.CoM[1] = 0;
   }
 
   setMomentOfInertia() {
@@ -148,6 +185,12 @@ export default class Rigidbody extends Collidable {
     return vec2.len(vec2_1);
   }
 
+  onGeometryChange() {
+    super.onGeometryChange();
+    this.setMassAndCoM();
+    this.setMomentOfInertia();
+  }
+
   // prettier-ignore
   render() {
     this.previousNetForce.reset();
@@ -169,7 +212,8 @@ export default class Rigidbody extends Collidable {
       vec2.set(_b.vec2_3, u1 - u0, v1 - v0);
 
       this.game.dataCollector.push(
-        ...obj.localPosition,
+        obj.localPosition[0] + (obj.renderOffset?.[0] ?? 0),
+        obj.localPosition[1] + (obj.renderOffset?.[1] ?? 0),
         ...this.interpolatedPosition,
         ...rotationMatrix,
         ..._b.vec2_2,

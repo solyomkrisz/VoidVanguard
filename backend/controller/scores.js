@@ -19,7 +19,7 @@ export async function lazySelectBestUserScores(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Scores fetched successfully"));
+      .json(createResponse(true, result, "Az eredmények sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -31,7 +31,9 @@ export async function getBestScoreWithRankForUser(request, response) {
       userId: request.user.id,
     });
 
-    response.json(createResponse(true, result, "Score fetched successfully"));
+    response.json(
+      createResponse(true, result, "Az eredmény sikeresen lekérve"),
+    );
   } catch (error) {
     handleCaughtError(response, error);
   }

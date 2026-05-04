@@ -6,81 +6,120 @@
     <link rel="stylesheet" href="/ui/style/global.css" />
     <link rel="stylesheet" href="/ui/style/viewSwitcher.css" />
     <link rel="stylesheet" href="/ui/style/friend.css" />
-    <link rel="stylesheet" href="/ui/style/tokenList.css" />
-    <style>
-      blocked-user-list-item {
-        display: flex;
-        align-items: center;
-      }
-    </style>
+    <link rel="stylesheet" href="/ui/style/me.css" />
+    <link rel="stylesheet" href="/ui/style/toasts.css" />
     <title>Felhasználó kezelése</title>
   </head>
   <body>
-    <h1>Fiókkezelő központ</h1>
+    <template id="me-ui">
+      <back-button></back-button>
+      <h1>Fiókkezelő központ</h1>
 
-    <view-switcher layout="sidebar" initial="account-manager" no-cache>
-      <template id="account-manager" data-name="Fiók szerkesztése">
-        <h1>Fiók szerkesztése</h1>
-        <account-form-restorer user-id auto>
-          <account-form action="update" restore with-validator></account-form>
-        </account-form-restorer>
-        <account-delete-button></account-delete-button>
-      </template>
+      <view-switcher layout="sidebar" initial="account-manager" no-cache>
+        <template id="profile-manager" data-name="Profil szerkesztése">
+          <h1>Atiranyitas...</h1>
+        </template>
 
-      <template id="session-control" data-name="Aktív munkamenetek">
-        <h1>Aktív munkamenetek kezelése</h1>
-        <destroy-all-sessions-button></destroy-all-sessions-button>
-        <active-refresh-token-list
-          src="/api/tokens/active"
-          controls="pagination"
-        ></active-refresh-token-list>
-      </template>
+        <template id="account-manager" data-name="Fiók szerkesztése">
+          <h1>Fiók szerkesztése</h1>
+          <p class="account-edit-note">
+            Az üresen hagyott mezők nem kerülnek módosításra!
+          </p>
+          <account-form-restorer user-id auto>
+            <account-form action="update" restore with-validator></account-form>
+          </account-form-restorer>
+          <account-delete-button></account-delete-button>
+        </template>
 
-      <template id="accepted-friend-requests" data-name="Barátok">
-        <h1>Barátok</h1>
-        <friend-list-full controls="pagination" page-size="6" user-id auto>
-        </friend-list-full>
-      </template>
+        <template id="session-control" data-name="Aktív munkamenetek">
+          <h1>Aktív munkamenetek kezelése</h1>
+          <destroy-all-sessions-button></destroy-all-sessions-button>
+          <active-refresh-token-list
+            src="/api/tokens/active"
+            controls="pagination"
+            with-refresh-button
+          ></active-refresh-token-list>
+        </template>
 
-      <template id="incoming-friend-requests" data-name="Bejövő barátkérelmek">
-        <h1>Bejövő barátkérelmek</h1>
-        <friend-list-full
-          controls="pagination"
-          page-size="6"
-          filter="status=pending&direction=incoming"
-          user-id
-          auto
+        <template id="accepted-friend-requests" data-name="Barátok">
+          <h1>Barátok</h1>
+          <friend-list-full controls="scroll" page-size="10" user-id auto>
+          </friend-list-full>
+        </template>
+
+        <template id="add-friend" data-name="Barát hozzáadása">
+          <h1>Barát hozzáadása</h1>
+          <input
+            id="friendSearchInput"
+            type="text"
+            placeholder="Felhasználónév keresése..."
+            autocomplete="off"
+          />
+          <div id="friendSearchResults"></div>
+        </template>
+
+        <template
+          id="incoming-friend-requests"
+          data-name="Bejövő barátkérelmek"
         >
-        </friend-list-full>
-      </template>
+          <h1>Bejövő barátkérelmek</h1>
+          <friend-list-full
+            controls="scroll"
+            page-size="10"
+            filter="status=pending&direction=incoming"
+            user-id
+            auto
+          >
+          </friend-list-full>
+        </template>
 
-      <template id="outgoing-friend-requests" data-name="Kimenő barátkérelmek">
-        <h1>Kimenő barátkérelmek</h1>
-        <friend-list-full
-          controls="pagination"
-          page-size="6"
-          filter="status=pending&direction=outgoing"
-          user-id
-          auto
-        ></friend-list-full>
-      </template>
+        <template
+          id="outgoing-friend-requests"
+          data-name="Kimenő barátkérelmek"
+        >
+          <h1>Kimenő barátkérelmek</h1>
+          <friend-list-full
+            controls="scroll"
+            page-size="10"
+            filter="status=pending&direction=outgoing"
+            user-id
+            auto
+          ></friend-list-full>
+        </template>
 
-      <template id="blocked-users" data-name="Letiltott felhasználók">
-        <h1>Letiltott felhasználók</h1>
-        <blocked-user-list
-          controls="pagination"
-          page-size="6"
-          user-id
-          auto
-        ></blocked-user-list>
-      </template>
-    </view-switcher>
+        <template id="blocked-users" data-name="Letiltott felhasználók">
+          <h1>Letiltott felhasználók</h1>
+          <blocked-user-list
+            controls="scroll"
+            page-size="10"
+            user-id
+            auto
+          ></blocked-user-list>
+        </template>
+      </view-switcher>
 
-    <toast-manager></toast-manager>
+      <toast-manager event-controlled></toast-manager>
+    </template>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener(
+          "animationend",
+          (event) => {
+            if (event.animationName === "meShellRise") {
+              document.body.style.overflow = "visible";
+            }
+          },
+          { once: true },
+        );
+      });
+    </script>
 
     <script type="module">
       import "/ui/component/layout/ViewSwitcher.js";
+      import "/ui/component/feedback/ToastManager.js";
       import "/ui/component/profile/FriendListFull.js";
+      import "/ui/component/profile/FriendshipActionButton.js";
       import "/ui/component/account/BlockedUserList.js";
       import "/ui/component/account/AccountFormRestorer.js";
       import "/ui/component/account/AccountForm.js";
@@ -88,40 +127,281 @@
       import "/ui/component/feedback/ToastManager.js";
       import "/ui/component/account/ActiveRefreshTokenList.js";
       import "/ui/component/auth/DestroyAllSessionsButton.js";
-      import {
-        onDOMContentLoaded,
-        isLoggedIn,
-        isUserSet,
-        autologin,
-      } from "/common/common.js";
+      import "/ui/component/button/BackButton.js";
+      import { onDOMContentLoaded, autologin } from "/common/common.js";
       import { on, off } from "/common/eventhub.js";
+      import { attachGlobalAudioListeners } from "/common/globalAudio.js";
+      attachGlobalAudioListeners();
 
-      // document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+      (async () => {
+        const ok = await autologin();
 
-      on("login", () => {
-        Array.from(document.querySelectorAll("[user-id]")).forEach((item) => {
-          item.setAttribute("user-id", window.VoidVanguard.user.id);
+        // if not logged in and not admin
+        if (!ok) {
+          window.top.location.href = "/";
+          return;
+        }
+
+        const template = document.querySelector("#me-ui");
+        const fragment = template.content.cloneNode(true);
+
+        document.body.appendChild(fragment);
+
+        requestAnimationFrame(() => {
+          document.body.classList.add("is-ready");
         });
+      })().then(() => {
+        const viewSwitcher = document.querySelector("view-switcher");
+        const _setActive = viewSwitcher?.setActive?.bind(viewSwitcher);
+
+        if (_setActive) {
+          viewSwitcher.setActive = (id) => {
+            if (id === "profile-manager") {
+              redirectToOwnProfile();
+              return;
+            }
+
+            _setActive(id);
+          };
+        }
+
+        const url = new URL(window.top.location.href);
+        const active = new URLSearchParams(url.searchParams).get("active");
+
+        if (active) {
+          requestAnimationFrame(() => {
+            document.querySelector("view-switcher")?.setActive(active);
+          });
+        }
+      });
+
+      function getCurrentUserId(loginEvent = null) {
+        return (
+          loginEvent?.detail?.user?.id || window?.VoidVanguard?.user?.id || null
+        );
+      }
+
+      function syncUserScopedComponents(loginEvent = null) {
+        const userId = getCurrentUserId(loginEvent);
+        if (!userId) return;
+
+        Array.from(document.querySelectorAll("[user-id]")).forEach((item) => {
+          item.setAttribute("user-id", userId);
+        });
+      }
+
+      async function bootstrapUserContext() {
+        await onDOMContentLoaded({ requireAuth: true });
+        syncUserScopedComponents();
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await bootstrapUserContext();
+      });
+
+      on("login", (e) => {
+        syncUserScopedComponents(e);
       });
 
       on("logout", () => {
         window.top.location.href = "/";
       });
 
-      await autologin(); // first add event listeners
+      async function redirectToOwnProfile() {
+        // await onDOMContentLoaded({ requireAuth: true }); // mert a .then-ben van az await autologin után
 
-      if (!isLoggedIn()) {
-        window.top.location.href = "/";
+        const userId = getCurrentUserId();
+        if (!userId) {
+          window.top.location.href = "/";
+          return;
+        }
+
+        window.top.location.href = "/profile/" + userId;
       }
 
-      const url = new URL(window.top.location.href);
-      const active = new URLSearchParams(url.searchParams).get("active");
+      // --- After sending a friend request, switch to the outgoing tab ---
+      document.addEventListener("friendship-status-change", (e) => {
+        if (e.target?.status === "sent") {
+          document
+            .querySelector("view-switcher")
+            ?.setActive("outgoing-friend-requests");
+        }
+      });
 
-      if (active) {
-        requestAnimationFrame(() => {
-          document.querySelector("view-switcher")?.setActive(active);
-        });
+      // --- Friend search (delegated, works after ViewSwitcher renders the template) ---
+      let _friendSearchTimer = null;
+      const FRIEND_SEARCH_LIMIT = 10;
+      let _friendSearchState = {
+        query: "",
+        page: 1,
+        hasNext: false,
+        loading: false,
+      };
+      let _friendSearchObserver = null;
+      let _friendSearchRequestToken = 0;
+
+      function teardownFriendSearchObserver() {
+        _friendSearchObserver?.disconnect?.();
+        _friendSearchObserver = null;
       }
+
+      function resetFriendSearchState() {
+        _friendSearchState = {
+          query: "",
+          page: 1,
+          hasNext: false,
+          loading: false,
+        };
+        teardownFriendSearchObserver();
+      }
+
+      function createFriendSearchItem(user) {
+        const item = document.createElement("div");
+        item.className = "friend-search-item";
+
+        const meta = document.createElement("div");
+        meta.className = "friend-search-meta";
+
+        const img = document.createElement("img");
+        img.className = "friend-search-avatar";
+        img.src = user.avatar || "/image/defaultPfp.png";
+        img.alt = `${user.username} profilképe`;
+        img.draggable = false;
+        const span = document.createElement("span");
+        span.classList.add("friend-avatar-shell");
+        if (!user.avatar) {
+          img.classList.add("no-profile-avatar");
+          span.classList.add("no-profile-avatar");
+        }
+        span.appendChild(img);
+
+        const nameContainer = document.createElement("div");
+        nameContainer.classList = "friend-search-meta-names";
+
+        if (user.has_profile) {
+          const dname = document.createElement("span");
+
+          dname.classList = "friend-search-meta-display-name";
+          dname.textContent = user.display_name ?? "";
+
+          nameContainer.appendChild(dname);
+        }
+
+        const name = document.createElement("span");
+
+        name.classList = "friend-search-meta-user-name";
+        name.textContent = "@" + user.username;
+
+        nameContainer.append(name);
+
+        meta.appendChild(span);
+        meta.appendChild(nameContainer);
+
+        const btn = document.createElement("friendship-action-button");
+        btn.setAttribute("user-id", user.id);
+        btn.setAttribute("auto-enable", "");
+
+        item.appendChild(meta);
+        item.appendChild(btn);
+
+        return item;
+      }
+
+      async function loadFriendSearchPage({ append = false } = {}) {
+        const results = document.getElementById("friendSearchResults");
+        if (!results) return;
+
+        if (_friendSearchState.loading || !_friendSearchState.query) return;
+
+        _friendSearchState.loading = true;
+        const requestToken = ++_friendSearchRequestToken;
+
+        try {
+          const params = new URLSearchParams({
+            search: _friendSearchState.query,
+            limit: String(FRIEND_SEARCH_LIMIT),
+            page: String(_friendSearchState.page),
+          });
+
+          const res = await fetch(`/api/users?${params.toString()}`);
+          const data = await res.json();
+
+          if (requestToken !== _friendSearchRequestToken) {
+            return;
+          }
+
+          const users = data?.result?.results ?? [];
+          const currentId = window.VoidVanguard?.user?.id;
+
+          const fragment = document.createDocumentFragment();
+          for (const user of users) {
+            if (String(user.id) === String(currentId)) continue;
+            fragment.appendChild(createFriendSearchItem(user));
+          }
+
+          if (!append) {
+            results.innerHTML = "";
+          }
+
+          const sentinel = results.querySelector("#friendSearchSentinel");
+          sentinel?.remove();
+
+          results.appendChild(fragment);
+
+          _friendSearchState.hasNext = Boolean(data?.result?.hasNext);
+          if (_friendSearchState.hasNext) {
+            _friendSearchState.page += 1;
+            const nextSentinel = document.createElement("div");
+            nextSentinel.id = "friendSearchSentinel";
+            nextSentinel.style.height = "1px";
+            results.appendChild(nextSentinel);
+
+            teardownFriendSearchObserver();
+            _friendSearchObserver = new IntersectionObserver(
+              (entries) => {
+                if (entries[0].isIntersecting && _friendSearchState.hasNext) {
+                  void loadFriendSearchPage({ append: true });
+                }
+              },
+              {
+                root: results,
+                rootMargin: "120px",
+              },
+            );
+
+            _friendSearchObserver.observe(nextSentinel);
+          } else {
+            teardownFriendSearchObserver();
+          }
+        } finally {
+          if (requestToken === _friendSearchRequestToken) {
+            _friendSearchState.loading = false;
+          }
+        }
+      }
+
+      document.addEventListener("input", (e) => {
+        if (e.target.id !== "friendSearchInput") return;
+
+        clearTimeout(_friendSearchTimer);
+        const query = e.target.value.trim();
+        const results = document.getElementById("friendSearchResults");
+        if (!results) return;
+
+        if (!query) {
+          results.innerHTML = "";
+          resetFriendSearchState();
+          return;
+        }
+
+        _friendSearchTimer = setTimeout(async () => {
+          resetFriendSearchState();
+          _friendSearchState.query = query;
+          _friendSearchState.page = 1;
+
+          await loadFriendSearchPage();
+        }, 400);
+      });
     </script>
   </body>
 </html>

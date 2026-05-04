@@ -1,5 +1,7 @@
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 import { isLoggedIn, isAdmin } from "/common/common.js";
 import * as net from "/common/network.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class CommentForm extends HTMLElement {
   set targetId(value) {
@@ -29,10 +31,11 @@ export default class CommentForm extends HTMLElement {
 
   build() {
     this.innerHTML = `
-        <form>
-            <textarea name="content"></textarea>
-            <button>Közzététel</button>
-        </form>
+      <form class="comment-compose-form">
+        <label class="comment-compose-label" for="profile-comment-input">Hozzászólás a profilhoz</label>
+        <textarea id="profile-comment-input" name="content" placeholder="Írj egy hozzászólást ehhez a profilhoz..."></textarea>
+        <button data-sfx="click_1" type="submit">Közzététel</button>
+      </form>
     `;
 
     const form = this.querySelector("form");
@@ -88,23 +91,30 @@ export default class CommentForm extends HTMLElement {
   }
 
   async onResponse(response) {
-    const { success, result, message } = response;
-
-    if (!success || !result) {
-      console.log(result, message);
-      console.error("An error occured during posting your comment.");
+    if (
+      NetworkErrorHandler.handle(response, {
+        strict: true,
+        context: "CommentForm.onResponse",
+      })
+    ) {
       return;
     }
 
     this.dispatchEvent(
       new CustomEvent("comment-post", {
         detail: {
-          comment: result,
+          comment: response?.result,
         },
         bubbles: true,
         composed: true,
       }),
     );
+
+    ToastManager.SUCCESS(
+      response?.message || "Hozzászólás sikeresen közzétéve",
+    );
+
+    this.querySelector(".comment-compose-form")?.reset();
   }
 }
 

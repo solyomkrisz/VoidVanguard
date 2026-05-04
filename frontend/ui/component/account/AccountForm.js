@@ -4,52 +4,45 @@ import * as net from "/common/network.js";
 import { setFieldValue } from "/common/common.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
+import "/ui/component/validator/UsernameInputValidator.js";
 import "/ui/component/validator/EmailInputValidator.js";
 import "/ui/component/validator/PasswordInputValidator.js";
+import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 const _innerHTML = `
 <form>
   <input-group class="input-group">
     <label>Felhasználónév</label>
-    <input type="text" name="username" placeholder="Felhasználónév" />
+    <username-input-validator can-be-empty>
+      <input type="text" name="username" placeholder="Felhasználónév" />
+    </username-input-validator>
   </input-group>
 
   <input-group class="input-group">
     <label>Email cím</label>
-    <email-input-validator>
+    <email-input-validator can-be-empty>
       <input type="email" name="email" placeholder="email@email.email" />
     </email-input-validator>
   </input-group>
 
-  <div>
-    <div>
-      <input type="radio" name="gender" value="0" />
-      <label>Férfi</label>
-    </div>
-    <div>
-      <input type="radio" name="gender" value="1" />
-      <label>Nő</label>
-    </div>
-  </div>
-
   <input-group class="input-group">
     <label>Jelszó</label>
-    <password-input-validator>
+    <password-input-validator can-be-empty>
       <input type="password" name="password" placeholder="Jelszó" />
     </password-input-validator>
   </input-group>
   
   <input-group class="input-group">
     <label>Jelszó megerősítése</label>
-    <password-input-validator>
+    <password-input-validator can-be-empty>
       <input type="password" name="passwordConfirm" placeholder="Jelszó megerősítése" />
     </password-input-validator>
   </input-group>
 
   <button>Fiókadatok módosítása</button>
 </form>
-<div id="message"></div>
 `;
 
 const METHOD = {
@@ -66,8 +59,12 @@ export default class AccountForm extends BaseCustomElement {
     return this.hasAttribute("admin");
   }
 
-  constructor() {
-    super([path.join(dir, "global.css")]);
+  constructor(extraPaths = []) {
+    super([
+      path.join(dir, "global.css"),
+      path.join(dir, "accountForm.css"),
+      ...extraPaths,
+    ]);
 
     this._elements = {};
     this._built = false;
@@ -101,6 +98,14 @@ export default class AccountForm extends BaseCustomElement {
       if (!formData.get("passwordConfirm")) {
         formData.delete("passwordConfirm");
       }
+
+      // Allow password-only updates even if account fields are currently blank.
+      for (const key of ["username", "email"]) {
+        const value = formData.get(key);
+        if (typeof value === "string" && !value.trim()) {
+          formData.delete(key);
+        }
+      }
     }
 
     /** Needed to be compatible with <admin-module> */
@@ -120,7 +125,6 @@ export default class AccountForm extends BaseCustomElement {
   }
 
   async sendRequest(formData) {
-    console.log(formData);
     const response = await net.send("/api/users", {
       method: METHOD[this.action] || "POST",
       body: formData,
@@ -131,25 +135,21 @@ export default class AccountForm extends BaseCustomElement {
 
   onResponse(response) {
     const { success, result, message } = response;
-    const { responseMessage } = this._elements;
 
-    if (responseMessage) {
-      responseMessage.textContent = "";
-    }
-
-    if (responseMessage) {
-      responseMessage.textContent = message;
-    }
-
-    if (!success) {
-      console.error(
-        `Failed to ${this.action === "update" ? "modify" : "create"} account.`,
-      );
-
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "AccountForm.onResponse",
+      })
+    ) {
       return;
     }
 
-    console.log(response);
+    ToastManager.SUCCESS(
+      message ||
+        (this.action === "update"
+          ? "Fiókadatok sikeresen módosítva"
+          : "Fiók sikeresen létrehozva"),
+    );
 
     this.dispatchEvent(
       new CustomEvent(this.getEventName(), {
@@ -166,8 +166,9 @@ export default class AccountForm extends BaseCustomElement {
   }
 
   /** Needed to be compatible with <admin-module> */
-  onSignError() {
+  onSignError(detail) {
     console.error("Unable to send signed data.");
+    ToastManager.ERROR("Nem sikerült az adatok aláíratása");
   }
 
   build() {
@@ -177,7 +178,6 @@ export default class AccountForm extends BaseCustomElement {
     form.addEventListener("submit", this.onSubmit);
 
     this._elements.form = form;
-    this._elements.responseMessage = this.queryShadowSelector("#message");
     this._elements.button = this.queryShadowSelector("button");
 
     this.addEventListener("restore", this.restoreFrom);
@@ -208,11 +208,6 @@ export default class AccountForm extends BaseCustomElement {
     for (const [name, value] of Object.entries(data)) {
       const field = form.elements.namedItem(name);
       if (!field) continue;
-
-      if (name === "gender") {
-        setFieldValue(field, String(value));
-        continue;
-      }
 
       setFieldValue(field, value);
     }

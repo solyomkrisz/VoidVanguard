@@ -7,6 +7,10 @@ import Shape from "/game/Shape.js";
 import * as Type from "/game/Type.js";
 
 export default class Mouse extends Rigidbody {
+  static BASE_DRAG_FORCE = 70;
+  static INITIAL_DRAG_BOOST_MULTIPLIER = 1.7;
+  static INITIAL_DRAG_BOOST_DURATION = 0.35;
+
   constructor(game) {
     super({
       type: Type.MOUSE,
@@ -38,6 +42,7 @@ export default class Mouse extends Rigidbody {
     this.activePointerId = null;
     this.dragDelayTimer = null;
     this.dragDelay = 200; // milliseconds before drag starts on touch
+    this.dragElapsed = 0;
   }
 
   enableListening() {
@@ -136,6 +141,11 @@ export default class Mouse extends Rigidbody {
   }
 
   attach(entity) {
+    if (this.dragged !== entity) {
+      this.dragElapsed = 0;
+      entity?.onDragStart?.();
+    }
+
     this.dragged = entity;
   }
 
@@ -149,10 +159,18 @@ export default class Mouse extends Rigidbody {
     const dragged = this.dragged;
     if (!dragged) return;
 
+    this.dragElapsed += this.game.fdt;
+    dragged.onDragged?.(this.game.fdt);
+
     const dir = vec2.sub(_b.vec2_1, this.position, dragged.position);
     vec2.normalize(dir, dir);
 
-    _b.force_1.setFromMagDir(50, dir);
+    let forceMagnitude = Mouse.BASE_DRAG_FORCE;
+    if (this.dragElapsed <= Mouse.INITIAL_DRAG_BOOST_DURATION) {
+      forceMagnitude *= Mouse.INITIAL_DRAG_BOOST_MULTIPLIER;
+    }
+
+    _b.force_1.setFromMagDir(forceMagnitude, dir);
     dragged.netForce.apply(_b.force_1);
   }
 

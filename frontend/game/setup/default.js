@@ -3,7 +3,7 @@ import Mouse from "/game/Mouse.js";
 import Keyboard from "/game/Keyboard.js";
 import DebugOverlay from "/game/DebugOverlay.js";
 import DebugPanel from "/game/DebugPanel.js";
-import Models from "/game/SpaceShipModels.js";
+import { MODELFACTORY } from "/game/SpaceShipModels.js";
 import TextureManager from "/game/TextureManager.js";
 import * as UI from "/ui/UI.js";
 import Sprite from "/game/Sprite.js";
@@ -12,9 +12,12 @@ import "/ui/component/game/ContextMenuTemplate.js";
 import EngineIgnitionController from "/ui/component/game/EngineIgnitionController.js";
 import EngineThrottleController from "/ui/component/game/EngineThrottleController.js";
 import ThrustVectorController from "/ui/component/game/ThrustVectorController.js";
+import ShootButton from "/ui/component/game/ShootButton.js";
+import ZoomController from "/ui/component/game/ZoomController.js";
 import AudioManager from "/common/AudioManager.js";
+import Enemy from "/game/Enemy.js";
 
-export function setupGame(game, playerModel = Models.PLAYER) {
+export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
   if (game.running) return;
 
   //#region setup tooltip templates
@@ -95,9 +98,16 @@ export function setupGame(game, playerModel = Models.PLAYER) {
       "thrust-vector-controller",
     );
     game.addController(thrustVectorController);
+
+    const shootButton = document.createElement("shoot-button");
+    shootButton.observeControl(ShootButton.SHOOT);
+    game.addController(shootButton);
+
+    const zoomController = document.createElement("zoom-controller");
+    game.addController(zoomController);
   } else {
-    const keyboard = new Keyboard(game);
-    game.keyboard = keyboard;
+    const keyboard = new Keyboard();
+
     keyboard.observeKey(Keyboard.KeyW);
     keyboard.observeKey(Keyboard.KeyS);
     keyboard.observeKey(Keyboard.KeyA);
@@ -106,7 +116,10 @@ export function setupGame(game, playerModel = Models.PLAYER) {
     keyboard.observeKey(Keyboard.LCtrl);
     keyboard.observeKey(Keyboard.LShift);
     keyboard.observeKey(Keyboard.KeyR);
-    keyboard.enableListening();
+
+    game.addController(keyboard);
+
+    keyboard.enableListening(); // addController calls Keyboard.setGame and so enableListening will see Keyboard.game and can proceed
   }
 
   //#region audio
@@ -119,6 +132,15 @@ export function setupGame(game, playerModel = Models.PLAYER) {
     offsetByPlay: [0, 2.2],
   });
 
+  am.queueAudio("backgroundmusic", "/sound/background.mp3", {
+    loop: true,
+  });
+
+  am.queueAudio("lasershootsound", "/sound/laser_1.mp3", {
+    loop: true,
+    type: "pool",
+  });
+
   game.createPlayer(playerModel); // Must be added after mouse or dragging wont work
 
   //#region debug
@@ -126,58 +148,60 @@ export function setupGame(game, playerModel = Models.PLAYER) {
   game.setDebugOverlay(debugOverlay);
   debugOverlay.init();
 
-  const debug = new DebugPanel();
-  debug.setSource(game);
+  if (!isTouch) {
+    const debug = new DebugPanel();
+    debug.setSource(game);
 
-  debug.addElement("frames");
-  debug.bindSource("frames", "frames", (p) => (p.src.frames = 0));
+    debug.addElement("frames");
+    debug.bindSource("frames", "frames", (p) => (p.src.frames = 0));
 
-  debug.addElement("ticks");
-  debug.bindSource("ticks", "ticks", (p) => (p.src.ticks = 0));
+    debug.addElement("ticks");
+    debug.bindSource("ticks", "ticks", (p) => (p.src.ticks = 0));
 
-  debug.addElement("seed");
-  debug.bindSource("seed", "seed");
+    debug.addElement("seed");
+    debug.bindSource("seed", "seed");
 
-  debug.addElement("playerRotation", "12vmin");
-  debug.bindSource(
-    "playerRotation",
-    "playerRotation",
-    (p) => (p.src.playerRotation = game.player.rotation),
-  );
+    debug.addElement("playerRotation", "12vmin");
+    debug.bindSource(
+      "playerRotation",
+      "playerRotation",
+      (p) => (p.src.playerRotation = game.player.rotation),
+    );
 
-  debug.addElement("P XY", "18vmin");
-  debug.bindSource(
-    "P XY",
-    "playerPosition",
-    (p) =>
-      (p.src.playerPosition = [
-        p.src.player.position[0].toFixed(4),
-        p.src.player.position[1].toFixed(4),
-      ]),
-  );
+    debug.addElement("P XY", "18vmin");
+    debug.bindSource(
+      "P XY",
+      "playerPosition",
+      (p) =>
+        (p.src.playerPosition = [
+          p.src.player.position[0].toFixed(4),
+          p.src.player.position[1].toFixed(4),
+        ]),
+    );
 
-  debug.addElement("M XY", "18vmin");
-  debug.bindSource(
-    "M XY",
-    "mousePosition",
-    (p) =>
-      (p.src.mousePosition = [
-        p.src.mouse.position[0].toFixed(4),
-        p.src.mouse.position[1].toFixed(4),
-      ]),
-  );
+    debug.addElement("M XY", "18vmin");
+    debug.bindSource(
+      "M XY",
+      "mousePosition",
+      (p) =>
+        (p.src.mousePosition = [
+          p.src.mouse.position[0].toFixed(4),
+          p.src.mouse.position[1].toFixed(4),
+        ]),
+    );
 
-  game.setDebugPanel(debug); // ?
-  game.startDebugging(); // ?
+    game.setDebugPanel(debug); // ?
+    game.startDebugging(); // ?
+  }
 
   //#region texture
   const tm = new TextureManager(game);
   game.addTextureManager(tm);
 
-  // Texture setup - 960x192 atlas (15 columns × 3 rows, 64x64 per texture)
-  // Row 0: Block grades 0-14 with connector texture
-  // Row 1: Block grades 0-14 without connector (unused for now) - reserved for dragging the blocks around, cause they look weird with connectors when not connected to anything
-  // Row 2: Turret textures
+  // Texture setup - 1024x192 atlas (16 columns × 3 rows, 64x64 per texture)
+  // Row 0: Block grades 0-14 with connector texture | col 15: thruster with connector
+  // Row 1: Block grades 0-14 without connector (unused for now) - reserved for dragging | col 15: thruster without connector
+  // Row 2: Turret textures | col 15: core block
   for (let i = 0; i < 15; i++) {
     tm.queueTextureCoordinate(TextureID[`BLOCK_${i}`], TextureManager.S0, i, 0);
   }
@@ -190,7 +214,11 @@ export function setupGame(game, playerModel = Models.PLAYER) {
       2,
     );
   }
-  tm.addTexture(TextureManager.S0, "/image/atlas.png", 15, 3);
+  // Column 15: special blocks
+  tm.queueTextureCoordinate(TextureID.THRUSTER_CONNECTOR,  TextureManager.S0, 15, 0);
+  tm.queueTextureCoordinate(TextureID.THRUSTER,            TextureManager.S0, 15, 1);
+  tm.queueTextureCoordinate(TextureID.CORE,                TextureManager.S0, 15, 2);
+  tm.addTexture(TextureManager.S0, "/image/atlas.png", 16, 3);
 
   // Wait for textures to load, then add coordinates and sprites
   tm.setActiveSlot(TextureManager.S0);
@@ -208,4 +236,23 @@ export function setupGame(game, playerModel = Models.PLAYER) {
     turretSprite.addFrame(TextureID[`TURRET${i === 1 ? "" : i}`], 2);
     tm.addSprite(SpriteID[`TURRET${i === 1 ? "" : i}`], turretSprite);
   }
+
+  // Thruster sprite: shows the "with connector" texture when placed
+  const thrusterSprite = new Sprite();
+  thrusterSprite.addFrame(TextureID.THRUSTER_CONNECTOR, 2);
+  tm.addSprite(SpriteID.THRUSTER, thrusterSprite);
+
+  // Core block sprite
+  const coreSprite = new Sprite();
+  coreSprite.addFrame(TextureID.CORE, 2);
+  tm.addSprite(SpriteID.CORE, coreSprite);
+
+  // Bullet sprite: reuses the first turret texture (narrow elongated shape)
+  const bulletSprite = new Sprite();
+  bulletSprite.addFrame(TextureID.TURRET, 2);
+  tm.addSprite(SpriteID.BULLET, bulletSprite);
+
+  // game.enemies.add(enemy);
+
+  game.player.model.applyTextureRotations(tm);
 }

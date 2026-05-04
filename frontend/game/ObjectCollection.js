@@ -26,7 +26,10 @@ export default class ObjectCollection {
     let writeIndex = 0;
 
     for (const object of this.objects) {
-      if (object.hasState(GlobalState.DEAD)) continue;
+      if (object.hasState(GlobalState.DEAD)) {
+        object.onDeath();
+        continue;
+      }
 
       this.objects[writeIndex++] = object;
       object.save();
@@ -62,5 +65,15 @@ export default class ObjectCollection {
     }
 
     return this;
+  }
+
+  exportSave() {
+    const result = [];
+
+    for (const object of this.objects) {
+      result.push(object.exportSave());
+    }
+
+    return result;
   }
 }

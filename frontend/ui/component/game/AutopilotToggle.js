@@ -38,6 +38,7 @@ export default class AutopilotToggle extends HTMLElement {
     checkbox.type = "checkbox";
 
     checkbox.addEventListener("change", ({ target }) => {
+      target.blur();
       this.dispatchEvent(
         new CustomEvent("autopilot-toggle", {
           detail: {
@@ -49,7 +50,20 @@ export default class AutopilotToggle extends HTMLElement {
       );
     });
 
+    this._checkbox = checkbox;
     this.shadowDOM.appendChild(checkbox);
+  }
+
+  setChecked(val) {
+    if (!this._checkbox) return;
+    this._checkbox.checked = val;
+    this.dispatchEvent(
+      new CustomEvent("autopilot-toggle", {
+        detail: { checked: val },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
 

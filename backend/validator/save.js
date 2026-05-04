@@ -12,7 +12,7 @@ export const PATCH = {
     custom: {
       options: (value) => {
         if (!value || !isValidUUIDv4(value)) {
-          throw new Error("Invalid save ID");
+          throw new Error("Érvénytelen játékazonosító");
         }
         return true;
       },
@@ -22,14 +22,14 @@ export const PATCH = {
     in: ["body"],
     optional: { options: { nullable: true } },
     isString: {
-      errorMessage: "Save name must be a string",
+      errorMessage: "A mentés neve szövegnek kell hogy legyen",
     },
     isLength: {
       options: {
         min: 3,
         max: 20,
       },
-      errorMessage: "Save name must be 3-20 characters long",
+      errorMessage: "A mentés neve 3 és 20 karakter között kell legyen",
     },
     trim: true,
   },
@@ -50,7 +50,7 @@ export const PATCH = {
             throw {};
           }
         } catch (error) {
-          throw new Error("Invalid game state");
+          throw new Error("Érvénytelen játékállapot");
         }
         return true;
       },
@@ -61,7 +61,7 @@ export const PATCH = {
     optional: { options: { nullable: true } },
     toBoolean: true,
     isBoolean: {
-      errorMessage: "is_finished must be a boolean",
+      errorMessage: "A befejezettséget jelző mező logikai érték kell legyen",
     },
   },
 };
@@ -72,7 +72,7 @@ export const PUT = {
     custom: {
       options: (value) => {
         if (!value || !isValidUUIDv4(value)) {
-          throw new Error("Invalid save ID");
+          throw new Error("Érvénytelen játékazonosító");
         }
         return true;
       },
@@ -82,14 +82,14 @@ export const PUT = {
     in: ["body"],
     optional: { options: { nullable: true } },
     isString: {
-      errorMessage: "Save name must be a string",
+      errorMessage: "A mentés neve szövegnek kell hogy legyen",
     },
     isLength: {
       options: {
         min: 3,
         max: 20,
       },
-      errorMessage: "Slot name must be 3-20 characters long",
+      errorMessage: "A mentés neve 3 és 20 karakter között kell legyen",
     },
     trim: true,
   },
@@ -109,7 +109,7 @@ export const PUT = {
             throw {};
           }
         } catch (error) {
-          throw new Error("Invalid game state");
+          throw new Error("Érvénytelen játékállapot");
         }
         return true;
       },
@@ -123,7 +123,7 @@ export const DELETE = {
     custom: {
       options: (value) => {
         if (!value || !isValidUUIDv4(value)) {
-          throw new Error("Invalid save ID");
+          throw new Error("Érvénytelen játékazonosító");
         }
         return true;
       },

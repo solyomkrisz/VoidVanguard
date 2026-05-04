@@ -28,7 +28,7 @@
       import { attachGlobalAudioListeners } from "/common/globalAudio.js";
       attachGlobalAudioListeners();
 
-      document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
+      document.addEventListener("DOMContentLoaded", () => onDOMContentLoaded({ requireAuth: true }));
     </script>
   </body>
 </html>

@@ -1,9 +1,9 @@
-import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
+import GameControllerElement from "/ui/component/game/GameControllerElement.js";
 import Game from "/game/Game.js";
 import { dir, el } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
-export default class EngineThrottleController extends BaseCustomElement {
+export default class EngineThrottleController extends GameControllerElement {
   static THROTTLE_UP = "EngineThrottleUp";
   static THROTTLE_DOWN = "EngineThrottleDown";
 
@@ -44,11 +44,14 @@ export default class EngineThrottleController extends BaseCustomElement {
   }
 
   connectedCallback() {
+    super.connectedCallback?.();
     this.build();
     this.enableListening();
+    this.addEventListener("contextmenu", (e) => e.preventDefault());
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback?.();
     this.disableListening();
   }
 
@@ -92,6 +95,11 @@ export default class EngineThrottleController extends BaseCustomElement {
     this.throttleDownBtn.removeEventListener("pointerdown", this.onThrottleDownBtnPointerDown);
     this.throttleDownBtn.removeEventListener("pointerup", this.onThrottleDownBtnPointerUp);
     this.throttleDownBtn.removeEventListener("pointercancel", this.onThrottleDownBtnPointerUp);
+  }
+
+  destroy() {
+    this.disableListening();
+    this.remove();
   }
 
   // throttle up button handlers

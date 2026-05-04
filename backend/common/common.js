@@ -94,7 +94,16 @@ export function authorize(
       next();
     },
     onMismatch: (_, response, _1) => {
-      response.status(403).json(createResponse(false, null, "Forbidden"));
+      const error = CustomError.FORBIDDEN;
+      response
+        .status(403)
+        .json(
+          createResponse(
+            error.statusCode,
+            error.definition,
+            error.definition.message,
+          ),
+        );
     },
   },
 ) {
@@ -112,14 +121,21 @@ export function authorize(
 
 export function modifyTargetUser(requiredRole = Role.ADMIN) {
   return function (request, response, next) {
-    if (request?.user?.role < requiredRole) {
+    if (!request?.user || request.user.role < requiredRole) {
       return next();
     }
+
     const targetUserId =
       request?.body?.targetUserId || request?.query?.targetUserId;
+
     if (!targetUserId) {
       return next();
     }
+
+    if (!request.targetUser) {
+      request.targetUser = { ...request.user };
+    }
+
     request.targetUser.id = targetUserId;
     next();
   };

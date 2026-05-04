@@ -15,7 +15,6 @@ class Users extends Table {
         new Column("username").grant(Role.USER, Permission.W),
         new Column("role").grant(Role.ADMIN, Permission.W),
         new Column("email").grant(Role.USER, Permission.W),
-        new Column("gender").grant(Role.USER, Permission.W),
         new Column("password").grant(Role.USER, Permission.W),
         new Column("created_at"),
       ],
@@ -24,7 +23,12 @@ class Users extends Table {
 
   async search(query, options = {}) {
     const sql = `
-      SELECT users.id, users.username, profiles.display_name, profiles.avatar
+      SELECT
+        users.id,
+        users.username,
+        profiles.display_name,
+        profiles.avatar,
+        CASE WHEN profiles.user_id IS NULL THEN 0 ELSE 1 END AS has_profile
       FROM users
       LEFT JOIN profiles ON users.id = profiles.user_id
       WHERE
@@ -63,10 +67,10 @@ class Users extends Table {
     return rows.length ? rows[0] : null;
   }
 
-  async create({ id, username, email, gender, passwordHash }) {
+  async create({ id, username, email, passwordHash }) {
     const [result] = await execute(
-      "INSERT INTO users (id, username, email, gender, password_hash) VALUES (?, ?, ?, ?, ?)",
-      [id, username, email, gender, passwordHash],
+      "INSERT INTO users (id, username, email, password_hash) VALUES (?, ?, ?, ?)",
+      [id, username, email, passwordHash],
     );
     return result;
   }
@@ -109,7 +113,7 @@ class Users extends Table {
 
   async select(id) {
     const [rows] = await execute(
-      "SELECT id, username, role, email, gender FROM users WHERE id = ?",
+      "SELECT id, username, role, email FROM users WHERE id = ?",
       [id],
     );
     return rows.length ? rows[0] : null;

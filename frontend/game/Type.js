@@ -3,7 +3,10 @@ export const MOUSE = 1;
 export const PLAYER = 2;
 export const ENEMY = 3;
 export const BUILDING_BLOCK = 4;
+export const PROJECTILE = 5;
 
+export const BLOCK = 48;
+export const THRUSTER = 49;
 export const NEBULA = 50;
 
 export const NONE = 97;

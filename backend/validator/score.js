@@ -3,7 +3,7 @@ export const GET = {
     in: ["query"],
     isInt: {
       options: { min: 0 },
-      errorMessage: "Limit must be a non-negative integer",
+      errorMessage: "A limit nem-negatív egész szám kell legyen",
     },
     toInt: true,
   },
@@ -11,7 +11,7 @@ export const GET = {
     in: ["query"],
     isInt: {
       options: { min: 0 },
-      errorMessage: "Offset must be a non-negative integer",
+      errorMessage: "Az oldalszám nem-negatív egész szám kell legyen",
     },
     toInt: true,
   },
@@ -20,7 +20,7 @@ export const GET = {
     optional: true,
     isIn: {
       options: [["public", "private"]],
-      errorMessage: "View must be either 'public' or 'private'",
+      errorMessage: "A nézet csak 'public' vagy 'private' lehet",
     },
   },
 };

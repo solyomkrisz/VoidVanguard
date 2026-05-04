@@ -43,6 +43,10 @@ export default class PauseButton extends BaseCustomElement {
     this._built = true;
   }
 
+  destroy() {
+    this.remove();
+  }
+
   updateVisibility() {
     if (this.isTouchDevice()) {
       this.style.display = "block";

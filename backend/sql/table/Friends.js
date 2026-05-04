@@ -107,7 +107,7 @@ class Friends extends Table {
   async getAll(userId) {
     const [rows] = await execute(
       `
-        SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
+        SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username) AS name, profiles.avatar, CASE WHEN profiles.user_id IS NULL THEN 0 ELSE 1 END AS has_profile
         FROM friends
         INNER JOIN users ON users.id = friends.initiator_id
         LEFT JOIN profiles ON profiles.user_id = users.id
@@ -115,7 +115,7 @@ class Friends extends Table {
 
         UNION ALL
 
-        SELECT friends.recipient_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
+        SELECT friends.recipient_id AS user_id, COALESCE(profiles.display_name, users.username) AS name, profiles.avatar, CASE WHEN profiles.user_id IS NULL THEN 0 ELSE 1 END AS has_profile
         FROM friends
         INNER JOIN users ON users.id = friends.recipient_id
         LEFT JOIN profiles ON profiles.user_id = users.id
@@ -177,7 +177,7 @@ class Friends extends Table {
     let params = [];
 
     const incomingQuery = `
-      SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
+      SELECT friends.initiator_id AS user_id, COALESCE(profiles.display_name, users.username) AS name, profiles.avatar, CASE WHEN profiles.user_id IS NULL THEN 0 ELSE 1 END AS has_profile
       FROM friends
       INNER JOIN users ON users.id = friends.initiator_id
       LEFT JOIN profiles ON profiles.user_id = users.id
@@ -185,7 +185,7 @@ class Friends extends Table {
     `;
 
     const outgoingQuery = `
-      SELECT friends.recipient_id AS user_id, COALESCE(profiles.display_name, users.username) AS name
+      SELECT friends.recipient_id AS user_id, COALESCE(profiles.display_name, users.username) AS name, profiles.avatar, CASE WHEN profiles.user_id IS NULL THEN 0 ELSE 1 END AS has_profile
       FROM friends
       INNER JOIN users ON users.id = friends.recipient_id
       LEFT JOIN profiles ON profiles.user_id = users.id

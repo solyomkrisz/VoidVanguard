@@ -1,4 +1,4 @@
-import { isExpired, decode } from "./jwt.js";
+import { isExpired, decode } from "/common/jwt.js";
 import { logout } from "/common/common.js";
 
 const pendingRequests = new Map();
@@ -19,6 +19,7 @@ export function refreshAccessToken() {
       const token = localStorage.getItem("access_token");
 
       if (token && !isExpired(token, 10)) {
+        console.log("Token is not expired, refresh aborted...");
         return { success: true, refreshed: false };
       }
 
@@ -140,7 +141,7 @@ export async function send(
 
       const { success, refreshed } = await refreshAccessToken();
 
-      if (!refreshed) {
+      if (!success || !refreshed) {
         return data;
       }
 

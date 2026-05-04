@@ -8,14 +8,14 @@ export default class AccountFormRestorer extends FormRestorer {
     username: "username",
     role: "role",
     email: "email",
-    gender: "gender",
   };
 
   connectedCallback() {
     super.connectedCallback?.();
 
-    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto")) {
-      this.setAttribute("user-id", window.VoidVanguard.user.id);
+    const userId = window?.VoidVanguard?.user?.id;
+    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto") && userId) {
+      this.setAttribute("user-id", userId);
     }
   }
 

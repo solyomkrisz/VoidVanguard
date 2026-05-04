@@ -18,6 +18,20 @@ class PasswordResets extends Table {
     });
   }
 
+  async canRequestPasswordReset(userId) {
+    const [rows] = await execute(
+      `
+      SELECT 1
+      FROM password_resets
+      WHERE user_id = ?
+        AND issued_at > NOW() - INTERVAL 5 MINUTE
+      LIMIT 1
+    `,
+      [userId],
+    );
+    return rows.length ? false : true;
+  }
+
   async getValidRowByTokenHash(tokenHash) {
     const [rows] = await execute(
       "SELECT * FROM password_resets WHERE token_hash = ? AND expires_at > NOW() LIMIT 1;",
@@ -62,6 +76,14 @@ class PasswordResets extends Table {
       [userId, tokenHash, expiresAt],
     );
     return result;
+  }
+
+  async hasPending({ userId }) {
+    const [rows] = await execute(
+      "SELECT * FROM password_resets WHERE user_id = ? AND expires_at > NOW()",
+      [userId],
+    );
+    return rows.length ? rows[0] : null;
   }
 }
 

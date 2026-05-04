@@ -2,6 +2,7 @@ import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import "/ui/component/form/InputGroup.js";
 import "/ui/component/validator/PasswordInputValidator.js";
+import InputValidator from "/ui/component/form/InputValidator.js";
 
 function getResetToken() {
   const params = new URLSearchParams(window.location.search);
@@ -30,6 +31,11 @@ export default class PasswordResetForm extends HTMLElement {
     const resetToken = getResetToken();
     if (!resetToken) return;
 
+    const result = InputValidator.RUN_ALL(this._elements.form);
+    if (!result) {
+      return;
+    }
+
     const formData = new FormData(this._elements.form);
     formData.set("token", resetToken);
 
@@ -46,6 +52,14 @@ export default class PasswordResetForm extends HTMLElement {
       this._elements.message.textContent = response?.message;
       this._elements.form.reset?.();
       this._loading = false;
+
+      this._elements.form.addEventListener(
+        "input",
+        () => {
+          this._elements.message.textContent = "";
+        },
+        { once: true },
+      );
 
       return;
     }
@@ -76,21 +90,22 @@ export default class PasswordResetForm extends HTMLElement {
 
     this.innerHTML = `
       <form>
+        <h2>Új jelszó beállítása</h2>
         <input-group>
           <label>Új jelszó</label>
-          <password-input-validator>
+          <password-input-validator disable-on-invalid="#password-reset-form-submit-button">
             <input type="password" name="password" />
           </password-input-validator>
         </input-group>
         <input-group>
           <label>Jelszó megerősítése</label>
-          <password-input-validator>
+          <password-input-validator disable-on-invalid="#password-reset-form-submit-button">
             <input type="password" name="passwordConfirm" />
           </password-input-validator>
         </input-group>
-        <button>Jelszó beállítása</button>
+        <button id="password-reset-form-submit-button">Jelszó beállítása</button>
+        <div id="message" class="form-message"></div>
       </form>
-      <div id="message"></div>
     `;
 
     this._elements.form = this.querySelector("form");

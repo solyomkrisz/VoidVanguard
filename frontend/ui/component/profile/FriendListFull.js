@@ -3,6 +3,7 @@ import { on, off } from "/common/eventhub.js";
 import { isLoggedIn, isUserSet } from "/common/common.js";
 import * as net from "/common/network.js";
 import "/ui/component/profile/FriendListItem.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 const CONTROL_MAP = {
   pending: {
@@ -13,6 +14,14 @@ const CONTROL_MAP = {
     both: ["delete", "block"],
   },
 };
+
+function getCurrentUserId() {
+  return window?.VoidVanguard?.user?.id || null;
+}
+
+function normalizeFriendUserId(item) {
+  return item?.user_id || null;
+}
 
 export default class FriendListFull extends LazyItemList {
   static get observedAttributes() {
@@ -80,8 +89,16 @@ export default class FriendListFull extends LazyItemList {
   onRelationshipModification(e) {
     if (this._processing) return;
 
-    const userId = e?.detail?.userId;
-    if (!userId) return;
+    const userId = e?.detail?.userId || e?.target?.friend?.user_id || null;
+
+    if (!userId) {
+      console.error(
+        "Missing or invalid userId for relationship action:",
+        e.type,
+        e?.detail,
+      );
+      return;
+    }
 
     const formData = new FormData();
     formData.append("userId", userId);
@@ -143,12 +160,11 @@ export default class FriendListFull extends LazyItemList {
         body: formData,
       });
 
-      const { success, message } = response;
-
-      console.log(message);
-
-      if (!success) {
-        console.error(`Action '${type}' failed`);
+      if (
+        NetworkErrorHandler.handle(response, {
+          context: "FriendListFull.handleRelationshipAction",
+        })
+      ) {
         return;
       }
 
@@ -175,6 +191,12 @@ export default class FriendListFull extends LazyItemList {
   }
 
   onLogin(e) {
+    const userId = getCurrentUserId();
+
+    if (this.hasAttribute("auto") && !this.userId && userId) {
+      this.setAttribute("user-id", userId);
+    }
+
     this.updatePersonalization();
   }
 
@@ -235,8 +257,9 @@ export default class FriendListFull extends LazyItemList {
     on("login", this.onLogin);
     on("logout", this.onLogout);
 
-    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto")) {
-      this.setAttribute("user-id", window.VoidVanguard.user.id);
+    const userId = getCurrentUserId();
+    if (isLoggedIn() && isUserSet() && this.hasAttribute("auto") && userId) {
+      this.setAttribute("user-id", userId);
     }
   }
 
@@ -272,6 +295,8 @@ export default class FriendListFull extends LazyItemList {
   }
 
   renderItem(item) {
+    const userId = normalizeFriendUserId(item);
+
     const el = document.createElement("friend-list-item");
     el.friend = item;
 
@@ -282,9 +307,32 @@ export default class FriendListFull extends LazyItemList {
     this._personalized = _shouldPersonalize;
     el.changePersonalization(_shouldPersonalize);
 
-    this._byUserId.set(item.user_id, el);
+    if (userId) {
+      this._byUserId.set(userId, el);
+    }
 
     return el;
+  }
+
+  renderContent(items, response) {
+    if (!Array.isArray(items)) return;
+
+    if (this._page === 1 && items.length === 0) {
+      this._container.textContent = "";
+
+      const empty = document.createElement("p");
+      empty.className = "friend-list-empty";
+      empty.textContent = "Nincsenek megjeleníthető barátok.";
+
+      this._container.appendChild(empty);
+      return;
+    }
+
+    super.renderContent(items, response);
+  }
+
+  executeRequest(url) {
+    return net.send(url, { method: "GET" }, isLoggedIn());
   }
 
   extractItems(response) {

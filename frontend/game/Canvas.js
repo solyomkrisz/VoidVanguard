@@ -47,7 +47,7 @@ export default class Canvas {
     return this.canvas && this.canvas instanceof HTMLCanvasElement;
   }
 
-  createCanvas() {
+  createCanvas(append = true) {
     if (this.hasCanvas()) return;
 
     const canvas = document.createElement("canvas");
@@ -56,7 +56,7 @@ export default class Canvas {
 
     canvas.style.display = "block";
 
-    document.body.appendChild(canvas);
+    append && document.body.appendChild(canvas);
 
     this.canvasDomRect = canvas.getBoundingClientRect();
 

@@ -24,21 +24,23 @@ export async function login(request, response) {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    /** */
-    response.cookie("access_token", accessToken, {
-      httpOnly: true,
-      sameSite: "Strict",
-      path: "/",
-      maxAge: accessTokenLifetimeMin * 60 * 1000,
-    });
-    /** */
+    // response.cookie("access_token", accessToken, {
+    //   httpOnly: true,
+    //   sameSite: "Strict",
+    //   path: "/",
+    //   maxAge: accessTokenLifetimeMin * 60 * 1000,
+    // });
 
     console.log("Refresh és access token cookie-k beállítva...");
 
     response
       .status(200)
       .json(
-        createResponse(true, { access_token: accessToken }, "Login successful"),
+        createResponse(
+          true,
+          { access_token: accessToken },
+          "Sikeres bejelentkezés",
+        ),
       );
   } catch (error) {
     handleCaughtError(response, error);
@@ -57,7 +59,7 @@ export async function destroyAllSessions(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "Successfully ended all sessions"));
+      .json(createResponse(true, null, "Minden munkamenet sikeresen lezárva"));
   } catch (error) {
     handleCaughtError(response, error);
   }

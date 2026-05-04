@@ -27,6 +27,8 @@
     ". . ."
     ". . propulsion"
     ". . ."
+    ". . shoot"
+    ". . zoom"
     ". . throttle"
     "igniter computer joystick";
 }
@@ -39,12 +41,16 @@ pause-button {
   grid-area: pause;
   justify-self: start;
   align-self: start;
+  margin-top: 2vh;
+  margin-left: 2vw;
 }
 
 engine-ignition-controller {
   grid-area: igniter;
   justify-self: start;
   align-self: end;
+  margin-left: 2vw;
+  margin-bottom: 2vh;
 }
 
 ship-propulsion-panel {
@@ -63,10 +69,107 @@ engine-throttle-controller {
   grid-area: throttle;
   justify-self: end;
   align-self: end;
+  margin-right: 2vw;
+  margin-bottom: 2vh;
 }
 
 thrust-vector-controller {
   grid-area: joystick;
   justify-self: end;
   align-self: end;
+  margin-right: 2vw;
+  margin-bottom: 2vh;
+}
+
+shoot-button {
+  grid-area: shoot;
+  justify-self: end;
+  align-self: end;
+  margin-right: 2vw;
+  margin-bottom: 1.4vh;
+}
+
+zoom-controller {
+  grid-area: zoom;
+  justify-self: end;
+  align-self: end;
+  margin-right: 2vw;
+  margin-bottom: 1.4vh;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  :host {
+    display: block;
+  }
+
+  pause-button {
+    position: absolute;
+    left: max(2vw, 0.6rem);
+    bottom: calc(env(safe-area-inset-bottom) + clamp(14rem, 30vh, 17rem));
+    margin: 0;
+  }
+
+  ship-propulsion-panel {
+    position: absolute;
+  }
+
+  flight-computer {
+    position: absolute;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom) + clamp(0.35rem, 1.8vh, 0.8rem));
+    transform: translateX(-50%);
+  }
+
+  engine-ignition-controller {
+    position: absolute;
+    left: max(2vw, 0.55rem);
+    bottom: calc(env(safe-area-inset-bottom) + clamp(0.35rem, 1.8vh, 0.8rem));
+    margin: 0;
+  }
+
+  shoot-button {
+    position: absolute;
+    left: max(2vw, 0.55rem);
+    bottom: calc(env(safe-area-inset-bottom) + clamp(6.8rem, 16vh, 9.8rem));
+    margin: 0;
+  }
+
+  zoom-controller {
+    position: absolute;
+    left: max(2vw, 0.55rem);
+    bottom: calc(env(safe-area-inset-bottom) + clamp(10.9rem, 24vh, 13.8rem));
+    margin: 0;
+  }
+
+  thrust-vector-controller {
+    position: absolute;
+    right: max(2vw, 0.35rem);
+    bottom: calc(env(safe-area-inset-bottom) + clamp(0.3rem, 1.8vh, 0.8rem));
+    margin: 0;
+  }
+
+  engine-throttle-controller {
+    position: absolute;
+    right: max(2vw, 0.55rem);
+    bottom: calc(env(safe-area-inset-bottom) + clamp(7rem, 16vh, 10rem));
+    margin: 0;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (max-height: 560px) {
+  pause-button {
+    bottom: calc(env(safe-area-inset-bottom) + clamp(12.2rem, 27vh, 14.4rem));
+  }
+
+  shoot-button {
+    bottom: calc(env(safe-area-inset-bottom) + clamp(5.8rem, 14vh, 8rem));
+  }
+
+  zoom-controller {
+    bottom: calc(env(safe-area-inset-bottom) + clamp(9.1rem, 21vh, 11.6rem));
+  }
+
+  engine-throttle-controller {
+    bottom: calc(env(safe-area-inset-bottom) + clamp(5.9rem, 14vh, 8.2rem));
+  }
 }

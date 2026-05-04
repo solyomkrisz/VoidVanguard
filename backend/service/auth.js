@@ -70,13 +70,13 @@ export function logout(response) {
     httpOnly: true,
   });
 
-  response.clearCookie("access_token", {
-    path: "/",
-    sameSite: "Strict",
-    httpOnly: true,
-  });
+  // response.clearCookie("access_token", {
+  //   path: "/",
+  //   sameSite: "Strict",
+  //   httpOnly: true,
+  // });
 
-  console.log("Refresh és access token cookie-k törölve...");
+  console.log("Refresh token cookie törölve...");
 }
 
 export async function destroyAllSessions({ userId }) {

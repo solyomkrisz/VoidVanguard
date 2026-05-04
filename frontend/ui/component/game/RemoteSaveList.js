@@ -4,6 +4,7 @@ import "/ui/component/game/SaveListSlot.js";
 import * as net from "/common/network.js";
 import { el } from "/ui/UI.js";
 import { on, off } from "/common/eventhub.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
 
 export default class RemoteSaveList extends LazyItemList {
   get itemControls() {
@@ -33,16 +34,16 @@ export default class RemoteSaveList extends LazyItemList {
       body: formData,
     });
 
-    if (response?.message) {
-      console.log(response.message);
-      ToastManager.REQUEST(response.message);
+    if (
+      NetworkErrorHandler.handle(response, {
+        context: "RemoteSaveList.onSaveDelete",
+      })
+    ) {
+      return;
     }
 
-    if (!response?.success) {
-      console.error("Unable to delete save.");
-      ToastManager.REQUEST("Unable to delete save");
-
-      return;
+    if (response?.message) {
+      ToastManager.REQUEST(response.message);
     }
 
     this._byGameId.get(gameId)?.remove?.();
@@ -56,7 +57,7 @@ export default class RemoteSaveList extends LazyItemList {
     this.dispatchEvent(
       new CustomEvent("save-deleted", {
         detail: {
-          saveId,
+          gameId,
         },
         bubbles: true,
         composed: true,
@@ -68,10 +69,18 @@ export default class RemoteSaveList extends LazyItemList {
 
   onLogout(e) {}
 
+  onGameSaved(e) {
+    if (e?.detail?.saveType !== "remote") return;
+    this._byGameId.clear();
+    this.reloadCurrentPage();
+  }
+
   connectedCallback() {
     super.connectedCallback?.();
 
     this.addEventListener("save-delete", this.onSaveDelete);
+    this._onGameSaved = this.onGameSaved.bind(this);
+    document.addEventListener("game-saved", this._onGameSaved);
 
     on("login", this.onLogin);
     on("logout", this.onLogout);
@@ -81,6 +90,7 @@ export default class RemoteSaveList extends LazyItemList {
     super.disconnectedCallback?.();
 
     this.removeEventListener("save-delete", this.onSaveDelete);
+    document.removeEventListener("game-saved", this._onGameSaved);
 
     off("login", this.onLogin);
     off("logout", this.onLogout);

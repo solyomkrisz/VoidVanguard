@@ -1,5 +1,15 @@
 // prettier-ignore
-import {createFetchMock, $, getByText, waitFor, test, beforeEach, run, results} from "/common/functionaltest.js";
+import { createTestSuite} from "/common/functionaltest.js";
+const {
+  createFetchMock,
+  $,
+  getByText,
+  waitFor,
+  test,
+  beforeEach,
+  run,
+  results,
+} = createTestSuite("Test Tester Test");
 
 // import components for test
 import "/ui/component/profile/FullProfile.js";
@@ -16,9 +26,9 @@ class TestComponent extends HTMLElement {
 window.customElements.define("test-component", TestComponent);
 
 const fetchMock = createFetchMock();
-fetchMock.install();
 
 beforeEach(() => {
+  fetchMock.install();
   fetchMock.clear();
   document.body.innerHTML = "";
 });
@@ -100,6 +110,7 @@ test(
   true,
 );
 
-await run();
-results.see();
-fetchMock.restore();
+// await run();
+// results.see();
+// fetchMock.restore();
+export { run, results, fetchMock };

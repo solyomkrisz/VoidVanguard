@@ -25,7 +25,7 @@ export default class AppModal extends BaseCustomElement {
   }
 
   constructor() {
-    super([path.join(dir, "appModal.css")]);
+    super([path.join(dir, "appModal.css?v=20260501i")]);
 
     this._data = { ...DEFAULT_CONFIG };
     this._elements = {};
@@ -91,19 +91,35 @@ export default class AppModal extends BaseCustomElement {
     ]);
     this._elements.confirmButton = el(
       "button",
-      { class: "modal-confirm-button", onClick: this.onConfirmButtonClick },
+      {
+        class: "modal-confirm-button",
+        onClick: this.onConfirmButtonClick,
+        "data-sfx": "click_1",
+      },
       ["Ok"],
     );
     this._elements.cancelButton = el(
       "button",
-      { class: "modal-cancel-button", onClick: this.onCancelButtonClick },
+      {
+        class: "modal-cancel-button",
+        onClick: this.onCancelButtonClick,
+        "data-sfx": "click_1",
+      },
       ["Mégse"],
     );
 
-    this.appendShadowChild(this._elements.title);
-    this.appendShadowChild(this._elements.message);
-    this.appendShadowChild(this._elements.confirmButton);
-    this.appendShadowChild(this._elements.cancelButton);
+    const actionsDiv = el("div", { class: "modal-actions" }, [
+      this._elements.cancelButton,
+      this._elements.confirmButton,
+    ]);
+
+    const box = el("div", { class: "modal-box" }, [
+      this._elements.title,
+      this._elements.message,
+      actionsDiv,
+    ]);
+
+    this.appendShadowChild(box);
 
     this._built = true;
   }

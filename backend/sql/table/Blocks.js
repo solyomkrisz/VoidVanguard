@@ -87,6 +87,7 @@ class Blocks extends Table {
     const query = `
       SELECT
         blocks.blocked_id AS user_id,
+        profiles.avatar,
         COALESCE(profiles.display_name, users.username) AS name
       FROM blocks
       INNER JOIN users ON users.id = blocks.blocked_id

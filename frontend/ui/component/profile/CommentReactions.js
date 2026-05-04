@@ -1,6 +1,6 @@
 export default class CommentReactions extends HTMLElement {
   static get observedAttributes() {
-    return ["controls"];
+    return ["controls", "readonly", "likes", "dislikes"];
   }
 
   set controls(value) {
@@ -27,12 +27,44 @@ export default class CommentReactions extends HTMLElement {
     return this._userReaction;
   }
 
+  set readOnly(value) {
+    if (value) {
+      this.setAttribute("readonly", "");
+    } else {
+      this.removeAttribute("readonly");
+    }
+  }
+
+  get readOnly() {
+    return this.hasAttribute("readonly");
+  }
+
+  set likes(value) {
+    this._likes = Number.isFinite(Number(value)) ? Number(value) : 0;
+    this.onCountsChange();
+  }
+
+  get likes() {
+    return this._likes;
+  }
+
+  set dislikes(value) {
+    this._dislikes = Number.isFinite(Number(value)) ? Number(value) : 0;
+    this.onCountsChange();
+  }
+
+  get dislikes() {
+    return this._dislikes;
+  }
+
   constructor() {
     super();
 
     this._elements = {};
     this._built = false;
     this._userReaction = null;
+    this._likes = 0;
+    this._dislikes = 0;
 
     this.onReaction = this.onReaction.bind(this);
   }
@@ -40,10 +72,27 @@ export default class CommentReactions extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "controls" && oldValue !== newValue) {
       this.updateDOM();
+      return;
+    }
+
+    if (name === "readonly" && oldValue !== newValue) {
+      this.onReadOnlyChange();
+      return;
+    }
+
+    if (name === "likes" && oldValue !== newValue) {
+      this.likes = newValue;
+      return;
+    }
+
+    if (name === "dislikes" && oldValue !== newValue) {
+      this.dislikes = newValue;
     }
   }
 
   onReaction(e) {
+    if (this.readOnly) return;
+
     const type = e.currentTarget.dataset.type;
 
     this.dispatchEvent(
@@ -59,16 +108,51 @@ export default class CommentReactions extends HTMLElement {
     if (this._built) return;
     this.build();
     this.updateDOM();
+    this.onUserReactionChange();
+    this.onCountsChange();
+    this.onReadOnlyChange();
   }
 
   createButton(type) {
     const button = document.createElement("button");
     button.dataset.type = type;
+    button.dataset.sfx = "click_1";
     button.setAttribute("type", "button");
-    button.textContent = type === "like" ? "Like" : "Dislike";
+
+    const label = document.createElement("span");
+    label.className = "reaction-label";
+    label.textContent = type === "like" ? "Like" : "Dislike";
+
+    const count = document.createElement("span");
+    count.className = "reaction-count";
+    count.textContent = "0";
+
+    button.append(label, count);
     button.addEventListener("click", this.onReaction);
 
     return button;
+  }
+
+  onCountsChange() {
+    const { likeButton, dislikeButton } = this._elements;
+
+    if (likeButton) {
+      const count = likeButton.querySelector(".reaction-count");
+      if (count) count.textContent = String(this.likes);
+    }
+
+    if (dislikeButton) {
+      const count = dislikeButton.querySelector(".reaction-count");
+      if (count) count.textContent = String(this.dislikes);
+    }
+  }
+
+  onReadOnlyChange() {
+    const { likeButton, dislikeButton } = this._elements;
+    if (!likeButton || !dislikeButton) return;
+
+    likeButton.disabled = this.readOnly;
+    dislikeButton.disabled = this.readOnly;
   }
 
   onUserReactionChange() {
@@ -110,6 +194,9 @@ export default class CommentReactions extends HTMLElement {
         this.appendChild(elements.dislikeButton);
       }
     }
+
+    this.onCountsChange();
+    this.onReadOnlyChange();
   }
 
   build() {

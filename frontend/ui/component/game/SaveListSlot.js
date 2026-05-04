@@ -125,6 +125,11 @@ export default class SaveListSlot extends BaseCustomElement {
     elements.saveName.textContent = this.data?.save_name;
     elements.createdAtDate.textContent = this.data?.created_at;
     elements.updatedAtDate.textContent = this.data?.updated_at;
+
+    if (elements.loadSaveButton) {
+      const finished = !!this.data?.is_finished;
+      elements.loadSaveButton.disabled = finished;
+    }
   }
 }
 

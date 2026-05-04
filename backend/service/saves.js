@@ -70,7 +70,11 @@ export async function updateSave({ userId, role, body }) {
   const gameId = body.game_id;
 
   const saveFromDb = await selectUserSave({ gameId, userId });
-  if (!save) throw CustomError.TEST;
+  if (!saveFromDb) throw CustomError.SAVE_NOT_FOUND;
+
+  if (saveFromDb.is_finished) {
+    throw CustomError.GAME_IS_FINISHED;
+  }
 
   const updates = {};
 

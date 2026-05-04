@@ -3,32 +3,86 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/ui/style/viewSwitcher.css" />
     <link rel="stylesheet" href="/ui/style/leaderboard.css" />
-    <title>Document</title>
+    <link rel="stylesheet" href="/ui/style/viewSwitcher.css" />
+    <title>VoidVanguard - Ranglétra</title>
   </head>
   <body>
-    <view-switcher initial="public-leaderboard" no-cache>
-      <template id="public-leaderboard" data-name="Nyilvános ranglétra">
-        <leaderboard-element
-          controls="scroll"
-          src="/api/scores/leaderboard"
-          view="public"
-        ></leaderboard-element>
-      </template>
-      <template id="friend-leaderboard" data-name="Barát ranglétra">
-        <leaderboard-element
-          controls="scroll"
-          src="/api/scores/leaderboard"
-          view="private"
-        ></leaderboard-element>
-      </template>
-    </view-switcher>
+    <canvas id="stars"></canvas>
+    <back-button mode="to-previous"></back-button>
+
+    <div class="lb-page">
+      <a href="/"><img src="/image/VoidVanguardTitlePixelart.png" alt="VoidVanguard" class="lb-title-img" /></a>
+      <h2 class="lb-heading">Ranglétra</h2>
+
+      <view-switcher initial="public-leaderboard" no-cache>
+        <template id="public-leaderboard" data-name="Nyilvános">
+          <leaderboard-element
+            controls="scroll"
+            src="/api/scores/leaderboard"
+            view="public"
+            page-size="25"
+          ></leaderboard-element>
+        </template>
+        <template id="friend-leaderboard" data-name="Barátok">
+          <leaderboard-element
+            controls="scroll"
+            src="/api/scores/leaderboard"
+            view="private"
+            page-size="25"
+          ></leaderboard-element>
+        </template>
+      </view-switcher>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("stars");
+      const ctx = canvas.getContext("2d");
+      const stars = [];
+      const STAR_COUNT = 120;
+
+      function createStars() {
+        stars.length = 0;
+        for (let i = 0; i < STAR_COUNT; i++) {
+          const star = {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() < 0.75 ? 1 : 2,
+            opacity: Math.random(),
+            delta: Math.random() * 0.003 + 0.001,
+          };
+          if (Math.random() < 0.5) star.delta = -star.delta;
+          stars.push(star);
+        }
+      }
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        createStars();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const star of stars) {
+          star.opacity += star.delta;
+          if (star.opacity <= 0 || star.opacity >= 1) star.delta = -star.delta;
+          ctx.fillStyle = "rgba(190,215,255," + star.opacity.toFixed(2) + ")";
+          ctx.fillRect(star.x, star.y, star.size, star.size);
+        }
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      draw();
+      window.addEventListener("resize", resize);
+    </script>
 
     <script type="module">
       import { autologin } from "/common/common.js";
       import "/ui/component/misc/LeaderboardElement.js";
       import "/ui/component/layout/ViewSwitcher.js";
+      import "/ui/component/button/BackButton.js";
 
       await autologin();
     </script>

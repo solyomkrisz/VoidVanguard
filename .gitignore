@@ -135,3 +135,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 .out-of-code-insights/annotations.json
+
+backend/package-lock.json

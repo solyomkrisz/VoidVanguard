@@ -1,5 +1,9 @@
-import * as net from "./network.js";
-import { isExpired, decode } from "./jwt.js";
+import * as net from "/common/network.js";
+import { isExpired, decode } from "/common/jwt.js";
+
+if (!window.VoidVanguard) {
+  window.VoidVanguard = {};
+}
 
 export const DATA_STRUCTURE =
   typeof Float32Array !== "undefined" ? Float32Array : Array;
@@ -166,14 +170,19 @@ export async function autologin() {
 
     if (response.success) {
       setUser(response.result, { origin: "autologin" });
+      return true;
     }
   } catch (error) {
-    return;
+    return false;
   }
+  return false;
 }
 
-export async function onDOMContentLoaded() {
-  await autologin();
+export async function onDOMContentLoaded({ requireAuth = false } = {}) {
+  const ok = await autologin();
+  if (requireAuth && !ok) {
+    window.location.href = "/";
+  }
 }
 
 export async function logout() {
@@ -289,7 +298,7 @@ export function isEqual(obja, objb, path = "") {
 export function setFieldValue(field, value) {
   if (field instanceof RadioNodeList) {
     Array.from(field).forEach((input) => {
-      input.checked = input.value === value;
+      input.checked = input.value === String(value ?? "");
     });
     return;
   }
@@ -333,4 +342,40 @@ export function isInViewport(element) {
   if (!element) return false;
   const rect = element.getBoundingClientRect();
   return rect.top >= 0 && rect.bottom <= window.innerHeight;
+}
+
+//#region for testing
+export function result() {
+  this.title = "Untitled";
+
+  this.init = function () {
+    this.features = 0;
+    this.tests = 0;
+    this.failed = 0;
+    this.successful = 0;
+
+    return this;
+  };
+
+  this.see = function () {
+    const maxLabelLength = Math.max(
+      "Features tested".length,
+      "Total tests".length,
+      "Successful".length,
+      "Failed".length,
+    );
+
+    const addPadding = function (label) {
+      return label + ".".repeat(maxLabelLength - label.length + 3);
+    };
+
+    console.log(`\n===== ${this.title} =====\n
+${addPadding("Features tested")}: ${this.features}
+${addPadding("Total tests")}: ${this.tests}
+${addPadding("Successful")}: ${this.tests} / ${this.successful} (${((this.successful / this.tests) * 100).toFixed(2)}%)
+${addPadding("Failed")}: ${this.tests} / ${this.failed} (${((this.failed / this.tests) * 100).toFixed(2)}%)\n
+`);
+  };
+
+  this.init();
 }

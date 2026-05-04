@@ -23,13 +23,52 @@ import { getLocalSaves } from "/common/common.js";
 import * as net from "/common/network.js";
 import Save from "/game/Save.js";
 import { setupGame } from "/game/setup/default.js";
-import Models from "/game/SpaceShipModels.js";
+import Enemy from "/game/Enemy.js";
+import { createEnemyModelByDifficulty } from "/game/SpaceShipModels.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 import "/ui/component/game/GameControllerContainer.js";
 import "/ui/component/game/PauseButton.js";
 import AudioManager from "/common/AudioManager.js";
+import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
+import { GlobalState } from "/game/State.js";
+import "/ui/component/game/DeathScreen.js";
+
+// Difficulty thresholds are based on spaceship-destruction score progression.
+// Index = difficulty level, value = minimum score required for that level.
+const DIFFICULTY_SCORE_THRESHOLDS = Object.freeze([
+  0, // 0
+  250, // 1
+  700, // 2
+  1350, // 3
+  2200, // 4
+  3250, // 5
+  4500, // 6
+  5950, // 7
+  7600, // 8
+  9450, // 9
+  11500, // 10
+  13750, // 11
+  16200, // 12
+  18850, // 13
+  21700, // 14
+  24750, // 15
+]);
 
 export default class Game extends WebGLCanvas {
+  /**
+   * FNV-1a hash of a string → deterministic uint32.
+   * Used to derive a stable noise seed from a game_id so the world layout
+   * is always the same for the same game session, even without a saved seed.
+   */
+  static seedFromId(id) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < id.length; i++) {
+      h ^= id.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h;
+  }
+
   static from(save = null) {
     if (save == null || save.game_state == null) {
       const game = new Game();
@@ -42,12 +81,32 @@ export default class Game extends WebGLCanvas {
       parsed = Save.parse(save.game_state);
     else parsed = save.game_state;
 
-    const game = new Game(parsed.seed, parsed.game_id);
+    const recoveredGameId = save?.game_id ?? parsed.game_id;
+    const game = new Game(parsed.seed, recoveredGameId);
     game.loadedSave = save;
-    setupGame(game, new Model(Save.recoverPlayerModel(parsed.player.model)));
+    const loadedSaveType = save?.save_type ?? save?.saveType;
+    if (loadedSaveType === "local" || loadedSaveType === "remote") {
+      game.saveType = loadedSaveType;
+    }
+    setupGame(game, new Model(Save.recoverModelObjects(parsed.player.model)));
+
+    for (const enemy of parsed.enemies) {
+      const recoveredEnemy = Save.recoverEntity(enemy, game);
+      recoveredEnemy.model.applyTextureRotations(game.textureManager);
+      game.enemies.add(recoveredEnemy);
+    }
 
     game.player.score = parsed.player.score;
+    const playerRotation = parsed.player.rotation ?? 0;
+    game.player.rotation = playerRotation;
     game.player.teleportTo(...parsed.player.position);
+    game.player.previousRotation = playerRotation;
+    vec2.set(game.player.forward, 0, 1);
+    vec2.rotate(game.player.forward, playerRotation);
+    vec2.normalize(game.player.forward, game.player.forward);
+    vec2.copy(game.player.previousForward, game.player.forward);
+    game.player.onRotationChange();
+    game.player.onPositionChange();
 
     return game;
   }
@@ -70,7 +129,7 @@ export default class Game extends WebGLCanvas {
 
     this.running = false;
 
-    this.tickrate = 30;
+    this.tickrate = 60;
     this.ticks = 0;
     this.frames = 0;
     this.timestep = 1000 / this.tickrate;
@@ -88,8 +147,8 @@ export default class Game extends WebGLCanvas {
     this.grid = new Grid(this, 10);
     this.objects = new ObjectCollection(this);
 
-    this.seed = seed ?? Math.floor(Math.random() * 100000); // 555 is nice, 46008, 676
-    // this.seed = 555;
+    //this.seed = seed ?? Game.seedFromId(this.game_id);
+    this.seed = 1000;
     this.noise = new ValueNoise(this.seed);
     this.noiseScale = 1 / 10;
     // prettier-ignore
@@ -98,7 +157,7 @@ export default class Game extends WebGLCanvas {
       this.sg = new StarGenerator(this.noise, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT);
     }
 
-    this.tileSize = 14;
+    this.tileSize = this.getDefaultTileSize();
     this.backgroundZoom = 2;
     this.nebulaParallax = 0.15;
     // Minimum star parallax — must match the lower bound of the formula in DecorationBlock
@@ -125,6 +184,7 @@ export default class Game extends WebGLCanvas {
     this.buildingBlocks = new ObjectCollection(this);
     this.projectiles = new ObjectCollection(this);
     this.coreObjects = new ObjectCollection(this);
+    this.blockDestructionParticles = [];
 
     this.debugPanel = null;
     this.debugOverlay = null;
@@ -140,29 +200,351 @@ export default class Game extends WebGLCanvas {
     this.showSpaceshipCircle = false;
     this.showSpaceshipHitbox = false;
 
+    this._textureBuildQueue = [];
+
+    this.enemySpawnerInitialized = false;
+    this.enemySpawnInterval = 18;
+    this.enemySpawnTimer = this.enemySpawnInterval;
+    this.enemyInitialCount = 25;
+    this.enemySpawnCellArea = 15; 
+    this.enemySpawnMinDistance = 28;
+    this.enemySpawnMaxDistance = 52;
+    this.enemySpawnMinSpacing = 12;
+    this.enemyCapTargetWidth = 12;
+    this.enemyCapTargetHeight = 12;
+    this.enemyRngState = (this.seed ^ 0xa341316c) >>> 0;
+
+    this.currentDifficulty = 0;
+    this.lastDisplayedScore = null;
+
     this.update = this.update.bind(this);
+
+    this.inBuilderView = false;
+  }
+
+  startBackgroundMusic() {
+    this.audioManager.getSound("backgroundmusic")?.instance?.start?.();
+  }
+
+  resumeBackgroundMusic() {
+    this.audioManager.getSound("backgroundmusic")?.instance?.resume?.();
+  }
+
+  pauseBackgroundMusic() {
+    this.audioManager.getSound("backgroundmusic")?.instance?.pause?.();
+  }
+
+  stopBackgroundMusic() {
+    this.audioManager.getSound("backgroundmusic")?.instance?.stop?.();
+  }
+
+  getDefaultTileSize() {
+    if ((this.player?.proxyCollider?.r ?? 0) > 14) {
+      return this.player.proxyCollider.r;
+    }
+
+    return 14;
+  }
+
+  setTileSize(tileSize) {
+    this.tileSize = tileSize;
+    this.scale = 1 / this.tileSize;
+  }
+
+  toggleBuilderView() {
+    if (this.inBuilderView) {
+      this.setTileSize(this.getDefaultTileSize());
+    } else {
+      this.setTileSize(Math.ceil(this.player.proxyCollider.r + 3));
+    }
+
+    this.inBuilderView = !this.inBuilderView;
+  }
+
+  randomFloat() {
+    this.enemyRngState =
+      (Math.imul(this.enemyRngState, 1664525) + 1013904223) >>> 0;
+    return this.enemyRngState / 4294967296;
+  }
+
+  randomInt(min, max) {
+    return min + Math.floor(this.randomFloat() * (max - min + 1));
+  }
+
+  getCurrentDifficulty() {
+    const score = this.player?.score ?? 0;
+    for (let difficulty = DIFFICULTY_SCORE_THRESHOLDS.length - 1; difficulty >= 0; difficulty--) {
+      if (score >= DIFFICULTY_SCORE_THRESHOLDS[difficulty]) return difficulty;
+    }
+    return 0;
+  }
+
+  getEnemyCapByDifficulty(difficulty) {
+    const d = Math.max(0, difficulty);
+    const baselineMin = this.enemyInitialCount;
+    const baselineMax = this.enemyInitialCount + 30;
+    const normalized = Math.min(1, d / 15);
+    const scaledCap = baselineMin + normalized * (baselineMax - baselineMin);
+    return Math.round(scaledCap);
+  }
+
+  getEnemySpawnIntervalByDifficulty(difficulty) {
+    const d = Math.max(0, difficulty);
+    const maxInterval = 18;
+    const minInterval = 6;
+    const normalized = Math.min(1, d / 15);
+    return maxInterval + (minInterval - maxInterval) * normalized;
+  }
+
+  pulseHudValue(element) {
+    if (!element?.animate) return;
+    element.animate(
+      [
+        { transform: "scale(1)" },
+        { transform: "scale(1.2)" },
+        { transform: "scale(1)" },
+      ],
+      {
+        duration: 230,
+        easing: "cubic-bezier(0.2, 0.9, 0.25, 1)",
+      },
+    );
+  }
+
+  updateDifficultyIndicator() {
+    const score = this.player?.score ?? 0;
+    const difficulty = this.getCurrentDifficulty();
+    this.currentDifficulty = difficulty;
+    const gradeIndex = Math.max(0, Math.min(14, difficulty - 1));
+    const difficultyColor = BlockStyle.GRADE_COLORS[gradeIndex] || BlockStyle.GRADE_COLORS[0];
+
+    const stars = difficulty > 0 ? "★".repeat(difficulty) : "☆";
+    const scoreIncreased =
+      this.lastDisplayedScore != null && score > this.lastDisplayedScore;
+
+    if (this.UI.difficultyText && this.UI.difficultyValue && this.UI.scoreValue) {
+      this.UI.difficultyText.style.color = difficultyColor;
+      this.UI.difficultyValue.textContent = stars;
+      this.UI.difficultyValue.style.color = difficultyColor;
+      this.UI.scoreValue.textContent = String(score);
+      this.UI.scoreValue.style.color = "#f3f7ff";
+
+      if (scoreIncreased) {
+        this.pulseHudValue(this.UI.scoreValue);
+      }
+    }
+
+    this.lastDisplayedScore = score;
+  }
+
+  pickEnemyBehavior(difficulty) {
+    const r = this.randomFloat();
+
+    if (difficulty <= 3) {
+      if (r < 0.4) return "passive";
+      if (r < 0.8) return "neutral";
+      return "aggressive";
+    }
+
+    if (difficulty <= 9) {
+      if (r < 0.18) return "rammer";
+      if (r < 0.55) return "neutral";
+      return "aggressive";
+    }
+
+    if (r < 0.22) return "rammer";
+    if (r < 0.42) return "neutral";
+    return "aggressive";
+  }
+
+  getPlayerChunk() {
+    const cx = Math.floor(
+      this.player.position[0] / this.chunkSize / this.backgroundZoom,
+    );
+    const cy = Math.floor(
+      this.player.position[1] / this.chunkSize / this.backgroundZoom,
+    );
+    return [cx, cy];
+  }
+
+  getPlayerGridCell() {
+    const cx = Math.floor(this.player.position[0] / this.grid.cellSize);
+    const cy = Math.floor(this.player.position[1] / this.grid.cellSize);
+    return [cx, cy];
+  }
+
+  isChunkVisibleToPlayer(cx, cy) {
+    const [pcx, pcy] = this.getPlayerChunk();
+    const visX = this.renderDistance[0] + 1;
+    const visY = this.renderDistance[1] + 1;
+    return Math.abs(cx - pcx) <= visX && Math.abs(cy - pcy) <= visY;
+  }
+
+  trySpawnEnemy(difficulty) {
+    if (!this.player) return false;
+
+    const chunkWorldSize = this.chunkSize * this.backgroundZoom;
+    const minSpawnDistance = Math.max(chunkWorldSize * 1.5, this.enemySpawnMinDistance);
+    const maxSpawnDistance = Math.max(minSpawnDistance + 10, this.enemySpawnMaxDistance);
+    const minSpawnSpacing = this.enemySpawnMinSpacing;
+
+    for (let attempt = 0; attempt < 80; attempt++) {
+      const angle = this.randomFloat() * Math.PI * 2;
+      const spawnDistance = minSpawnDistance + this.randomFloat() * (maxSpawnDistance - minSpawnDistance);
+      const x = this.player.position[0] + Math.cos(angle) * spawnDistance;
+      const y = this.player.position[1] + Math.sin(angle) * spawnDistance;
+      const distanceToPlayer = spawnDistance;
+
+      if (distanceToPlayer < minSpawnDistance || distanceToPlayer > maxSpawnDistance) continue;
+
+      let tooCloseToEnemy = false;
+      for (const enemy of this.enemies.objects) {
+        if (Math.hypot(enemy.position[0] - x, enemy.position[1] - y) < minSpawnSpacing) {
+          tooCloseToEnemy = true;
+          break;
+        }
+      }
+      if (tooCloseToEnemy) continue;
+
+      const behavior = this.pickEnemyBehavior(difficulty);
+      const spawnArchetype = behavior === "rammer" ? "RAMMER" : "AUTO";
+      const enemyBlueprint = createEnemyModelByDifficulty(
+        difficulty,
+        spawnArchetype,
+        () => this.randomFloat(),
+      );
+      const enemy = new Enemy({
+        game: this,
+        model: enemyBlueprint.model,
+        x,
+        y,
+        maxSpeed: enemyBlueprint.maxSpeed,
+        turnRate: enemyBlueprint.turnRate,
+        behavior,
+        difficulty,
+      });
+
+      this.enemies.add(enemy);
+      enemy.model.applyTextureRotations(this.textureManager);
+      enemy.model.onBlockDestroyed = (block) => this._spawnBlockDestructionAt(block, enemy);
+      return true;
+    }
+
+    return false;
+  }
+
+  initializeEnemySpawner() {
+    if (this.enemySpawnerInitialized || !this.player) return;
+
+    this.enemySpawnerInitialized = true;
+    this.enemySpawnTimer = this.enemySpawnInterval;
+
+    if (this.enemies.objects.length > 0) return;
+
+    const difficulty = this.getCurrentDifficulty();
+    for (let i = 0; i < this.enemyInitialCount; i++) {
+      this.trySpawnEnemy(difficulty);
+    }
+  }
+
+  updateEnemySpawner() {
+    if (!this.player) return;
+
+    if (!this.enemySpawnerInitialized) {
+      this.initializeEnemySpawner();
+    }
+
+    const difficulty = this.getCurrentDifficulty();
+    const spawnInterval = this.getEnemySpawnIntervalByDifficulty(difficulty);
+    const cap = this.getEnemyCapByDifficulty(difficulty);
+    const deficit = cap - this.enemies.objects.length;
+
+    // Always count down so a free slot triggers a spawn without a full extra wait.
+    this.enemySpawnTimer = Math.min(this.enemySpawnTimer, spawnInterval);
+    this.enemySpawnTimer -= this.fdt;
+    if (this.enemySpawnTimer > 0) return;
+
+    if (deficit <= 0) {
+      // Cap is full — reload the timer and wait for the next free slot.
+      this.enemySpawnTimer = spawnInterval;
+      return;
+    }
+
+    // Spawn a small batch so population recovers consistently even after bursts of deaths.
+    const targetBatch = Math.max(1, Math.min(deficit, Math.ceil(deficit / 3)));
+    let spawned = 0;
+    let attempts = 0;
+    const maxAttempts = Math.max(6, targetBatch * 8);
+
+    while (spawned < targetBatch && attempts < maxAttempts) {
+      attempts++;
+      if (this.trySpawnEnemy(difficulty)) {
+        spawned++;
+      }
+    }
+
+    if (spawned > 0) {
+      const catchUp = deficit > 1
+        ? Math.max(1.2, spawnInterval / Math.min(deficit, 5))
+        : spawnInterval;
+      this.enemySpawnTimer = catchUp;
+    } else {
+      this.enemySpawnTimer = Math.min(2, spawnInterval);
+    }
   }
 
   async finishSave() {
+    const localSaveKey = this.loadedSave?.game_id ?? this.game_id;
+    const localSaves = getLocalSaves();
+
+    let inferredSaveType =
+      this.saveType ?? this.loadedSave?.save_type ?? this.loadedSave?.saveType;
+
+    if (!inferredSaveType && localSaves.has(localSaveKey)) {
+      inferredSaveType = "local";
+    }
+
+    if (inferredSaveType === "local" || inferredSaveType === "remote") {
+      this.saveType = inferredSaveType;
+    }
+
     // Játék befejezése ha nem volt mentve
     if (!["local", "remote"].includes(this.saveType)) {
-      ToastManager.REQUEST("Unable to finish game");
+      ToastManager.REQUEST(
+        "A játékot nem lehet befejezne: ismeretlen mentéstípus",
+      );
       return;
     }
 
     // Ha mentve volt
     if (this.saveType === "local") {
-      const localSaves = getLocalSaves();
-
-      localSaves.set(this.game_id, {
+      const existingSave = localSaves.get(localSaveKey) ?? this.loadedSave ?? {};
+      const completedSave = {
+        ...existingSave,
         ...this.loadedSave,
-        game_id: this.game_id,
+        game_id: localSaveKey,
+        save_name:
+          existingSave.save_name ?? this.loadedSave?.save_name ?? "Unnamed Save",
         game_state: this.exportSave(),
         is_finished: 1,
+        created_at: existingSave.created_at ?? this.loadedSave?.created_at ?? Date.now(),
         updated_at: Date.now(),
-      });
+        save_type: "local",
+      };
+
+      localSaves.set(localSaveKey, completedSave);
+
+      if (this.game_id !== localSaveKey) {
+        localSaves.delete(this.game_id);
+      }
+
+      this.loadedSave = completedSave;
 
       localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
+
+      document.dispatchEvent(
+        new CustomEvent("game-saved", { detail: { saveType: "local" } }),
+      );
 
       return;
     }
@@ -178,24 +560,21 @@ export default class Game extends WebGLCanvas {
       body: formData,
     });
 
-    if (!response?.success) {
-      console.error(
-        `Unable to finish game: ${response?.message ? response.message : ""}`,
-      );
-      ToastManager.REQUEST(
-        `Unable to finish game: ${response?.message ? response.message : ""}`,
-      );
-
+    if (NetworkErrorHandler.handle(response)) {
       return;
     }
 
-    console.log("Game has been marked as finished remotely.");
-    ToastManager.REQUEST("Game has been marked as finished remotely.");
+    ToastManager.REQUEST("A játék meg lett jelölve befejezettként");
+    document.dispatchEvent(
+      new CustomEvent("game-saved", { detail: { saveType: "remote" } }),
+    );
 
     // kiléptetés vagy endscreen mutatása
   }
 
   destroy() {
+    this.stop();
+
     // from Canvas class
     {
       this.canvas.remove?.();
@@ -205,16 +584,15 @@ export default class Game extends WebGLCanvas {
     // own
     {
       for (const key of Object.keys(this.UI)) {
-        this.UI[key].remove?.();
+        this.UI[key].destroy?.();
       }
 
       for (const value of this.controllers.values()) {
-        if (value instanceof HTMLElement) {
-          value.remove?.();
-        }
+        value.destroy?.();
       }
 
       this.tooltip?.remove?.();
+      this.UI.difficultyLabel?.remove?.();
 
       this.debugPanel?.destroy();
       this.debugOverlay?.destroy();
@@ -229,12 +607,89 @@ export default class Game extends WebGLCanvas {
     this.UI.pauseMenu.game = this;
     document.body.appendChild(this.UI.pauseMenu);
 
+    this.UI.deathScreen = document.createElement("death-screen");
+    this.UI.deathScreen.game = this;
+    document.body.appendChild(this.UI.deathScreen);
+
     this.UI.controllerContainer = document.createElement("game-controller-container");
     this.UI.controllerContainer.setGame(this);
     document.body.appendChild(this.UI.controllerContainer);
 
     this.UI.pauseButton = document.createElement("pause-button");
     this.UI.controllerContainer.appendShadowChild(this.UI.pauseButton);
+
+    this.UI.difficultyLabel = document.createElement("div");
+    this.UI.difficultyLabel.style.cssText = [
+      "position: fixed",
+      "top: 0.9vmin",
+      "left: 1.2vmin",
+      "z-index: 12",
+      "pointer-events: none",
+      "font-family: monospace",
+      "display: flex",
+      "flex-direction: column",
+      "gap: 0.2vmin",
+      "color: #edf4ff",
+      "letter-spacing: 0.03em",
+      "text-shadow: 0 0 0.4vmin rgba(0, 0, 0, 0.75)",
+      "user-select: none",
+    ].join(";");
+
+    this.UI.difficultyRow = document.createElement("div");
+    this.UI.difficultyRow.style.cssText = [
+      "display: flex",
+      "align-items: baseline",
+      "gap: 0.5vmin",
+    ].join(";");
+
+    this.UI.difficultyText = document.createElement("span");
+    this.UI.difficultyText.textContent = "Nehézség:";
+    this.UI.difficultyText.style.cssText = [
+      "font-size: clamp(13px, 1.8vmin, 24px)",
+      "font-weight: 700",
+      "opacity: 0.95",
+    ].join(";");
+
+    this.UI.difficultyValue = document.createElement("span");
+    this.UI.difficultyValue.style.cssText = [
+      "font-size: clamp(15px, 2.2vmin, 30px)",
+      "font-weight: 800",
+      "min-width: 3ch",
+      "display: inline-block",
+    ].join(";");
+
+    this.UI.scoreRow = document.createElement("div");
+    this.UI.scoreRow.style.cssText = [
+      "display: flex",
+      "align-items: baseline",
+      "gap: 0.5vmin",
+      "margin-top: 0.15vmin",
+    ].join(";");
+
+    this.UI.scoreLabel = document.createElement("span");
+    this.UI.scoreLabel.textContent = "Pontszám:";
+    this.UI.scoreLabel.style.cssText = [
+      "font-size: clamp(13px, 1.8vmin, 24px)",
+      "font-weight: 700",
+      "opacity: 0.95",
+    ].join(";");
+
+    this.UI.scoreValue = document.createElement("span");
+    this.UI.scoreValue.style.cssText = [
+      "font-size: clamp(15px, 2.2vmin, 30px)",
+      "font-weight: 800",
+      "transform-origin: left center",
+      "min-width: 3ch",
+      "display: inline-block",
+    ].join(";");
+
+    this.UI.difficultyRow.append(this.UI.difficultyText, this.UI.difficultyValue);
+    this.UI.scoreRow.append(this.UI.scoreLabel, this.UI.scoreValue);
+    this.UI.difficultyLabel.append(
+      this.UI.difficultyRow,
+      this.UI.scoreRow,
+    );
+    document.body.appendChild(this.UI.difficultyLabel);
   }
 
   exportSave() {
@@ -244,7 +699,7 @@ export default class Game extends WebGLCanvas {
       game_id: this.game_id,
       seed: this.seed,
       player: this.player.exportSave(),
-      // enemies: this.enemies,
+      enemies: this.enemies.exportSave(),
       // buildingBlocks: this.buildingBlocks,
     };
   }
@@ -271,8 +726,19 @@ export default class Game extends WebGLCanvas {
 
     window.localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
 
+    this.saveType = "local";
+
+    // frissítjük mert ha van akkor a <save-form> a <pause-menu>-n keresztül innen tölti be a nevet
+    if (this.loadedSave) {
+      this.loadedSave.save_name = saveName;
+    }
+
     console.log("Game state has been saved locally as " + saveName);
-    ToastManager.REQUEST("Game state has been saved locally as " + saveName);
+    ToastManager.REQUEST(
+      `Játékállás sikeresen mentve helyileg "${saveName}" néven`,
+    );
+
+    document.dispatchEvent(new CustomEvent("game-saved", { detail: { saveType: "local" } }));
 
     this.inSavingProcess = false;
 
@@ -292,22 +758,23 @@ export default class Game extends WebGLCanvas {
       body: formData,
     });
 
-    if (!response?.success) {
-      console.error(
-        `Unable to save game: ${response?.message ? response.message : ""}`,
-      );
-      ToastManager.REQUEST(
-        `Unable to save game: ${response?.message ? response.message : ""}`,
-      );
-
+    if (NetworkErrorHandler.handle(response, { context: "Game.remoteSave" })) {
       this.inSavingProcess = false;
       return false;
     }
 
     const saveName = formData.get("save_name");
 
-    console.log("Game state has been saved remotely as " + saveName);
-    ToastManager.REQUEST("Game state has been saved remotely as " + saveName);
+    // frissítjük mert ha van akkor a <save-form> a <pause-menu>-n keresztül innen tölti be a nevet
+    if (this.loadedSave) {
+      this.loadedSave.save_name = saveName;
+    }
+
+    this.saveType = "remote";
+
+    ToastManager.REQUEST(`Játékállás sikeresen feltöltve "${saveName}" néven`);
+
+    document.dispatchEvent(new CustomEvent("game-saved", { detail: { saveType: "remote" } }));
 
     this.inSavingProcess = false;
 
@@ -442,6 +909,8 @@ export default class Game extends WebGLCanvas {
 
         error !== gl.NO_ERROR && console.error("WebGL Error: ", error);
 
+        this.startBackgroundMusic();
+
         this.last = window.performance.now();
         this.frameId = window.requestAnimationFrame(this.update);
         this.running = true;
@@ -456,18 +925,24 @@ export default class Game extends WebGLCanvas {
     if (!this.running) return;
     this.running = false;
     window.cancelAnimationFrame(this.frameId);
-    this.audioManager?.stopAll?.();
+    this.pauseBackgroundMusic();
+    this.audioManager?.softStopAll?.();
+    // this.audioManager?.stopAll?.();
     this.tooltip.disable();
     this.UI.pauseMenu?.show();
   }
 
   resume() {
+    if (this.running) return;
+    this.running = true;
+
     this.tooltip.enable();
     this.UI.pauseMenu.hide();
 
     this.last = window.performance.now();
     this.frameId = window.requestAnimationFrame(this.update);
-    this.running = true;
+
+    this.resumeBackgroundMusic();
   }
 
   update() {
@@ -504,9 +979,11 @@ export default class Game extends WebGLCanvas {
     this.contextMenu.hovered = null;
 
     this.coreObjects.update(); // az egér is itt van és a drag miatt input-nak számít tehát muszáj felül lennie
+    this.updateEnemySpawner();
     this.enemies.update();
     this.projectiles.update();
     this.buildingBlocks.update();
+    this._tickBlockDestructionParticles();
 
     this.chunks.update();
 
@@ -514,7 +991,215 @@ export default class Game extends WebGLCanvas {
     this.objects.merge(this.coreObjects, this.enemies, this.projectiles, this.buildingBlocks);
     this.grid.filter().iterate();
 
+    const playerHasLiveCore = this.player?.model?.objects?.some(
+      (block) => block && !block.isRemovable && !block.toRemove && block.health > 0,
+    );
+
+    if (!this.isFinished && this.player && !playerHasLiveCore) {
+      this.player.setState(GlobalState.DEAD);
+    }
+
+    if (!this.isFinished && this.player?.hasState(GlobalState.DEAD)) {
+      this.triggerPlayerDeath();
+    }
+
+    this.updateDifficultyIndicator();
+
     this.tooltip.updateTemplates(this.frameId);
+  }
+
+  triggerPlayerDeath() {
+    if (this.isFinished) return;
+    this.isFinished = true;
+    this.UI.deathScreen?.show();
+    this.finishSave();
+
+    const KILL_RADIUS = 50;
+    const PUSH_RADIUS = 80;
+    const BURST_SPEED = 20;
+
+    const px = this.player.position[0];
+    const py = this.player.position[1];
+
+    // Spawn a large explosion at the player's position
+    this._spawnBlockDestructionParticles(14, px, py, 6);
+
+    // Apply shockwave to all enemies
+    for (const enemy of this.enemies.objects) {
+      const dx = enemy.position[0] - px;
+      const dy = enemy.position[1] - py;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 0.001) continue;
+
+      const nx = dx / dist;
+      const ny = dy / dist;
+
+      // Kill enemies within the kill radius
+      if (dist < KILL_RADIUS) {
+        for (const block of enemy.model.objects) block.health = 0;
+      }
+
+      // Push enemies within the push radius
+      if (dist < PUSH_RADIUS) {
+        const falloff = 1 - dist / PUSH_RADIUS;
+        const impulse = BURST_SPEED * falloff;
+        enemy.velocity[0] += nx * impulse;
+        enemy.velocity[1] += ny * impulse;
+        enemy.maxSpeed = Math.max(enemy.maxSpeed, impulse);
+      }
+    }
+
+    // Apply shockwave to all drifting building blocks (player's detached parts)
+    for (const bb of this.buildingBlocks.objects) {
+      const dx = bb.position[0] - px;
+      const dy = bb.position[1] - py;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 0.001) continue;
+
+      if (dist < PUSH_RADIUS) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const falloff = 1 - dist / PUSH_RADIUS;
+        const impulse = BURST_SPEED * falloff;
+        bb.velocity[0] += nx * impulse;
+        bb.velocity[1] += ny * impulse;
+        bb.maxSpeed = Math.max(bb.maxSpeed, impulse);
+      }
+    }
+
+    // After a short delay, stop the game, show the death screen, and save
+    setTimeout(() => {
+      this.running = false;
+      window.cancelAnimationFrame(this.frameId);
+      this.audioManager?.stopAll?.();
+      this.tooltip.disable();
+    }, 2500);
+  }
+
+  // prettier-ignore
+  _spawnBlockDestructionAt(block, entity) {
+    const cos = Math.cos(entity.rotation);
+    const sin = Math.sin(entity.rotation);
+    const lx = block.localPosition[0];
+    const ly = block.localPosition[1];
+    const wx = entity.position[0] + lx * cos - ly * sin;
+    const wy = entity.position[1] + lx * sin + ly * cos;
+    this._spawnBlockDestructionParticles(
+      block.gradeID ?? 0,
+      wx,
+      wy,
+      this.getBlockEffectScale(block),
+    );
+  }
+
+  getBlockEffectScale(block) {
+    const grade = Math.max(0, Math.min(14, block?.gradeID ?? 0));
+    let scale = 0.8 + grade * 0.12;
+    if (block?.isTurret) scale *= 0.5;
+    return scale;
+  }
+
+  _spawnProjectileImpactAt(projectile, wx, wy, hitBlock = null) {
+    const scale = Math.max(0.6, projectile?.impactScale ?? 1);
+    const hitGrade = Math.max(0, Math.min(14, hitBlock?.gradeID ?? 0));
+    const color = hitBlock
+      ? (BlockStyle.GRADE_COLORS[hitGrade] ?? BlockStyle.GRADE_COLORS[0])
+      : (projectile?.color ?? "rgba(220, 240, 255, 1)");
+    const count = 3 + Math.floor(scale * 4);
+
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (1.2 + Math.random() * 2.4) * (0.65 + scale * 0.35);
+      const maxLife = (0.09 + Math.random() * 0.12) * (0.85 + scale * 0.2);
+      this.blockDestructionParticles.push({
+        x: wx,
+        y: wy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: maxLife,
+        maxLife,
+        color,
+        size: (0.08 + Math.random() * 0.12) * (0.8 + scale * 0.4),
+      });
+    }
+
+    if (hitBlock) {
+      this._spawnBlockDestructionParticles(
+        hitBlock.gradeID ?? 0,
+        wx,
+        wy,
+        this.getBlockEffectScale(hitBlock) * 0.35,
+      );
+    }
+  }
+
+  // prettier-ignore
+  _spawnBlockDestructionParticles(gradeID, wx, wy, intensity = 1) {
+    const color = BlockStyle.GRADE_COLORS[Math.max(0, Math.min(14, gradeID))] ?? BlockStyle.GRADE_COLORS[0];
+    const count = Math.max(3, Math.round((5 + Math.random() * 4) * intensity));
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (1.5 + Math.random() * 3.5) * (0.7 + intensity * 0.35);
+      const maxLife = (0.25 + Math.random() * 0.3) * (0.8 + intensity * 0.18);
+      this.blockDestructionParticles.push({
+        x: wx, y: wy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: maxLife,
+        maxLife,
+        color,
+        size: (0.25 + Math.random() * 0.35) * (0.75 + intensity * 0.3),
+      });
+    }
+  }
+
+  _tickBlockDestructionParticles() {
+    const dt = this.fdt;
+    let writeIndex = 0;
+    for (const p of this.blockDestructionParticles) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.life -= dt;
+      if (p.life > 0) this.blockDestructionParticles[writeIndex++] = p;
+    }
+    this.blockDestructionParticles.length = writeIndex;
+  }
+
+  // prettier-ignore
+  renderBlockDestructionParticles(ctx, alpha) {
+    if (!ctx || !this.player || this.blockDestructionParticles.length === 0) return;
+
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+
+    let scaleX = this.scale;
+    let scaleY = this.scale;
+    if (this.aspectRatio >= 1) scaleX = this.scale / this.aspectRatio;
+    else scaleY = this.scale * this.aspectRatio;
+
+    const ppuX = scaleX * W * 0.5;
+    const ppuY = scaleY * H * 0.5;
+    const camX = this.player.previousPosition[0] + (this.player.position[0] - this.player.previousPosition[0]) * alpha;
+    const camY = this.player.previousPosition[1] + (this.player.position[1] - this.player.previousPosition[1]) * alpha;
+
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    for (const p of this.blockDestructionParticles) {
+      const t = p.life / p.maxLife;
+      const sx = (p.x - camX) * ppuX + W * 0.5;
+      const sy = H * 0.5 - (p.y - camY) * ppuY;
+      const radius = Math.max(1.5, p.size * ppuX);
+
+      ctx.globalAlpha = t * 0.9;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+    ctx.restore();
   }
 
   // prettier-ignore
@@ -570,6 +1255,11 @@ export default class Game extends WebGLCanvas {
       if (this.showSpaceGrid) {
         this.drawSpaceGrid();
       }
+      this.player?.renderThrusterTrail?.(this.debugOverlay.ctx, this.alpha);
+      for (const enemy of this.enemies.objects) {
+        enemy?.renderThrusterTrail?.(this.debugOverlay.ctx, this.alpha);
+      }
+      this.renderBlockDestructionParticles(this.debugOverlay.ctx, this.alpha);
       if (this.showGridCells) {
         this.grid.debug();
       }
@@ -579,6 +1269,13 @@ export default class Game extends WebGLCanvas {
       this.blockStyle.clearCanvas();
     }
     
+    // Drain a few queued decoration-block texture builds per frame so that
+    // newly loaded chunks never cause a burst lag spike on the main thread.
+    const TEXTURE_BUILDS_PER_FRAME = 3;
+    for (let i = 0; i < TEXTURE_BUILDS_PER_FRAME && this._textureBuildQueue.length > 0; i++) {
+      this._textureBuildQueue.shift()();
+    }
+
     this.bindTextureArray();
 
     const gl = this.gl;
@@ -618,6 +1315,7 @@ export default class Game extends WebGLCanvas {
 
     this.player = new Player(this, model);
     this.coreObjects.add(this.player);
+    this.player.model.onBlockDestroyed = (block) => this._spawnBlockDestructionAt(block, this.player);
   }
 
   /**

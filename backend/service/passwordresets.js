@@ -94,6 +94,10 @@ export async function createForUserWithEmail({ email }) {
 
   if (!user) return true;
 
+  if (!(await PasswordResets.canRequestPasswordReset(user.id))) {
+    return true;
+  }
+
   const { token, tokenHash } = generatePasswordResetToken();
 
   const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 min

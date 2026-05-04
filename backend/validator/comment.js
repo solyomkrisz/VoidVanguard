@@ -3,13 +3,13 @@ import { isValidUUIDv4 } from "../common/common.js";
 export const GET = {
   targetId: {
     in: ["query"],
-  },
-  custom: {
-    options: (value) => {
-      if (!isValidUUIDv4(value)) {
-        throw new Error("Invalid target ID");
-      }
-      return true;
+    custom: {
+      options: (value) => {
+        if (!isValidUUIDv4(value)) {
+          throw new Error("Érvénytelen célazonosító");
+        }
+        return true;
+      },
     },
   },
   page: {
@@ -17,7 +17,7 @@ export const GET = {
     optional: true,
     isInt: {
       options: { min: 1 },
-      errorMessage: "Page must be a positive integer",
+      errorMessage: "Az oldalnak pozitív egész számnak kell lennie",
     },
     toInt: true,
   },
@@ -32,23 +32,12 @@ export const GET = {
 };
 
 export const POST = {
-  // authorId: {
-  //   in: ["body"],
-  //   custom: {
-  //     options: (value) => {
-  //       if (!isValidUUIDv4(value)) {
-  //         throw new Error("Invalid user ID");
-  //       }
-  //       return true;
-  //     },
-  //   },
-  // },
   targetId: {
     in: ["body"],
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid target ID");
+          throw new Error("Érvénytelen célazonosító");
         }
         return true;
       },
@@ -60,7 +49,7 @@ export const POST = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid parent ID");
+          throw new Error("Érvénytelen szülőazonosító");
         }
         return true;
       },
@@ -73,8 +62,9 @@ export const POST = {
         min: 1,
         max: 500,
       },
+      errorMessage:
+        "A tartalom hossza 1 és 500 karakter között kell hogy legyen",
     },
-    errorMessage: "Content cannot be empty",
   },
 };
 
@@ -84,7 +74,7 @@ export const PATCH = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid comment ID");
+          throw new Error("Érvénytelen hozzászólás azonosító");
         }
         return true;
       },
@@ -97,6 +87,8 @@ export const PATCH = {
         min: 1,
         max: 500,
       },
+      errorMessage:
+        "A tartalom hossza 1 és 500 karakter között kell hogy legyen",
     },
   },
 };
@@ -107,7 +99,7 @@ export const DELETE = {
     custom: {
       options: (value) => {
         if (!isValidUUIDv4(value)) {
-          throw new Error("Invalid comment ID");
+          throw new Error("Érvénytelen hozzászólás azonosító");
         }
         return true;
       },

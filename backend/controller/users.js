@@ -22,7 +22,7 @@ export async function search(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "Search successfully completed"));
+      .json(createResponse(true, result, "A keresés sikeresen befejeződött"));
   } catch (error) {
     handleCaughtError(response, error);
   }
@@ -45,31 +45,30 @@ export async function get(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, result, "User fetched successfully"));
+      .json(createResponse(true, result, "A felhasználó sikeresen lekérve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
 }
 
 export async function register(request, response) {
-  const { username, email, gender, password } = request.body;
+  const { username, email, password } = request.body;
 
   try {
     await service.createUser({
       username,
       email,
-      gender,
       password,
     });
 
     response
       .status(201)
-      .json(createResponse(true, null, "User created successfully"));
+      .json(createResponse(true, null, "A felhasználó sikeresen létrehozva"));
   } catch (error) {
     if (isSequelizeUniqueConstraintError(error)) {
       return handleSequelizeUniqueConstraintError(
         response,
-        "Username or email already taken",
+        "A felhasználónév vagy e-mail cím már foglalt",
       );
     }
 
@@ -89,12 +88,12 @@ export async function update(request, response) {
 
     response
       .status(200)
-      .json(createResponse(true, null, "User updated successfully"));
+      .json(createResponse(true, null, "A felhasználó sikeresen frissítve"));
   } catch (error) {
     if (isSequelizeUniqueConstraintError(error)) {
       return handleSequelizeUniqueConstraintError(
         response,
-        "Username or email already taken",
+        "A felhasználónév vagy e-mail cím már foglalt",
       );
     }
     handleCaughtError(response, error);
@@ -106,7 +105,7 @@ export async function remove(request, response) {
     await service.deleteUser({ id: request.targetUser.id });
     response
       .status(200)
-      .json(createResponse(true, null, "Account successfully deleted"));
+      .json(createResponse(true, null, "A fiók sikeresen törölve"));
   } catch (error) {
     handleCaughtError(response, error);
   }
