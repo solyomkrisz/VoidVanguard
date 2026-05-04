@@ -21,7 +21,23 @@ export default class Enemy extends Spaceship {
       behavior: saved.behavior ?? "aggressive",
       difficulty: saved.difficulty ?? 1,
     });
+
+    if (saved.state) {
+      enemy.state = new Uint32Array(saved.state);
+    }
+
+    const enemyRotation = saved.rotation ?? 0;
+    enemy.rotation = enemyRotation;
+    enemy.previousRotation = enemyRotation;
+    vec2.set(enemy.forward, 0, 1);
+    vec2.rotate(enemy.forward, enemyRotation);
+    vec2.normalize(enemy.forward, enemy.forward);
+    vec2.copy(enemy.previousForward, enemy.forward);
+
     enemy.teleportTo(saved.position[0], saved.position[1]);
+    enemy.onRotationChange();
+    enemy.onPositionChange();
+
     return enemy;
   }
 
@@ -230,6 +246,25 @@ export default class Enemy extends Spaceship {
     return out;
   }
 
+  getTurretLocalDirection(turretBlock, out) {
+    vec2.set(out, 0, 1);
+
+    if (!turretBlock) return out;
+
+    const [tx, ty] = turretBlock.localPosition;
+    for (const neighbor of this.model.objects) {
+      if (!neighbor || neighbor === turretBlock) continue;
+
+      const dx = tx - neighbor.localPosition[0];
+      const dy = ty - neighbor.localPosition[1];
+      if (Math.abs(dx) + Math.abs(dy) !== 1) continue;
+
+      return vec2.set(out, dx, dy);
+    }
+
+    return out;
+  }
+
   getTurretBulletColor(block) {
     const hue = 205 - Math.max(0, Math.min(14, block.gradeID ?? 0)) * 10;
     return `hsl(${hue} 100% 62%)`;
@@ -275,10 +310,11 @@ export default class Enemy extends Spaceship {
 
   shootFromTurret(turretBlock, playerCorePosition) {
     const _b = this.game.buffer;
+    const localDirection = this.getTurretLocalDirection(turretBlock, _b.vec2_1);
     const localMuzzle = vec2.set(
-      _b.vec2_1,
-      turretBlock.localPosition[0],
-      turretBlock.localPosition[1] + 0.5,
+      _b.vec2_2,
+      turretBlock.localPosition[0] + localDirection[0] * 0.5,
+      turretBlock.localPosition[1] + localDirection[1] * 0.5,
     );
     vec2.rotate(localMuzzle, this.rotation);
     vec2.add(localMuzzle, localMuzzle, this.position);
@@ -287,8 +323,8 @@ export default class Enemy extends Spaceship {
       localMuzzle[1] - playerCorePosition[1],
     );
     if (distanceToCore > (turretBlock.bulletRange ?? 0)) return;
-    const direction = vec2.sub(_b.vec2_2, playerCorePosition, localMuzzle);
-    if (vec2.len(direction) <= 0.0001) return;
+    const direction = vec2.copy(_b.vec2_3, localDirection);
+    vec2.rotate(direction, this.rotation);
     vec2.normalize(direction, direction);
     const projectile = new Projectile({
       game: this.game,
@@ -328,16 +364,12 @@ export default class Enemy extends Spaceship {
 
       const detached = new BuildingBlock({
         game: this.game,
-        model: new Model([block], Model.COPY_MODE.PRESERVE),
+        model: new Model([block], Model.COPY_MODE.COPY),
         x: wx,
         y: wy,
         vx: driftX,
         vy: driftY,
       });
-
-      // BuildingBlock constructor resets localPosition to (0,0) on the shared block.
-      // Restore it so the enemy model remains consistent until model.clear() removes it.
-      vec2.set(block.localPosition, lx, ly);
       block.toRemove = true;
       this.game.buildingBlocks.add(detached);
     }
@@ -391,16 +423,12 @@ export default class Enemy extends Spaceship {
 
       const detached = new BuildingBlock({
         game: this.game,
-        model: new Model([block], Model.COPY_MODE.PRESERVE),
+        model: new Model([block], Model.COPY_MODE.COPY),
         x: wx,
         y: wy,
         vx: driftX,
         vy: driftY,
       });
-
-      // BuildingBlock constructor resets localPosition to (0,0) on the shared block.
-      // Restore it so the enemy model remains consistent until model.clear() removes it.
-      vec2.set(block.localPosition, lx, ly);
       block.toRemove = true;
       this.game.buildingBlocks.add(detached);
       detachedAny = true;

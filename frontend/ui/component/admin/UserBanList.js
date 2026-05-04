@@ -72,10 +72,10 @@ export default class UserBanList extends LazyItemList {
   renderItem(item) {
     const tr = el("tr");
 
-    const createdAtTd = el("td", {}, [item.created_at]);
-    const expiresAtTd = el("td", {}, [item.expires_at ?? "-"]);
+    const createdAtTd = el("td", {}, [this.formatDate(item.created_at)]);
+    const expiresAtTd = el("td", {}, [this.formatDate(item.expires_at)]);
     const reasonTd = el("td", {}, [item.reason || "-"]);
-    const revokedAtTd = el("td", {}, [item.revoked_at ?? "-"]);
+    const revokedAtTd = el("td", {}, [this.formatDate(item.revoked_at)]);
     const createdByTd = el("td", {}, [item.created_by_name ?? "-"]);
     const revokedByTd = el("td", {}, [item.revoked_by_name ?? "-"]);
 
@@ -112,6 +112,23 @@ export default class UserBanList extends LazyItemList {
 
   extractItems(response) {
     return response?.result?.bans || [];
+  }
+
+  formatDate(value) {
+    if (!value) return "-";
+
+    const normalized = String(value).replace(" ", "T");
+    const date = new Date(normalized);
+    if (Number.isNaN(date.getTime())) return value;
+
+    return date.toLocaleString("hu-HU", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
   }
 }
 

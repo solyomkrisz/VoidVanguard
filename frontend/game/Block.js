@@ -215,6 +215,17 @@ export default class Block {
     block.textureRotation = new Map(blockState.textureRotation);
     block.isRemovable = blockState.isRemovable;
 
+    const savedColliderRotation = Number(blockState.colliderRotation);
+    if (Number.isFinite(savedColliderRotation)) {
+      block.colliderRotationRad = savedColliderRotation;
+    } else {
+      const inferredRotation = block._getAnyTextureRotation();
+      if (Number.isFinite(inferredRotation) && Math.abs(inferredRotation) > 1e-6) {
+        const colliderAngle = inferredRotation;
+        block.setColliderRotation(colliderAngle);
+      }
+    }
+
     return block;
   }
 
@@ -226,6 +237,8 @@ export default class Block {
     this.spriteID = spriteID;
     this.gradeID = gradeID;
     this.textureRotation = new Map();
+    this.colliderRotationRad = 0;
+    this._ownsShape = false;
     this.mass = mass;
     this.isRemovable = true;
     this.toRemove = false;
@@ -261,6 +274,7 @@ export default class Block {
       shootCooldown: block.shootCooldown,
     });
     newBlock.isRemovable = block.isRemovable;
+    newBlock.colliderRotationRad = block.colliderRotationRad ?? 0;
     return newBlock;
   }
 
@@ -272,6 +286,7 @@ export default class Block {
       spriteID: this.spriteID,
       gradeID: this.gradeID,
       textureRotation: [...this.textureRotation],
+      colliderRotation: this.colliderRotationRad,
       mass: this.mass,
       isRemovable: this.isRemovable,
       health: this.health,
@@ -300,6 +315,50 @@ export default class Block {
     return this.textureRotation.has(textureName)
       ? this.textureRotation.get(textureName)
       : 0;
+  }
+
+  _getAnyTextureRotation() {
+    for (const value of this.textureRotation.values()) {
+      if (Number.isFinite(value)) return value;
+    }
+
+    return 0;
+  }
+
+  _ensureUniqueShape() {
+    if (this._ownsShape) return;
+
+    this.shape = Shape.from(this.shape.exportSave());
+    this._ownsShape = true;
+  }
+
+  setColliderRotation(targetRad = 0) {
+    if (!Number.isFinite(targetRad)) return this;
+
+    const delta = targetRad - (this.colliderRotationRad ?? 0);
+    if (Math.abs(delta) <= 1e-6) {
+      this.colliderRotationRad = targetRad;
+      return this;
+    }
+
+    this._ensureUniqueShape();
+
+    const c = Math.cos(delta);
+    const s = Math.sin(delta);
+    const vertices = this.shape.vertices;
+
+    for (let i = 0; i < vertices.length; i += 2) {
+      const x = vertices[i];
+      const y = vertices[i + 1];
+
+      vertices[i] = x * c - y * s;
+      vertices[i + 1] = x * s + y * c;
+    }
+
+    this.colliderRotationRad = targetRad;
+    this.I = this.shape.getMomentOfInertiaAndCoM(this.mass, this.CoM);
+
+    return this;
   }
 
   onRemove(parent) {

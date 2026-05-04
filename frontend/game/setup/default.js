@@ -3,7 +3,7 @@ import Mouse from "/game/Mouse.js";
 import Keyboard from "/game/Keyboard.js";
 import DebugOverlay from "/game/DebugOverlay.js";
 import DebugPanel from "/game/DebugPanel.js";
-import Models, { MODELFACTORY } from "/game/SpaceShipModels.js";
+import { MODELFACTORY } from "/game/SpaceShipModels.js";
 import TextureManager from "/game/TextureManager.js";
 import * as UI from "/ui/UI.js";
 import Sprite from "/game/Sprite.js";
@@ -148,49 +148,51 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
   game.setDebugOverlay(debugOverlay);
   debugOverlay.init();
 
-  const debug = new DebugPanel();
-  debug.setSource(game);
+  if (!isTouch) {
+    const debug = new DebugPanel();
+    debug.setSource(game);
 
-  debug.addElement("frames");
-  debug.bindSource("frames", "frames", (p) => (p.src.frames = 0));
+    debug.addElement("frames");
+    debug.bindSource("frames", "frames", (p) => (p.src.frames = 0));
 
-  debug.addElement("ticks");
-  debug.bindSource("ticks", "ticks", (p) => (p.src.ticks = 0));
+    debug.addElement("ticks");
+    debug.bindSource("ticks", "ticks", (p) => (p.src.ticks = 0));
 
-  debug.addElement("seed");
-  debug.bindSource("seed", "seed");
+    debug.addElement("seed");
+    debug.bindSource("seed", "seed");
 
-  debug.addElement("playerRotation", "12vmin");
-  debug.bindSource(
-    "playerRotation",
-    "playerRotation",
-    (p) => (p.src.playerRotation = game.player.rotation),
-  );
+    debug.addElement("playerRotation", "12vmin");
+    debug.bindSource(
+      "playerRotation",
+      "playerRotation",
+      (p) => (p.src.playerRotation = game.player.rotation),
+    );
 
-  debug.addElement("P XY", "18vmin");
-  debug.bindSource(
-    "P XY",
-    "playerPosition",
-    (p) =>
-      (p.src.playerPosition = [
-        p.src.player.position[0].toFixed(4),
-        p.src.player.position[1].toFixed(4),
-      ]),
-  );
+    debug.addElement("P XY", "18vmin");
+    debug.bindSource(
+      "P XY",
+      "playerPosition",
+      (p) =>
+        (p.src.playerPosition = [
+          p.src.player.position[0].toFixed(4),
+          p.src.player.position[1].toFixed(4),
+        ]),
+    );
 
-  debug.addElement("M XY", "18vmin");
-  debug.bindSource(
-    "M XY",
-    "mousePosition",
-    (p) =>
-      (p.src.mousePosition = [
-        p.src.mouse.position[0].toFixed(4),
-        p.src.mouse.position[1].toFixed(4),
-      ]),
-  );
+    debug.addElement("M XY", "18vmin");
+    debug.bindSource(
+      "M XY",
+      "mousePosition",
+      (p) =>
+        (p.src.mousePosition = [
+          p.src.mouse.position[0].toFixed(4),
+          p.src.mouse.position[1].toFixed(4),
+        ]),
+    );
 
-  game.setDebugPanel(debug); // ?
-  game.startDebugging(); // ?
+    game.setDebugPanel(debug); // ?
+    game.startDebugging(); // ?
+  }
 
   //#region texture
   const tm = new TextureManager(game);

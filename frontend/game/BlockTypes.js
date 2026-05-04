@@ -12,29 +12,14 @@ const RECTCOLLIDER = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5,
 // SMALL RECTANGLE COLLIDER
 const S_RECTCOLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
 
-// SPECIAL TURRET COLLIDERS
-// S.U.L.O - Szingularitás-alapú Ultra-Lézer Oscillátor
-const SULO_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.01, 1, 0.01, 1, 0.1, -0.5, -0.1, -0.5);
-
-// Aphelion
-const APHELION_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.065, 1, 0.065, 1, 0.3, -0.5, -0.3, -0.5);
-
-// Sigma-Impulzuságyú
-const SIGMA_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.25, 1, 0.25, 1, 0.2, -0.5, -0.2, -0.5);
+// THRUSTER COLLIDER (full top height, trimmed bottom)
+const THRUSTER_COLLIDER = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.35, -0.5, -0.35);
 
 // TURRET COLLIDERS
 const N1_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0, 0.1, 0, 0.15, -0.5, -0.15, -0.5); // TURRET
 const N2_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0.25, 0.1, 0.25, 0.15, -0.5, -0.15, -0.5); // TALLER TURRET
 const N3_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0.375, 0.1, 0.375, 0.15, -0.5, -0.15, -0.5); // TALLEST TURRET
 
-// SIDE TURRET COLLIDERS
-const R1_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.25, 0.1, 0.25, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED
-const R2_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.35, 0.1, 0.35, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED TALLER
-const R3_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.10, 0.5, 0.1, 0.5, 0.15, -0.375, -0.5, -0.35); // RIGHT ANGLED TALLEST
-const L1_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.25, -0.1, 0.25, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED
-const L2_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.35, -0.1, 0.35, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED TALLER
-const L3_SIDETURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, 0.10, 0.5, -0.1, 0.5, -0.15, -0.375, 0.5, -0.35); // LEFT ANGLED TALLEST
-//#endregion
 
 // FŐLEG ANYAGSŰRŰSÉG ALAPJÁN SZÁMOLT TÖMEGÉRTÉKEK (kg/dm³)
 const MASS_VALUES = Object.freeze({
@@ -305,7 +290,7 @@ const BLOCK_TYPES = {
 
   // Thruster block - propulsion attachment
   THRUSTER: {
-    shape: RECTCOLLIDER,
+    shape: THRUSTER_COLLIDER,
     spriteID: SpriteID.THRUSTER,
     mass: 1.2,
     gradeID: 0,

@@ -50,20 +50,23 @@ function pickArchetypeByDifficulty(difficulty, rng = Math.random) {
     if (r < 0.63) return "CRUISER";
     if (r < 0.73) return "FIGHTER";
     if (r < 0.82) return "RAMMER";
-    if (r < 0.92) return "DESTROYER";
+    if (r < 0.90) return "DESTROYER";
+    if (r < 0.96) return "BROADSIDER";
     return "BOMBER";
   }
 
   const r = rng();
-  if (r < 0.13) return "RAIDER";
-  if (r < 0.26) return "INTERCEPTOR";
-  if (r < 0.39) return "GUNSHIP";
-  if (r < 0.50) return "STALKER";
-  if (r < 0.59) return "CRUISER";
-  if (r < 0.68) return "DESTROYER";
-  if (r < 0.76) return "BOMBER";
-  if (r < 0.84) return "RAMMER";
-  if (r < 0.93) return "DREADNOUGHT";
+  if (r < 0.10) return "RAIDER";
+  if (r < 0.20) return "INTERCEPTOR";
+  if (r < 0.30) return "GUNSHIP";
+  if (r < 0.39) return "STALKER";
+  if (r < 0.47) return "CRUISER";
+  if (r < 0.55) return "DESTROYER";
+  if (r < 0.63) return "BOMBER";
+  if (r < 0.70) return "RAMMER";
+  if (r < 0.79) return "BROADSIDER";
+  if (r < 0.88) return "PORT_BURNER";
+  if (r < 0.96) return "DREADNOUGHT";
   return "FIGHTER";
 }
 
@@ -224,10 +227,61 @@ function getArchetypeBlueprint(selected, blockType, turretType) {
           createCore(),
           createBlock(-1, 0, blockType),
           createBlock(1, 0, blockType),
-          createBlock(0, 1, turretType),
+          createBlock(0, 1, blockType),
           createBlock(0, 2, turretType),
           makeThruster(-1, -1, true, 15),
           makeThruster(1, -1, true, 15),
+        ],
+      };
+
+    case "BROADSIDER":
+      return {
+        speedMultiplier: 0.76,
+        turnRateMultiplier: 0.72,
+        objects: [
+          createCore(),
+          createBlock(-1,  0, blockType),
+          createBlock( 1,  0, blockType),
+          createBlock(-2,  0, blockType),
+          createBlock( 2,  0, blockType),
+          createBlock(-3,  0, blockType),
+          createBlock( 3,  0, blockType),
+          createBlock(-2, -1, blockType),
+          createBlock( 2, -1, blockType),
+          createBlock(-3,  1, turretType),
+          createBlock(-2,  1, turretType),
+          createBlock(-1,  1, turretType),
+          createBlock( 1,  1, turretType),
+          createBlock( 2,  1, turretType),
+          createBlock( 3,  1, turretType),
+          makeThruster(-1, -1, true, 14),
+          makeThruster( 1, -1, true, 14),
+          makeThruster( 0, -1),
+        ],
+      };
+
+    case "PORT_BURNER":
+      return {
+        speedMultiplier: 1.34,
+        turnRateMultiplier: 1.30,
+        objects: [
+          createCore(),
+          createBlock(-3,  0, blockType),
+          createBlock(-1,  0, blockType),
+          createBlock( 1,  0, blockType),
+          createBlock(-2,  0, blockType),
+          createBlock( 2,  0, blockType),
+          createBlock(-1,  1, blockType),
+          createBlock( 0,  1, blockType),
+          createBlock( 1,  1, blockType),
+          createBlock( 1, -1, blockType),
+          createBlock(-1,  2, turretType),
+          createBlock( 0,  2, turretType),
+          createBlock( 1,  2, turretType),
+          makeThruster(-3, -1, true, 15),
+          makeThruster(-2, -1, true, 15),
+          makeThruster(-1, -1, true, 15),
+          makeThruster( 1, -2),
         ],
       };
 
@@ -416,14 +470,14 @@ coreBlock.isRemovable = false;
 
 const PLAYER = [
   coreBlock,
-  createBlock(1 - offset, 0, "BLOCK_15"),
-  createBlock(-1 + offset, 0, "BLOCK_15"),
-  createBlock(0, 1 - offset, "BLOCK_15"),
-  createBlock(0, 2 - offset, "TURRET_15"),
-  createBlock(-1, -1 - offset, "BLOCK_15"),
-  createBlock(1, -1 - offset, "BLOCK_15"),
-  createBlock(1, 1 - offset, "TURRET_15"),
-  createBlock(-1, 1 - offset, "TURRET_15"),
+  createBlock(1 - offset, 0, "BLOCK_1"),
+  createBlock(-1 + offset, 0, "BLOCK_1"),
+  createBlock(0, 1 - offset, "BLOCK_1"),
+  createBlock(0, 2 - offset, "TURRET_1"),
+  createBlock(-1, -1 - offset, "BLOCK_1"),
+  createBlock(1, -1 - offset, "BLOCK_1"),
+  createBlock(1, 1 - offset, "TURRET_1"),
+  createBlock(-1, 1 - offset, "TURRET_1"),
   new Thruster({
     x: -1, y: -2, shape: new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5), spriteID: SpriteID.THRUSTER, mass: 1, health: 1, Isp: 100, massFlowRate: 100, hasGimbal: true, gimbalRange: 15
   }),
@@ -432,25 +486,6 @@ const PLAYER = [
   })
 ];
 
-// scout models, scouts for resources and is not/lightly armed
-const SCOUT1 = [
-  createBlock(0, 0, 'BLOCK_1'),
-];
-const SCOUT2 = [
-  createBlock(0, 0, 'BLOCK_1'),
-  createBlock(0, 1, 'BLOCK_1'),
-  createBlock(-1, 0, 'BLOCK_1'),
-  createBlock(0, -1, 'BLOCK_1'),
-];
-
-// ── Enemy ship archetypes ────────────────────────────────────────────
-
-// ── Beginner archetypes ──────────────────────────────────────────────
-
-// ENEMY_DART — bare-minimum speed demon: core + 1 gimballed thruster, no turret
-// Layout (y↑):
-//   [C]
-//  [THR]
 function buildEnemyDart() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -460,11 +495,6 @@ function buildEnemyDart() {
   ];
 }
 
-// ENEMY_SENTINEL — defensive turret platform: 2 side blocks, 2 front turrets, 1 rear thruster
-// Layout (y↑):
-//   [T1][T1]
-//   [B1][C][B1]
-//      [THR]
 function buildEnemySentinel() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -478,11 +508,7 @@ function buildEnemySentinel() {
   ];
 }
 
-// ENEMY_SKIFF — balanced entry craft: 2 side blocks, 1 forward turret, 2 rear thrusters
-// Layout (y↑):
-//      [T1]
-//   [B1][C][B1]
-//   [THR]   [THR]
+
 function buildEnemySkiff() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -496,13 +522,6 @@ function buildEnemySkiff() {
   ];
 }
 
-// ── Mid-low archetypes (difficulty 4–7) ─────────────────────────────
-
-// ENEMY_CORVETTE — three-turret line cruiser: core + 2 blocks + 3 forward turrets
-// Layout (y↑):
-//   [T4][T4][T4]
-//   [B4][C][B4]
-//   [THR]   [THR]
 function buildEnemyCorvette() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -518,13 +537,6 @@ function buildEnemyCorvette() {
   ];
 }
 
-// ENEMY_LANCER — fast needle: elongated forward hull, 2 tip turrets, 2 gimballed thrusters
-// Layout (y↑):
-//   [T5][T5]
-//      [B5]
-//      [B5]
-//   [B5][C][B5]
-//   [THR]   [THR]
 function buildEnemyLancer() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -541,14 +553,6 @@ function buildEnemyLancer() {
   ];
 }
 
-// ── Mid-high archetypes (difficulty 8–11) ───────────────────────────
-
-// ENEMY_CRUISER — armored heavy patrol: wide wings, 4 turrets, 3 thrusters
-// Layout (y↑):
-//   [T9][T9]   [T9][T9]
-//   [B9][B9][C][B9][B9]
-//        [B9]   [B9]
-//   [THR]  [THR]  [THR]
 function buildEnemyCruiser() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -570,11 +574,6 @@ function buildEnemyCruiser() {
   ];
 }
 
-// ENEMY_STALKER — agile flanker: wide spread, 3 turrets, 2 fast gimballed thrusters
-// Layout (y↑):
-//   [T9]   [T9]   [T9]
-//   [B9][B9][C][B9][B9]
-//       [THR]   [THR]
 function buildEnemyStalker() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -592,11 +591,6 @@ function buildEnemyStalker() {
   ];
 }
 
-// ENEMY_SCOUT — swift interceptor: 1 turret, 1 center thruster
-// Layout (y↑):
-//      [T1]
-//   [B1][C][B1]
-//      [THR]
 function buildEnemyScout() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -609,11 +603,6 @@ function buildEnemyScout() {
   ];
 }
 
-// ENEMY_FIGHTER — standard combatant: 2 flanking turrets, 2 thrusters
-// Layout (y↑):
-//   [T3]   [T3]
-//   [B3][C][B3]
-//   [THR]   [THR]
 function buildEnemyFighter() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -628,12 +617,6 @@ function buildEnemyFighter() {
   ];
 }
 
-// ENEMY_GUNSHIP — heavy strike craft: wide wing span, 3 turrets, 4 thrusters
-// Layout (y↑):
-//            [T6]
-//   [T6][B5][B5][C][B5][B5][T6]
-//        [B5]         [B5]
-//       [THR][THR]   [THR][THR]
 function buildEnemyGunship() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -656,13 +639,6 @@ function buildEnemyGunship() {
   ];
 }
 
-// ENEMY_DESTROYER — battle cruiser: broad armored hull, 3 front turrets, 4 thrusters
-// Layout (y↑):
-//   [T8][B7][T8][B7][T8]
-//   [B7][B7][C][B7][B7]
-//      [B7][B7][B7]
-//     [THR]   [THR]
-//     [THR]   [THR]
 function buildEnemyDestroyer() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -690,11 +666,6 @@ function buildEnemyDestroyer() {
   ];
 }
 
-// ENEMY_RAIDER — fast flanker: 2 turrets, 2 gimballed thrusters
-// Layout (y↑):
-//   [T4][T4]
-//   [B4][C][B4]
-//   [THR]   [THR]
 function buildEnemyRaider() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -709,12 +680,6 @@ function buildEnemyRaider() {
   ];
 }
 
-// ENEMY_INTERCEPTOR — high-speed pursuit craft: forward double-turret, 2 gimballed thrusters
-// Layout (y↑):
-//      [T10]
-//      [T10]
-//   [B10][C][B10]
-//   [THR]   [THR]
 function buildEnemyInterceptor() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -722,19 +687,60 @@ function buildEnemyInterceptor() {
     core,
     createBlock(-1,  0, "BLOCK_10"),
     createBlock( 1,  0, "BLOCK_10"),
-    createBlock( 0,  1, "TURRET_10"),
+    createBlock( 0,  1, "BLOCK_10"),
     createBlock( 0,  2, "TURRET_10"),
     makeThruster(-1, -1, true, 15),
     makeThruster( 1, -1, true, 15),
   ];
 }
 
-// ENEMY_RAMMER — armored battering ram: dense block tower, 2 gimballed thrusters
-// Layout (y↑):
-//      [B8]
-//   [B8][B8][B8]
-//   [B8][C][B8]
-//   [THR]   [THR]
+function buildEnemyBroadsider() {
+  const core = createBlock(0, 0, "CORE");
+  core.isRemovable = false;
+  return [
+    core,
+    createBlock(-1,  0, "BLOCK_13"),
+    createBlock( 1,  0, "BLOCK_13"),
+    createBlock(-2,  0, "BLOCK_13"),
+    createBlock( 2,  0, "BLOCK_13"),
+    createBlock(-3,  0, "BLOCK_13"),
+    createBlock( 3,  0, "BLOCK_13"),
+    createBlock(-3,  1, "TURRET_13"),
+    createBlock(-2,  1, "TURRET_13"),
+    createBlock(-1,  1, "TURRET_13"),
+    createBlock( 1,  1, "TURRET_13"),
+    createBlock( 2,  1, "TURRET_13"),
+    createBlock( 3,  1, "TURRET_13"),
+    makeThruster(-1, -1, true, 14),
+    makeThruster( 1, -1, true, 14),
+    makeThruster( 0, -1),
+  ];
+}
+
+function buildEnemyPortBurner() {
+  const core = createBlock(0, 0, "CORE");
+  core.isRemovable = false;
+  return [
+    core,
+    createBlock(-3,  0, "BLOCK_14"),
+    createBlock(-1,  0, "BLOCK_14"),
+    createBlock( 1,  0, "BLOCK_14"),
+    createBlock(-2,  0, "BLOCK_14"),
+    createBlock( 2,  0, "BLOCK_14"),
+    createBlock(-1,  1, "BLOCK_14"),
+    createBlock( 0,  1, "BLOCK_14"),
+    createBlock( 1,  1, "BLOCK_14"),
+    createBlock( 1, -1, "BLOCK_14"),
+    createBlock(-1,  2, "TURRET_14"),
+    createBlock( 0,  2, "TURRET_14"),
+    createBlock( 1,  2, "TURRET_14"),
+    makeThruster(-3, -1, true, 15),
+    makeThruster(-2, -1, true, 15),
+    makeThruster(-1, -1, true, 15),
+    makeThruster( 1, -2),
+  ];
+}
+
 function buildEnemyRammer() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -751,12 +757,6 @@ function buildEnemyRammer() {
   ];
 }
 
-// ENEMY_BOMBER — slow heavy bomber: wide wings, 5 turrets, 2 rear thrusters
-// Layout (y↑):
-//   [T][T12][T]
-//   [T11][B11][B11][C][B11][B11][T11]
-//             [B11]   [B11]
-//             [THR]   [THR]
 function buildEnemyBomber() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -778,13 +778,6 @@ function buildEnemyBomber() {
   ];
 }
 
-// ENEMY_DREADNOUGHT — flagship: massive armored hull, 5 turrets, 5 thrusters
-// Layout (y↑):
-//   [T15]   [T15][T15][T15]   [T15]
-//   [B15][B15][B15][C][B15][B15][B15]
-//        [B15][B15] [B15][B15]
-//        [THR]       [THR]
-//   [THR]     [THR]     [THR]
 function buildEnemyDreadnought() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -832,17 +825,8 @@ const DEBUG_MODEL = [
   createBlock(-1, -1, 'BLOCK_10'),
 ];
 
-const MODELS = {
-    PLAYER: new Model(PLAYER),
-    SCOUT1: new Model(SCOUT1),
-    SCOUT2: new Model(SCOUT2),
-    DEBUG_MODEL: new Model(DEBUG_MODEL),
-};
-
 export const MODELFACTORY = {
   PLAYER:               () => new Model(PLAYER),
-  SCOUT1:               () => new Model(SCOUT1),
-  SCOUT2:               () => new Model(SCOUT2),
   DEBUG_MODEL:          () => new Model(DEBUG_MODEL),
   ENEMY_DART:           () => new Model(buildEnemyDart()),
   ENEMY_SENTINEL:       () => new Model(buildEnemySentinel()),
@@ -853,6 +837,8 @@ export const MODELFACTORY = {
   ENEMY_LANCER:         () => new Model(buildEnemyLancer()),
   ENEMY_RAIDER:         () => new Model(buildEnemyRaider()),
   ENEMY_INTERCEPTOR:    () => new Model(buildEnemyInterceptor()),
+  ENEMY_BROADSIDER:     () => new Model(buildEnemyBroadsider()),
+  ENEMY_PORT_BURNER:    () => new Model(buildEnemyPortBurner()),
   ENEMY_RAMMER:         () => new Model(buildEnemyRammer()),
   ENEMY_GUNSHIP:        () => new Model(buildEnemyGunship()),
   ENEMY_CRUISER:        () => new Model(buildEnemyCruiser()),
@@ -862,4 +848,3 @@ export const MODELFACTORY = {
   ENEMY_DREADNOUGHT:    () => new Model(buildEnemyDreadnought()),
 }
 
-export default MODELS;

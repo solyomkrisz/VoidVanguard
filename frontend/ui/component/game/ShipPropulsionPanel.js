@@ -12,9 +12,14 @@ export default class ShipPropulsionPanel extends HTMLElement {
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
         :host {
+          --panel-width: clamp(13.5rem, 31vw, 16.5rem);
+
           position: absolute;
           z-index: 1002;
-          min-width: 250px;
+          width: var(--panel-width);
+          min-width: var(--panel-width);
+          max-width: min(92vw, 18rem);
+          max-height: min(80dvh, 36rem);
           display: flex;
           flex-direction: column;
           border-radius: 8px;
@@ -68,11 +73,31 @@ export default class ShipPropulsionPanel extends HTMLElement {
         :host {
           overflow: hidden;
           transition: max-height 0.22s ease;
-          max-height: 600px;
+          max-height: min(80dvh, 36rem);
         }
 
         :host([data-collapsed]) {
           max-height: 24px;
+        }
+
+        @media (max-width: 900px), (hover: none) and (pointer: coarse) {
+          :host {
+            --panel-width: min(58vw, 13rem);
+            width: var(--panel-width);
+            min-width: var(--panel-width);
+            max-width: var(--panel-width);
+            max-height: min(70dvh, 20rem);
+          }
+        }
+
+        @media (max-width: 560px), (max-height: 560px) {
+          :host {
+            --panel-width: min(52vw, 11rem);
+            width: var(--panel-width);
+            min-width: var(--panel-width);
+            max-width: var(--panel-width);
+            max-height: min(66dvh, 16.5rem);
+          }
         }
     `);
     this.shadowRoot.adoptedStyleSheets = [sheet];

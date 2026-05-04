@@ -81,21 +81,32 @@ export default class Game extends WebGLCanvas {
       parsed = Save.parse(save.game_state);
     else parsed = save.game_state;
 
-    const game = new Game(parsed.seed, parsed.game_id);
+    const recoveredGameId = save?.game_id ?? parsed.game_id;
+    const game = new Game(parsed.seed, recoveredGameId);
     game.loadedSave = save;
+    const loadedSaveType = save?.save_type ?? save?.saveType;
+    if (loadedSaveType === "local" || loadedSaveType === "remote") {
+      game.saveType = loadedSaveType;
+    }
     setupGame(game, new Model(Save.recoverModelObjects(parsed.player.model)));
 
     for (const enemy of parsed.enemies) {
-      game.enemies.add(Save.recoverEntity(enemy, game));
+      const recoveredEnemy = Save.recoverEntity(enemy, game);
+      recoveredEnemy.model.applyTextureRotations(game.textureManager);
+      game.enemies.add(recoveredEnemy);
     }
 
     game.player.score = parsed.player.score;
-    game.player.rotation = parsed.player.rotation ?? 0;
+    const playerRotation = parsed.player.rotation ?? 0;
+    game.player.rotation = playerRotation;
     game.player.teleportTo(...parsed.player.position);
-    game.player.rotation = parsed.player.rotation;
-
-    game.activeControls.add("EngineIgnite");
-    game.player.UI.flightComputer.setAutopilot(true);
+    game.player.previousRotation = playerRotation;
+    vec2.set(game.player.forward, 0, 1);
+    vec2.rotate(game.player.forward, playerRotation);
+    vec2.normalize(game.player.forward, game.player.forward);
+    vec2.copy(game.player.previousForward, game.player.forward);
+    game.player.onRotationChange();
+    game.player.onPositionChange();
 
     return game;
   }
@@ -195,7 +206,7 @@ export default class Game extends WebGLCanvas {
     this.enemySpawnInterval = 18;
     this.enemySpawnTimer = this.enemySpawnInterval;
     this.enemyInitialCount = 25;
-    this.enemySpawnCellArea = 15; // 15x15 grid-cell spawn area around player
+    this.enemySpawnCellArea = 15; 
     this.enemySpawnMinDistance = 28;
     this.enemySpawnMaxDistance = 52;
     this.enemySpawnMinSpacing = 12;
@@ -459,19 +470,44 @@ export default class Game extends WebGLCanvas {
       return;
     }
 
-    // Spawn one enemy; use a shorter interval while the arena is significantly
-    // below cap so recovery after a burst of kills feels immediate.
-    if (this.trySpawnEnemy(difficulty)) {
+    // Spawn a small batch so population recovers consistently even after bursts of deaths.
+    const targetBatch = Math.max(1, Math.min(deficit, Math.ceil(deficit / 3)));
+    let spawned = 0;
+    let attempts = 0;
+    const maxAttempts = Math.max(6, targetBatch * 8);
+
+    while (spawned < targetBatch && attempts < maxAttempts) {
+      attempts++;
+      if (this.trySpawnEnemy(difficulty)) {
+        spawned++;
+      }
+    }
+
+    if (spawned > 0) {
       const catchUp = deficit > 1
-        ? Math.max(2, spawnInterval / Math.min(deficit, 4))
+        ? Math.max(1.2, spawnInterval / Math.min(deficit, 5))
         : spawnInterval;
       this.enemySpawnTimer = catchUp;
     } else {
-      this.enemySpawnTimer = Math.min(5, spawnInterval);
+      this.enemySpawnTimer = Math.min(2, spawnInterval);
     }
   }
 
   async finishSave() {
+    const localSaveKey = this.loadedSave?.game_id ?? this.game_id;
+    const localSaves = getLocalSaves();
+
+    let inferredSaveType =
+      this.saveType ?? this.loadedSave?.save_type ?? this.loadedSave?.saveType;
+
+    if (!inferredSaveType && localSaves.has(localSaveKey)) {
+      inferredSaveType = "local";
+    }
+
+    if (inferredSaveType === "local" || inferredSaveType === "remote") {
+      this.saveType = inferredSaveType;
+    }
+
     // Játék befejezése ha nem volt mentve
     if (!["local", "remote"].includes(this.saveType)) {
       ToastManager.REQUEST(
@@ -482,17 +518,33 @@ export default class Game extends WebGLCanvas {
 
     // Ha mentve volt
     if (this.saveType === "local") {
-      const localSaves = getLocalSaves();
-
-      localSaves.set(this.game_id, {
+      const existingSave = localSaves.get(localSaveKey) ?? this.loadedSave ?? {};
+      const completedSave = {
+        ...existingSave,
         ...this.loadedSave,
-        game_id: this.game_id,
+        game_id: localSaveKey,
+        save_name:
+          existingSave.save_name ?? this.loadedSave?.save_name ?? "Unnamed Save",
         game_state: this.exportSave(),
         is_finished: 1,
+        created_at: existingSave.created_at ?? this.loadedSave?.created_at ?? Date.now(),
         updated_at: Date.now(),
-      });
+        save_type: "local",
+      };
+
+      localSaves.set(localSaveKey, completedSave);
+
+      if (this.game_id !== localSaveKey) {
+        localSaves.delete(this.game_id);
+      }
+
+      this.loadedSave = completedSave;
 
       localStorage.setItem("localSaves", JSON.stringify([...localSaves]));
+
+      document.dispatchEvent(
+        new CustomEvent("game-saved", { detail: { saveType: "local" } }),
+      );
 
       return;
     }
@@ -513,6 +565,9 @@ export default class Game extends WebGLCanvas {
     }
 
     ToastManager.REQUEST("A játék meg lett jelölve befejezettként");
+    document.dispatchEvent(
+      new CustomEvent("game-saved", { detail: { saveType: "remote" } }),
+    );
 
     // kiléptetés vagy endscreen mutatása
   }
@@ -936,6 +991,14 @@ export default class Game extends WebGLCanvas {
     this.objects.merge(this.coreObjects, this.enemies, this.projectiles, this.buildingBlocks);
     this.grid.filter().iterate();
 
+    const playerHasLiveCore = this.player?.model?.objects?.some(
+      (block) => block && !block.isRemovable && !block.toRemove && block.health > 0,
+    );
+
+    if (!this.isFinished && this.player && !playerHasLiveCore) {
+      this.player.setState(GlobalState.DEAD);
+    }
+
     if (!this.isFinished && this.player?.hasState(GlobalState.DEAD)) {
       this.triggerPlayerDeath();
     }
@@ -948,6 +1011,8 @@ export default class Game extends WebGLCanvas {
   triggerPlayerDeath() {
     if (this.isFinished) return;
     this.isFinished = true;
+    this.UI.deathScreen?.show();
+    this.finishSave();
 
     const KILL_RADIUS = 50;
     const PUSH_RADIUS = 80;
@@ -1008,8 +1073,6 @@ export default class Game extends WebGLCanvas {
       window.cancelAnimationFrame(this.frameId);
       this.audioManager?.stopAll?.();
       this.tooltip.disable();
-      this.UI.deathScreen?.show();
-      this.finishSave();
     }, 2500);
   }
 

@@ -43,11 +43,17 @@ export default class Player extends Spaceship {
 
     this.UI = {};
 
-    // Creating UI - inserted directly into body so they can position themselves absolutely
+    // Creating UI: propulsion panel is body-level (draggable), flight computer is inside controller container
     // prettier-ignore
     {
       this.UI.propulsionPanel = UI.element("ship-propulsion-panel").setSource(this).insertInto();
-      this.UI.flightComputer = UI.element("flight-computer").setSource(this).insertInto();
+      const flightComputer = UI.element("flight-computer").setSource(this);
+      if (this.game.UI?.controllerContainer?.appendShadowChild) {
+        this.game.UI.controllerContainer.appendShadowChild(flightComputer);
+      } else {
+        flightComputer.insertInto();
+      }
+      this.UI.flightComputer = flightComputer;
     }
 
     this.updatePropulsion = this.manualPropulsionUpdate;
@@ -149,12 +155,83 @@ export default class Player extends Spaceship {
     return BlockStyle.getColorForGrade(grade);
   }
 
-  shoot(localMuzzle, projectileSpeedX, projectileSpeedY, cooldown, dmg = 0, color = "hsl(200 100% 62%)", range = 0) {
+  getTurretLocalDirection(block, out) {
+    vec2.set(out, 0, 1);
+
+    // Prefer mount geometry: turrets fire away from their connected neighbor.
+    // This is robust for captured enemy parts even if texture rotation metadata is stale.
+    if (block) {
+      const [bx, by] = block.localPosition;
+      for (const neighbor of this.model.objects) {
+        if (!neighbor || neighbor === block) continue;
+
+        const dx = bx - neighbor.localPosition[0];
+        const dy = by - neighbor.localPosition[1];
+        if (Math.abs(dx) + Math.abs(dy) !== 1) continue;
+
+        return vec2.set(out, dx, dy);
+      }
+    }
+
+    const sprite = this.game.textureManager?.sprites?.[block?.spriteID];
+    if (!sprite) return out;
+
+    const textureName = sprite.getCurrentTexture?.() ?? sprite.frames?.[0]?.textureName;
+    if (!textureName) return out;
+
+    const angle = block.getTextureRotation(textureName);
+    if (Number.isFinite(angle) && Math.abs(angle) > 0) {
+      vec2.rotate(out, angle);
+    }
+
+    return out;
+  }
+
+  shootFromTurret(block) {
+    const _b = this.game.buffer;
+    const localDirection = this.getTurretLocalDirection(block, _b.vec2_1);
+
+    const localMuzzle = vec2.set(
+      _b.vec2_2,
+      block.localPosition[0] + localDirection[0] * 0.5,
+      block.localPosition[1] + localDirection[1] * 0.5,
+    );
+
+    const shotDirection = vec2.copy(_b.vec2_1, localDirection);
+    vec2.rotate(shotDirection, this.rotation);
+    vec2.normalize(shotDirection, shotDirection);
+
+    const bulletColor = this.getTurretBulletColor(block);
+    this.shoot(
+      localMuzzle,
+      0,
+      block.bulletSpeed,
+      block.shootCooldown,
+      block.bulletDamage,
+      bulletColor,
+      block.bulletRange,
+      shotDirection,
+    );
+  }
+
+  shoot(
+    localMuzzle,
+    projectileSpeedX,
+    projectileSpeedY,
+    cooldown,
+    dmg = 0,
+    color = "hsl(200 100% 62%)",
+    range = 0,
+    directionOverride = null,
+  ) {
     const muzzle = vec2.copy(this.game.buffer.vec2_3, localMuzzle);
     vec2.rotate(muzzle, this.rotation);
     vec2.add(muzzle, muzzle, this.position);
 
-    const shotDirection = vec2.copy(this.game.buffer.vec2_2, this.forward);
+    const shotDirection = directionOverride
+      ? vec2.copy(this.game.buffer.vec2_2, directionOverride)
+      : vec2.copy(this.game.buffer.vec2_2, this.forward);
+    vec2.normalize(shotDirection, shotDirection);
 
     const projectile = new Projectile({
       game: this.game,
@@ -440,10 +517,7 @@ export default class Player extends Spaceship {
 
       if (!wantsShoot || block._shootTimer > 0) continue;
 
-      const [lx, ly] = block.localPosition;
-      const muzzle = vec2.set(_b.vec2_1, lx, ly + 0.5);
-      const bulletColor = this.getTurretBulletColor(block);
-      this.shoot(muzzle, 0, block.bulletSpeed, block.shootCooldown, block.bulletDamage, bulletColor, block.bulletRange);
+      this.shootFromTurret(block);
       block._shootTimer = block.shootCooldown;
       block._recoilTimer = RECOIL_DURATION;
     }
@@ -491,7 +565,6 @@ export default class Player extends Spaceship {
     if (mouse.isDown && !mouse.dragged && object.isRemovable && !object.toRemove) {
       const [ox, oy] = object.localPosition;
 
-      // Resolve the clicked block from the current player model (collision payload may be a different reference).
       const target = this.model.objects.find(
         (b) => b === object || (b.localPosition[0] === ox && b.localPosition[1] === oy),
       );
@@ -509,9 +582,26 @@ export default class Player extends Spaceship {
 
       if (dirs >= 4) return;
 
-      // BFS from the core, skipping the clicked block, to find all still-connected blocks
       const core = this.model.objects.find(b => !b.isRemovable);
       if (!core) return;
+
+      const isLeafBlock = (block) =>
+        block?.isTurret || block?.isThruster || block?.type === Type.THRUSTER;
+
+      const findPrimaryAnchor = (leafBlock) => {
+        const [lx, ly] = leafBlock.localPosition;
+        for (const candidate of this.model.objects) {
+          if (!candidate || candidate === leafBlock) continue;
+          if (isLeafBlock(candidate)) continue;
+
+          const [cx, cy] = candidate.localPosition;
+          if (Math.abs(cx - lx) + Math.abs(cy - ly) !== 1) continue;
+
+          return candidate;
+        }
+
+        return null;
+      };
 
       const connected = new Set();
       const queue = [core];
@@ -525,6 +615,7 @@ export default class Player extends Spaceship {
 
         for (const neighbor of this.model.objects) {
           if (neighbor === target || connected.has(neighbor)) continue;
+          if (isLeafBlock(neighbor)) continue;
           const [nx, ny] = neighbor.localPosition;
           if (Math.abs(cx - nx) + Math.abs(cy - ny) === 1) {
             connected.add(neighbor);
@@ -536,10 +627,9 @@ export default class Player extends Spaceship {
       const [px, py] = this.position;
       const _b = this.game.buffer;
 
-      // Spawn the clicked block under the cursor
       const bblock = new BuildingBlock({
         game: this.game,
-        model: new Model([target], Model.COPY_MODE.PRESERVE),
+        model: new Model([target], Model.COPY_MODE.COPY),
         x: px + ox,
         y: py + oy,
         vx: this.velocity[0],
@@ -550,9 +640,17 @@ export default class Player extends Spaceship {
       vec2.copy(bblock.position, mouse.position);
       this.game.buildingBlocks.add(bblock);
 
-      // Spawn every disconnected block at its world position
       for (const detached of this.model.objects) {
-        if (connected.has(detached) || detached === target || detached.toRemove) continue;
+        if (!detached || detached === target || detached.toRemove) continue;
+
+        if (connected.has(detached)) continue;
+
+        if (isLeafBlock(detached)) {
+          const anchor = findPrimaryAnchor(detached);
+          if (anchor && anchor !== target && !anchor.toRemove && connected.has(anchor)) {
+            continue;
+          }
+        }
 
         const [lx, ly] = detached.localPosition;
         const wPos = vec2.set(_b.vec2_1, lx, ly);
@@ -562,7 +660,7 @@ export default class Player extends Spaceship {
 
         const dblock = new BuildingBlock({
           game: this.game,
-          model: new Model([detached], Model.COPY_MODE.PRESERVE),
+          model: new Model([detached], Model.COPY_MODE.COPY),
           x: wx,
           y: wy,
           vx: this.velocity[0],
@@ -573,7 +671,10 @@ export default class Player extends Spaceship {
         this.game.buildingBlocks.add(dblock);
       }
 
-      this.onGeometryChange();
+      const geometryChanged = this.model.clear();
+      if (geometryChanged) {
+        this.onGeometryChange();
+      }
     }
   }
 
@@ -625,8 +726,6 @@ export default class Player extends Spaceship {
       return;
     }
 
-    // Physical collision (e.g. rammer enemy): Enemy.onContact already ran and may have
-    // reduced this block's health to 0. Check and handle death here too.
     if (!this.hasState(GlobalState.DEAD) && typeof object?.health === "number" && object.health <= 0) {
       if (!object.isRemovable) {
         this.detachRemainingBlocks();
@@ -663,16 +762,12 @@ export default class Player extends Spaceship {
 
       const detached = new BuildingBlock({
         game: this.game,
-        model: new Model([block], Model.COPY_MODE.PRESERVE),
+        model: new Model([block], Model.COPY_MODE.COPY),
         x: wx,
         y: wy,
         vx: driftX,
         vy: driftY,
       });
-
-      // BuildingBlock constructor resets localPosition to (0,0) on the shared block.
-      // Restore it so the player model remains consistent until model.clear() removes it.
-      vec2.set(block.localPosition, lx, ly);
       block.toRemove = true;
       this.game.buildingBlocks.add(detached);
     }
@@ -681,6 +776,24 @@ export default class Player extends Spaceship {
   detachDisconnectedBlocks() {
     const core = this.model.objects.find((block) => !block?.isRemovable && !block.toRemove);
     if (!core) return false;
+
+    const isLeafBlock = (block) =>
+      block?.isTurret || block?.isThruster || block?.type === Type.THRUSTER;
+
+    const findPrimaryAnchor = (leafBlock) => {
+      const [lx, ly] = leafBlock.localPosition;
+      for (const candidate of this.model.objects) {
+        if (!candidate || candidate === leafBlock || candidate.toRemove) continue;
+        if (isLeafBlock(candidate)) continue;
+
+        const [cx, cy] = candidate.localPosition;
+        if (Math.abs(cx - lx) + Math.abs(cy - ly) !== 1) continue;
+
+        return candidate;
+      }
+
+      return null;
+    };
 
     const connected = new Set();
     const queue = [core];
@@ -694,6 +807,7 @@ export default class Player extends Spaceship {
 
       for (const neighbor of this.model.objects) {
         if (neighbor.toRemove || connected.has(neighbor)) continue;
+        if (isLeafBlock(neighbor)) continue;
 
         const [nx, ny] = neighbor.localPosition;
         if (Math.abs(cx - nx) + Math.abs(cy - ny) !== 1) continue;
@@ -707,6 +821,11 @@ export default class Player extends Spaceship {
     for (const block of this.model.objects) {
       if (!block?.isRemovable || block.toRemove || connected.has(block)) continue;
 
+      if (isLeafBlock(block)) {
+        const anchor = findPrimaryAnchor(block);
+        if (anchor && !anchor.toRemove && connected.has(anchor)) continue;
+      }
+
       const [lx, ly] = block.localPosition;
       const wx = this.position[0] + lx * Math.cos(this.rotation) - ly * Math.sin(this.rotation);
       const wy = this.position[1] + lx * Math.sin(this.rotation) + ly * Math.cos(this.rotation);
@@ -716,16 +835,12 @@ export default class Player extends Spaceship {
 
       const detached = new BuildingBlock({
         game: this.game,
-        model: new Model([block], Model.COPY_MODE.PRESERVE),
+        model: new Model([block], Model.COPY_MODE.COPY),
         x: wx,
         y: wy,
         vx: driftX,
         vy: driftY,
       });
-
-      // BuildingBlock constructor resets localPosition to (0,0) on the shared block.
-      // Restore it so the player model remains consistent until model.clear() removes it.
-      vec2.set(block.localPosition, lx, ly);
       block.toRemove = true;
       this.game.buildingBlocks.add(detached);
       detachedAny = true;

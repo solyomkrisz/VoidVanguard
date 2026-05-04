@@ -47,6 +47,17 @@ export default class Thruster extends Block {
       thrusterState.thrustVector?.[0] ?? DEFAULT_THRUST_VECTOR[0],
       thrusterState.thrustVector?.[1] ?? DEFAULT_THRUST_VECTOR[1],
     );
+    thruster.textureRotation = new Map(thrusterState.textureRotation);
+
+    const savedColliderRotation = Number(thrusterState.colliderRotation);
+    if (Number.isFinite(savedColliderRotation)) {
+      thruster.colliderRotationRad = savedColliderRotation;
+    } else {
+      const inferredRotation = thruster._getAnyTextureRotation?.() ?? 0;
+      if (Number.isFinite(inferredRotation) && Math.abs(inferredRotation) > 1e-6) {
+        thruster.setColliderRotation?.(inferredRotation);
+      }
+    }
 
     return thruster;
   }
@@ -68,6 +79,7 @@ export default class Thruster extends Block {
   } = {}) {
     super({ x, y, shape, spriteID, mass, health, adjacencyRules });
     this.type = Type.THRUSTER; // for recovery from saves
+    this.isThruster = true;
 
     this.id = null;
     this.description = description;
@@ -112,6 +124,7 @@ export default class Thruster extends Block {
     newThruster.throttle = thruster.throttle;
     newThruster.torque = thruster.torque;
     newThruster.dirty = thruster.dirty;
+    newThruster.colliderRotationRad = thruster.colliderRotationRad ?? 0;
     newThruster.controller = null;
 
     return newThruster;
@@ -186,7 +199,6 @@ export default class Thruster extends Block {
 
   // prettier-ignore
   alignThrustVector(parent) {
-    // always reset to canonical direction to avoid compounding errors on re-insertion
     this.defaultThrustVector[0] = DEFAULT_THRUST_VECTOR[0];
     this.defaultThrustVector[1] = DEFAULT_THRUST_VECTOR[1];
 
@@ -196,7 +208,6 @@ export default class Thruster extends Block {
     if (dotProduct < 0) {
       vec2.scale(this.defaultThrustVector, this.defaultThrustVector, -1);
     } else if (dotProduct === 0) {
-      // cross product (z-component) determines which 90° rotation points toward center
       const crossProduct = this.defaultThrustVector[0] * lpToModelCenter[1] - this.defaultThrustVector[1] * lpToModelCenter[0];
       vec2.rotate(this.defaultThrustVector, (Math.PI / 2) * Math.sign(crossProduct));
     }
@@ -225,7 +236,6 @@ export default class Thruster extends Block {
 
   // prettier-ignore
   alignThrustVector(parent) {
-    // always reset to canonical direction to avoid compounding errors on re-insertion
     this.defaultThrustVector[0] = DEFAULT_THRUST_VECTOR[0];
     this.defaultThrustVector[1] = DEFAULT_THRUST_VECTOR[1];
 
@@ -235,7 +245,6 @@ export default class Thruster extends Block {
     if (dotProduct < 0) {
       vec2.scale(this.defaultThrustVector, this.defaultThrustVector, -1);
     } else if (dotProduct === 0) {
-      // cross product (z-component) determines which 90° rotation points toward center
       const crossProduct = this.defaultThrustVector[0] * lpToModelCenter[1] - this.defaultThrustVector[1] * lpToModelCenter[0];
       vec2.rotate(this.defaultThrustVector, (Math.PI / 2) * Math.sign(crossProduct));
     }

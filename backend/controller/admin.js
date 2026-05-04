@@ -57,7 +57,15 @@ export async function banUser(request, response) {
     let expiresAt = null;
 
     if (request.body.expiresAt) {
-      expiresAt = request.body.expiresAt.replace("T", " ") + ":00";
+      const normalized = String(request.body.expiresAt).trim().replace("T", " ");
+
+      if (normalized.length === 16) {
+        expiresAt = `${normalized}:00`;
+      } else if (normalized.length >= 19) {
+        expiresAt = normalized.slice(0, 19);
+      } else {
+        expiresAt = normalized;
+      }
     }
 
     const result = await service.banUser({

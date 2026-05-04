@@ -12,7 +12,11 @@ export default class StatusDiagram extends HTMLElement {
         --border-radius: 8px;
         --border-width: 2px;
 
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
         height: 100%;
+        max-height: 100%;
         display: flex;
       }
 
@@ -21,6 +25,8 @@ export default class StatusDiagram extends HTMLElement {
       }
 
       .border {
+        width: 100%;
+        min-width: 0;
         height: 100%;
         display: flex;
         justify-content: center;
@@ -28,6 +34,7 @@ export default class StatusDiagram extends HTMLElement {
         border-radius: var(--border-radius);
         border: var(--border-width) solid #1a3a6e;
         background-color: #0a0a14;
+        overflow: hidden;
         transition: border 0.3s ease;
       }
 
@@ -36,8 +43,10 @@ export default class StatusDiagram extends HTMLElement {
       }
 
       img {
+        display: block;
         width: 100%;
         height: 100%;
+        object-fit: contain;
         border-radius: inherit;
       }
     `);
@@ -74,12 +83,10 @@ export default class StatusDiagram extends HTMLElement {
       "border:2px solid #2a5a9e",
       "background:#0a0a14",
       "box-shadow:0 4px 24px rgba(0,0,0,0.85)",
-      // natural size, constrained to viewport
       "width:auto",
       "height:auto",
       "max-width:min(200px, 40vmin)",
       "max-height:min(200px, 40vmin)",
-      // animation
       "transition:opacity 0.18s ease, transform 0.18s ease",
       "transform-origin:bottom left",
       "opacity:0",

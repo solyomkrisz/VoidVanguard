@@ -83,7 +83,7 @@ export default class Rigidbody extends Collidable {
     this.position[1] = y;
 
     this.previousPosition[0] = x;
-    this.previousPosition[1] = x;
+    this.previousPosition[1] = y;
   }
 
   setState(state) {

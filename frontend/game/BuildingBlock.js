@@ -7,6 +7,13 @@ import * as Type from "/game/Type.js";
 import { GlobalState } from "/game/State.js";
 
 export default class BuildingBlock extends Rigidbody {
+  static DESPAWN_AFTER_SECONDS = 30;
+  static SNAP_ARM_SECONDS = 0.18;
+  static SNAP_CENTER_TOLERANCE = 0.2;
+  static SNAP_CENTER_TOLERANCE_TURRET = 0.49;
+  static SNAP_CURSOR_DIST_MAX = 0.5;
+  static SNAP_CURSOR_DIST_MAX_TURRET = 0.9;
+
   // prettier-ignore
   constructor({ game, model, parent = null, x = 0, y = 0, vx = 0, vy = 0 } = {}) {
     if (model.objects.length > 1) {
@@ -20,14 +27,31 @@ export default class BuildingBlock extends Rigidbody {
     this.id = game.idManager.get();
     this.model.init(this);
 
+    // Detached pickups should use a tighter broad-phase circle.
+    this.halfDiagonal = 0.5;
+    this.proxyCollider.onGeometryChange();
+    this.proxyCollider.validate();
+
     this.contextMenuTemplate = game.contextMenu.template.ENEMY_CONTEXT_MENU;
     this.snapCooldown = 15;
+    this.lifeTime = 0;
+    this.dragSnapElapsed = 0;
   }
 
   update() {
     this.rotation = 0;
 
     if (this.snapCooldown > 0) this.snapCooldown--;
+
+    if (this.isDragged()) {
+      this.lifeTime = 0;
+    }
+
+    this.lifeTime += this.game.fdt;
+    if (this.lifeTime >= BuildingBlock.DESPAWN_AFTER_SECONDS) {
+      this.setState(GlobalState.DEAD);
+      return;
+    }
 
     this.updateVelocity();
     this.updatePosition();
@@ -81,7 +105,15 @@ export default class BuildingBlock extends Rigidbody {
 
   // prettier-ignore
   checkNeighborAcceptsAttachment(nLP, neighbor) {
-    if (neighbor.isTurret || neighbor.isThruster) return false;
+    const sourceBlock = this.model.objects[0];
+    const sourceIsLeaf = sourceBlock?.isTurret || sourceBlock?.isThruster || sourceBlock?.type === Type.THRUSTER;
+    const neighborIsLeaf = neighbor?.isTurret || neighbor?.isThruster || neighbor?.type === Type.THRUSTER;
+
+    // Turrets and thrusters must attach to structural anchors.
+    if (sourceIsLeaf && neighborIsLeaf) return false;
+
+    // Thrusters cannot be used as attachment anchors at all.
+    if (neighbor?.isThruster || neighbor?.type === Type.THRUSTER) return false;
     const adjacencyRules = neighbor.adjacencyRules;
     const [tx, ty] = nLP;
     const [ox, oy] = neighbor.localPosition;
@@ -109,30 +141,89 @@ export default class BuildingBlock extends Rigidbody {
   onNarrowCollision(other) {
     const _b = this.game.buffer;
     const mouse = this.game.mouse;
+    const sourceBlock = this.model.objects[0];
+    const snapDistMax = sourceBlock?.isTurret
+      ? BuildingBlock.SNAP_CURSOR_DIST_MAX_TURRET
+      : BuildingBlock.SNAP_CURSOR_DIST_MAX;
+    const centerTolerance = sourceBlock?.isTurret
+      ? BuildingBlock.SNAP_CENTER_TOLERANCE_TURRET
+      : BuildingBlock.SNAP_CENTER_TOLERANCE;
 
     other.is(Type.MOUSE) && mouse.isDown && mouse.attach(this);
     
-    if (this.snapCooldown <= 0 && this.posDiff() < 0.5 && this.isDragged() && other.is(Type.PLAYER)) {
-      vec2.copy(_b.vec2_1, this.position);
-      const nLP = vec2.sub(_b.vec2_1, _b.vec2_1, other.position); // newLocalPosition
+    if (this.snapCooldown <= 0 && this.posDiff() < snapDistMax && this.isDragged() && other.is(Type.PLAYER)) {
+      if (this.dragSnapElapsed < BuildingBlock.SNAP_ARM_SECONDS) return false;
 
-      vec2.rotate(nLP, -other.rotation);
+      vec2.copy(_b.vec2_1, this.position);
+      const localExact = vec2.sub(_b.vec2_1, _b.vec2_1, other.position);
+      vec2.rotate(localExact, -other.rotation);
+
+      const nLP = vec2.copy(_b.vec2_2, localExact); // newLocalPosition (rounded)
       vec2.round(nLP);
 
-      let j = 0;
-      while (
-        j < other.model.objects.length &&
-        (
-          !this.checkNeighbor(nLP, other.model.objects[j]) ||
-          !this.checkNeighborAcceptsAttachment(nLP, other.model.objects[j])
-        )
-      ) j++;
-      if (!(j < other.model.objects.length)) return false;
+      if (!sourceBlock?.isTurret) {
+        if (
+          Math.abs(localExact[0] - nLP[0]) > centerTolerance ||
+          Math.abs(localExact[1] - nLP[1]) > centerTolerance
+        ) {
+          return false;
+        }
+      }
+
+      // Never allow placing into an already occupied slot.
+      if (other.model.objects.some(({ localPosition }) => localPosition[0] === nLP[0] && localPosition[1] === nLP[1])) {
+        return false;
+      }
+
+      const candidates = [];
+      for (const candidate of other.model.objects) {
+        if (!this.checkNeighbor(nLP, candidate)) continue;
+        if (!this.checkNeighborAcceptsAttachment(nLP, candidate)) continue;
+        candidates.push(candidate);
+      }
+
+      if (candidates.length === 0) return false;
+
+      let neighbor = candidates[0];
+      if (candidates.length > 1) {
+        const residualX = localExact[0] - nLP[0];
+        const residualY = localExact[1] - nLP[1];
+        const residualLenSq = residualX * residualX + residualY * residualY;
+
+        if (residualLenSq > 1e-6) {
+          const invResidualLen = 1 / Math.sqrt(residualLenSq);
+          const dirX = residualX * invResidualLen;
+          const dirY = residualY * invResidualLen;
+
+          let bestScore = -Infinity;
+          for (const candidate of candidates) {
+            const nx = candidate.localPosition[0] - nLP[0];
+            const ny = candidate.localPosition[1] - nLP[1];
+            const score = nx * dirX + ny * dirY;
+
+            if (score > bestScore) {
+              bestScore = score;
+              neighbor = candidate;
+            }
+          }
+        } else {
+          let bestDistanceSq = Infinity;
+          for (const candidate of candidates) {
+            const dx = candidate.localPosition[0] - localExact[0];
+            const dy = candidate.localPosition[1] - localExact[1];
+            const distanceSq = dx * dx + dy * dy;
+
+            if (distanceSq < bestDistanceSq) {
+              bestDistanceSq = distanceSq;
+              neighbor = candidate;
+            }
+          }
+        }
+      }
 
       const [object] = this.model.objects;
 
       // Orient the sprite so its bottom faces the connection side
-      const neighbor = other.model.objects[j];
       const dx = neighbor.localPosition[0] - nLP[0];
       const dy = neighbor.localPosition[1] - nLP[1];
       const texAngle = Math.atan2(-dx, -dy);
@@ -141,6 +232,11 @@ export default class BuildingBlock extends Rigidbody {
         for (const frame of sprite.frames) {
           object.rotateTexture(frame.textureName, texAngle);
         }
+      }
+
+      if (object.isTurret || object.isThruster || object.type === Type.THRUSTER) {
+        const colliderAngle = texAngle;
+        object.setColliderRotation?.(colliderAngle);
       }
 
       vec2.copy(object.localPosition, nLP);
@@ -192,6 +288,16 @@ export default class BuildingBlock extends Rigidbody {
       }
       return;
     }
+  }
+
+  onDragStart() {
+    this.lifeTime = 0;
+    this.dragSnapElapsed = 0;
+  }
+
+  onDragged(dt = 0) {
+    this.lifeTime = 0;
+    this.dragSnapElapsed += dt;
   }
 
   // prettier-ignore

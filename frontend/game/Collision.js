@@ -36,10 +36,8 @@ export default class Collision {
     const rv = vec2.create();
     vec2.subtract(rv, this.b.velocity, this.a.velocity);
 
-    // velocity along the normal
     const velAlongNormal = vec2.dot(rv, this.normal);
 
-    // do not resolve if velocities are separating
     if (velAlongNormal > 0) return this;
 
     const invMassA = this.a.mass ? 1 / this.a.mass : 1;
@@ -50,7 +48,6 @@ export default class Collision {
     const impulse = vec2.create();
     vec2.scale(impulse, this.normal, j);
 
-    // apply impulse
     const impulseA = vec2.create();
     vec2.scale(impulseA, impulse, invMassA);
     vec2.subtract(this.a.velocity, this.a.velocity, impulseA);

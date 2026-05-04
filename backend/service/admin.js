@@ -41,6 +41,10 @@ export async function banUser({
     createdBy,
   });
 
+  if (!result) {
+    throw CustomError.ALREADY_BANNED;
+  }
+
   await RefreshTokens.revokeAll(userId);
 
   return result;

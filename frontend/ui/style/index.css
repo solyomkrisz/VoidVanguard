@@ -1249,7 +1249,8 @@ html:not(.has-token) #authContainer:not(.hidden) ~ #settingsBtn {
   }
 
   .title-image {
-    width: min(42vw, 17rem);
+    width: clamp(7.5rem, 24vw, 12rem);
+    max-height: min(20vh, 7rem);
     margin-top: 0;
   }
 

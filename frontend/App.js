@@ -45,14 +45,16 @@ function positionSettingsPanel() {
   const viewportPad = Math.max(8, Math.round(window.innerWidth * 0.01));
   const gap = Math.max(8, Math.round(window.innerHeight * 0.01));
 
-   const compactLayout = window.innerWidth <= 900 || window.innerHeight <= 560;
-   if (compactLayout) {
+  const compactLayout = window.innerWidth <= 900 || window.innerHeight <= 560;
+  if (compactLayout) {
+    const top = Math.max(viewportPad, Math.round(btnRect.bottom + gap));
+
     settingsPanel.style.left = `${viewportPad}px`;
-    settingsPanel.style.top = `${viewportPad}px`;
-    settingsPanel.style.right = "auto";
-    settingsPanel.style.width = `calc(100vw - ${viewportPad * 2}px)`;
+    settingsPanel.style.top = `${top}px`;
+    settingsPanel.style.right = `${viewportPad}px`;
+    settingsPanel.style.width = "auto";
     settingsPanel.style.maxWidth = `calc(100vw - ${viewportPad * 2}px)`;
-    settingsPanel.style.maxHeight = `calc(100dvh - ${viewportPad * 2}px)`;
+    settingsPanel.style.maxHeight = `calc(100dvh - ${top + viewportPad}px)`;
     return;
   }
 
@@ -172,6 +174,10 @@ function showGameMenu() {
 function startGame(save = null, saveType = null) {
   document.getElementById("gameMenu").classList.add("hidden");
   friendsBtn.style.display = "none";
+
+  if (save && saveType) {
+    save.save_type = saveType;
+  }
 
   game = Game.from(save);
 

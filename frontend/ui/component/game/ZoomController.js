@@ -1,5 +1,7 @@
 import GameControllerElement from "/ui/component/game/GameControllerElement.js";
 import Game from "/game/Game.js";
+import { dir } from "/ui/UI.js";
+import { path } from "/common/common.js";
 
 export default class ZoomController extends GameControllerElement {
   setGame(value) {
@@ -16,7 +18,7 @@ export default class ZoomController extends GameControllerElement {
   }
 
   constructor() {
-    super();
+    super([path.join(dir, "zoomController.css")]);
 
     this._elements = {};
     this._built = false;
@@ -49,6 +51,8 @@ export default class ZoomController extends GameControllerElement {
 
   build() {
     if (this._built) return;
+
+    this.style.touchAction = "none";
 
     this.setShadowInnerHTML(`
       <button>Nézetváltás</button>

@@ -1,6 +1,5 @@
 :host {
   display: inline-flex;
-
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
@@ -8,9 +7,9 @@
 }
 
 button {
-  min-height: 2.6rem;
-  width: clamp(5.9rem, 18vw, 8.8rem);
-  padding: 0.62rem 0.75rem;
+  min-height: 2.3rem;
+  width: clamp(6rem, 19vw, 8.8rem);
+  padding: 0.52rem 0.7rem;
   border: 2px solid rgba(123, 214, 255, 0.8);
   border-radius: 0.3rem;
   background: linear-gradient(
@@ -20,7 +19,7 @@ button {
   );
   color: #f5fbff;
   font-family: "Jersey", "Courier New", monospace;
-  font-size: clamp(0.74rem, 2.5vw, 0.95rem);
+  font-size: clamp(0.72rem, 2.3vw, 0.9rem);
   line-height: 1.1;
   letter-spacing: 0.06em;
   text-transform: uppercase;

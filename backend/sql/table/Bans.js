@@ -42,11 +42,18 @@ class Bans extends Table {
     const [result] = await execute(
       `
         INSERT INTO bans(id, user_id, reason, expires_at, created_by)
-        VALUES(?, ?, ?, ?, ?)
+        SELECT ?, ?, ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM bans
+          WHERE user_id = ?
+            AND revoked_at IS NULL
+            AND (expires_at IS NULL OR expires_at > NOW())
+        )
     `,
-      [id, userId, reason, expiresAt ?? null, createdBy],
+      [id, userId, reason, expiresAt ?? null, createdBy, userId],
     );
-    return result;
+    return result.affectedRows > 0;
   }
 
   // feltételezzük hogy egy ban lehet

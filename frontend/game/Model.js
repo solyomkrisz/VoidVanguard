@@ -147,6 +147,11 @@ export default class Model {
         for (const frame of sprite.frames) {
           object.rotateTexture(frame.textureName, texAngle);
         }
+
+        if (object.isTurret || object.isThruster) {
+          const colliderAngle = texAngle;
+          object.setColliderRotation?.(colliderAngle);
+        }
       }
     }
   }
