@@ -75,6 +75,10 @@ router.get("/admin", (request, response) => {
 });
 
 // Teszt oldal
+router.get("/test", (request, response) => {
+  response.sendFile(path.join(__dirname, "../frontend/test.html"));
+});
+
 router.get("/test/functional", (request, response) => {
   response.sendFile(
     path.join(__dirname, "../frontend/ui/html/functionaltest.html"),
