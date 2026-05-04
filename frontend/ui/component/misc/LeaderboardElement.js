@@ -46,7 +46,9 @@ export default class LeaderboardElement extends LazyItemList {
       return;
     }
 
-    this.pinUser("bottom");
+    const rect = originalNode?.getBoundingClientRect();
+    const position = rect && rect.bottom < 0 ? "top" : "bottom";
+    this.pinUser(position);
   }
 
   getOriginalNode() {

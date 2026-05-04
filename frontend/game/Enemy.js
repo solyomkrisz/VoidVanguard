@@ -58,7 +58,9 @@ export default class Enemy extends Spaceship {
 
   getThrusters() {
     if (!this._thrusterCache)
-      this._thrusterCache = this.model.objects.filter((obj) => obj instanceof Thruster);
+      this._thrusterCache = this.model.objects.filter(
+        (obj) => obj instanceof Thruster,
+      );
     return this._thrusterCache;
   }
 
@@ -85,7 +87,10 @@ export default class Enemy extends Spaceship {
 
   getTrailColor(alpha) {
     const grade = Math.max(0, Math.min(14, this.difficulty - 1));
-    const base = BlockStyle.GRADE_COLORS[grade] || BlockStyle.GRADE_COLORS[0] || "rgba(197, 197, 197, 1)";
+    const base =
+      BlockStyle.GRADE_COLORS[grade] ||
+      BlockStyle.GRADE_COLORS[0] ||
+      "rgba(197, 197, 197, 1)";
     if (typeof base === "string" && base.startsWith("rgba(")) {
       return base.replace(/,\s*1\)$/, `, ${Math.max(0, Math.min(1, alpha))})`);
     }
@@ -144,8 +149,12 @@ export default class Enemy extends Spaceship {
 
     const ppuX = scaleX * W * 0.5;
     const ppuY = scaleY * H * 0.5;
-    const cx = game.player.previousPosition[0] + (game.player.position[0] - game.player.previousPosition[0]) * alpha;
-    const cy = game.player.previousPosition[1] + (game.player.position[1] - game.player.previousPosition[1]) * alpha;
+    const cx =
+      game.player.previousPosition[0] +
+      (game.player.position[0] - game.player.previousPosition[0]) * alpha;
+    const cy =
+      game.player.previousPosition[1] +
+      (game.player.position[1] - game.player.previousPosition[1]) * alpha;
 
     ctx.save();
     ctx.globalCompositeOperation = "source-over";
@@ -206,9 +215,13 @@ export default class Enemy extends Spaceship {
     return Math.abs(angleDiff) <= maxStep;
   }
 
-  getTurretBlocks() { return this.model.objects.filter((b) => b.isTurret); }
+  getTurretBlocks() {
+    return this.model.objects.filter((b) => b.isTurret);
+  }
 
-  getPlayerCorePosition() { return this.game.player.position; }
+  getPlayerCorePosition() {
+    return this.game.player.position;
+  }
 
   getTurretWorldPosition(turretBlock, out) {
     vec2.copy(out, turretBlock.localPosition);
@@ -225,10 +238,14 @@ export default class Enemy extends Spaceship {
   getTurretRangeStats(playerCore) {
     const _b = this.game.buffer;
     const turrets = this.getTurretBlocks();
-    let minDistance = Infinity, maxRange = 0;
+    let minDistance = Infinity,
+      maxRange = 0;
     for (const turret of turrets) {
       this.getTurretWorldPosition(turret, _b.vec2_1);
-      const d = Math.hypot(_b.vec2_1[0] - playerCore[0], _b.vec2_1[1] - playerCore[1]);
+      const d = Math.hypot(
+        _b.vec2_1[0] - playerCore[0],
+        _b.vec2_1[1] - playerCore[1],
+      );
       if (d < minDistance) minDistance = d;
       if ((turret.bulletRange ?? 0) > maxRange) maxRange = turret.bulletRange;
     }
@@ -241,7 +258,8 @@ export default class Enemy extends Spaceship {
     if (!source) return false;
 
     if (source?.is?.(Type.PLAYER)) return true;
-    if (source?.is?.(Type.PROJECTILE)) return source.owner?.is?.(Type.PLAYER) ?? false;
+    if (source?.is?.(Type.PROJECTILE))
+      return source.owner?.is?.(Type.PLAYER) ?? false;
 
     return false;
   }
@@ -257,27 +275,38 @@ export default class Enemy extends Spaceship {
 
   shootFromTurret(turretBlock, playerCorePosition) {
     const _b = this.game.buffer;
-    const localMuzzle = vec2.set(_b.vec2_1, turretBlock.localPosition[0], turretBlock.localPosition[1] + 0.5);
+    const localMuzzle = vec2.set(
+      _b.vec2_1,
+      turretBlock.localPosition[0],
+      turretBlock.localPosition[1] + 0.5,
+    );
     vec2.rotate(localMuzzle, this.rotation);
     vec2.add(localMuzzle, localMuzzle, this.position);
-    const distanceToCore = Math.hypot(localMuzzle[0] - playerCorePosition[0], localMuzzle[1] - playerCorePosition[1]);
+    const distanceToCore = Math.hypot(
+      localMuzzle[0] - playerCorePosition[0],
+      localMuzzle[1] - playerCorePosition[1],
+    );
     if (distanceToCore > (turretBlock.bulletRange ?? 0)) return;
     const direction = vec2.sub(_b.vec2_2, playerCorePosition, localMuzzle);
     if (vec2.len(direction) <= 0.0001) return;
     vec2.normalize(direction, direction);
     const projectile = new Projectile({
       game: this.game,
-      x: localMuzzle[0], y: localMuzzle[1],
-      vx: turretBlock.bulletSpeed, vy: turretBlock.bulletSpeed,
-      direction, dmg: turretBlock.bulletDamage,
-      range: turretBlock.bulletRange, owner: this,
+      x: localMuzzle[0],
+      y: localMuzzle[1],
+      vx: turretBlock.bulletSpeed,
+      vy: turretBlock.bulletSpeed,
+      direction,
+      dmg: turretBlock.bulletDamage,
+      range: turretBlock.bulletRange,
+      owner: this,
       color: this.getTurretBulletColor(turretBlock),
     });
     this.game.projectiles.add(projectile);
 
     this.onShoot();
 
-    this.shootCooldown = cooldown;
+    // this.shootCooldown = cooldown;
   }
 
   detachRemainingBlocks() {
@@ -285,8 +314,14 @@ export default class Enemy extends Spaceship {
       if (!block?.isRemovable || block.toRemove) continue;
 
       const [lx, ly] = block.localPosition;
-      const wx = this.position[0] + lx * Math.cos(this.rotation) - ly * Math.sin(this.rotation);
-      const wy = this.position[1] + lx * Math.sin(this.rotation) + ly * Math.cos(this.rotation);
+      const wx =
+        this.position[0] +
+        lx * Math.cos(this.rotation) -
+        ly * Math.sin(this.rotation);
+      const wy =
+        this.position[1] +
+        lx * Math.sin(this.rotation) +
+        ly * Math.cos(this.rotation);
 
       const driftX = this.velocity[0] + (Math.random() * 2 - 1) * 0.45;
       const driftY = this.velocity[1] + (Math.random() * 2 - 1) * 0.45;
@@ -300,13 +335,18 @@ export default class Enemy extends Spaceship {
         vy: driftY,
       });
 
+      // BuildingBlock constructor resets localPosition to (0,0) on the shared block.
+      // Restore it so the enemy model remains consistent until model.clear() removes it.
+      vec2.set(block.localPosition, lx, ly);
       block.toRemove = true;
       this.game.buildingBlocks.add(detached);
     }
   }
 
   detachDisconnectedBlocks() {
-    const core = this.model.objects.find((block) => !block?.isRemovable && !block.toRemove);
+    const core = this.model.objects.find(
+      (block) => !block?.isRemovable && !block.toRemove,
+    );
     if (!core) return false;
 
     const connected = new Set();
@@ -316,7 +356,8 @@ export default class Enemy extends Spaceship {
     while (queue.length) {
       const current = queue.shift();
       // Turrets and thrusters are leaf-only: they don't extend structural connectivity
-      if (current.isTurret || current.isThruster || current instanceof Thruster) continue;
+      if (current.isTurret || current.isThruster || current instanceof Thruster)
+        continue;
       const [cx, cy] = current.localPosition;
 
       for (const neighbor of this.model.objects) {
@@ -332,11 +373,18 @@ export default class Enemy extends Spaceship {
 
     let detachedAny = false;
     for (const block of this.model.objects) {
-      if (!block?.isRemovable || block.toRemove || connected.has(block)) continue;
+      if (!block?.isRemovable || block.toRemove || connected.has(block))
+        continue;
 
       const [lx, ly] = block.localPosition;
-      const wx = this.position[0] + lx * Math.cos(this.rotation) - ly * Math.sin(this.rotation);
-      const wy = this.position[1] + lx * Math.sin(this.rotation) + ly * Math.cos(this.rotation);
+      const wx =
+        this.position[0] +
+        lx * Math.cos(this.rotation) -
+        ly * Math.sin(this.rotation);
+      const wy =
+        this.position[1] +
+        lx * Math.sin(this.rotation) +
+        ly * Math.cos(this.rotation);
 
       const driftX = this.velocity[0] + (Math.random() * 2 - 1) * 0.45;
       const driftY = this.velocity[1] + (Math.random() * 2 - 1) * 0.45;
@@ -350,6 +398,9 @@ export default class Enemy extends Spaceship {
         vy: driftY,
       });
 
+      // BuildingBlock constructor resets localPosition to (0,0) on the shared block.
+      // Restore it so the enemy model remains consistent until model.clear() removes it.
+      vec2.set(block.localPosition, lx, ly);
       block.toRemove = true;
       this.game.buildingBlocks.add(detached);
       detachedAny = true;
@@ -408,16 +459,27 @@ export default class Enemy extends Spaceship {
     this.updateThrusterTrail(dt);
   }
 
-  onBroadCollision(other) { return true; }
-  onNarrowCollision(other) { return true; }
+  onBroadCollision(other) {
+    return true;
+  }
+  onNarrowCollision(other) {
+    return true;
+  }
 
   onContact(collision, object) {
-    if (collision.is(Type.INTERACTION)) { object.showDetails(this); return; }
-    const other = collision.a?.parent?.parent === this ? collision.b.parent : collision.a.parent;
+    if (collision.is(Type.INTERACTION)) {
+      object.showDetails(this);
+      return;
+    }
+    const other =
+      collision.a?.parent?.parent === this
+        ? collision.b.parent
+        : collision.a.parent;
     const source = other?.parent ?? other;
-    const otherBlock = collision.a?.parent?.parent === this
-      ? collision.b?.model?.objects?.[0]
-      : collision.a?.model?.objects?.[0];
+    const otherBlock =
+      collision.a?.parent?.parent === this
+        ? collision.b?.model?.objects?.[0]
+        : collision.a?.model?.objects?.[0];
 
     if (source?.is?.(Type.PROJECTILE)) {
       if (source.owner?.is?.(Type.PLAYER)) this.provoked = true;
@@ -426,7 +488,10 @@ export default class Enemy extends Spaceship {
       }
     } else if (source?.is?.(Type.BUILDING_BLOCK)) {
       return;
-    } else if (typeof object?.health === "number" && typeof otherBlock?.health === "number") {
+    } else if (
+      typeof object?.health === "number" &&
+      typeof otherBlock?.health === "number"
+    ) {
       const ownHp = Math.max(0, object.health);
       const otherHp = Math.max(0, otherBlock.health);
 
@@ -449,7 +514,12 @@ export default class Enemy extends Spaceship {
       this.model.clear();
       if (killedByPlayer && this.game.player) {
         const base = 100 + 100 * this.difficulty;
-        const mult = this.behavior === "aggressive" || this.behavior === "rammer" ? 3 : this.behavior === "neutral" ? 2 : 1;
+        const mult =
+          this.behavior === "aggressive" || this.behavior === "rammer"
+            ? 3
+            : this.behavior === "neutral"
+              ? 2
+              : 1;
         this.game.player.score += base * mult;
       }
       this.setState(GlobalState.DEAD);
@@ -463,7 +533,20 @@ export default class Enemy extends Spaceship {
       this._thrusterCache = null;
       this.proxyCollider.onGeometryChange();
       this.shapeCollider.onGeometryChange();
-      if (this.model.objects.length === 0) this.setState(GlobalState.DEAD);
+      if (this.model.objects.length === 0) {
+        this.setState(GlobalState.DEAD);
+        return;
+      }
+      if (!this.model.objects.some((b) => b?.isRemovable && !b.toRemove)) {
+        this.detachRemainingBlocks();
+        this.model.clear();
+        if (killedByPlayer && this.game.player) {
+          const base = 100 + 100 * this.difficulty;
+          const mult = this.behavior === "aggressive" || this.behavior === "rammer" ? 3 : this.behavior === "neutral" ? 2 : 1;
+          this.game.player.score += base * mult;
+        }
+        this.setState(GlobalState.DEAD);
+      }
     }
   }
 }

@@ -189,6 +189,8 @@ export default class Game extends WebGLCanvas {
     this.showSpaceshipCircle = false;
     this.showSpaceshipHitbox = false;
 
+    this._textureBuildQueue = [];
+
     this.enemySpawnerInitialized = false;
     this.enemySpawnInterval = 18;
     this.enemySpawnTimer = this.enemySpawnInterval;
@@ -444,19 +446,26 @@ export default class Game extends WebGLCanvas {
     const difficulty = this.getCurrentDifficulty();
     const spawnInterval = this.getEnemySpawnIntervalByDifficulty(difficulty);
     const cap = this.getEnemyCapByDifficulty(difficulty);
-    const aliveEnemyCount = this.enemies.objects.length;
+    const deficit = cap - this.enemies.objects.length;
 
-    if (aliveEnemyCount >= cap) {
-      this.enemySpawnTimer = Math.min(this.enemySpawnTimer, spawnInterval);
-      return;
-    }
-
+    // Always count down so a free slot triggers a spawn without a full extra wait.
     this.enemySpawnTimer = Math.min(this.enemySpawnTimer, spawnInterval);
     this.enemySpawnTimer -= this.fdt;
     if (this.enemySpawnTimer > 0) return;
 
-    if (this.trySpawnEnemy(difficulty)) {
+    if (deficit <= 0) {
+      // Cap is full — reload the timer and wait for the next free slot.
       this.enemySpawnTimer = spawnInterval;
+      return;
+    }
+
+    // Spawn one enemy; use a shorter interval while the arena is significantly
+    // below cap so recovery after a burst of kills feels immediate.
+    if (this.trySpawnEnemy(difficulty)) {
+      const catchUp = deficit > 1
+        ? Math.max(2, spawnInterval / Math.min(deficit, 4))
+        : spawnInterval;
+      this.enemySpawnTimer = catchUp;
     } else {
       this.enemySpawnTimer = Math.min(5, spawnInterval);
     }
@@ -1197,6 +1206,13 @@ export default class Game extends WebGLCanvas {
       this.blockStyle.clearCanvas();
     }
     
+    // Drain a few queued decoration-block texture builds per frame so that
+    // newly loaded chunks never cause a burst lag spike on the main thread.
+    const TEXTURE_BUILDS_PER_FRAME = 3;
+    for (let i = 0; i < TEXTURE_BUILDS_PER_FRAME && this._textureBuildQueue.length > 0; i++) {
+      this._textureBuildQueue.shift()();
+    }
+
     this.bindTextureArray();
 
     const gl = this.gl;

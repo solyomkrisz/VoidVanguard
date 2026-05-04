@@ -26,18 +26,74 @@ export default class TitleBar extends HTMLElement {
         letter-spacing: 0.12em;
         user-select: none;
         cursor: grab;
+        box-sizing: border-box;
       }
 
       :host(:active) {
         cursor: grabbing;
+      }
+
+      .label {
+        flex: 1;
+      }
+
+      .collapse-btn {
+        width: 20px;
+        height: 24px;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #4a90e2;
+        flex-shrink: 0;
+        transition: color 0.12s ease, transform 0.22s ease;
+        border-top-right-radius: inherit;
+      }
+
+      .collapse-btn:hover {
+        color: #9fd5ff;
+      }
+
+      .collapse-btn svg {
+        width: 10px;
+        height: 7px;
+        display: block;
+        transition: transform 0.22s ease;
+      }
+
+      :host(.collapsed) .collapse-btn svg {
+        transform: rotate(180deg);
       }
     `);
     this.shadowRoot.adoptedStyleSheets = [sheet];
 
     this.offsetX = 0;
     this.offsetY = 0;
+    this._collapsed = false;
 
-    this.shadowRoot.appendChild(UI.text("Hajtóművezérlő"));
+    const label = document.createElement("span");
+    label.className = "label";
+    label.textContent = "Hajtóművezérlő";
+    this.shadowRoot.appendChild(label);
+
+    const collapseBtn = document.createElement("button");
+    collapseBtn.className = "collapse-btn";
+    collapseBtn.title = "Összecsuk / Kinyit";
+    collapseBtn.innerHTML = `<svg viewBox="0 0 10 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polyline points="1,1 5,6 9,1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+    collapseBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+    collapseBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._collapsed = !this._collapsed;
+      this.classList.toggle("collapsed", this._collapsed);
+      this.source.toggleAttribute("data-collapsed", this._collapsed);
+      collapseBtn.blur();
+    });
+    this.shadowRoot.appendChild(collapseBtn);
   }
 
   setSource(source) {

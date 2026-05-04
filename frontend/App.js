@@ -112,6 +112,7 @@ settingsBtn.addEventListener("click", () => {
   settingsBtn.classList.remove("pressed");
   void settingsBtn.offsetWidth;
   settingsBtn.classList.add("pressed");
+  settingsBtn.blur();
 });
 
 window.addEventListener("resize", () => {
@@ -279,7 +280,7 @@ document.addEventListener("exit-game", () => {
 
 document.addEventListener("game-volume-change", (e) => {
   const volume = e?.detail?.volume;
-  if (!volume || !game) return;
+  if (volume == null || !game) return;
   game.setVolume(volume);
 });
 

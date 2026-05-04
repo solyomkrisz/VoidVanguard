@@ -64,6 +64,16 @@ export default class ShipPropulsionPanel extends HTMLElement {
           border-bottom-left-radius: inherit;
           border-bottom-right-radius: inherit;
         }
+
+        :host {
+          overflow: hidden;
+          transition: max-height 0.22s ease;
+          max-height: 600px;
+        }
+
+        :host([data-collapsed]) {
+          max-height: 24px;
+        }
     `);
     this.shadowRoot.adoptedStyleSheets = [sheet];
 

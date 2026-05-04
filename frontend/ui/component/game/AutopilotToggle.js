@@ -38,6 +38,7 @@ export default class AutopilotToggle extends HTMLElement {
     checkbox.type = "checkbox";
 
     checkbox.addEventListener("change", ({ target }) => {
+      target.blur();
       this.dispatchEvent(
         new CustomEvent("autopilot-toggle", {
           detail: {

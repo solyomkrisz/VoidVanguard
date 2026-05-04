@@ -3,7 +3,6 @@ import Mouse from "/game/Mouse.js";
 import Keyboard from "/game/Keyboard.js";
 import DebugOverlay from "/game/DebugOverlay.js";
 import DebugPanel from "/game/DebugPanel.js";
-import XPBar from "/game/XPBar.js";
 import Models, { MODELFACTORY } from "/game/SpaceShipModels.js";
 import TextureManager from "/game/TextureManager.js";
 import * as UI from "/ui/UI.js";
@@ -192,13 +191,6 @@ export function setupGame(game, playerModel = MODELFACTORY.PLAYER()) {
 
   game.setDebugPanel(debug); // ?
   game.startDebugging(); // ?
-
-  //#region xp bar
-  const xpBar = new XPBar();
-  document.body.appendChild(xpBar.container);
-  xpBar.set(0, 100);
-  xpBar.setLevel(1);
-  game.xpBar = xpBar;
 
   //#region texture
   const tm = new TextureManager(game);

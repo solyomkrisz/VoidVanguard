@@ -117,6 +117,7 @@ export default class FlightComputer extends HTMLElement {
     dockBtn.addEventListener("click", () => {
       this._docked = !this._docked;
       this.classList.toggle("docked", this._docked);
+      dockBtn.blur();
     });
     this.shadowRoot.appendChild(dockBtn);
 

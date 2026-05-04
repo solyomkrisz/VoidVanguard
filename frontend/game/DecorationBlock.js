@@ -34,7 +34,7 @@ export default class DecorationBlock {
 
   onInsert() {
     if (!this.pixels) {
-      setTimeout(() => {
+      this.game._textureBuildQueue.push(() => {
         this.pixels = this.game.ng.get(this.position, true);
 
         // prettier-ignore
@@ -64,7 +64,7 @@ export default class DecorationBlock {
 
         this.createTexture();
         if (this.starPixels) this.createStarTexture();
-      }, 10);
+      });
     } else {
       this.createTexture();
       if (this.starPixels) this.createStarTexture();

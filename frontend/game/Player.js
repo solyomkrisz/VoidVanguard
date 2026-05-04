@@ -451,7 +451,6 @@ export default class Player extends Spaceship {
     if (this.scoreTimer <= 0) {
       this.score++;
       this.scoreTimer = 3;
-      console.log("PLAYER SCORE: ", this.score);
     }
   }
 
@@ -671,6 +670,9 @@ export default class Player extends Spaceship {
         vy: driftY,
       });
 
+      // BuildingBlock constructor resets localPosition to (0,0) on the shared block.
+      // Restore it so the player model remains consistent until model.clear() removes it.
+      vec2.set(block.localPosition, lx, ly);
       block.toRemove = true;
       this.game.buildingBlocks.add(detached);
     }
@@ -721,6 +723,9 @@ export default class Player extends Spaceship {
         vy: driftY,
       });
 
+      // BuildingBlock constructor resets localPosition to (0,0) on the shared block.
+      // Restore it so the player model remains consistent until model.clear() removes it.
+      vec2.set(block.localPosition, lx, ly);
       block.toRemove = true;
       this.game.buildingBlocks.add(detached);
       detachedAny = true;
