@@ -176,7 +176,8 @@ export default class Player extends Spaceship {
     const sprite = this.game.textureManager?.sprites?.[block?.spriteID];
     if (!sprite) return out;
 
-    const textureName = sprite.getCurrentTexture?.() ?? sprite.frames?.[0]?.textureName;
+    const textureName =
+      sprite.getCurrentTexture?.() ?? sprite.frames?.[0]?.textureName;
     if (!textureName) return out;
 
     const angle = block.getTextureRotation(textureName);
@@ -253,6 +254,7 @@ export default class Player extends Spaceship {
     this.shootCooldown = cooldown;
   }
 
+  //* kb ugyan az mint Enemy.js-ben
   spawnThrusterTrail(thruster) {
     if (!thruster || thruster.throttle <= 0.01) return;
 
@@ -288,6 +290,7 @@ export default class Player extends Spaceship {
     });
   }
 
+  //* ugyan az mint Enemy.js-ben
   updateThrusterTrail(dt) {
     for (let i = this.trailParticles.length - 1; i >= 0; i--) {
       const p = this.trailParticles[i];
@@ -312,8 +315,12 @@ export default class Player extends Spaceship {
 
     const ppuX = scaleX * W * 0.5;
     const ppuY = scaleY * H * 0.5;
-    const cx = this.previousPosition[0] + (this.position[0] - this.previousPosition[0]) * alpha;
-    const cy = this.previousPosition[1] + (this.position[1] - this.previousPosition[1]) * alpha;
+    const cx =
+      this.previousPosition[0] +
+      (this.position[0] - this.previousPosition[0]) * alpha;
+    const cy =
+      this.previousPosition[1] +
+      (this.position[1] - this.previousPosition[1]) * alpha;
 
     ctx.save();
     ctx.globalCompositeOperation = "source-over";
@@ -347,7 +354,7 @@ export default class Player extends Spaceship {
         const by = H * 0.5 - (b.y - cy) * ppuY;
 
         ctx.strokeStyle = `rgba(120, 210, 255, ${0.06 + 0.5 * t})`;
-        ctx.lineWidth = Math.max(2.2, ((a.lineWidth + b.lineWidth) * 0.5));
+        ctx.lineWidth = Math.max(2.2, (a.lineWidth + b.lineWidth) * 0.5);
         ctx.beginPath();
         ctx.moveTo(ax, ay);
         ctx.lineTo(bx, by);
@@ -511,7 +518,10 @@ export default class Player extends Spaceship {
       block._shootTimer = Math.max(0, block._shootTimer - dt);
       block._recoilTimer = Math.max(0, (block._recoilTimer ?? 0) - dt);
 
-      const recoilT = Math.max(0, Math.min(1, block._recoilTimer / RECOIL_DURATION));
+      const recoilT = Math.max(
+        0,
+        Math.min(1, block._recoilTimer / RECOIL_DURATION),
+      );
       block.renderOffset[0] = 0;
       block.renderOffset[1] = -RECOIL_DISTANCE * recoilT;
 
@@ -565,6 +575,7 @@ export default class Player extends Spaceship {
     if (mouse.isDown && !mouse.dragged && object.isRemovable && !object.toRemove) {
       const [ox, oy] = object.localPosition;
 
+      // teljesen redundáns szemét
       const target = this.model.objects.find(
         (b) => b === object || (b.localPosition[0] === ox && b.localPosition[1] === oy),
       );
@@ -580,23 +591,29 @@ export default class Player extends Spaceship {
         else if (ox === x && oy - 1 === y) dirs++;
       }
 
+      // ha mind a négy oldalról van blokk mellette ne csinálj semmit
       if (dirs >= 4) return;
 
+      // megkeressük a core blokkot
       const core = this.model.objects.find(b => !b.isRemovable);
+      // ha nincs vissza (értelme nincs)
       if (!core) return;
 
+      // olyan blokk amire nem lehet csatolni? segédfüggvény
       const isLeafBlock = (block) =>
         block?.isTurret || block?.isThruster || block?.type === Type.THRUSTER;
 
+      // leafBlokk anchorját visszaadja
       const findPrimaryAnchor = (leafBlock) => {
         const [lx, ly] = leafBlock.localPosition;
         for (const candidate of this.model.objects) {
           if (!candidate || candidate === leafBlock) continue;
-          if (isLeafBlock(candidate)) continue;
+          if (isLeafBlock(candidate)) continue; // leafBlock nem lehet anchor, hisz nem strukturális
 
           const [cx, cy] = candidate.localPosition;
           if (Math.abs(cx - lx) + Math.abs(cy - ly) !== 1) continue;
 
+          // ha szomszédos egyből visszaadjuk mint leafBlock anchorja
           return candidate;
         }
 
@@ -610,13 +627,21 @@ export default class Player extends Spaceship {
       while (queue.length) {
         const current = queue.shift();
         // Turrets and thrusters are leaf-only: they don't extend structural connectivity
-        if (current.isTurret || current.isThruster || current.type === Type.THRUSTER) continue;
+        if (current.isTurret || current.isThruster || current.type === Type.THRUSTER) continue; // ha leaf-only, leszedjük és a szomszédait meg se nézzük, hisz nem lehet anchor
         const [cx, cy] = current.localPosition;
 
         for (const neighbor of this.model.objects) {
+          // ha nehogbor === target vagy már tudjuk hogy van normális kapcsolata skip
+          //! a target blokkjai meg sem lesznek nézve, vagyis ha valaki csak a targeton keresztül csatlakozik, vagy valahol azon keresztül nem lesz felrakva a connectedre!!!!!!
           if (neighbor === target || connected.has(neighbor)) continue;
+
+          // ha leaftBlock skip, fel se tesszük a connectedre???
           if (isLeafBlock(neighbor)) continue;
+          
           const [nx, ny] = neighbor.localPosition;
+          
+          // ha a blokk tényleg szomszédos, connectedre fel, és queue-ra is hogy az
+          // ő szomszédjai is meg legyenek nézve
           if (Math.abs(cx - nx) + Math.abs(cy - ny) === 1) {
             connected.add(neighbor);
             queue.push(neighbor);
@@ -624,8 +649,14 @@ export default class Player extends Spaceship {
         }
       }
 
+      // itt most minden blokk a connected Set-en van, ami nem leaft-only és van normális kapcsolata a maggal
+
       const [px, py] = this.position;
       const _b = this.game.buffer;
+
+      //! a target a paraméterként kapott object
+
+      // itt leszedjük a modellből, és building blocként lerakjuk
 
       const bblock = new BuildingBlock({
         game: this.game,
@@ -640,17 +671,32 @@ export default class Player extends Spaceship {
       vec2.copy(bblock.position, mouse.position);
       this.game.buildingBlocks.add(bblock);
 
+      // végigmegyünk a modellen
       for (const detached of this.model.objects) {
+        // ami toRemove és === target skip
         if (!detached || detached === target || detached.toRemove) continue;
 
+        // ha van kapcsolata (vagyis nem leaf-only és normálian kapcsolódik a corehoz) skip
         if (connected.has(detached)) continue;
 
+        // ha leaf-only block, connecteden nincsenek leaf-only tehát leaf-only esetén biztos lejutunk ide
         if (isLeafBlock(detached)) {
-          const anchor = findPrimaryAnchor(detached);
+          const anchor = findPrimaryAnchor(detached); // megkeressük ki miatt lehet csatlakoztatva
+          // ha van anchor és az nem a target és nem lesz eltávolítva és normálisan kapcsolva van akkor skip
           if (anchor && anchor !== target && !anchor.toRemove && connected.has(anchor)) {
             continue;
           }
         }
+
+        // itt lecsatlakoztatjuk a blokkot
+        // ide akkor jutunk ha:
+        /**
+         * - a blokk se nem a target maga és toRemove-a false
+         * - a blokk nincs normálisan felcsatolva (IDE TARTOZIK HA A target BLOKKON KERESZTÜL VAN)
+         * - leaf-only és az anchor a target blokk, vagy az anchor.toRemove true, vagy ha az anchor nem connected normálisan
+         */
+
+        //! vagyis itt főként a target blokkon (vagyis amit a játékos le akar csatlakoztatni) keresztül csatlakozó blokkokat dobjuk le
 
         const [lx, ly] = detached.localPosition;
         const wPos = vec2.set(_b.vec2_1, lx, ly);
@@ -690,19 +736,25 @@ export default class Player extends Spaceship {
       return;
     }
 
-    const other = collision.a?.parent?.parent === this ? collision.b.parent : collision.a.parent;
+    const other =
+      collision.a?.parent?.parent === this
+        ? collision.b.parent
+        : collision.a.parent;
     const source = other?.parent ?? other;
 
+    // ha másik model object Projectile-tól jön
     if (source?.is?.(Type.PROJECTILE)) {
-      if (source.owner === this) return;
+      if (source.owner === this) return; // ha ez az owner semmi
 
       if (typeof object?.health === "number") {
         const damage = Number(source.dmg ?? 0);
         if (damage <= 0) return;
 
-        object.health -= damage;
+        object.health -= damage; // az ebben a modelben lévő object hp-jának csökkentése (ez az object érintkezett a másikkal)
         if (object.health <= 1) object.health = 0;
 
+        // ? gondolom megint a 10. féle ellenőrzés arra hogy core blokk e
+        // ha valami ütközött vele legyilkoljuk a játékost
         if (!object.isRemovable && object.health <= 0) {
           this.detachRemainingBlocks();
           this.model.clear();
@@ -710,23 +762,36 @@ export default class Player extends Spaceship {
           return;
         }
 
-        const geometryChanged = this.model.clear();
+        const geometryChanged = this.model.clear(); // modell lehet változott tisztítás
+
+        // ha modell tényleg változott
         if (geometryChanged) {
-          const coreGone = !this.model.objects.some(b => b && !b.isRemovable);
+          const coreGone = !this.model.objects.some((b) => b && !b.isRemovable);
+
+          // ha core blokk megpusztult, játékost megölni
           if (coreGone) {
             this.detachRemainingBlocks();
             this.model.clear();
             this.setState(GlobalState.DEAD);
             return;
           }
+
+          // modell változott, lehet blokkok kapcsolata megszakadt, leszedni őket és modellt újra validálni
           if (this.detachDisconnectedBlocks()) this.model.clear();
-          this.onGeometryChange();
+
+          this.onGeometryChange(); // geometry változott, játékos még él, tehát .ongeometry hívása
         }
       }
       return;
     }
 
-    if (!this.hasState(GlobalState.DEAD) && typeof object?.health === "number" && object.health <= 0) {
+    // ha nem halott és a kontaktban résztvevő ezen entitás modelljéből származó blokk élete <= 0
+    if (
+      !this.hasState(GlobalState.DEAD) &&
+      typeof object?.health === "number" &&
+      object.health <= 0
+    ) {
+      // ? gondolom azt jelenti, hogy core blokk, ha igen, és itt vagyunk akkor ütközésben részt vett tehát játékos kinyír
       if (!object.isRemovable) {
         this.detachRemainingBlocks();
         this.model.clear();
@@ -734,9 +799,10 @@ export default class Player extends Spaceship {
         return;
       }
 
+      // az mint feljebb csak elegánsan megismételve
       const geometryChanged = this.model.clear();
       if (geometryChanged) {
-        const coreGone = !this.model.objects.some(b => b && !b.isRemovable);
+        const coreGone = !this.model.objects.some((b) => b && !b.isRemovable);
         if (coreGone) {
           this.detachRemainingBlocks();
           this.model.clear();
@@ -749,13 +815,20 @@ export default class Player extends Spaceship {
     }
   }
 
+  //* ugyan az mint Enemy.js-ben
   detachRemainingBlocks() {
     for (const block of this.model.objects) {
       if (!block?.isRemovable || block.toRemove) continue;
 
       const [lx, ly] = block.localPosition;
-      const wx = this.position[0] + lx * Math.cos(this.rotation) - ly * Math.sin(this.rotation);
-      const wy = this.position[1] + lx * Math.sin(this.rotation) + ly * Math.cos(this.rotation);
+      const wx =
+        this.position[0] +
+        lx * Math.cos(this.rotation) -
+        ly * Math.sin(this.rotation);
+      const wy =
+        this.position[1] +
+        lx * Math.sin(this.rotation) +
+        ly * Math.cos(this.rotation);
 
       const driftX = this.velocity[0] + (Math.random() * 2 - 1) * 0.45;
       const driftY = this.velocity[1] + (Math.random() * 2 - 1) * 0.45;
@@ -773,8 +846,11 @@ export default class Player extends Spaceship {
     }
   }
 
+  //* ugyan az mint Enemy.js-ben
   detachDisconnectedBlocks() {
-    const core = this.model.objects.find((block) => !block?.isRemovable && !block.toRemove);
+    const core = this.model.objects.find(
+      (block) => !block?.isRemovable && !block.toRemove,
+    );
     if (!core) return false;
 
     const isLeafBlock = (block) =>
@@ -783,7 +859,8 @@ export default class Player extends Spaceship {
     const findPrimaryAnchor = (leafBlock) => {
       const [lx, ly] = leafBlock.localPosition;
       for (const candidate of this.model.objects) {
-        if (!candidate || candidate === leafBlock || candidate.toRemove) continue;
+        if (!candidate || candidate === leafBlock || candidate.toRemove)
+          continue;
         if (isLeafBlock(candidate)) continue;
 
         const [cx, cy] = candidate.localPosition;
@@ -802,7 +879,12 @@ export default class Player extends Spaceship {
     while (queue.length) {
       const current = queue.shift();
       // Turrets and thrusters are leaf-only: they don't extend structural connectivity
-      if (current.isTurret || current.isThruster || current.type === Type.THRUSTER) continue;
+      if (
+        current.isTurret ||
+        current.isThruster ||
+        current.type === Type.THRUSTER
+      )
+        continue;
       const [cx, cy] = current.localPosition;
 
       for (const neighbor of this.model.objects) {
@@ -819,7 +901,8 @@ export default class Player extends Spaceship {
 
     let detachedAny = false;
     for (const block of this.model.objects) {
-      if (!block?.isRemovable || block.toRemove || connected.has(block)) continue;
+      if (!block?.isRemovable || block.toRemove || connected.has(block))
+        continue;
 
       if (isLeafBlock(block)) {
         const anchor = findPrimaryAnchor(block);
@@ -827,8 +910,14 @@ export default class Player extends Spaceship {
       }
 
       const [lx, ly] = block.localPosition;
-      const wx = this.position[0] + lx * Math.cos(this.rotation) - ly * Math.sin(this.rotation);
-      const wy = this.position[1] + lx * Math.sin(this.rotation) + ly * Math.cos(this.rotation);
+      const wx =
+        this.position[0] +
+        lx * Math.cos(this.rotation) -
+        ly * Math.sin(this.rotation);
+      const wy =
+        this.position[1] +
+        lx * Math.sin(this.rotation) +
+        ly * Math.cos(this.rotation);
 
       const driftX = this.velocity[0] + (Math.random() * 2 - 1) * 0.45;
       const driftY = this.velocity[1] + (Math.random() * 2 - 1) * 0.45;

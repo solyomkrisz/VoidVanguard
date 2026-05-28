@@ -708,6 +708,8 @@ export default class Enemy extends Spaceship {
     const isCoreBlock = !object.isRemovable && object.health <= 0; // ha a kontakt-ban ez az entitás core blokkja vett részt leölni
     const killedByPlayer = this.isPlayerDamageSource(other);
     const geometryChanged = this.model.clear();
+
+    // ha coreBlock került kontakba elpusztit
     if (isCoreBlock) {
       this.detachRemainingBlocks();
       this.model.clear();
@@ -724,20 +726,28 @@ export default class Enemy extends Spaceship {
       this.setState(GlobalState.DEAD);
       return;
     }
+
+    // ha model változott
     if (geometryChanged) {
+      // mivel a model változott, lehet blokkok kapcsolata megszűnt, elszakadt blokkok lecsatolása itt ezért
       if (this.detachDisconnectedBlocks()) {
         this.model.clear();
       }
 
-      this._thrusterCache = null;
+      this._thrusterCache = null; // geometry módosult, null-oljuk hogy újra legyen számolva
+
       this.proxyCollider.onGeometryChange();
       this.shapeCollider.onGeometryChange();
+
+      // ha nincs object modellben leölni
       if (this.model.objects.length === 0) {
         this.setState(GlobalState.DEAD);
         return;
       }
+
+      // ? ellenőrzés talán arra hogy van-e még core-blokk, ha nincs akkor leöl
       if (!this.model.objects.some((b) => b?.isRemovable && !b.toRemove)) {
-        this.detachRemainingBlocks();
+        this.detachRemainingBlocks(); // maradék blokkot ledob
         this.model.clear();
         if (killedByPlayer && this.game.player) {
           const base = 100 + 100 * this.difficulty;
