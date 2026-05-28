@@ -150,16 +150,19 @@ export default class Player extends Spaceship {
     this.chunk[1] = Math.floor(this.position[1] / this.game.chunkSize / this.game.backgroundZoom);
   }
 
+  //* hasonló az Enemy.js-ben
   getTurretBulletColor(block) {
     const grade = Math.max(0, Math.min(14, block.gradeID ?? 0));
     return BlockStyle.getColorForGrade(grade);
   }
 
   getTurretLocalDirection(block, out) {
-    vec2.set(out, 0, 1);
+    vec2.set(out, 0, 1); // alap 0, 1 vagyis +y felé mutat
 
     // Prefer mount geometry: turrets fire away from their connected neighbor.
     // This is robust for captured enemy parts even if texture rotation metadata is stale.
+
+    // először ugyan azt nézzük amit az Enemy.js-ben a szomszédja felöl lő
     if (block) {
       const [bx, by] = block.localPosition;
       for (const neighbor of this.model.objects) {
@@ -173,14 +176,19 @@ export default class Player extends Spaceship {
       }
     }
 
+    // ha fent nem sikerült, lekérjük a spire-ját a blokknak
     const sprite = this.game.textureManager?.sprites?.[block?.spriteID];
-    if (!sprite) return out;
+    if (!sprite) return out; // ha nincs default visszaadása
 
+    // ha van sprite lekérjuk a jelenlegi aktív textúráját
     const textureName =
       sprite.getCurrentTexture?.() ?? sprite.frames?.[0]?.textureName;
-    if (!textureName) return out;
+    if (!textureName) return out; // ha nincs textúrája default lövésirány visszaadása
 
+    // lekérjük, hogy milyen textureRotation van ehhez a textúrához a blokkon
     const angle = block.getTextureRotation(textureName);
+
+    // ha normális szám és nem 0, akkor az out vektort, amit itt még 0,1 elforgatjuk vele és az lesz a lövésirány
     if (Number.isFinite(angle) && Math.abs(angle) > 0) {
       vec2.rotate(out, angle);
     }
@@ -190,23 +198,32 @@ export default class Player extends Spaceship {
 
   shootFromTurret(block) {
     const _b = this.game.buffer;
+
+    // lövésirány
     const localDirection = this.getTurretLocalDirection(block, _b.vec2_1);
 
+    // muzzle: local x + fél blokkal valamilyen irányban (vagy semmivel ha localDirection[0] 0), local y + fél blokkal valamilyen irányban (vagy semmivel, ha localDirection[1] 0)
     const localMuzzle = vec2.set(
       _b.vec2_2,
       block.localPosition[0] + localDirection[0] * 0.5,
       block.localPosition[1] + localDirection[1] * 0.5,
     );
 
+    // kb semmit nem csinál, mert alapból is vec2_1-ben írja a getTurrentLocalDirection
     const shotDirection = vec2.copy(_b.vec2_1, localDirection);
+
+    // elforgatjuk az irányt a játékos forgottságával
     vec2.rotate(shotDirection, this.rotation);
+
+    // normalizáljuk
     vec2.normalize(shotDirection, shotDirection);
 
     const bulletColor = this.getTurretBulletColor(block);
+
     this.shoot(
       localMuzzle,
-      0,
-      block.bulletSpeed,
+      0, // projectileSpeedX
+      block.bulletSpeed, // projectileSpeedY
       block.shootCooldown,
       block.bulletDamage,
       bulletColor,
@@ -225,15 +242,26 @@ export default class Player extends Spaceship {
     range = 0,
     directionOverride = null,
   ) {
+    // localMuzzle értéket (vec2_2) átrakjuk vec2_3
     const muzzle = vec2.copy(this.game.buffer.vec2_3, localMuzzle);
+
+    // muzzle forgatása játékos irányával
     vec2.rotate(muzzle, this.rotation);
+
+    // world position-be transzformálása muzzle-nak
     vec2.add(muzzle, muzzle, this.position);
 
+    // shotDirection ha van directionOverride, akkor az, ha nincs this.forward
     const shotDirection = directionOverride
       ? vec2.copy(this.game.buffer.vec2_2, directionOverride)
       : vec2.copy(this.game.buffer.vec2_2, this.forward);
+
+    // shotDirection mindkét esetben vec2_2-ben
+
+    // normalizájuk shotDirection-t
     vec2.normalize(shotDirection, shotDirection);
 
+    // projectile létrehozása
     const projectile = new Projectile({
       game: this.game,
       x: muzzle[0],
@@ -249,9 +277,9 @@ export default class Player extends Spaceship {
 
     this.game.projectiles.add(projectile);
 
-    this.onShoot();
+    this.onShoot(); // lövés hang lejátszása
 
-    this.shootCooldown = cooldown;
+    this.shootCooldown = cooldown; //! már nincs használva
   }
 
   //* kb ugyan az mint Enemy.js-ben
@@ -301,6 +329,11 @@ export default class Player extends Spaceship {
     }
   }
 
+  //* kb ugyan az mint az Enemy.js-ben
+  /**
+   * Különbségek:
+   * - fix a trail color
+   */
   renderThrusterTrail(ctx, alpha) {
     if (!ctx || this.trailParticles.length === 0) return;
 
@@ -512,24 +545,39 @@ export default class Player extends Spaceship {
     const RECOIL_DURATION = 0.11;
     const RECOIL_DISTANCE = 0.12;
 
+    // végigmegyünk a turret blokkokon a modellben
     for (const block of this.model.objects) {
-      if (!block.isTurret) continue;
+      if (!block.isTurret) continue; // ez szűri ki a nem turreteket
 
       block._shootTimer = Math.max(0, block._shootTimer - dt);
       block._recoilTimer = Math.max(0, (block._recoilTimer ?? 0) - dt);
 
+      /**
+       * Itt van megoldva hogy a recoil animálva legyen és ne egy hirtelen ugrás legyen egyik frame-ről a másikra
+       * Olyan mint a trail t-je, de csak fade out, nincs fade in.
+       * Kezdetben block._recoilTimer = RECOIL_DURATION, szóval recoilT = 1
+       * Aztán recoilTimer folyamatosan csökken, amíg nulla nem lesz
+       * így recoilT 0-hoz tart (0.11s alatt éri el)
+       * kezdetben tehát renderOffset y-onja -RECOIL_DISTANCE (mert recoilT = 1)
+       * majd ez a renderOffset szépen 0-hoz visszatér
+       */
       const recoilT = Math.max(
         0,
         Math.min(1, block._recoilTimer / RECOIL_DURATION),
       );
-      block.renderOffset[0] = 0;
-      block.renderOffset[1] = -RECOIL_DISTANCE * recoilT;
+      block.renderOffset[0] = 0; // x-en nem recoilol
+      block.renderOffset[1] = -RECOIL_DISTANCE * recoilT; // y-on recoilol
 
+      // ha nem akar a játékos lőni vagy a turret cooldown alatt van skip az ez alatti kód
       if (!wantsShoot || block._shootTimer > 0) continue;
 
-      this.shootFromTurret(block);
-      block._shootTimer = block.shootCooldown;
-      block._recoilTimer = RECOIL_DURATION;
+      //Ha a játékos lőni akar és nincs a turret cooldown alatt
+      // |
+      // V
+
+      this.shootFromTurret(block); // lövünk a turretből
+      block._shootTimer = block.shootCooldown; // cooldown rátevése
+      block._recoilTimer = RECOIL_DURATION; // volt lövés tehát recoil animációhoz időd ad, rapid tüzelés mindig restartolja az animációt
     }
 
     if (this.scoreTimer <= 0) {
