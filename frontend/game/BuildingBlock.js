@@ -33,6 +33,9 @@ export default class BuildingBlock extends Rigidbody {
     this.proxyCollider.validate();
 
     this.contextMenuTemplate = game.contextMenu.template.ENEMY_CONTEXT_MENU;
+
+    // snapCooldown 15-re állítása konstruktorban, vagyis amikor lecsatlakozik a blokk, akkor egyből megkapja
+    // ezzel elkerülhető, hogy a játékos által lecsatlakoztatott blokkok egyből visszacsatlakozzanak
     this.snapCooldown = 15;
     this.lifeTime = 0;
     this.dragSnapElapsed = 0;
@@ -41,13 +44,16 @@ export default class BuildingBlock extends Rigidbody {
   update() {
     this.rotation = 0;
 
+    // snapCooldown csökkentése, framenként 1-gyel, vagyis a 15, 15 frameig tart ki
     if (this.snapCooldown > 0) this.snapCooldown--;
 
+    // ha dragelve, lifeTime-ot resetelni
     if (this.isDragged()) {
       this.lifeTime = 0;
     }
 
-    this.lifeTime += this.game.fdt;
+    this.lifeTime += this.game.fdt; // resetelve, amikor dragelés kezdődik
+    // ha legalább BuildingBlock.DESPAWN_AFTER_SECONDS ideig nem volt hozzányúlva, megölni
     if (this.lifeTime >= BuildingBlock.DESPAWN_AFTER_SECONDS) {
       this.setState(GlobalState.DEAD);
       return;
@@ -59,6 +65,7 @@ export default class BuildingBlock extends Rigidbody {
 
   onGeometryChange() {
     super.onGeometryChange();
+    // ha üres a model, leöl
     if (this.model.objects.length === 0) {
       this.setState(GlobalState.DEAD);
     }
@@ -66,6 +73,7 @@ export default class BuildingBlock extends Rigidbody {
 
   onBroadCollision(other) {
     if (this.isDragged()) {
+      // ha játékos BC-jében van a játékos modelljével egy irányba csavarjuk (jobban lássa hogy igazítsa)
       if (other.is(Type.PLAYER)) {
         this.rotation = getAngleDiff(other.rotation, this.rotation);
         return true;
@@ -278,23 +286,36 @@ export default class BuildingBlock extends Rigidbody {
       return;
     }
 
-    const other = collision.a.parent === this ? collision.b.parent : collision.a.parent;
+    const other =
+      collision.a.parent === this ? collision.b.parent : collision.a.parent;
 
+    // ha a másik PROJECTILE
     if (other?.parent?.is?.(Type.PROJECTILE)) {
+      // ha az ebben a modellben lévő, kontaktban résztvevő object healthja number
       if (typeof object?.health === "number") {
+        // csökkentjük a másik sebzésével
         object.health -= other.parent.dmg ?? 0;
+        // lehet megpusztult tehát model clear
         const geometryChanged = this.model.clear();
+        // ha tényleg változott a model, akkor onGeometryChange meghívása
+        // a megölés az onGeometryChange függvényben történik, ha meg kell
         if (geometryChanged) this.onGeometryChange();
       }
       return;
     }
   }
 
+  // ha elkezdünk dragelni
+  // az előző dragelésből maradt dragSnapElapsed-et reseteljük
+  // lifeTime-ot is reseteljük, bár ez az onDragged-ban amúgy is megtörténne
   onDragStart() {
     this.lifeTime = 0;
     this.dragSnapElapsed = 0;
   }
 
+  // dragelés
+  // nem tétlen, tehát lifeTime-ot reseteljük
+  // dragSpanElapsed-hez delta time-ot adjuk, mert dragelésben vagyunk
   onDragged(dt = 0) {
     this.lifeTime = 0;
     this.dragSnapElapsed += dt;
