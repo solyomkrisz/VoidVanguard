@@ -27,13 +27,23 @@ export default class TextureManager {
    * @param {*} offsetY - Offset of the desired tile on the y axis.
    * @returns {Float32Array | Array}
    */
+  //! top-down ból bottom-up ba konvertál
+  //! -1 van mert 0-tól kell számolni!!! Tehát a bal felső csempe a 0,0
+  //! UNPACK_FLIP_Y_WEBGL van használva tehát amikor feltöltjük a képet megfordul, vagyis
+  //! ami bal fent volt most bal lent lesz. Mi az offseteket viszont bal fenthez viszonyítva
+  //! adjuk meg, ami a megfordított kép miatt nem lenne jó, így ez a függvény átfordítja őket
+  //! vagyis amit én bal fentinek adok meg az bal lenti lesz!
+  // u0,v0 --- u1,v0
+  //   |         |
+  //   |         |
+  // u0,v1 --- u1,v1
   static GET_UV_COORD(tileNumX, tileNumY, offsetX, offsetY) {
     // Add a small inset (0.01) to prevent texture bleeding from adjacent tiles
     const inset = 0.00175;
-    const u0 = offsetX / tileNumX + inset;
-    const u1 = (offsetX + 1) / tileNumX - inset;
-    const v0 = (tileNumY - 1 - offsetY) / tileNumY + inset;
-    const v1 = (tileNumY - 1 - offsetY + 1) / tileNumY - inset;
+    const u0 = offsetX / tileNumX;
+    const u1 = (offsetX + 1) / tileNumX;
+    const v0 = (tileNumY - 1 - offsetY) / tileNumY;
+    const v1 = (tileNumY - 1 - offsetY + 1) / tileNumY;
 
     return new MATRIX.DATA_STRUCTURE([u0, v0, u1, v1]);
   }
@@ -52,13 +62,13 @@ export default class TextureManager {
   setActiveSlot(slot) {
     if (typeof slot != "number") {
       throw new Error(
-        "TEXTUREMANAGER-setActiveSlot: The value for the 'slot' parameter is not a number!"
+        "TEXTUREMANAGER-setActiveSlot: The value for the 'slot' parameter is not a number!",
       );
     }
 
     if (slot < 0 || slot > 7) {
       throw new Error(
-        "TEXTUREMANAGER-setActiveSlot: Value for slot is out of range. It must be between 0 and 7."
+        "TEXTUREMANAGER-setActiveSlot: Value for slot is out of range. It must be between 0 and 7.",
       );
     }
 
@@ -68,7 +78,7 @@ export default class TextureManager {
   loadFromActiveSlot() {
     if (!this.texture[this.activeSlot]) {
       throw new Error(
-        `TEXTUREMANAGER-loadFromActiveSlot: There is no texture bound to the slot (${this.activeSlot}) which you marked as active!`
+        `TEXTUREMANAGER-loadFromActiveSlot: There is no texture bound to the slot (${this.activeSlot}) which you marked as active!`,
       );
     }
 
@@ -85,13 +95,13 @@ export default class TextureManager {
 
     if (typeof slot != "number") {
       throw new Error(
-        "TEXTUREMANAGER-addTexture: The value for the 'slot' parameter is not a number!"
+        "TEXTUREMANAGER-addTexture: The value for the 'slot' parameter is not a number!",
       );
     }
 
     if (slot < 0 || slot > 7) {
       throw new Error(
-        "TEXTUREMANAGER-addTexture: Value for slot is out of range. It must be between 0 and 7."
+        "TEXTUREMANAGER-addTexture: Value for slot is out of range. It must be between 0 and 7.",
       );
     }
 
@@ -134,11 +144,11 @@ export default class TextureManager {
         image.onerror = function () {
           reject(
             new Error(
-              "TEXTUREMANAGER-addTexture: Failed to load texture: " + path
-            )
+              "TEXTUREMANAGER-addTexture: Failed to load texture: " + path,
+            ),
           );
         };
-      })
+      }),
     );
   }
 
@@ -150,7 +160,7 @@ export default class TextureManager {
   addTextureCoordinates(name, slot, offsetX, offsetY) {
     if (this.texture.length - 1 < slot) {
       throw new Error(
-        "TEXTUREMANAGER-addTextureCoordinates: The texture you are looking for doesn't exist!"
+        "TEXTUREMANAGER-addTextureCoordinates: The texture you are looking for doesn't exist!",
       );
     }
 
@@ -166,7 +176,7 @@ export default class TextureManager {
   addSprite(name, sprite) {
     if (!(sprite instanceof Sprite)) {
       throw new Error(
-        "TEXTUREMANAGER-addSprite: The provided value is not a Sprite!"
+        "TEXTUREMANAGER-addSprite: The provided value is not a Sprite!",
       );
     }
 
