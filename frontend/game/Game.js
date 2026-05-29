@@ -508,6 +508,14 @@ export default class Game extends WebGLCanvas {
       if (tooCloseToEnemy) continue;
 
       // random viselkedés választása
+      /**
+       * lehetséges értékek: "passive", "neutral", "aggressive", "rammer"
+       * DE!
+       * "passive", "neutral", and "aggressive" all collapse into "AUTO" — they're completely thrown away
+       *
+       * Then pickArchetypeByDifficulty inside createEnemyModelByDifficulty re-picks the archetype from scratch when "AUTO" is passed.
+       * This means pickEnemyBehavior only serves one purpose: deciding whether to force a RAMMER or not.
+       */
       const behavior = this.pickEnemyBehavior(difficulty);
 
       // ! HOGY EZT MEGÉRTSÜK A SpaceShipModels.js/createEnemyModelByDifficulty, illetve egyéb

@@ -7,6 +7,7 @@ import Thruster from "/game/Thruster.js";
 
 const THRUSTER_SHAPE = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
 
+/**it creates a Thruster with a fixed shape and sprite, so you don't repeat those boilerplate args in every blueprint */
 function makeThruster(x, y, hasGimbal = false, gimbalRange = 15) {
   return new Thruster({
     x, y,
@@ -22,6 +23,7 @@ function clampDifficulty(difficulty) {
   return Math.max(1, Math.min(15, Math.floor(difficulty || 1)));
 }
 
+// olyan mint a Game.pickEnemyBehavior csak részletesebb, több lehetséges enemy
 function pickArchetypeByDifficulty(difficulty, rng = Math.random) {
   if (difficulty <= 3) {
     const r = rng();
@@ -71,6 +73,7 @@ function pickArchetypeByDifficulty(difficulty, rng = Math.random) {
   return "FIGHTER";
 }
 
+/**It creates a non-removable CORE block at (0,0) */
 function createCore() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -83,6 +86,9 @@ function getLocalPositionKey(object) {
   return `${lp[0]},${lp[1]}`;
 }
 
+/**
+ * Remove duplicate blocks that occupy the same grid position
+ */
 function sanitizeBlueprintObjects(objects) {
   const occupied = new Set();
   const sanitized = [];
@@ -452,11 +458,34 @@ export function createEnemyModelByDifficulty(difficulty, archetype = "AUTO", rng
   const d = clampDifficulty(difficulty);
   const blockType = `BLOCK_${d}`;
   const turretType = `TURRET_${d}`;
-  const selected = archetype === "AUTO" ? pickArchetypeByDifficulty(d, rng) : archetype;
+  const selected = archetype === "AUTO" ? pickArchetypeByDifficulty(d, rng) : archetype; // enemy típusa
+  
+  /**
+   * return value of getArchetypeBlueprint
+   * {
+        speedMultiplier: 0.82,
+        turnRateMultiplier: 0.85,
+        objects: [
+          createCore(),
+          createBlock(-1, 0, blockType),
+          createBlock( 1, 0, blockType),
+          createBlock(-1, 1, turretType),
+          createBlock( 1, 1, turretType),
+          makeThruster(0, -1, false),
+        ],
+      }
+   */
   const blueprint = getArchetypeBlueprint(selected, blockType, turretType);
+  
+  // remove blocks that occupy the same positions
   const sanitizedObjects = sanitizeBlueprintObjects(blueprint.objects);
+
+  // alap sebesség minimum 1.625 (difficulty itt nem lehet 0 a clamp fn miatt)
+  // alap sebesség maximum 2.675
   const baseSpeed = 1.55 + d * 0.075;
+  
   const maxSpeed = baseSpeed * blueprint.speedMultiplier;
+  
   const turnRate = (1.05 + maxSpeed * 0.62) * blueprint.turnRateMultiplier;
 
   return {
