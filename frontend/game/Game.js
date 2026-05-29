@@ -202,11 +202,12 @@ export default class Game extends WebGLCanvas {
 
     this._textureBuildQueue = [];
 
+    // enemy spawnolással kapcsolatos dolgok
     this.enemySpawnerInitialized = false;
     this.enemySpawnInterval = 18;
     this.enemySpawnTimer = this.enemySpawnInterval;
     this.enemyInitialCount = 25;
-    this.enemySpawnCellArea = 15; 
+    this.enemySpawnCellArea = 15;
     this.enemySpawnMinDistance = 28;
     this.enemySpawnMaxDistance = 52;
     this.enemySpawnMinSpacing = 12;
@@ -273,29 +274,52 @@ export default class Game extends WebGLCanvas {
 
   getCurrentDifficulty() {
     const score = this.player?.score ?? 0;
-    for (let difficulty = DIFFICULTY_SCORE_THRESHOLDS.length - 1; difficulty >= 0; difficulty--) {
+    // hátulról előrefele loopolunk a DIFFICULTY_SCORE_THRESHOLDS listában
+    for (
+      let difficulty = DIFFICULTY_SCORE_THRESHOLDS.length - 1;
+      difficulty >= 0;
+      difficulty--
+    ) {
+      // ha az adott item nagyobb vagy egyenlő mint a játékos scoreja visszaküldjük az indexet, egyébkét 0-ás indexet adunk
       if (score >= DIFFICULTY_SCORE_THRESHOLDS[difficulty]) return difficulty;
     }
     return 0;
   }
 
+  // hány enemy lehet max
   getEnemyCapByDifficulty(difficulty) {
-    const d = Math.max(0, difficulty);
-    const baselineMin = this.enemyInitialCount;
-    const baselineMax = this.enemyInitialCount + 30;
-    const normalized = Math.min(1, d / 15);
+    const d = Math.max(0, difficulty); // nehézségi szint indexe (min 0, max 15)
+    const baselineMin = this.enemyInitialCount; // enemyInitialCount 25
+    const baselineMax = this.enemyInitialCount + 30; // akkor így 55
+    const normalized = Math.min(1, d / 15); // normalizáljuk a difficulty indexet
+
+    /**
+     * 0-ás nehézség esetén a min lesz,
+     * maxos (15) nehézség esetén a max, vagyis 55
+     */
     const scaledCap = baselineMin + normalized * (baselineMax - baselineMin);
+
+    // egész számra kerekítjük a max enemy számot
     return Math.round(scaledCap);
   }
 
+  // milyen gyakran spawnolhatnak enemyk
   getEnemySpawnIntervalByDifficulty(difficulty) {
     const d = Math.max(0, difficulty);
     const maxInterval = 18;
     const minInterval = 6;
     const normalized = Math.min(1, d / 15);
+
+    // elsőre furcsának tűnhet, hogy a max-hoz adunk hozzá, de a (minInterval - maxInterval) is fel van cseréve szóval az mínusz lesz, vagyis a + előtte - lesz szóval minden jó
+    /**
+     * difficulty 0: 18 a spawn interval
+     * difficulty max (15): 6 a spawn interval
+     * mindezek gondolom másodpercek
+     */
     return maxInterval + (minInterval - maxInterval) * normalized;
   }
 
+  // elem lüktetése
   pulseHudValue(element) {
     if (!element?.animate) return;
     element.animate(
@@ -311,32 +335,64 @@ export default class Game extends WebGLCanvas {
     );
   }
 
+  // tickenként meg van hívva
+  // hudot updateli
   updateDifficultyIndicator() {
     const score = this.player?.score ?? 0;
-    const difficulty = this.getCurrentDifficulty();
-    this.currentDifficulty = difficulty;
-    const gradeIndex = Math.max(0, Math.min(14, difficulty - 1));
-    const difficultyColor = BlockStyle.GRADE_COLORS[gradeIndex] || BlockStyle.GRADE_COLORS[0];
+    const difficulty = this.getCurrentDifficulty(); // jelenlegi nehézség indexe
+    this.currentDifficulty = difficulty; // elmentjük Game példányra
 
+    // ugyanazok a gradek vannak használva itt is színre mint eddig a trail és bullet colornak
+    // ? 15-ös difficultyval mi van? valszeg GRADE_COLORS[0] lesz ami sima szürke gondolom
+    const gradeIndex = Math.max(0, Math.min(14, difficulty - 1));
+    const difficultyColor =
+      BlockStyle.GRADE_COLORS[gradeIndex] || BlockStyle.GRADE_COLORS[0];
+
+    // ha difficulty > 0 akkor ahányas a difficulty annyi teli csillag
+    // ha difficulty 0 akkor egy üres csillag
     const stars = difficulty > 0 ? "★".repeat(difficulty) : "☆";
+    // nőtt a score az itt elmentetthez képest?
     const scoreIncreased =
       this.lastDisplayedScore != null && score > this.lastDisplayedScore;
 
-    if (this.UI.difficultyText && this.UI.difficultyValue && this.UI.scoreValue) {
-      this.UI.difficultyText.style.color = difficultyColor;
-      this.UI.difficultyValue.textContent = stars;
-      this.UI.difficultyValue.style.color = difficultyColor;
-      this.UI.scoreValue.textContent = String(score);
-      this.UI.scoreValue.style.color = "#f3f7ff";
+    // ha vannak html elemek
+    if (
+      this.UI.difficultyText &&
+      this.UI.difficultyValue &&
+      this.UI.scoreValue
+    ) {
+      this.UI.difficultyText.style.color = difficultyColor; //szín beállít
+      this.UI.difficultyValue.textContent = stars; // difficulty jelölő csillagokat berak
+      this.UI.difficultyValue.style.color = difficultyColor; // csillagok átszínezése
+      this.UI.scoreValue.textContent = String(score); // score kiírása
+      this.UI.scoreValue.style.color = "#f3f7ff"; // scorenak színadás
 
+      // ha nőtt a score lüktetés animáció a html elemjére
       if (scoreIncreased) {
         this.pulseHudValue(this.UI.scoreValue);
       }
     }
 
+    // score frissítése
     this.lastDisplayedScore = score;
   }
 
+  /**
+   * Difficulty 1–3 (easy):
+   * -> 40% passive
+   * -> 40% neutral
+   * -> 20% aggressive
+   *
+   * Difficulty 4–9 (medium):
+   * -> 18% rammer
+   * -> 37% neutral
+   * -> 45% aggressive
+   *
+   * Difficulty 10+ (hard):
+   * -> 22% rammer
+   * -> 20% neutral
+   * -> 58% aggressive
+   */
   pickEnemyBehavior(difficulty) {
     const r = this.randomFloat();
 
@@ -357,6 +413,7 @@ export default class Game extends WebGLCanvas {
     return "aggressive";
   }
 
+  // ugyan az mint a Player.setCurrentChunk
   getPlayerChunk() {
     const cx = Math.floor(
       this.player.position[0] / this.chunkSize / this.backgroundZoom,
@@ -367,12 +424,15 @@ export default class Game extends WebGLCanvas {
     return [cx, cy];
   }
 
+  // melyik grid-ben van a játékos
+  // ez a broad phase collision detection gridje
   getPlayerGridCell() {
     const cx = Math.floor(this.player.position[0] / this.grid.cellSize);
     const cy = Math.floor(this.player.position[1] / this.grid.cellSize);
     return [cx, cy];
   }
 
+  // adott chunk látható e a játékos számára
   isChunkVisibleToPlayer(cx, cy) {
     const [pcx, pcy] = this.getPlayerChunk();
     const visX = this.renderDistance[0] + 1;
@@ -381,25 +441,50 @@ export default class Game extends WebGLCanvas {
   }
 
   trySpawnEnemy(difficulty) {
-    if (!this.player) return false;
+    if (!this.player) return false; // ha nincs player vissza
 
+    // hány blokk méretű egy chunk
+    // chunkSize alapból blokkonként van (ha 8, az 8x8)
+    // de a bezoomolás hatással van nem csak a nebulára de a chunkokra is
+    // szóval megszorozzuk itt is
     const chunkWorldSize = this.chunkSize * this.backgroundZoom;
-    const minSpawnDistance = Math.max(chunkWorldSize * 1.5, this.enemySpawnMinDistance);
-    const maxSpawnDistance = Math.max(minSpawnDistance + 10, this.enemySpawnMaxDistance);
+
+    // látómezőn kívül spawnoljon az enemy
+    const minSpawnDistance = Math.max(
+      chunkWorldSize * 1.5,
+      this.enemySpawnMinDistance,
+    );
+
+    // de túl messze ne mert soha nem találkozna a játékos vele
+    const maxSpawnDistance = Math.max(
+      minSpawnDistance + 10,
+      this.enemySpawnMaxDistance,
+    );
+
+    // ! INNEN FOLYTATNI
     const minSpawnSpacing = this.enemySpawnMinSpacing;
 
     for (let attempt = 0; attempt < 80; attempt++) {
       const angle = this.randomFloat() * Math.PI * 2;
-      const spawnDistance = minSpawnDistance + this.randomFloat() * (maxSpawnDistance - minSpawnDistance);
+      const spawnDistance =
+        minSpawnDistance +
+        this.randomFloat() * (maxSpawnDistance - minSpawnDistance);
       const x = this.player.position[0] + Math.cos(angle) * spawnDistance;
       const y = this.player.position[1] + Math.sin(angle) * spawnDistance;
       const distanceToPlayer = spawnDistance;
 
-      if (distanceToPlayer < minSpawnDistance || distanceToPlayer > maxSpawnDistance) continue;
+      if (
+        distanceToPlayer < minSpawnDistance ||
+        distanceToPlayer > maxSpawnDistance
+      )
+        continue;
 
       let tooCloseToEnemy = false;
       for (const enemy of this.enemies.objects) {
-        if (Math.hypot(enemy.position[0] - x, enemy.position[1] - y) < minSpawnSpacing) {
+        if (
+          Math.hypot(enemy.position[0] - x, enemy.position[1] - y) <
+          minSpawnSpacing
+        ) {
           tooCloseToEnemy = true;
           break;
         }
@@ -426,7 +511,8 @@ export default class Game extends WebGLCanvas {
 
       this.enemies.add(enemy);
       enemy.model.applyTextureRotations(this.textureManager);
-      enemy.model.onBlockDestroyed = (block) => this._spawnBlockDestructionAt(block, enemy);
+      enemy.model.onBlockDestroyed = (block) =>
+        this._spawnBlockDestructionAt(block, enemy);
       return true;
     }
 
@@ -484,9 +570,10 @@ export default class Game extends WebGLCanvas {
     }
 
     if (spawned > 0) {
-      const catchUp = deficit > 1
-        ? Math.max(1.2, spawnInterval / Math.min(deficit, 5))
-        : spawnInterval;
+      const catchUp =
+        deficit > 1
+          ? Math.max(1.2, spawnInterval / Math.min(deficit, 5))
+          : spawnInterval;
       this.enemySpawnTimer = catchUp;
     } else {
       this.enemySpawnTimer = Math.min(2, spawnInterval);
@@ -518,16 +605,20 @@ export default class Game extends WebGLCanvas {
 
     // Ha mentve volt
     if (this.saveType === "local") {
-      const existingSave = localSaves.get(localSaveKey) ?? this.loadedSave ?? {};
+      const existingSave =
+        localSaves.get(localSaveKey) ?? this.loadedSave ?? {};
       const completedSave = {
         ...existingSave,
         ...this.loadedSave,
         game_id: localSaveKey,
         save_name:
-          existingSave.save_name ?? this.loadedSave?.save_name ?? "Unnamed Save",
+          existingSave.save_name ??
+          this.loadedSave?.save_name ??
+          "Unnamed Save",
         game_state: this.exportSave(),
         is_finished: 1,
-        created_at: existingSave.created_at ?? this.loadedSave?.created_at ?? Date.now(),
+        created_at:
+          existingSave.created_at ?? this.loadedSave?.created_at ?? Date.now(),
         updated_at: Date.now(),
         save_type: "local",
       };
@@ -738,7 +829,9 @@ export default class Game extends WebGLCanvas {
       `Játékállás sikeresen mentve helyileg "${saveName}" néven`,
     );
 
-    document.dispatchEvent(new CustomEvent("game-saved", { detail: { saveType: "local" } }));
+    document.dispatchEvent(
+      new CustomEvent("game-saved", { detail: { saveType: "local" } }),
+    );
 
     this.inSavingProcess = false;
 
@@ -774,7 +867,9 @@ export default class Game extends WebGLCanvas {
 
     ToastManager.REQUEST(`Játékállás sikeresen feltöltve "${saveName}" néven`);
 
-    document.dispatchEvent(new CustomEvent("game-saved", { detail: { saveType: "remote" } }));
+    document.dispatchEvent(
+      new CustomEvent("game-saved", { detail: { saveType: "remote" } }),
+    );
 
     this.inSavingProcess = false;
 
@@ -992,13 +1087,17 @@ export default class Game extends WebGLCanvas {
     this.grid.filter().iterate();
 
     const playerHasLiveCore = this.player?.model?.objects?.some(
-      (block) => block && !block.isRemovable && !block.toRemove && block.health > 0,
+      (block) =>
+        block && !block.isRemovable && !block.toRemove && block.health > 0,
     );
 
+    // ha játék még megy, van player de nincs magja, megölni a játékost
     if (!this.isFinished && this.player && !playerHasLiveCore) {
       this.player.setState(GlobalState.DEAD);
     }
 
+    // ha a játék még nincs finishelve, de a játékos halott
+    // playerDeath-et triggerelni
     if (!this.isFinished && this.player?.hasState(GlobalState.DEAD)) {
       this.triggerPlayerDeath();
     }
@@ -1273,7 +1372,7 @@ export default class Game extends WebGLCanvas {
     // newly loaded chunks never cause a burst lag spike on the main thread.
     const TEXTURE_BUILDS_PER_FRAME = 3;
     for (let i = 0; i < TEXTURE_BUILDS_PER_FRAME && this._textureBuildQueue.length > 0; i++) {
-      this._textureBuildQueue.shift()();
+      this._textureBuildQueue.shift()(); // ?
     }
 
     this.bindTextureArray();
@@ -1306,6 +1405,8 @@ export default class Game extends WebGLCanvas {
     this.draw(instanceCount);
   }
 
+  //#region setterek csak
+
   createPlayer(model) {
     if (!(model instanceof Model)) {
       throw new Error(
@@ -1315,7 +1416,8 @@ export default class Game extends WebGLCanvas {
 
     this.player = new Player(this, model);
     this.coreObjects.add(this.player);
-    this.player.model.onBlockDestroyed = (block) => this._spawnBlockDestructionAt(block, this.player);
+    this.player.model.onBlockDestroyed = (block) =>
+      this._spawnBlockDestructionAt(block, this.player);
   }
 
   /**
