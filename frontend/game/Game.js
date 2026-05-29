@@ -651,8 +651,10 @@ export default class Game extends WebGLCanvas {
     }
   }
 
-  // TODO: ezt átnézni, mivel lett kiegészítve
   async finishSave() {
+    /**
+     * kb az ami amugy volt csak tobb helyrol johet a saveType hogy biztosra menjunk
+     */
     const localSaveKey = this.loadedSave?.game_id ?? this.game_id;
     const localSaves = getLocalSaves();
 
@@ -765,6 +767,7 @@ export default class Game extends WebGLCanvas {
   }
 
   // prettier-ignore
+  // csak ui építése
   buildUI() {
     this.UI.pauseMenu = document.createElement("pause-menu");
     this.UI.pauseMenu.game = this;
@@ -1179,12 +1182,11 @@ export default class Game extends WebGLCanvas {
     this.tooltip.updateTemplates(this.frameId);
   }
 
-  //! INNENTŐL FOLYTATNI
   triggerPlayerDeath() {
-    if (this.isFinished) return;
-    this.isFinished = true;
-    this.UI.deathScreen?.show();
-    this.finishSave();
+    if (this.isFinished) return; // ha játék már be van fejezve vissza
+    this.isFinished = true; // játékos meghalt, szóval isFinished true-ra
+    this.UI.deathScreen?.show(); // mutatjuk az endscreent
+    this.finishSave(); // elmentjük a játékot, megjelöljük finished-ként
 
     const KILL_RADIUS = 50;
     const PUSH_RADIUS = 80;
@@ -1200,23 +1202,41 @@ export default class Game extends WebGLCanvas {
     for (const enemy of this.enemies.objects) {
       const dx = enemy.position[0] - px;
       const dy = enemy.position[1] - py;
+
+      // enemy távja a játékostól
       const dist = Math.hypot(dx, dy);
+
+      // ha nagyon közel van akkor kövi enemy-re
       if (dist < 0.001) continue;
 
+      // normalizált x, y, vagyis csak irány, ami a játékostól az enemy felé mutat
       const nx = dx / dist;
       const ny = dy / dist;
 
       // Kill enemies within the kill radius
+      // érdekes módon, de az összes enemy-t a radiusban megöljük
       if (dist < KILL_RADIUS) {
         for (const block of enemy.model.objects) block.health = 0;
       }
 
       // Push enemies within the push radius
       if (dist < PUSH_RADIUS) {
+        /**
+         * linear falloff
+         * enemies right at the center get a falloff of 1.0 (1 - ~0.2 / 80)
+         * enemies at the edge get 0.0 (1 - 80/80)
+         */
         const falloff = 1 - dist / PUSH_RADIUS;
+
+        // scales the speed by how close the enemy is
         const impulse = BURST_SPEED * falloff;
+
+        // in the given direction (from player toward enemy), apply impulse
+        // this will make it look like the shockwave comes from the player
         enemy.velocity[0] += nx * impulse;
         enemy.velocity[1] += ny * impulse;
+
+        // maxSpeed átállítása, hogy ha a jelenleginél gyorsabb az impulse akkor látszódjon hogy rá lett rakva az enemy-re
         enemy.maxSpeed = Math.max(enemy.maxSpeed, impulse);
       }
     }
@@ -1225,12 +1245,22 @@ export default class Game extends WebGLCanvas {
     for (const bb of this.buildingBlocks.objects) {
       const dx = bb.position[0] - px;
       const dy = bb.position[1] - py;
+
+      // táv játékostól a buildingblokhoz
       const dist = Math.hypot(dx, dy);
+
+      // ha közel van ennyire, skip
       if (dist < 0.001) continue;
 
+      // ha push radiuson belül van
       if (dist < PUSH_RADIUS) {
+        // normalizált x, y, vagyis a játékostól a building block felé mutató irány
         const nx = dx / dist;
         const ny = dy / dist;
+
+        /**
+         * ! ugyan az mint az enemy-k esetében feljebb
+         */
         const falloff = 1 - dist / PUSH_RADIUS;
         const impulse = BURST_SPEED * falloff;
         bb.velocity[0] += nx * impulse;
@@ -1249,13 +1279,21 @@ export default class Game extends WebGLCanvas {
   }
 
   // prettier-ignore
+  /**
+   * segédfüggvény hogy adott blokkhoz pusztulási effektet spawnoljunk
+   */
   _spawnBlockDestructionAt(block, entity) {
     const cos = Math.cos(entity.rotation);
     const sin = Math.sin(entity.rotation);
+
     const lx = block.localPosition[0];
     const ly = block.localPosition[1];
+
+    // a blokk lokális pozícióját world pozícióvá konvertáljuk (forgatás + eltolás)
     const wx = entity.position[0] + lx * cos - ly * sin;
     const wy = entity.position[1] + lx * sin + ly * cos;
+    
+    // legeneráltatjuk a particle-t
     this._spawnBlockDestructionParticles(
       block.gradeID ?? 0,
       wx,
@@ -1264,10 +1302,23 @@ export default class Game extends WebGLCanvas {
     );
   }
 
+  /**
+   * intensity érték generálása a _spawnBlockDestructionParticles függvényhez
+   */
   getBlockEffectScale(block) {
-    const grade = Math.max(0, Math.min(14, block?.gradeID ?? 0));
+    const grade = Math.max(0, Math.min(14, block?.gradeID ?? 0)); // blokk gradeID-je // min 0, max 14
+
+    /**
+     * scale érték számítása
+     * - min 0.8, max 2,48 (ha gradeID 14)
+     * - minél nagyobb a gradeID annál nagyobb a scale
+     */
     let scale = 0.8 + grade * 0.12;
+
+    // ha a blokk turret az előbb kiszámított scale értéket megfelezzük
+    // turret robbanása kevésbé intenzív
     if (block?.isTurret) scale *= 0.5;
+
     return scale;
   }
 
@@ -1306,13 +1357,58 @@ export default class Game extends WebGLCanvas {
   }
 
   // prettier-ignore
+  /**
+   *
+   * @param {*} gradeID - a színhez (a blokk pusztulás effekt szín a block típusától függ)
+   * @param {*} wx - world x ???
+   * @param {*} wy - world y ???
+   * @param {*} intensity
+   */
   _spawnBlockDestructionParticles(gradeID, wx, wy, intensity = 1) {
     const color = BlockStyle.GRADE_COLORS[Math.max(0, Math.min(14, gradeID))] ?? BlockStyle.GRADE_COLORS[0];
+    /**
+     * count kiszámítása
+     * -> Math.random() * 4 -> random szám 0 és 4 között
+     * -> 5 + Math.random() * 4 -> particle-ök most min 5, max 9 lehet
+     * -> (5 + Math.random() * 4) * intensity) -> magasabb intensity több, alacsonyabb kevesebb
+     * -> Math.round((5 + Math.random() * 4) * intensity) -> egész számra kerekítjük, mert a random * 4 és az intensity nem biztos hogy egész szám
+     * -> Math.max 3 miatt legalább 3 mindig lesz spawnolva, még akkor is ha intensity-t levesszük 0-ra
+     */
     const count = Math.max(3, Math.round((5 + Math.random() * 4) * intensity));
+
+    // loop ahány a count
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
+      const angle = Math.random() * Math.PI * 2; // random szög 0 és 2pi radián között (0 és 360 fok)
+      
+      /**
+       * speed kiszámolása
+       * -> Math.random() * 3.5 -> min 0, max 3,5
+       * -> (1.5 + Math.random() * 3.5) -> min 1.5, max 5
+       * -> alapból vagyis min 1.5 max 5 a speed
+       * -> (0.7 + intensity * 0.35)
+       *    - intensity = 0, akkor 0.7-el szorzunk
+       *    - intensity = 1, akkor 1.05-el szorzunk (kb változatlan)
+       *    - magasabb intensity (>1) által gyorsabb lesz a speed
+       */
       const speed = (1.5 + Math.random() * 3.5) * (0.7 + intensity * 0.35);
+
+      /**
+       * maxLife kiszámítása
+       * -> Math.random() * 0.3 -> min 0, max 0.3
+       * -> (0.25 + Math.random() * 0.3) -> min 0.25, max 0.55
+       * -> alapból vagyis min 0.25, max 0.55 a maxLife
+       * -> (0.8 + intensity * 0.18)
+       *    - minimum 0.8-al szorozzuk az előző értéket
+       *    - ha intensity = 0, akkor 0.8-al szorunk
+       *    - ha intensity = 1, akkor 0.98-al szorzunk (kb változatlan)
+       *    - ha intensity > 1, akkor a particle-ök kicsit több ideig élnek, de elhanyagolható 
+       */
       const maxLife = (0.25 + Math.random() * 0.3) * (0.8 + intensity * 0.18);
+      
+      /**
+       * listába rakjuk a particle-öket, amit később
+       * a renderBlockDestructionParticles függvény renderel
+       */
       this.blockDestructionParticles.push({
         x: wx, y: wy,
         vx: Math.cos(angle) * speed,
@@ -1320,11 +1416,24 @@ export default class Game extends WebGLCanvas {
         life: maxLife,
         maxLife,
         color,
+        /**
+         * size kiszámítása
+         * -> (0.25 + Math.random() * 0.35) -> min 0.25, max 0.6
+         * -> (0.75 + intensity * 0.3)
+         *    - ha intensity 0, akkor 0.75-el szorzunk
+         *    - ha intensity 1, akkor 1.05-el szorzunk
+         *    - ha intensity >1, akkor nagyobban a particle-ök
+         */
         size: (0.25 + Math.random() * 0.35) * (0.75 + intensity * 0.3),
       });
     }
   }
 
+  /**
+   * updateli a blockDestructionParticle-öket
+   * - változtatja a pozíciójukat, sebességük alapján
+   * - updateli az életciklusukat, és ha lejárt az idejük nem rakja fel a listára őket, vagyis megöli
+   */
   _tickBlockDestructionParticles() {
     const dt = this.fdt;
     let writeIndex = 0;
@@ -1338,12 +1447,16 @@ export default class Game extends WebGLCanvas {
   }
 
   // prettier-ignore
+  /**
+   * köröket renderel mint blockDestructionParticle
+   */
   renderBlockDestructionParticles(ctx, alpha) {
     if (!ctx || !this.player || this.blockDestructionParticles.length === 0) return;
 
     const W = this.canvas.width;
     const H = this.canvas.height;
 
+    // ugyanazt kiszámítjuk mint a mat3.js/cam függvényben
     let scaleX = this.scale;
     let scaleY = this.scale;
     if (this.aspectRatio >= 1) scaleX = this.scale / this.aspectRatio;
@@ -1355,22 +1468,38 @@ export default class Game extends WebGLCanvas {
     const camY = this.player.previousPosition[1] + (this.player.position[1] - this.player.previousPosition[1]) * alpha;
 
     ctx.save();
+
+    /**
+     * szabályozza hogy az új pixelek hogy lesznek a már meglévőre rajzolva
+     * alapértelmezett érték a "source-over"
+     * "lighter" - "uses additive blending: the RGB values of the new pixel and the existing pixel are simply added together."
+     * 
+     * pl.:
+     * - Existing pixel: rgb(100, 50, 0) (dark orange)
+     * - New pixel: rgb(80, 30, 0) (another dark orange)
+     * - Result: rgb(180, 80, 0) (brighter orange)
+     */
     ctx.globalCompositeOperation = "lighter";
 
+    // loop végig az összes particle-n
     for (const p of this.blockDestructionParticles) {
-      const t = p.life / p.maxLife;
+      const t = p.life / p.maxLife; // 0 és 1 közötti érték, kezdetben 1, majd ahogy több ideje él (p.life csökkentésre kerül) 0-hoz tart
+      
+      /** kör középpontja canvas koordinátákban */
       const sx = (p.x - camX) * ppuX + W * 0.5;
       const sy = H * 0.5 - (p.y - camY) * ppuY;
+
+      /** radius reszponzívan */
       const radius = Math.max(1.5, p.size * ppuX);
 
-      ctx.globalAlpha = t * 0.9;
+      ctx.globalAlpha = t * 0.9; // alpha max 0.9
       ctx.fillStyle = p.color;
       ctx.beginPath();
-      ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+      ctx.arc(sx, sy, radius, 0, Math.PI * 2); // teljes kör rajzolása
       ctx.fill();
     }
 
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = 1; // alpha vissza 1-re
     ctx.restore();
   }
 
