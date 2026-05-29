@@ -172,6 +172,10 @@ export default class Game extends WebGLCanvas {
     this.maxLayers = -1;
     this.layerId = null;
 
+    /**
+     * 1 / tileSize -> 1 NDC unit is tileSize world units
+     * vagyis a teljes szélességbe 2 * tileSize kocka fér (mert NDC -1-től +1-ig megy)
+     */
     this.scale = 1 / this.tileSize;
     this.cameraMatrix = mat3.identity();
     this.cameraMatrixInverse = mat3.identity();
@@ -1322,18 +1326,57 @@ export default class Game extends WebGLCanvas {
     return scale;
   }
 
+  /**
+   * Feladata:
+   * The function does two things:
+   * 1. Impact spark — always spawned at (wx, wy), using the projectile's color.
+   * This is the small flash showing where the projectile hit.
+   * 2. Block damage particles — only if hitBlock is provided, spawned at the same
+   * position but using the block's grade color and getBlockEffectScale(hitBlock) * 0.35
+   * as intensity. The * 0.35 keeps them subtle — just a hint that the block took damage,
+   * not a full destruction burst.
+   */
   _spawnProjectileImpactAt(projectile, wx, wy, hitBlock = null) {
+    // minimum scale 0.6, szóval a gyenge lövedékek is látható becsapódást okoznak
     const scale = Math.max(0.6, projectile?.impactScale ?? 1);
+
+    // gradeID amit eddig is mindenhol használtunk, ha nincs meg milyen blokkot érintett, akkor 0
     const hitGrade = Math.max(0, Math.min(14, hitBlock?.gradeID ?? 0));
+
     const color = hitBlock
       ? (BlockStyle.GRADE_COLORS[hitGrade] ?? BlockStyle.GRADE_COLORS[0])
       : (projectile?.color ?? "rgba(220, 240, 255, 1)");
+
+    // minimum 3 particle, ha scale 1, akkor 7 particle
+    // erősebb projectile-ok több particle-t spawnolnak
     const count = 3 + Math.floor(scale * 4);
 
+    // loop amennyi a count
+    //! kb ugyan az mint a _spawnBlockDestructionParticles loopjában, max más értékek
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
+      const angle = Math.random() * Math.PI * 2; // random irány 0 és 360 fok között, ebbe az irányba fog repülni a particle
+
+      /**
+       * speed érték számítása
+       * -> (1.2 + Math.random() * 2.4) -> min 1.2, max 3.6
+       * -> scale factor: (0.65 + scale * 0.35) -> min 0.65, de scale min 0.6, szóval valójában
+       *    min 0.86
+       *    - ha scale 1, akkor ez 1 lesz
+       *
+       * erősebb projectile-ok particle-jei gyorsabbak
+       */
       const speed = (1.2 + Math.random() * 2.4) * (0.65 + scale * 0.35);
+
+      /**
+       * maxLife számítása
+       * -> (0.09 + Math.random() * 0.12) -> min 0.09, max 0.21 másodperc
+       * -> (0.85 + scale * 0.2) -> min 0.85, de mivel scale legalább 0.6 ezért az igazi min 0.97
+       *    - ha scale 1, akkor ez 1.05
+       *
+       * erősebb becsapódások particle-jei kissé több ideig tartanak
+       */
       const maxLife = (0.09 + Math.random() * 0.12) * (0.85 + scale * 0.2);
+
       this.blockDestructionParticles.push({
         x: wx,
         y: wy,
@@ -1342,15 +1385,29 @@ export default class Game extends WebGLCanvas {
         life: maxLife,
         maxLife,
         color,
+        /**
+         * size érték kiszámolása
+         * -> (0.08 + Math.random() * 0.12) -> min 0.08, max 0.20
+         * -> (0.8 + scale * 0.4) -> min 0.8, de scale min 0.6 szóval valódi min 1.04
+         *    - ha scale 1, akkor ez 1.2
+         *
+         * erősebb becsapódások nagyobb particle-öket eredményeznek
+         */
         size: (0.08 + Math.random() * 0.12) * (0.8 + scale * 0.4),
       });
     }
 
+    // ha van hit block akkor oda spawnoulnk "sebződés" particle-öket
     if (hitBlock) {
       this._spawnBlockDestructionParticles(
         hitBlock.gradeID ?? 0,
         wx,
         wy,
+        /**
+         * itt le van scaleelve az intensity ami szintén megerősíti, hogy ez csak sebződés particle
+         * ha a blokk meghal, akkor máshol is meg van hívva ez a függvény a 0.35-ös szorzó nélkül
+         * az a teljes "meghalás robbanás" effekt
+         */
         this.getBlockEffectScale(hitBlock) * 0.35,
       );
     }
@@ -1512,6 +1569,10 @@ export default class Game extends WebGLCanvas {
 
     const [ppx, ppy] = this.player.previousPosition;
     const [pcx, pcy] = this.player.position;
+
+    /**
+     * px és py interpolált player pozíció
+     */
     const px = ppx + (pcx - ppx) * this.alpha;
     const py = ppy + (pcy - ppy) * this.alpha;
 
@@ -1519,12 +1580,34 @@ export default class Game extends WebGLCanvas {
     let scaleX = this.scale, scaleY = this.scale;
     if (this.aspectRatio >= 1) scaleX = this.scale / this.aspectRatio;
     else                       scaleY = this.scale * this.aspectRatio;
+
     const ppuX = scaleX * W / 2;
     const ppuY = scaleY * H / 2;
 
-    const halfW = W / (2 * ppuX);
-    const halfH = H / (2 * ppuY);
+    // halfW = W / (2 * scaleX * W * 0.5) -> halfW = 1 / scaleX
 
+    /**
+     * tileSize az hogy mennyi tile látható középről az egyik szél felé, vagyis a teljes szélesség 2 * tileSize
+     * scale = 1 / tileSize
+     * doing 1 / scale (either scaleX or scaleY stays scale because both sides of if...else cannot run)
+     * just turns it back into tileSize
+     */
+
+    // ez rakás szar, csak félrevezető, egy halom dolog kiegyszerűsödik ha kibontjuk a kifejezéseket
+    const halfW = W / (2 * ppuX); // halfW = 1 / scaleX - half width of the visible world, in world units
+    const halfH = H / (2 * ppuY); // halfH = 1 / scaleY - half height ...
+
+    /**
+     * px - halfW -> a kijelző bal széle world coordinátákban
+     * azzal hogy leosztjuk gridSize-zal és floorolunk a legközelebbi grid vonalhoz spaneli bal oldalon
+     * 
+     * (px - halfW) / gridSize -> how many grid cells that position is from the player's position, that would be without dividing by gridSize
+     *                          we divide by grid Size, so we get which grid cell that position falls into relative from the world center
+     * floor it so we snap it down to a whole number of grid cells, ensuring we don't miss the leftmost visible line
+     * multiply that by gridSize and you convert it back to world coordinates (in block units)
+     * 
+     * y0 is the same but for the y axis
+     */
     const x0 = Math.floor((px - halfW) / gridSize) * gridSize;
     const y0 = Math.floor((py - halfH) / gridSize) * gridSize;
 
@@ -1533,12 +1616,14 @@ export default class Game extends WebGLCanvas {
     ctx.lineWidth = 1;
     ctx.beginPath();
 
+    // vertikális vonalak rajzolása
     for (let wx = x0; wx <= px + halfW + gridSize; wx += gridSize) {
       const sx = (wx - px) * ppuX + W / 2;
       ctx.moveTo(sx, 0);
       ctx.lineTo(sx, H);
     }
 
+    // horizontális vonalak rajzolása
     for (let wy = y0; wy <= py + halfH + gridSize; wy += gridSize) {
       const sy = H / 2 - (wy - py) * ppuY;
       ctx.moveTo(0, sy);
