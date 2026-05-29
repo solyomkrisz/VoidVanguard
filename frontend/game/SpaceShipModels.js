@@ -18,6 +18,7 @@ function makeThruster(x, y, hasGimbal = false, gimbalRange = 15) {
 }
 
 function clampDifficulty(difficulty) {
+  // ? itt már 0-ás difficulty nem is lehet?????
   return Math.max(1, Math.min(15, Math.floor(difficulty || 1)));
 }
 
@@ -444,6 +445,9 @@ function getArchetypeBlueprint(selected, blockType, turretType) {
   }
 }
 
+/**
+ * ha nincs megadva típus, választ egyet random
+ */
 export function createEnemyModelByDifficulty(difficulty, archetype = "AUTO", rng = Math.random) {
   const d = clampDifficulty(difficulty);
   const blockType = `BLOCK_${d}`;

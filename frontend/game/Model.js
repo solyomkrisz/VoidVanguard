@@ -129,7 +129,10 @@ export default class Model {
       if (object.textureRotation.size > 0) continue; // already restored from save
 
       const [ox, oy] = object.localPosition;
+      
       let found = null;
+
+      // megkeresünk egy mellette lévő model objetet
       for (const other of this.objects) {
         if (other === object) continue;
         const dx = other.localPosition[0] - ox;
@@ -137,17 +140,27 @@ export default class Model {
         if (Math.abs(dx) + Math.abs(dy) === 1) { found = other; break; }
       }
 
+      // ha nincs kövi objectre lépünk
       if (!found) continue;
 
       const dx = found.localPosition[0] - ox;
       const dy = found.localPosition[1] - oy;
+
+      // kiszámoljuk a szöget amennyivel a textúrát el kell forgatni, hogy ehhez a blokkhoz kapcsolódjon
+      //! csak úgy mint a BuildingBlock.js-ben
       const texAngle = Math.atan2(-dx, -dy);
+
+      // lekérjük az object sprite-ját
       const sprite = sprites[object.spriteID];
+      
       if (sprite) {
+        // végigmegyünk ezen sprite összes frame-én
         for (const frame of sprite.frames) {
+          // elforgatjuk a frameeket a kívánt szöggel
           object.rotateTexture(frame.textureName, texAngle);
         }
 
+        // ha az object turret vagy thruster (feltételezem azért kezeljük külön mert nem szimmetrikus a collider), akkor azt is elforgatjuk
         if (object.isTurret || object.isThruster) {
           const colliderAngle = texAngle;
           object.setColliderRotation?.(colliderAngle);

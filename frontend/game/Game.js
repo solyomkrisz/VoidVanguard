@@ -461,23 +461,33 @@ export default class Game extends WebGLCanvas {
       this.enemySpawnMaxDistance,
     );
 
-    // ! INNEN FOLYTATNI
     const minSpawnSpacing = this.enemySpawnMinSpacing;
 
+    // 80 próbálkozás van
     for (let attempt = 0; attempt < 80; attempt++) {
       const angle = this.randomFloat() * Math.PI * 2;
+
+      // random spawn távolság a játékostól minSpawnDistance és maxSpawnDistance között
       const spawnDistance =
         minSpawnDistance +
         this.randomFloat() * (maxSpawnDistance - minSpawnDistance);
+
+      // konkrétan hova spawnoljon
+      // fent csak 1 távolságot generálunk (spawnDistance), és itt csinálunk belőlük koordinátákat
       const x = this.player.position[0] + Math.cos(angle) * spawnDistance;
       const y = this.player.position[1] + Math.sin(angle) * spawnDistance;
+
       const distanceToPlayer = spawnDistance;
 
+      // ha közelebb van a spawnDistance a játékoshoz mint a minSpawnDistance vagy távolabb akkor az attemptet skippeljük
+      // még nem látom hogy lehet közelebb vagy távolabb, ha this.randomFloat() 0 és 1 között ad értéket
       if (
         distanceToPlayer < minSpawnDistance ||
         distanceToPlayer > maxSpawnDistance
       )
         continue;
+
+      // megnézzük túl közel van-e enemihez
 
       let tooCloseToEnemy = false;
       for (const enemy of this.enemies.objects) {
@@ -485,34 +495,65 @@ export default class Game extends WebGLCanvas {
           Math.hypot(enemy.position[0] - x, enemy.position[1] - y) <
           minSpawnSpacing
         ) {
+          // ha igen, loopot megszakítjuk
           tooCloseToEnemy = true;
           break;
         }
       }
+      // és attemptet skippeljük
       if (tooCloseToEnemy) continue;
 
+      // random viselkedés választása
       const behavior = this.pickEnemyBehavior(difficulty);
+
+      // ! HOGY EZT MEGÉRTSÜK A SpaceShipModels.js/createEnemyModelByDifficulty, illetve egyéb
+      // ! segédfüggvényeket is meg kell nézni
+
       const spawnArchetype = behavior === "rammer" ? "RAMMER" : "AUTO";
+
+      // createEnemyModelByDifficulty - SpaceShipModels.js-ből jön
+      /**
+       * ha a behavior "rammer", akkor fixen azt spawnoltatunk, ha nem hagyjuk, hogy a függvény válassza ki ???
+       */
       const enemyBlueprint = createEnemyModelByDifficulty(
         difficulty,
         spawnArchetype,
         () => this.randomFloat(),
       );
+      /**
+       * ez van enemyBlueprint-ben:
+       * {
+       *    archetype,
+       *    model,
+       *    maxSpeed,
+       *    turnRate,
+       * };
+       */
+
       const enemy = new Enemy({
         game: this,
         model: enemyBlueprint.model,
         x,
         y,
         maxSpeed: enemyBlueprint.maxSpeed,
-        turnRate: enemyBlueprint.turnRate,
+        turnRate: enemyBlueprint.turnRate, // milyen gyorsan tud forogni
         behavior,
         difficulty,
       });
 
       this.enemies.add(enemy);
+
+      // elforgatjuk minden blokk textúráját, hogy egy szomszédjához csatlakozzon
       enemy.model.applyTextureRotations(this.textureManager);
+
+      // ez lesz meghívva ha a modell egy blokkja meghal
       enemy.model.onBlockDestroyed = (block) =>
         this._spawnBlockDestructionAt(block, enemy);
+
+      // ha le tudod spawnolni az enemy true-t adunk vissza
+      /**
+       * ez az egész azt jelenti, hogy egy adott enemy-t max 80-szor próbált meg lespawnolni a játék
+       */
       return true;
     }
 
@@ -525,14 +566,18 @@ export default class Game extends WebGLCanvas {
     this.enemySpawnerInitialized = true;
     this.enemySpawnTimer = this.enemySpawnInterval;
 
+    // ha már vannak enemyk ne spawnoljunk
     if (this.enemies.objects.length > 0) return;
 
     const difficulty = this.getCurrentDifficulty();
+
+    // ha még nincsenek enemyk, próbáljuk meg annyit lespawnolni amennyi az enemyInitialCount
     for (let i = 0; i < this.enemyInitialCount; i++) {
-      this.trySpawnEnemy(difficulty);
+      this.trySpawnEnemy(difficulty); // megpróbálunk enemyInitialCount db enemyt lespawnolni
     }
   }
 
+  // ! INNENTŐL FOLYTATNI
   updateEnemySpawner() {
     if (!this.player) return;
 
