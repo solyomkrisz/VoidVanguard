@@ -103,7 +103,17 @@ export default class DecorationBlock {
     this.textureLayerId = this.game.layerId.get();
 
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.game.textureArray);
-    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, this.textureLayerId, DecorationBlock.TEXTURE_WIDTH, DecorationBlock.TEXTURE_HEIGHT, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels);
+    gl.texSubImage3D(
+      gl.TEXTURE_2D_ARRAY, // target
+      0, // mip level - still no mips so select first one which is 0
+      0, 0, this.textureLayerId, // xoffset, yoffset zoffset
+      DecorationBlock.TEXTURE_WIDTH, // width
+      DecorationBlock.TEXTURE_HEIGHT, // height
+      1, // depth - upload exactly one layer, starting from xoffset, yoffset, zoffset
+      gl.RGBA, // format - incoming pixel layout
+      gl.UNSIGNED_BYTE, // type - each channel (R, G, B, A) [0, 255]
+      this.pixels // data
+    );
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
   }
 
