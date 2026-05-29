@@ -205,7 +205,7 @@ export default class Game extends WebGLCanvas {
     // enemy spawnolással kapcsolatos dolgok
     this.enemySpawnerInitialized = false;
     this.enemySpawnInterval = 18;
-    this.enemySpawnTimer = this.enemySpawnInterval;
+    this.enemySpawnTimer = this.enemySpawnInterval; // timer a spawnoláshoz
     this.enemyInitialCount = 25;
     this.enemySpawnCellArea = 15;
     this.enemySpawnMinDistance = 28;
@@ -577,7 +577,7 @@ export default class Game extends WebGLCanvas {
     }
   }
 
-  // ! INNENTŐL FOLYTATNI
+  // tickenként meghívva
   updateEnemySpawner() {
     if (!this.player) return;
 
@@ -586,15 +586,18 @@ export default class Game extends WebGLCanvas {
     }
 
     const difficulty = this.getCurrentDifficulty();
-    const spawnInterval = this.getEnemySpawnIntervalByDifficulty(difficulty);
-    const cap = this.getEnemyCapByDifficulty(difficulty);
-    const deficit = cap - this.enemies.objects.length;
+    const spawnInterval = this.getEnemySpawnIntervalByDifficulty(difficulty); // milyen időközönként spawnolhat enemy
+    const cap = this.getEnemyCapByDifficulty(difficulty); // hány enemy lehet max
+    const deficit = cap - this.enemies.objects.length; // max enemy szán - mennyi van már spawnolódva
+
+    // enemySpawnTimer - visszaszámláló a spawnoláshoz alapból értéke: enemySpawnInterval
+    this.enemySpawnTimer = Math.min(this.enemySpawnTimer, spawnInterval);
 
     // Always count down so a free slot triggers a spawn without a full extra wait.
-    this.enemySpawnTimer = Math.min(this.enemySpawnTimer, spawnInterval);
-    this.enemySpawnTimer -= this.fdt;
-    if (this.enemySpawnTimer > 0) return;
+    this.enemySpawnTimer -= this.fdt; // timer csökkentése
+    if (this.enemySpawnTimer > 0) return; // ha timer nagyobb mint 0 még nem járt le -> vissza
 
+    // timer itt lejárt, de lent van annyi enemy amennyi max lehet
     if (deficit <= 0) {
       // Cap is full — reload the timer and wait for the next free slot.
       this.enemySpawnTimer = spawnInterval;
@@ -602,11 +605,20 @@ export default class Game extends WebGLCanvas {
     }
 
     // Spawn a small batch so population recovers consistently even after bursts of deaths.
+    /**
+     * -> Math.ceil(deficit / 3): third of the deficit rounded up
+     * -> Math.min(deficit, Math.ceil(deficit / 3)): caps it at deficit, but ceil(deficit/3) is always <= deficit, so this Math.min never does anything
+     * -> Math.max(1, Math.min(deficit, Math.ceil(deficit / 3))): ensures that at least 1, but ceil(deficit/3) is already at least 1 whenever deficit > 0 (and we only get here if deficit > 0)
+     *
+     * ! this whole line below simplifies to: Math.ceil(deficit / 3)
+     * So we target a batch of ceil(deficit/3)
+     */
     const targetBatch = Math.max(1, Math.min(deficit, Math.ceil(deficit / 3)));
     let spawned = 0;
     let attempts = 0;
     const maxAttempts = Math.max(6, targetBatch * 8);
 
+    // megpróbálunk annyit lespawnolni amennyi a target, addig amíg túl nem lépjük a max próbálkozásokat
     while (spawned < targetBatch && attempts < maxAttempts) {
       attempts++;
       if (this.trySpawnEnemy(difficulty)) {
@@ -614,17 +626,32 @@ export default class Game extends WebGLCanvas {
       }
     }
 
+    // ha legalább 1 lett spawnolva
+    // beállítva a spawnTimer-t az alapján hogy ment a fentebbi spawn
     if (spawned > 0) {
+      /**
+       * ha deficit > 1, vagyis a max és jelenleg létező enemyk különbsége > 1
+       * akkor a timer Math.max(1.2, spawnInterval / Math.min(deficit, 5)) lesz
+       *  -> spawnInterval / Math.min(deficit, 5) divide the normal wait time by deficit, capped at 5
+       *  -> this means the more the deficit is (free enemy slots), the shorter the next timer is
+       *  -> the cap with 5 prevents makes it so that the timer won't be extremely small when a lot of free slots are available
+       * The whole true branch means that the more the free enemy slots, the faster their spawn will be, but never faster than 1.2s
+       *
+       * If deficit is <= 1 we use spawnInterval as timer. In this case the available enemy slot is at most 1, the population is basically full, so we just use the normal timer no need to rush
+       */
       const catchUp =
         deficit > 1
           ? Math.max(1.2, spawnInterval / Math.min(deficit, 5))
           : spawnInterval;
       this.enemySpawnTimer = catchUp;
     } else {
+      // ha nem sikerült spawnolni
+      // semmi értelme a Math.min(2, spawnInterval), mert spawnInterval mindig legalább 6, tehát itt mindig 2 lesz beállítva
       this.enemySpawnTimer = Math.min(2, spawnInterval);
     }
   }
 
+  // TODO: ezt átnézni, mivel lett kiegészítve
   async finishSave() {
     const localSaveKey = this.loadedSave?.game_id ?? this.game_id;
     const localSaves = getLocalSaves();
@@ -1152,6 +1179,7 @@ export default class Game extends WebGLCanvas {
     this.tooltip.updateTemplates(this.frameId);
   }
 
+  //! INNENTŐL FOLYTATNI
   triggerPlayerDeath() {
     if (this.isFinished) return;
     this.isFinished = true;
