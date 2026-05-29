@@ -983,20 +983,29 @@ export default class Game extends WebGLCanvas {
   }
 
   // prettier-ignore
+  /**
+   * TEXTURE_2D_ARRAY -> 2d texture array -> many same sized 2d texture packed into the same gpu texture object
+   * - all layers have the same width and height and format
+   */
   initTextureArray() {
     const gl = this.gl;
 
-    this.textureArray = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textureArray);
+    this.textureArray = gl.createTexture(); // create texture object
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textureArray); // bind so all later operations work on this texture object, so all upcoming operations involving gl.TEXTURE_2D_ARRAY will affect this texture
+
+    // allocate immutable storage
+    // ! texStorage3D only allocates memory, it does not upload anything
     gl.texStorage3D(
-      gl.TEXTURE_2D_ARRAY,
-      1,
-      gl.RGBA8,
-      DecorationBlock.TEXTURE_WIDTH,
-      DecorationBlock.TEXTURE_HEIGHT,
-      this.maxLayers,
+      gl.TEXTURE_2D_ARRAY, // target
+      1, // levels (mipmap levels) - since its one only the base texture exists, no smaller versions
+      gl.RGBA8, // internal format - 8 bit for each of R, G, B and A
+      DecorationBlock.TEXTURE_WIDTH, // width - width of each layer
+      DecorationBlock.TEXTURE_HEIGHT, // height - height of each layer
+      this.maxLayers, // depth - number of layers
     );
 
+    // number of items is the result of the operation inside its ()
+    // its automatically initialied with zeros, so all items are zeros
     const initialTexture = new Uint8Array(
       DecorationBlock.TEXTURE_WIDTH *
       DecorationBlock.TEXTURE_HEIGHT *
@@ -1004,25 +1013,69 @@ export default class Game extends WebGLCanvas {
       this.maxLayers,
     );
     //
+    // upload texture data
+    // this command fills the gpu texture with the cpu data we made above this
     gl.texSubImage3D(
-      gl.TEXTURE_2D_ARRAY,
-      0,
-      0, 0, 0,
-      DecorationBlock.TEXTURE_WIDTH,
-      DecorationBlock.TEXTURE_HEIGHT,
-      this.maxLayers,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      initialTexture,
+      gl.TEXTURE_2D_ARRAY, // target
+      0, // level - mip level to write into, since above we specified, there is only one, it must be the first one, which is 0
+      0, 0, 0, // xoffset, yoffset, zoffset - this means start at left edge, top edge, first layer. zoffset select the layer to start writing from, x and y offsets are inside that layer
+      // the sizes below mean that the whole array gets filled
+      DecorationBlock.TEXTURE_WIDTH, // width
+      DecorationBlock.TEXTURE_HEIGHT, // height
+      this.maxLayers, // depth
+      gl.RGBA, // format - desrcibes the layout of incoming pixel data
+      gl.UNSIGNED_BYTE, // type - each channel is an 8 bit unsigned integer (0-255, as in normal RGBA)
+      initialTexture, // data - pointer/reference to the cpu pixel data
     );
     //
 
+    /**
+     * S - horizontal axis
+     * if texture coordinate points outside of range, clamp to edge
+     */
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    /**
+     * same as above but for vertical axis
+     */
     gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
 
     this.lastLayer = 0;
+
+    /**
+     * ! RGBA vs RGBA8
+     * RGBA8 defines how the GPU stores pixels internally
+     * RGBA defines how my incoming pixel data is arranged
+     * 
+     * You might have noticed that as internal format we did use RGBA earlier.
+     * If you go back you see that we used that with gl.texImage2D.
+     * And there is no problem with that. gl.texImage2D is and older API which could be
+     * used with RGBA. RGBA is an unsized internal format, it does not specify a bunch of thing
+     * unlike RGBA8.
+     * Model WebGL API prefers RGBA8 as it is explicit.
+     * 
+     ** texStorage2D / texStorage3D:
+     * These newer immutable-storage APIs REQUIRE sized formats.
+     * because immutable storage needs exact memory layout up front.
+     * 
+     ** Why immutable storage requires sized formats:
+     * texStorage* allocates the entire texture permanently.
+     * GPU must know EXACTLY:
+     * - bytes per pixel
+     * - mip sizes
+     * - memory layout
+     * before allocation.
+     * So ambiguity is not allowed.
+     * 
+     ** In contrast, texImage* is older and more flexible
+     * texImage* historically allowed:
+     * - reallocating textures
+     * - changing formats later
+     * - driver-selected formats
+     * So unsized formats were tolerated.
+     * 
+     */
   }
 
   bindTextureArray() {

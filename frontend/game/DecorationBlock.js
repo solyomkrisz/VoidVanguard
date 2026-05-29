@@ -47,6 +47,7 @@ export default class DecorationBlock {
           else if (this.density > 0.5) { radius = 1; starCount = 4; }
           else                          { radius = 1; starCount = 3; }
 
+          // minden elem clampelve van 0, 255 közé
           this.starPixels = new Uint8ClampedArray(DecorationBlock.TEXTURE_WIDTH * DecorationBlock.TEXTURE_HEIGHT * 4);
 
           let distanceFactor = 1;
