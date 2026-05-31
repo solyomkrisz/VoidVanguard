@@ -726,6 +726,7 @@ export default class Player extends Spaceship {
       }
 
       // itt most minden blokk a connected Set-en van, ami nem leaft-only és van normális kapcsolata a maggal
+      // van normális kapcsolata a maggal DE NEM A LECSATLAKOZTATANDÓ BLOKKON KERESZTÜL!!!
 
       const [px, py] = this.position;
       const _b = this.game.buffer;

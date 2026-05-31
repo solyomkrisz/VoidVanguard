@@ -81,8 +81,12 @@ export function set(target, m00, m10, m20, m01, m11, m21, m02, m12, m22) {
 // prettier-ignore
 // A kamera aktualis nezeti matrixat szamolja ki a jatekos interpolalt helyzete alapjan.
 export function cam(target, aspectRatio, scale, alpha, player) {
+  // itt azt mondjuk, hogy mind az x tengelyen, mind az y-on 15 tile férjen ki
+  // viszont ha pl az x szélesebb mint az y de mindkettőn 15 tile fér el, akkor a kocka téglalappá nyúlik
+  // az aspect ratio if else ezt oldja meg
   let scaleX = scale, scaleY = scale;
 
+  // ha a kép szélesebb mint magasabb, akkor az y-on tengelyen maradjon a 15 tileos méret, de x-en férjen ki több, hogy a kockák kockák maradjanak
   if (aspectRatio >= 1) scaleX = scale / aspectRatio;
   else scaleY = scale * aspectRatio;
 
