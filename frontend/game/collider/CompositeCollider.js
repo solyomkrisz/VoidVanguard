@@ -76,7 +76,7 @@ export default class CompositeCollider extends Collider {
     const h = maxY - minY + 1;
 
     const grid = Array.from({ length: h }, () =>
-      Array.from({ length: w }, () => null)
+      Array.from({ length: w }, () => null),
     );
 
     for (const object of this.entity.model.objects) {
@@ -92,6 +92,7 @@ export default class CompositeCollider extends Collider {
         const object = grid[y][x];
 
         // A rule dönti el, hogy a következő blokk még ugyanabba a konvex csoportba tartozhat-e.
+        // ha van object ÉS (ez az első a groupban || megfelel a szabálynak)
         if (object && (!group.length || this.rule(object, group))) {
           group.push(object);
         } else if (group.length) {
