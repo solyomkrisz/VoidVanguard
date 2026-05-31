@@ -1,8 +1,149 @@
-/**
- * Kezdobarat magyarazat:
- * Fajl: backend/test/users.test.js
- * Szerep: Backend teszt: automatizalt ellenorzes, hogy valtozas utan is helyes maradjon a viselkedes.
- * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+/*
+ * ============================================================
+ * USERS.TEST.JS — MAGYARÁZAT
+ * ============================================================
+ *
+ * Ez egy integrációs teszt a /api/users Express route-okhoz.
+ * Nem az adatbázist teszteli valóban, hanem azt, hogy az API-réteg
+ * helyesen viselkedik-e: jó státuszkódot ad-e vissza, meghívja-e
+ * a megfelelő service-függvényt, helyes hibákat dob-e.
+ *
+ * ------------------------------------------------------------
+ * JEST — AZ ALAPOK
+ * ------------------------------------------------------------
+ *
+ * Jest a JavaScript tesztelő framework. Alapfogalmak:
+ *
+ *   describe()
+ *     Teszteket csoportosít. Egymásba lehet ágyazni.
+ *     Csak szervezési eszköz — olvashatóvá teszi a kimenetet:
+ *       Users API - /api/users
+ *         POST / (Register)
+ *           Happy paths (200, 201)
+ *             ✓ Should return 201 on successful registration
+ *
+ *   it() / test()
+ *     Egy konkrét teszteset. Kap egy leírást és egy async callback-et.
+ *
+ *   beforeEach()
+ *     Minden it() előtt lefut a csoporton belül.
+ *     Arra való, hogy az előfeltételeket beállítsuk (pl. mock visszatérési értéke).
+ *     Így minden teszt "tiszta lappal" indul.
+ *
+ *   expect()
+ *     Ezzel ellenőrzöd az eredményt. Mintázat: expect(valami).toBe(valami_más)
+ *     Használt matcher-ek:
+ *       .toBe(201)                   — pontosan egyenlő
+ *       .toBe(true)                  — boolean ellenőrzés
+ *       .toHaveBeenCalledWith(...)   — mock-on: milyen argumentumokkal hívták meg
+ *       .not.toHaveBeenCalled()      — mock-on: egyáltalán nem hívták meg
+ *
+ * ------------------------------------------------------------
+ * JEST MOCK — jest.mock()
+ * ------------------------------------------------------------
+ *
+ *   jest.mock("../service/users.js")
+ *
+ *   Ez felváltja az egész users.js service modult egy automatikusan
+ *   generált mock-kal. Minden exportált függvény (createUser, getUser, stb.)
+ *   helyett egy spy függvényt kap, amelyet a tesztekben irányítani lehet.
+ *
+ *   Miért kell? Mert nem akarunk valódi adatbázist hívni a tesztekből.
+ *   Csak azt ellenőrizzük, hogy az API-réteg (router, validáció, hibakezelés)
+ *   helyesen működik-e.
+ *
+ *   A mock-ot beforeEach-ben konfigurálják:
+ *     usersService.createUser.mockResolvedValue("new-user-id")
+ *       → ha hívják a createUser-t, visszaad egy Promise<"new-user-id">
+ *
+ *     usersService.createUser.mockRejectedValueOnce({ code: "ER_DUP_ENTRY" })
+ *       → EGYSZER rejected Promise-t dob (ER_DUP_ENTRY = MySQL duplikált kulcs hiba)
+ *       → "Once" = csak az első hívásnál, utána visszaáll az alapra
+ *
+ *   FONTOS: a jest.mock() hívást a fájl elejére kell írni (az importok elé is),
+ *   mert Jest automatikusan "hoistol" — azaz felhúzza a fájl tetejére futtatás előtt.
+ *   Ezért nem okoz gondot, hogy az import utáni sorban áll.
+ *
+ * ------------------------------------------------------------
+ * SUPERTEST
+ * ------------------------------------------------------------
+ *
+ *   A Supertest lehetővé teszi, hogy HTTP kéréseket küldjünk egy Express
+ *   alkalmazásnak anélkül, hogy valódi szervert indítanánk.
+ *
+ *   createApp()
+ *     Létrehoz egy mini Express appot a szükséges middleware-ekkel,
+ *     majd visszaadja supertest(app)-ként — ez egy HTTP kliens az apphoz.
+ *     Nem nyit valódi portot.
+ *
+ *   Kérés küldése:
+ *     request.post("/api/users").send(validBody)
+ *       .post("/api/users")                  — POST kérés az URL-re
+ *       .send(validBody)                     — request body (automatikusan JSON)
+ *       .set("Authorization", `Bearer ...`)  — HTTP fejléc beállítása
+ *       .query({ search: "test" })           — query string (?search=test)
+ *
+ *     A response objektum tartalmazza:
+ *       response.statusCode  — HTTP státuszkód (200, 201, 400, stb.)
+ *       response.body        — a JSON válasz objektumként
+ *
+ * ------------------------------------------------------------
+ * JWT TOKENEK — generateToken() és generateAdminToken()
+ * ------------------------------------------------------------
+ *
+ *   Valódi JWT tokent generálnak, ugyanazzal az ACCESS_TOKEN_SECRET-tel
+ *   amit a szerver is használ. Így az auth middleware valóban elfogadja
+ *   a tesztben küldött tokeneket.
+ *
+ *   generateToken(payload)
+ *     Alap user tokent generál (role: 0). A payload-dal felülírható
+ *     bármely mező — pl. generateToken({ id: OTHER_USER_ID }) más user-t ad.
+ *
+ *   generateAdminToken(payload)
+ *     Admin tokent generál (role: 1) a generateToken() segítségével.
+ *
+ * ------------------------------------------------------------
+ * A TESZTESETEK STRUKTÚRÁJA
+ * ------------------------------------------------------------
+ *
+ *   Minden végpont (POST, GET, GET /:id, PATCH, DELETE) azonos struktúrában:
+ *
+ *   Happy paths       — Sikeres eset: jó adattal jó válasz jön
+ *   Authorization     — 401 (nincs token), 403 (nincs jogosultság)
+ *   Input validation  — 400: hibás bemenetek (rövid username, érvénytelen email)
+ *   Conflicts         — 400: duplikált adat (MySQL ER_DUP_ENTRY)
+ *   Server errors     — 500: váratlan hiba a service-ben
+ *
+ * ------------------------------------------------------------
+ * EGY KONKRÉT TESZT LÉPÉSEI (példa)
+ * ------------------------------------------------------------
+ *
+ *   it("Should return 403 if regular user tries to access another user's data", async () => {
+ *       const token = generateToken({ id: OTHER_USER_ID }); // 1. más user tokenje
+ *
+ *       const response = await request
+ *           .get(`/api/users/${TEST_USER_ID}`)              // 2. lekéri TEST_USER adatait
+ *           .set("Authorization", `Bearer ${token}`);       // 3. de OTHER_USER tokennel
+ *
+ *       expect(response.statusCode).toBe(403);              // 4. elvárja a 403-at
+ *       expect(response.body.success).toBe(false);          // 5. és hogy success: false legyen
+ *   });
+ *
+ *   Ez teszteli, hogy a router helyesen védi-e az adatot:
+ *   más user nem láthatja a profilját.
+ *
+ * ------------------------------------------------------------
+ * ÖSSZEFOGLALÁS
+ * ------------------------------------------------------------
+ *
+ *   Jest          = teszt framework (describe, it, expect, mock, beforeEach)
+ *   Supertest     = HTTP kérés szimulátor Express apphoz (nem kell valódi szerver)
+ *   jest.mock()   = service helyettesítése fake függvényekkel (nincs DB hívás)
+ *   mockResolvedValue      = mock mit adjon vissza sikeres esetben
+ *   mockRejectedValueOnce  = mock mit dobjon hibaesetben (csak egyszer)
+ *   generateToken          = valódi JWT token a teszthez, az auth middleware elfogadja
+ *
+ * ============================================================
  */
 import jwt from "jsonwebtoken";
 
