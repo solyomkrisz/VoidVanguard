@@ -30,6 +30,7 @@ export default class Projectile extends Rigidbody {
     });
 
     this.id = game.idManager.get();
+    // A loves egyszerre tarol sebzest, tulajdonost, latvanyadatokat es a tavolsagalapu eltuneshez szukseges allapotot.
     this.dmg = dmg;
     this.owner = owner;
     this.color = color;
@@ -45,6 +46,7 @@ export default class Projectile extends Rigidbody {
   }
 
   startFade() {
+    // Becsapodas vagy hatotav-vege utan nem tunik el azonnal, hanem rovid kifakulas indul.
     if (this.isFading) return;
     this.isFading = true;
     this.fadeTimer = this.fadeDuration;
@@ -53,6 +55,7 @@ export default class Projectile extends Rigidbody {
   update() {
     const dt = this.game.fdt;
 
+    // A lovedek fizikai update-je szandekosan egyszeru: egyenes vonalu mozgas, tavolsagmeres, majd fade vagy torles.
     if (this.isFading) {
       this.fadeTimer -= dt;
       if (this.fadeTimer <= 0) {
@@ -77,6 +80,7 @@ export default class Projectile extends Rigidbody {
   render() {
     this.previousNetForce.reset();
 
+    // A lovedeket a debug overlay-re rajzoljuk, mert ez a gyors, glow-szeru sugar-effekt nem a rendes sprite pipeline-on megy at.
     const game = this.game;
     const ctx = game.debugOverlay?.ctx;
     const player = game.player;
@@ -143,18 +147,21 @@ export default class Projectile extends Rigidbody {
   }
 
   onBroadCollision(other) {
+    // Sajat tulajdonossal vagy ugyanazon tulajdonos lovedekevel nem akarunk utkozni.
     if (this.isFading) return false;
     if (other?.is?.(Type.PROJECTILE) && other.owner === this.owner) return false;
     return other !== this.owner;
   }
 
   onNarrowCollision(other) {
+    // A narrow fazisban ugyanazokat a korai kizárásokat tartjuk meg, mint broad fazisban.
     if (this.isFading) return false;
     if (other?.is?.(Type.PROJECTILE) && other.owner === this.owner) return false;
     return other !== this.owner;
   }
 
   onContact(collision, object) {
+    // Kontaktkor effektet spawnolunk, jelezzuk a celpontnak a talalatot, majd elinditjuk a lovedek kifakulasat.
     if (collision.is(Type.INTERACTION)) return;
     // this.setState(GlobalState.DEAD);
 

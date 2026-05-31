@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/controller/comments.js
- * Szerep: Controller reteg: bejovo keres feldolgozasa, service meghivasa, valasz osszeallitasa.
+ * Szerep: Hozzaszolas-listak es kommentmuveletek HTTP-szintu kezelese egységes valaszformaval.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import * as service from "../service/comments.js";
@@ -9,6 +9,7 @@ import { createResponse, handleCaughtError } from "../common/common.js";
 
 export async function lazySelectComments(request, response) {
   try {
+    // A kommentlista endpoint itt alakitja at a query parametereket service-kompatibilis szamokka.
     const result = await service.lazySelectByTarget({
       requesterId: request?.targetUser?.id ?? null,
       targetId: request.query.targetId,
@@ -26,6 +27,7 @@ export async function lazySelectComments(request, response) {
 
 export async function getComment(request, response) {
   try {
+    // Egyetlen komment lekerese akkor is ugyanabba a valaszformatumba kerul, mint a tobbi endpointon.
     const result = await service.select({
       requesterId: request?.targetUser?.id ?? null,
       commentId: request.params.id,
@@ -41,9 +43,11 @@ export async function getComment(request, response) {
 
 export async function createComment(request, response) {
   try {
+    // Letrehozas utan azonnal vissza is kerjuk a kesz kommentet, hogy a frontend az uj allapotot kapja meg, ne csak az uj id-t.
     const commentId = await service.createComment({
       authorId: request.targetUser.id,
       targetId: request.body.targetId,
+      // A parentId opcionális: csak valasz-kommentnel erkezik a body-ban.
       parentId: request.body.parentId,
       content: request.body.content,
     });
@@ -60,6 +64,7 @@ export async function createComment(request, response) {
 
 export async function updateComment(request, response) {
   try {
+    // Frissites utan ugyanugy ujra lekerjuk a kommentet, hogy a kliens a frissitett szerkezetet kapja vissza.
     await service.updateComment({
       userId: request.targetUser.id,
       commentId: request.body.commentId,
@@ -86,6 +91,7 @@ export async function updateComment(request, response) {
 
 export async function deleteComment(request, response) {
   try {
+    // Torlesnel mar nincs visszakuldendo entitas, eleg egy sikeres ures valasz.
     await service.deleteComment({
       userId: request.targetUser.id,
       role: request.user.role,

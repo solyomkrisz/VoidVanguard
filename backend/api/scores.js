@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/api/scores.js
- * Szerep: API reteg: HTTP endpoint definicio, keretek kozotti tovabbitas a controllernek.
+ * Szerep: Toplista- es sajat pontszam-lekero route-ok public/private auth mintaval.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import express from "express";
@@ -17,6 +17,9 @@ import * as controller from "../controller/scores.js";
 
 const router = express.Router();
 
+// GET /api/scores/leaderboard?view=&page=&limit=
+// Toplista vegpont. Optional auth mellett is mukodik, mert a publikus toplista vendegkent is kerheto,
+// de a query view=private csak hitelesitett userrel ad ertelmes eredmenyt.
 router.get(
   "/leaderboard",
   authenticate({
@@ -28,6 +31,9 @@ router.get(
   controller.lazySelectBestUserScores,
 );
 
+// GET /api/scores
+// A jelenlegi bejelentkezett user legjobb eredmenye es helyezese.
+// Itt kotelezo az auth, mert nincs kulon query userId: mindig a sajat rangot kerjuk le.
 router.get(
   "/",
   authenticate(),

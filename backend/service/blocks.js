@@ -9,6 +9,7 @@ import Blocks from "../sql/table/Blocks.js";
 import Friends from "../sql/table/Friends.js";
 
 export async function lazySelectByTarget({ targetId, page = 1, limit = 20 }) {
+  // A tiltasi lista ugyanugy lapozva jon vissza, mint a tobbi nagyobb gyujtemeny a backendben.
   const offset = (page - 1) * limit;
 
   console.log("TARGET ID: ", targetId);
@@ -34,6 +35,7 @@ export async function lazySelectByTarget({ targetId, page = 1, limit = 20 }) {
 }
 
 export async function getSummary({ userId, requesterId, include = [] }) {
+  // A profiloldal csak opcionisan keri a tiltasi allapotot, ezert itt is include alapu az osszegzes.
   const result = {};
 
   if (include.includes("status")) {
@@ -47,6 +49,7 @@ export async function getSummary({ userId, requesterId, include = [] }) {
 }
 
 export async function getBlockStatus({ initiatorId, recipientId }) {
+  // Kifejezetten emberi olvasasra szant allapotcimkeket adunk vissza, nem nyers adatbazis-eredmenyt.
   if (!initiatorId || !recipientId) {
     return "not-blocked";
   }
@@ -71,6 +74,7 @@ export async function getBlockStatus({ initiatorId, recipientId }) {
 }
 
 export async function checkBlockStatus({ initiatorId, recipientId }) {
+  // Ezt a valtozatot mas service-ek hivjak, ahol nem szoveges statusz kell, hanem azonnali uzleti hiba.
   if (!initiatorId || !recipientId) {
     return false;
   }
@@ -95,6 +99,7 @@ export async function checkBlockStatus({ initiatorId, recipientId }) {
 }
 
 export async function blockUser({ blockerId, blockedId }) {
+  // A tiltast megelőzi a meglévő barátság eltakarítása, hogy a két kapcsolat ne maradjon egyszerre aktív.
   if (blockerId === blockedId) {
     throw CustomError.CANNOT_BLOCK_YOURSELF;
   }
@@ -108,6 +113,7 @@ export async function blockUser({ blockerId, blockedId }) {
 }
 
 export async function unblockUser({ blockerId, blockedId }) {
+  // Itt csak azt fogadjuk el sikernek, ha tenylegesen torlodesre kerult egy mar letezo tiltasi kapcsolat.
   const result = await Blocks.delete(blockerId, blockedId);
 
   if (result.affectedRows === 0) {
@@ -118,6 +124,7 @@ export async function unblockUser({ blockerId, blockedId }) {
 }
 
 export async function getBlockedUsers({ blockerId }) {
+  // Egyszeru olvaso helper a sajat tiltott lista teljes lekerdezesere.
   const rows = await Blocks.getAllBlocked(blockerId);
   return rows;
 }

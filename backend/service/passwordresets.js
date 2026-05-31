@@ -15,10 +15,12 @@ import * as emails from "./emails.js";
 import * as tokens from "./tokens.js";
 
 export function hashToken(token) {
+  // A nyers reset tokent sosem taroljuk el, csak az egyiranyu hash-et.
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
 export function generatePasswordResetToken() {
+  // A felhasznalonak kuldott token es a tarolt hash ugyanabból a veletlen ertekbol keszul, csak mas formaban.
   const buffer = crypto.randomBytes(32);
   const token = buffer.toString("base64url");
   const tokenHash = hashToken(token);
@@ -27,6 +29,7 @@ export function generatePasswordResetToken() {
 }
 
 export async function resetPassword({ token, password }) {
+  // A teljes jelszocseret tranzakcioban vegezzuk, hogy se a token, se a refresh sessionok ne maradjanak felig friss allapotban.
   const tokenHash = hashToken(token);
 
   const conn = await pool.getConnection();
@@ -96,6 +99,7 @@ export async function resetPassword({ token, password }) {
 }
 
 export async function createForUserWithEmail({ email }) {
+  // Biztonsagi okbol akkor is sikernek tunik a folyamat, ha az emailhez nem tartozik user, igy nem lehet usert felderiteni.
   const user = await Users.selectByEmail(email);
 
   if (!user) return true;

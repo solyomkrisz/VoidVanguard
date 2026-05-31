@@ -1,20 +1,23 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/common/CustomError.js
- * Szerep: Kozos backend segedkod: ujrahasznalhato osztalyok, hibakezeles, jogosultsag.
+ * Szerep: Kozponti uzleti hibakatalogus HTTP-statusszal es szabvanyos hibaleirassal.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 class CustomError {
   static isCustomError(error) {
+    // Ezzel tudjuk megkulonboztetni a sajat, tudatosan kezelt uzleti hibakat a varatlan rendszerhibaktol.
     return error instanceof CustomError;
   }
 
   constructor({ statusCode, definition } = {}) {
+    // A definition a kliensnek visszakuldheto strukturalt hibaadatot tartalmazza.
     this.statusCode = statusCode;
     this.definition = definition;
   }
 }
 
+// Altalanos es alap alkalmazashibak.
 export const TEST = new CustomError({
   statusCode: 500,
   definition: {
@@ -96,6 +99,7 @@ export const PROFILE_NOT_FOUND = new CustomError({
   },
 });
 
+// Kapcsolati es blokkolasi hibak.
 export const INI_BLOCKED_REC = new CustomError({
   statusCode: 403,
   definition: {
@@ -195,6 +199,7 @@ export const FORBIDDEN = new CustomError({
   },
 });
 
+// Mentesi es jatekallapot-hibak.
 export const SAVE_ERROR = new CustomError({
   statusCode: 403,
   definition: {
@@ -240,6 +245,7 @@ export const PASSWORD_UPDATE = new CustomError({
   },
 });
 
+// Session-, token- es adminmuveleti hibak.
 export const REFRESH_TOKEN_EXPIRED = new CustomError({
   statusCode: 401,
   definition: {
@@ -295,5 +301,6 @@ export const COMMENT_NOT_FOUND = new CustomError({
 });
 
 export function isCustomError(error) {
+  // Kulső helpervaltozat ugyanarra az ellenorzesre, ha a hivo nem akarja a class statikus metodusat kozvetlenul hasznalni.
   return error instanceof CustomError;
 }

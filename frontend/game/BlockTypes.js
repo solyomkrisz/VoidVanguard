@@ -9,19 +9,19 @@ import { SpriteID } from "/game/texture/Texture.js";
 import Shape from "/game/Shape.js";
 import * as vec from "/common/vec.js";
 
-// #region SHAPE COLLIDERS
-// BLOCK COLLIDERS
+// A kovetkezo Shape-objektumok a kulonbozo blokkfajtak alap collider-sablonjai.
+// Ezekbol epulnek fel kesobb a konkret blokkvariansok a gyari tipusdefiniciokban.
 
-// (BASE BLOCK) RECTANGLE COLLIDER
+// Alap negyzet blokk collider.
 const RECTCOLLIDER = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
 
-// SMALL RECTANGLE COLLIDER
+// Kisebb, szukebb collider olyan blokkokhoz, amelyek nem toltik ki a teljes cellat.
 const S_RECTCOLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.15, 0.15, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15);
 
-// THRUSTER COLLIDER (full top height, trimmed bottom)
+// Hajtómű collider: felul teljes magassag, alul levagott, hogy jobban illeszkedjen a spritehoz.
 const THRUSTER_COLLIDER = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.35, -0.5, -0.35);
 
-// TURRET COLLIDERS
+// A turret variansoknak kulonbozo magassagu collider-sablonok kellenek.
 const N1_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0, 0.1, 0, 0.15, -0.5, -0.15, -0.5); // TURRET
 const N2_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0.25, 0.1, 0.25, 0.15, -0.5, -0.15, -0.5); // TALLER TURRET
 const N3_TURRET_COLLIDER = new Shape(false, Shape.MERGE_MODE.KEEP_ALL, -0.1, 0.375, 0.1, 0.375, 0.15, -0.5, -0.15, -0.5); // TALLEST TURRET
@@ -64,8 +64,8 @@ const HEALTH_VALUES = Object.freeze({
   HEALTH_14: 2650, // - Fejlett karbon-kerámia kompozit   - Grade 14 - Gyors + magas HP
   HEALTH_15: 4250, // - Titán–kompozit hibrid szerkezet   - Grade 15 (Csúcstechnológia) Közepes tömeg + nagyon magas HP
 });
-// Helper function to generate block type variants for all 15 grades
-// factorok h a masst mennyivel szorozza be (regen kelett a haromszogek miatt 1 helyett 0.5)
+// Ez a gyari helper legeneralja ugyanannak a blokkfajtanak az osszes grade-valtozatat.
+// A faktorokkal ugyanaz az alapshape mas tomeg- vagy HP-aranyt kaphat anelkul, hogy 15 kulon kezi definicio kellene.
 function generateBlockVariants(
   baseName,
   shape,
@@ -105,7 +105,7 @@ function generateBlockVariants(
   return variants;
 }
 
-// Define all turret types - these will have their own unique textures and stats
+// A turret tipusaik kulon texturet es kulon lovesi statokat kapnak, ezert ezek nem a sima blokkvarians-generatorral keszulnek.
 // bulletDamage: 10 + grade*10  (range 20–160)
 // bulletSpeed:  18 + grade*2.2 (range 18–48.8)
 // shootCooldown: 0.45 - grade*0.02 (range 0.45–0.17, i.e. much faster at higher grade)

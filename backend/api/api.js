@@ -20,23 +20,25 @@ import scores from "./scores.js";
 
 const router = express.Router();
 
+// Gyors ellenorzo endpoint arra, hogy az API gyoker elerheto-e a kliens felol.
 router.get("/test", (request, response) => {
   response.status(200).json({
     message: "Ez a végpont működik.",
   });
 });
 
-router.use("/users", users); //
-router.use("/sessions", sessions); //
-router.use("/tokens", tokens); //
-router.use("/profiles", profiles); //
-router.use("/friends", friends); //
-router.use("/blocks", blocks); //
-router.use("/comments", comments); //
-router.use("/reactions", reactions); //
-router.use("/admin", admin); //
-router.use("/saves", saves); //
-router.use("/reset-password", passwordresets); //
-router.use("/scores", scores); //
+// Az alabbi mountpontok osztjak fel a teljes API-t temankent kulon routerekre.
+router.use("/users", users); // Felhasznalo-kereses, regisztracio, sajat fiok modositasa.
+router.use("/sessions", sessions); // Bejelentkezes es aktiv munkamenet-vegpontok.
+router.use("/tokens", tokens); // Refresh token alapú session-megujitas es sessionkezeles.
+router.use("/profiles", profiles); // Nyilvanos es vedett profiladatok.
+router.use("/friends", friends); // Ismerosjelolesek, baratlista es kapcsolati statusz.
+router.use("/blocks", blocks); // Tiltasi lista es blokkolasi muveletek.
+router.use("/comments", comments); // Profilhoz vagy celobjektumhoz tartozo hozzaszolasok.
+router.use("/reactions", reactions); // Like/dislike jellegu reakciok.
+router.use("/admin", admin); // Admin tiltasi es ellenorzesi vegpontok.
+router.use("/saves", saves); // Jatekmentesek letrehozasa, frissitese, torlese.
+router.use("/reset-password", passwordresets); // Jelszo-visszaallitasi tokenkeres es jelszocsere.
+router.use("/scores", scores); // Toplistak es sajat pontszamok.
 
 export default router;

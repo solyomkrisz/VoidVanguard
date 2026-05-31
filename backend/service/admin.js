@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/service/admin.js
- * Szerep: Service reteg: uzleti logika, adatmuveletek, tobb komponens osszefuzese.
+ * Szerep: Admin tiltasi muveletek uzleti szabalyai szerepkor- es sessionkezelessel.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import Users from "../sql/table/Users.js";
@@ -18,6 +18,7 @@ export async function banUser({
   createdBy,
   creatorRole,
 }) {
+  // A banolas itt ellenorzi a szerepkor-hierarchiat, a duplikalt tiltast, majd a vegen minden aktiv sessiont is ervenytelenit.
   if (userId === createdBy) {
     throw CustomError.CANNOT_BAN_YOURSELF;
   }
@@ -57,6 +58,7 @@ export async function banUser({
 }
 
 export async function unBanUser({ userId, revokedBy }) {
+  // Feloldas elott azt is megnezzuk, hogy letezik-e a user es van-e egyaltalan aktiv tiltasa.
   const user = await Users.exists(userId);
   if (!user) {
     throw CustomError.USER_NOT_FOUND;
@@ -78,6 +80,7 @@ export async function unBanUser({ userId, revokedBy }) {
 }
 
 export async function getBanStatus({ userId }) {
+  // A frontendnek egyszeru statuszobjektum kell, nem az egesz tiltasi rekord.
   const user = await Users.exists(userId);
   if (!user) {
     throw CustomError.USER_NOT_FOUND;
@@ -98,6 +101,7 @@ export async function getBanStatus({ userId }) {
 }
 
 export async function lazySelectUserBans({ userId, page = 1, limit = 20 }) {
+  // A tiltasi elozmeny ugyanugy lapozott listakent jon vissza, mint a tobbi nagyobb gyujtemeny.
   const offset = (page - 1) * limit;
 
   const bans = await Bans.lazySelectByUserId(userId, { limit, offset });

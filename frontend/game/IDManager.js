@@ -6,6 +6,7 @@
  */
 export default class IDManager {
   constructor(max = 2 ** 16) {
+    // A kiosztott azonosítók monoton nonek, de a release-elt ertekek visszakerulnek a poolba ujrahasznalatra.
     this.next = 0;
     this.pool = [];
     this.max = max;

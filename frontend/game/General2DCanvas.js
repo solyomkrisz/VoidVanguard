@@ -6,4 +6,5 @@
  */
 import RenderingContext2DCanvas from "/game/RenderingContext2DCanvas.js";
 
+// Ez egyetlen kozosan ujrahasznalt 2D canvas-peldany, amikor nem eri meg minden hivasnal uj wrapper objektumot letrehozni.
 export const General2DCanvas = new RenderingContext2DCanvas();

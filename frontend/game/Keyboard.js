@@ -26,6 +26,7 @@ export default class Keyboard {
   }
 
   setGame(game) {
+    // A billentyuzet csak akkor tud allapotot modositani, ha tudja melyik Game peldany activeControls halmazat kell irnia.
     if (!(game instanceof Game)) {
       throw new Error(
         "KEYBOARD-setGame: The given argument is not a Game instance",
@@ -36,6 +37,7 @@ export default class Keyboard {
   }
 
   observeKey(key) {
+    // Csak az itt felvett billentyuk kerulnek be a folyamatosan figyelt, nyomvatartott inputok koze.
     if (typeof key !== "string") {
       throw new Error("KEYBOARD-observeKey: The argument must be a string!");
     }
@@ -44,6 +46,7 @@ export default class Keyboard {
   }
 
   enableListening() {
+    // A globalis dokumentumra hallgatunk, hogy a jatekos akkor is tudjon iranyitani, ha a fokusz nem egy kulon inputmezore esik.
     if (!this.game) return;
 
     if (document.addEventListener) {
@@ -56,6 +59,7 @@ export default class Keyboard {
   }
 
   disableListening() {
+    // Leallitasnal ugyanazokat a handlereket vesszuk le, amelyeket enableListening alatt regisztraltunk.
     if (document.addEventListener) {
       document.removeEventListener("keydown", this.keydownEventHandler);
       document.removeEventListener("keyup", this.keyupEventHandler);
@@ -72,6 +76,7 @@ export default class Keyboard {
   keydownEventHandler(event) {
     const key = event.code;
 
+    // A megfigyelt iranyitobillentyuk bekerulnek az aktiv halmazba, az Escape pedig kulon pause/continue gyorsbillentyu.
     if (this.observed.has(key)) {
       this.game.activeControls.add(key);
     } else if (key === Keyboard.Escape && !event.repeat) {
@@ -87,6 +92,7 @@ export default class Keyboard {
 
   keyupEventHandler(event) {
     const key = event.code;
+    // Felengedesnel egyszeruen kivesszuk a billentyut az aktiv halmazbol.
     if (this.observed.has(key)) this.game.activeControls.delete(key);
   }
 }

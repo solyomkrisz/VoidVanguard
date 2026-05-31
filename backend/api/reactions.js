@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/api/reactions.js
- * Szerep: API reteg: HTTP endpoint definicio, keretek kozotti tovabbitas a controllernek.
+ * Szerep: Reakciok lekerese es atkapcsolasa route-szinten, validacioval es target-user feloldassal.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import express from "express";
@@ -17,6 +17,9 @@ import * as validator from "../validator/reaction.js";
 
 const router = express.Router();
 
+// GET /api/reactions/:targetId
+// A bejelentkezett user sajat reakciojanak lekerese az URL-ben kapott celobjektumhoz.
+// A validator.GET ellenorzi a path parametert, mielott a controller adatbazis-lekerdezesbe kezd.
 router.get(
   "/:targetId",
   authenticate(),
@@ -26,6 +29,9 @@ router.get(
   controller.get,
 );
 
+// POST /api/reactions
+// Reakcio letrehozasa, torlese vagy atvaltasa. A body tipikusan targetId es type mezoket var,
+// es a service donti el, hogy ebbol insert, update vagy delete lesz.
 // prettier-ignore
 router.post(
   "/",

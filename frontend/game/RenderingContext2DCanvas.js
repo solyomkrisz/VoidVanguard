@@ -8,7 +8,7 @@ import * as vec2 from "/common/vec2.js";
 import Buffer from "/game/Buffer.js";
 import Canvas from "/game/Canvas.js";
 
-// ! Origin is always the middle of the canvas!
+// Itt a koordinatarendszer kozepe alapbol a canvas kozepe, nem a bal felso sarok.
 export default class RenderingContext2DCanvas extends Canvas {
   constructor() {
     super();
@@ -29,12 +29,14 @@ export default class RenderingContext2DCanvas extends Canvas {
   }
 
   setFontFamily(fontFamily) {
+    // A helper egyszerre frissiti az eltett fontbeallitast es a tenyleges 2D contextet.
     this.fontFamily = fontFamily;
     this.context.font = `${this.fontSize}px ${this.fontFamily}`;
     return this;
   }
 
   setFontSize(fontSize) {
+    // A betumeret is ugyanezen az absztrakcion keresztul megy, hogy minden rajzolo helper ugyanazt az aktualis fontot hasznalja.
     this.fontSize = fontSize;
     this.context.font = `${this.fontSize}px ${this.fontFamily}`;
     return this;
@@ -46,6 +48,7 @@ export default class RenderingContext2DCanvas extends Canvas {
   }
 
   onResize() {
+    // Meretvaltozasnal minden kepernyohoz kotott gyorsitoerteket ujraszamolunk.
     this.aspectRatio = this.canvas.width / this.canvas.height;
     this.W = this.canvas.width;
     this.H = this.canvas.height;
@@ -67,6 +70,7 @@ export default class RenderingContext2DCanvas extends Canvas {
   }
 
   updateScaling() {
+    // A skala kulon X es Y tengelyen is igazodik a keparanyhoz, hogy a rajzolt vilag ne torzuljon el szeles vagy magas ablakban.
     this.scaleX = this.scale;
     this.scaleY = this.scale;
 
@@ -77,6 +81,7 @@ export default class RenderingContext2DCanvas extends Canvas {
   }
 
   toScreen(target, input) {
+    // Vilagkoordinatabol kepernyokoordinatat kepez a jelenlegi skalazassal es a kozepre helyezett origoval.
     target[0] = this.W / 2 + input[0] * this.scaleX * this.canvas.width * 0.5;
     target[1] = this.H / 2 + input[1] * this.scaleY * (1 - this.canvas.height) * 0.5;
     return target;
@@ -92,6 +97,7 @@ export default class RenderingContext2DCanvas extends Canvas {
   }
 
   moveTo(x, y, convert = false) {
+    // Ha convert igaz, a bemeneti pontot elobb vilagterbol kepernyoterbe visszuk at.
     const v = vec2.set(this.internalBuffer.vec2_1, x, y);
     const [a, b] = convert ? this.toScreen(v, v) : v;
     this.context.moveTo(a, b);
@@ -111,6 +117,7 @@ export default class RenderingContext2DCanvas extends Canvas {
   }
 
   stroke(color, lineWidth = -1) {
+    // A gyakori save/restore minta miatt a hivo kodnak nem kell kezzel visszaallitani a context allapotat minden vonal utan.
     this.context.save();
     lineWidth > -1 && (this.context.lineWidth = lineWidth);
     this.context.strokeStyle = color;

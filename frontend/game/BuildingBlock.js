@@ -30,6 +30,7 @@ export default class BuildingBlock extends Rigidbody {
 
     super({ type: Type.BUILDING_BLOCK, game, model, x, y, vx, vy, maxSpeed: 1 });
 
+    // A detached blokk kulon entitaskent el, ezert sajat eletciklust, snap cooldownt es drag-allapotot kap.
     this.id = game.idManager.get();
     this.model.init(this);
 
@@ -48,6 +49,7 @@ export default class BuildingBlock extends Rigidbody {
   }
 
   update() {
+    // A lebego epitoelem nem forog szabadon: inkabb lassan sodrodik, kozben figyeli, hogy felvettek-e vagy lejart-e az elettartama.
     this.rotation = 0;
 
     // snapCooldown csökkentése, framenként 1-gyel, vagyis a 15, 15 frameig tart ki
@@ -78,6 +80,7 @@ export default class BuildingBlock extends Rigidbody {
   }
 
   onBroadCollision(other) {
+    // Broad fazisban csak azt dontjuk el, erdemes-e tovabbmenni reszletesebb vizsgalatra.
     if (this.isDragged()) {
       // ha játékos BC-jében van a játékos modelljével egy irányba csavarjuk (jobban lássa hogy igazítsa)
       if (other.is(Type.PLAYER)) {
@@ -194,6 +197,8 @@ export default class BuildingBlock extends Rigidbody {
   onNarrowCollision(other) {
     const _b = this.game.buffer;
     const mouse = this.game.mouse;
+
+    // Itt dol el a tenyleges felcsatolas: van-e jo snap slot, elfogadja-e a szomszed, es milyen iranyban alljon a blokk.
     
     // maga a building block
     const sourceBlock = this.model.objects[0];
@@ -483,6 +488,7 @@ export default class BuildingBlock extends Rigidbody {
   // az előző dragelésből maradt dragSnapElapsed-et reseteljük
   // lifeTime-ot is reseteljük, bár ez az onDragged-ban amúgy is megtörténne
   onDragStart() {
+    // Uj drag kezdetekor tiszta lappal indul a snap-idozites es az eltunesi idozito is.
     this.lifeTime = 0;
     this.dragSnapElapsed = 0;
   }
@@ -492,6 +498,7 @@ export default class BuildingBlock extends Rigidbody {
   // dragSpanElapsed-hez delta time-ot adjuk, mert dragelésben vagyunk
   // ez a Mouse.js-ben van meghívva
   onDragged(dt = 0) {
+    // Mikozben huzza a jatekos, eletben tartjuk a blokkot es merjuk, eleg ideje tart-e mar a snap engedelyezesehez.
     this.lifeTime = 0;
     this.dragSnapElapsed += dt;
   }

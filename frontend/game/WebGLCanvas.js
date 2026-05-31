@@ -13,6 +13,7 @@ export default class WebGLCanvas extends Canvas {
   constructor() {
     super();
 
+    // A WebGLCanvas a nyers canvas wrapperre epul ra, es a GL allapothoz szukseges tarolokat adja hozza.
     this.gl = null;
     this.glProgram = null;
     this.uniform = {};
@@ -28,18 +29,22 @@ export default class WebGLCanvas extends Canvas {
   }
 
   initInstancing() {
+    // Az instancing setupot az alosztaly implementalja, mert ott dől el, milyen instanciankent valtozo adatokat rajzolunk.
     console.warn("initInstancing() must be implemented if needed!");
   }
 
   updateInstanceBuffer() {
+    // Ugyanigy a konkret jatek vagy rajzolo osztaly tudja, mikor es hogyan kell feltolteni az instance buffert.
     console.warn("updateInstanceBuffer() must be implemented if needed!");
   }
 
   draw() {
+    // A vegso draw call pipeline is alosztaly-fuggo.
     console.warn("draw() must be implemented!");
   }
 
   clearCanvas() {
+    // WebGL-nel a torles a clearColor beallitasa utan a color- es depth-buffer uritesevel tortenik.
     this.gl.clearColor(...this.clearColor);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
   }
@@ -48,6 +53,7 @@ export default class WebGLCanvas extends Canvas {
    * Sets the gl variable of the WebGLCanvas class instance if WebGL is available.
    */
   initWebGL() {
+    // Itt kerjuk le a webgl2 contextet, es beallitjuk az alfa-keverest a reszben atlatszo texturakhoz.
     if (!this.hasCanvas()) {
       throw new Error(
         "WEBGLCANVAS-initWebGL: Couldn't initialize WebGL: there is no canvas selector for this WebGLCanvas instance."
@@ -75,6 +81,7 @@ export default class WebGLCanvas extends Canvas {
    */
   // prettier-ignore
   setProgram(vertex_shader_source, fragment_shader_source) {
+    // A shader source-okbol letrehoz egy komplett GL programot, majd aktivva is teszi azt.
     const program = WebGL.CREATE_AND_LINK_PROGRAM_FROM_SOURCE(this.gl, vertex_shader_source, fragment_shader_source);
 
     this.glProgram = program;

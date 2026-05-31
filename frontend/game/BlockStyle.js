@@ -13,7 +13,7 @@ export default class BlockStyle extends Canvas {
     this.ctx = null;
   }
 
-  // KESOBBI FELHASZNALASUK: CIMKENEK SZINESITESE, GLOW EFFECT BLOKKTOL FUGGOEN
+  // A blokk grade-szintjehez rendelt alap szinek. Ezeket tobben is hasznaljak, pl. UI cimkek, lovedekszinek, glow effektek.
   static GRADE_COLORS = Object.freeze({
     0: "rgba(197, 197, 197, 1)",  // Greyish       - Alumínium                - Grade 1  - Kezdő, alap
     1: "rgba(126, 126, 126, 1)",  // Grey          - Magnéziumötvözet         - Grade 2  - Ultralight, high skill
@@ -32,7 +32,7 @@ export default class BlockStyle extends Canvas {
     14: "rgba(255, 255, 255, 1)", // Fehér         - Titán–kompozit hibrid szerkezet   - Grade 15 (Csúcstechnológia) Közepes tömeg + extrém HP
   });
 
-  // ELVETVE, NINCS FELHASZNALASUK
+  // Egy korabbi otlet maradeka: kulon outline vastagsag grade-enkent. Jelenleg nincs aktiv hasznalatban, de referenciaertekkent megmaradt.
   static OUTLINE_WIDTHS = Object.freeze({
     0: 3.00,     // Greyish       - Alumínium                - Grade 1  - Kezdő, alap
     1: 2.50,     // Grey          - Magnéziumötvözet         - Grade 2  - Ultralight, high skill
@@ -51,21 +51,21 @@ export default class BlockStyle extends Canvas {
     14: 5.50,    // Fehér         - Titán–kompozit hibrid szerkezet   - Grade 15 (Csúcstechnológia) Közepes tömeg + extrém HP
   });
 
-  // VISSZAADJA A BLOKKHOZ TARTOZO SZINT, OPACITY VALTOZTATAS NELKUL
+  // A gradeID-bol kikeresi az alap RGBA szint, es ismeretlen ertek eseten visszaesik a nulladik grade-re.
   static getColorForGrade(gradeID) 
   {
     return this.GRADE_COLORS[gradeID] || this.GRADE_COLORS[0];
   }
 
-  // OPACITY-T CSOKKENTETT A FILLHEZ
+  // Ugyanazt a gradeszint hasznalja, csak atlatszobb valtozatban, amikor kitolteshez kell a szin.
   static getColorForFillGrade(gradeID)
   {
     const baseColor = this.getColorForGrade(gradeID);
-    // Make it more transparent for fill
     return baseColor.replace("1)", "0.3)");
   }
 
   init() {
+    // Kulon 2D overlay-canvas jon letre a blokk-korvonalak es kitoltesek kirajzolasahoz.
     this.createCanvas();
 
     if (!this.hasCanvas()) {
@@ -90,6 +90,7 @@ export default class BlockStyle extends Canvas {
   }
 
   clearCanvas() {
+    // A blokkstilus-overlay teljes torlese, tipikusan uj frame vagy ujrarajzolas elott.
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
@@ -97,13 +98,14 @@ export default class BlockStyle extends Canvas {
     const c = this.ctx;
     
     if (inset === null) {
+      // Az insettel kicsit beljebb huzott korvonalat rajzolunk, hogy a szomszedos blokkok outline-ja ne csusszon egymasra.
       inset = lineWidth * 0.775;
     }
     
     let drawVertices = vertices;
-    // make vertices be more inward
+    // Ha kell inset, a csucsokat a sokszog kozeppontja fele toljuk befelé.
     if (inset !== 0) {
-      // Calculate centroid
+      // Eloszor kiszamoljuk a kozeppontot, ehhez fogjuk viszonyitani a befele tolást.
       let cx = 0, cy = 0;
       for (let i = 0; i < vertices.length; i += 2) {
         cx += vertices[i];
@@ -113,7 +115,7 @@ export default class BlockStyle extends Canvas {
       cx /= pointCount;
       cy /= pointCount;
       
-      // Offset vertices toward centroid by inset amount - this is so overline won't overlap with adjacent block outlines
+      // Minden csucs ugyanannyit mozdul a kozeppont fele, ettol lesz a kirajzolt sokszog valamivel kisebb az eredetinel.
       drawVertices = [];
       for (let i = 0; i < vertices.length; i += 2) {
         const vx = vertices[i];

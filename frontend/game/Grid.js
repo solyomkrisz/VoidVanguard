@@ -10,10 +10,12 @@ import CollisionCollection from "/game/CollisionCollection.js";
 
 export default class Grid {
   static TO_CELL(n, cellSize) {
+    // Vilagkoordinatabol kiszamolja, melyik racscellaba esik az adott pont.
     return Math.floor(n / cellSize);
   }
 
   static GET_KEY(x, y) {
+    // A cellak kulcsa string, hogy konnyen lehessen oket Map-ben tarolni.
     return `${x},${y}`;
   }
 
@@ -24,12 +26,14 @@ export default class Grid {
     }
 
     reset(dt) {
+      // Uj broad-phase kor elott uritjuk a cellat, es kozben szamoljuk, mióta nem hasznalta senki.
       this.objects.length = 0;
       this.idle += dt;
     }
   };
 
   constructor(game, cellSize, cellIdleTimeout = 30) {
+    // A grid a broad-phase gyorsitasaert felel: csak az egy cellaba eso objektumpárokat kuldi tovabb reszletes utkozesvizsgalatra.
     this.game = game;
     this.cells = new Map();
     this.cellSize = cellSize;
@@ -38,6 +42,7 @@ export default class Grid {
   }
 
   reset() {
+    // A reg nem hasznalt cellakat teljesen eldobjuk, hogy a Map ne nojon vegtelenre jatek kozben.
     for (const key of this.cells.keys()) {
       const cell = this.cells.get(key);
 
@@ -50,6 +55,7 @@ export default class Grid {
   }
 
   build() {
+    // Itt kerulnek be az aktiv objektumok a megfelelo cellakba a proxy collider sajat register logikajan keresztul.
     for (const object of this.game.objects.objects) {
       object.proxyCollider.validate();
       object.proxyCollider.register();
@@ -57,6 +63,7 @@ export default class Grid {
   }
 
   filter() {
+    // A broad-phase eredmenye egy CollisionCollection lesz, amely mar csak az igazan erdemes objektumpárokat tartalmazza.
     this.collector.reset();
 
     this.reset();
@@ -72,6 +79,7 @@ export default class Grid {
           let a = objects[i];
           let b = objects[j];
 
+          // Ugyanaz az objektumpár tobb szomszedos cellaban is felbukkanhat, ezert kulccsal kiszurjuk a duplikaciot.
           const pairKey = (Math.min(a.id, b.id) << 16) | Math.max(a.id, b.id);
 
           if (seenPairs.has(pairKey)) continue;
@@ -92,6 +100,7 @@ export default class Grid {
 
   // prettier-ignore
   debug() {
+    // A debug overlayre kirajzolja az aktiv cellakat, bennuk az objektumdarabszamot es az idle idot is.
     const g = this.game, b = g.buffer, d = g.debugOverlay;
     const size = this.cellSize * 0.5 * g.cameraMatrix[0] * g.canvas.width;
 

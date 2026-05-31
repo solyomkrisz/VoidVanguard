@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/api/profiles.js
- * Szerep: API reteg: HTTP endpoint definicio, keretek kozotti tovabbitas a controllernek.
+ * Szerep: Profil-lekerdezo, kereso es sajat profilkezelo vegpontok route-lancai.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import express from "express";
@@ -17,6 +17,9 @@ import {
 
 const router = express.Router();
 
+// GET /api/profiles/:id
+// Egyetlen profil lekerese URL-parametereben kapott userazonosito alapjan.
+// Optional auth megy elotte, mert a lathato adatkör attol is fugghet, hogy ki kerdezi le a profilt.
 router.get(
   "/:id",
   authenticate({
@@ -27,7 +30,8 @@ router.get(
   controller.get,
 );
 
-// for searching
+// GET /api/profiles?search=
+// Profilkereso vegpont. A search query mezot a koztes middleware ellenorzi, hogy csak ertelmes kereses fusson le.
 router.get(
   "/",
   authenticate({
@@ -41,6 +45,8 @@ router.get(
   controller.search,
 );
 
+// POST /api/profiles
+// Sajat profil letrehozasa. A body mezoit az upload.none() olvassa, utana a validator.POST ellenorzi azokat.
 router.post(
   "/",
   authenticate(),
@@ -51,6 +57,8 @@ router.post(
   controller.create,
 );
 
+// PATCH /api/profiles
+// A bejelentkezett user sajat profiljanak frissitese. A modifyTargetUser miatt a controller biztosan a megfelelo userhez ir.
 router.patch(
   "/",
   authenticate(),
@@ -61,6 +69,8 @@ router.patch(
   controller.update,
 );
 
+// DELETE /api/profiles
+// Sajat profil torlese. Itt mar nincs kulon schema validacio, mert a route nem var extra body parametert a torleshez.
 router.delete(
   "/",
   authenticate(),

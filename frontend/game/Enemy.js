@@ -18,6 +18,7 @@ import { GlobalState } from "/game/State.js";
 
 export default class Enemy extends Spaceship {
   static from(saved, recoveredModel, game) {
+    // Betolteskor ugyanazokat az alap mozgas- es viselkedesadatokat allitjuk vissza, mint amikkel mentve lett az enemy.
     const enemy = new Enemy({
       type: saved.type,
       game,
@@ -50,6 +51,7 @@ export default class Enemy extends Spaceship {
   // prettier-ignore
   constructor({ game, model, x, y, maxSpeed, turnRate, behavior = "aggressive", difficulty = 1 } = {}) {
     super({ type: Type.ENEMY, game, model, x, y, vx: 0, vy: 0, maxSpeed });
+    // Ezekbol a mezokbol dolgozik kesobb az AI: hogyan viselkedjen, milyen eros legyen, es milyen gyakran valasszon uj iranyt.
     this.behavior = behavior;
     this.difficulty = difficulty;
     this.provoked = false;
@@ -62,6 +64,7 @@ export default class Enemy extends Spaceship {
   }
 
   exportSave() {
+    // Az enemy egyedi AI beallitasait is hozzacsapjuk az altalanos spaceship mentesehez.
     return {
       ...super.exportSave(),
       turnRate: this._turnRate,
@@ -83,6 +86,7 @@ export default class Enemy extends Spaceship {
   // új listát a thruserekről elment this._thrusterCache-be és visszaadja
   getThrusters() {
     if (!this._thrusterCache)
+      // A thrusterlista csak akkor epul ujra, ha meg nincs cache-ben, igy update kozben nem kell ujra es ujra szurni a teljes modellt.
       this._thrusterCache = this.model.objects.filter(
         (obj) => obj instanceof Thruster,
       );
@@ -293,6 +297,7 @@ export default class Enemy extends Spaceship {
   // átállítja a this.rotation-t + !!!! a forward-ot is forgatja
   setFacingRotation(rotation) {
     const _b = this.game.buffer;
+    // A forgatas onmagaban nem eleg: a forward vektornak is ugyanabba az iranyba kell mutatnia, mert a mozgas es loves ezt hasznalja.
     this.rotation = rotation;
     mat2.fromRotation(_b.mat2_1, this.rotation);
     vec2.set(this.forward, 0, 1);
@@ -302,6 +307,7 @@ export default class Enemy extends Spaceship {
 
   // ?
   turnTowardAngle(targetRotation, dt) {
+    // Nem ugrik rogton a celiranyba, hanem a fordulasi sebesseg altal megengedett kis lepessel kozelit.
     const angleDiff = getAngleDiff(targetRotation, this.rotation); // legkisebb távolság két szög között
     const maxStep = this._turnRate * dt; // turnRate valszeg per secondben van szoval *dt megadja mennyit fordulhat egy frame alatt
     const clampedStep = Math.max(-maxStep, Math.min(maxStep, angleDiff)); // clamp angleDiff maxStephez
@@ -389,6 +395,7 @@ export default class Enemy extends Spaceship {
   getTurretRangeStats(playerCore) {
     const _b = this.game.buffer;
     const turrets = this.getTurretBlocks();
+    // Az AI egyszerre akarja tudni, mennyire van kozel a celpont, es mekkora lotavval dolgozhat a legerosebb turret.
     let minDistance = Infinity,
       maxRange = 0;
     for (const turret of turrets) {
@@ -416,6 +423,7 @@ export default class Enemy extends Spaceship {
   }
 
   aim(targetPosition, dt) {
+    // Eloszor iranyvektort kepzunk a cel fele, utana ezt alakitjuk at olyan szogge, amit a turnTowardAngle mar kezelni tud.
     const toTarget = vec2.create();
     vec2.sub(toTarget, targetPosition, this.position);
     if (vec2.len(toTarget) === 0) return false;
@@ -427,6 +435,8 @@ export default class Enemy extends Spaceship {
   shootFromTurret(turretBlock, playerCorePosition) {
     const _b = this.game.buffer;
     const localDirection = this.getTurretLocalDirection(turretBlock, _b.vec2_1);
+
+    // A loveshez a turret blokk helyi koordinataibol indulunk ki, majd ezt visszuk at vilagkoordinataba.
 
     // turret pos + fél blokk
     // localDirection komponense lehet +,- is szóval irányfüggő a muzzle
@@ -485,6 +495,7 @@ export default class Enemy extends Spaceship {
 
   // maradék blokk lecsatolása (legyilkolás előtt)
   detachRemainingBlocks() {
+    // Megsemmisuleskor a megmaradt blokkokat kulon lebego targgyal alakitjuk, hogy lootkent vagy epitoelemkent tovabb elhessenek.
     for (const block of this.model.objects) {
       if (!block?.isRemovable || block.toRemove) continue;
 

@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/controller/passwordresets.js
- * Szerep: Controller reteg: bejovo keres feldolgozasa, service meghivasa, valasz osszeallitasa.
+ * Szerep: Jelszovisszaallitasi kerelmek es tokenes jelszocsere HTTP-folyamanak vezerlese.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import * as service from "../service/passwordresets.js";
@@ -19,6 +19,7 @@ const resetLimiter = new RateLimiterMemory({
   points: 10, // 10 requests
   duration: 600, // per 600 seconds (10 min)
 });
+// Kulon email-limit is van, hogy ugyanarra a cimre se lehessen rovid ido alatt tul sok resetkerelmet kuldeni.
 export const emailLimiter = new RateLimiterMemory({
   points: 3, // allow 3 attempts
   duration: 15 * 60, // per 15 minutes
@@ -29,11 +30,13 @@ export async function requestPasswordReset(request, response) {
   const email = request.body.email;
 
   try {
+    // Kettozott limiter ved: IP-re es email-cimre is, hogy ne lehessen konnyen spamolni a reset endpointot.
     await resetLimiter.consume(ip);
     await emailLimiter.consume(email);
   } catch (error) {
     const retryAfter = Math.ceil((error?.msBeforeNext || 300000) / 1000);
 
+    // Szandekosan sikeresnek tuno valaszt adunk vissza ilyenkor is, hogy ne lehessen a valaszokbol usert vagy rate-limit allapotot feltérképezni.
     return response
       .status(200)
       .json(
@@ -58,6 +61,7 @@ export async function requestPasswordReset(request, response) {
 
 export async function resetPassword(request, response) {
   try {
+    // A controller csak tovabbitja a tokent es az uj jelszot, a tenyleges ervenyesites es session-torles a service-ben tortenik.
     const result = await service.resetPassword({
       token: request.body.token,
       password: request.body.password,
