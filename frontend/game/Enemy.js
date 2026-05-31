@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Enemy.js
+ * Szerep: AI-vezerelt hajo kovetesi, hajtomu- es loveslogikaval.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Projectile from "/game/Projectile.js";
 import Spaceship from "/game/Spaceship.js";
 import Thruster from "/game/Thruster.js";

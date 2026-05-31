@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Keyboard.js
+ * Szerep: Billentyuallapotokat figyelo es gyorsan lekerdezheto inputseged.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Game from "/game/Game.js";
 
 export default class Keyboard {

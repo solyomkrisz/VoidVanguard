@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Save.js
+ * Szerep: Frontend oldali mentesadat modellje export/import segedekkel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Block from "/game/Block.js";
 import Thruster from "/game/Thruster.js";
 import Enemy from "/game/Enemy.js";

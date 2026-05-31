@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/RemoteSaveList.js
+ * Szerep: Tavoli mentesek listazasa es megjelenitese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import "/ui/component/game/SaveListSlot.js";

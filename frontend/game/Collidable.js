@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Collidable.js
+ * Szerep: Utkozheto entitas alaposztaly proxy-, shape- es contact colliderrel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec2 from "/common/vec2.js";
 
 export default class Collidable {

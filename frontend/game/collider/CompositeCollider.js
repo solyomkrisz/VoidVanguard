@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/collider/CompositeCollider.js
+ * Szerep: Osszetett collider, amely kisebb konvex reszekre bontja a modellt utkozesvizsgalathoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Collider from "/game/Collider.js";
 import Rigidbody from "/game/Rigidbody.js";
 import AABB from "/game/collider/AABB.js";
@@ -51,6 +57,7 @@ export default class CompositeCollider extends Collider {
     const rigidbody = new Rigidbody({
       parent: this.entity,
       game: this.entity.game,
+      // Itt nem másolunk, mert ez csak egy ideiglenes fizikai nézet ugyanazokra a blokkokra.
       model: new Model(objectGroup, Model.COPY_MODE.PRESERVE),
     })
       .apply(this.entity)
@@ -77,12 +84,14 @@ export default class CompositeCollider extends Collider {
       grid[y - minY][x - minX] = object;
     }
 
+    // Soronként végigmegyünk a rácson, és az egymás mellett fekvő, összevonható blokkokból külön részeket csinálunk.
     for (let y = 0; y < h; y++) {
       let group = [];
 
       for (let x = 0; x < w; x++) {
         const object = grid[y][x];
 
+        // A rule dönti el, hogy a következő blokk még ugyanabba a konvex csoportba tartozhat-e.
         if (object && (!group.length || this.rule(object, group))) {
           group.push(object);
         } else if (group.length) {

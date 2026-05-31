@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/GameControllerContainer.js
+ * Szerep: Jatekvezerlo elemeket osszefogo kontener.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import Game from "/game/Game.js";
 import { dir, el } from "/ui/UI.js";

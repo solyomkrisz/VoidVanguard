@@ -1,12 +1,21 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/admin/AdminModule.js
+ * Szerep: Admin felulet fo osszefogo modulja.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class AdminModule extends HTMLElement {
+  // Figyeli, melyik felhasznalo van epp celpontkent kivalasztva.
   static get observedAttributes() {
     return ["target-user-id"];
   }
 
+  // Az aktualis admin-celpont user azonositoja attribute-bol jon.
   get targetUserId() {
     return this.getAttribute("target-user-id");
   }
 
+  // Bekoti az admin-modul sajat esemenykezelőit.
   constructor() {
     super();
 
@@ -16,6 +25,7 @@ export default class AdminModule extends HTMLElement {
     this.onTargetUserChange = this.onTargetUserChange.bind(this);
   }
 
+  // Ha valtozik a cel user, tovabbszinkronizalja az azonositojat a belso child elemekre.
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "target-user-id" && oldValue !== newValue) {
       if (newValue) {
@@ -40,6 +50,7 @@ export default class AdminModule extends HTMLElement {
     }
   }
 
+  // Kivulrol erkezo cel-user valtozast attribute-kent is elment.
   onTargetUserChange(e) {
     const targetUserId = e?.detail?.targetUserId;
     if (!targetUserId) return;
@@ -47,10 +58,12 @@ export default class AdminModule extends HTMLElement {
     this.setAttribute("target-user-id", targetUserId);
   }
 
+  // DOM-ba keruleskor egyszeri buildet ker.
   connectedCallback() {
     this.build();
   }
 
+  // Felépiti az admin-modul esemenyhidjat a sign-requestekhez es target-user valtasokhoz.
   build() {
     if (this._built) return;
 
@@ -60,6 +73,7 @@ export default class AdminModule extends HTMLElement {
     this._built = true;
   }
 
+  // A gyerek komponensek sign-requestjeit egesziti ki a jelenleg kivalasztott target userrel.
   onSignRequest(e) {
     const handler = e.target;
 

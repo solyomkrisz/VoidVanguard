@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/DebugPanel.js
+ * Szerep: Fejlesztoi debug ertekek megjelenitesere szolgalo UI-panel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class DebugPanel {
   static SANITIZE_NAME(name) {
     return name.replace(/[^a-zA-Z0-9_$]/g, "_");

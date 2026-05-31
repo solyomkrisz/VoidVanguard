@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/DebugOverlay.js
+ * Szerep: 2D debug rajzreteget ado seged dobozokkal, vonalakkal es szoveggel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Canvas from "/game/Canvas.js";
 import * as vec2 from "/common/vec2.js";
 

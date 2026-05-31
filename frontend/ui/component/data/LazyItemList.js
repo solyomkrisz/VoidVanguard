@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/data/LazyItemList.js
+ * Szerep: Lustan betoltodo lista lapozassal, gorgeteses/gombos betoltessel es frissitessel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as net from "/common/network.js";
 import "/ui/component/button/PaginationControls.js";
 
@@ -69,6 +75,7 @@ export default class LazyItemList extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (!this._built) {
+      // Ha az attributum hamarabb jon meg, elrakjuk kesobbre, amikor mar biztosan felult az elem.
       this._deferredAttributes.set(name, newValue);
       return;
     }
@@ -123,6 +130,7 @@ export default class LazyItemList extends HTMLElement {
       const sentinel = document.createElement("div");
       sentinel.style.height = "1px";
 
+      // A sentinel egy lathatatlan figyelopont, amit elerve automatikusan jon a kovetkezo oldal.
       this._sentinel = this._controllerContainer.appendChild(sentinel);
 
       this.initScrollObserver();
@@ -242,6 +250,7 @@ export default class LazyItemList extends HTMLElement {
     }
 
     const token = Symbol();
+    // Ez ved a versenyhelyzetektol: csak a legutolso inditott betoltes irhatja felul az allapotot.
     this._activeLoadToken = token;
 
     this._loading = true;

@@ -1,8 +1,15 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/ShipPropulsionPanel.js
+ * Szerep: Hajo hajtasaval kapcsolatos vezerlok osszefogo panelje.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import _ from "/ui/component/game/ThrusterController.js";
 import _1 from "/ui/component/game/TitleBar.js";
 import * as UI from "/ui/UI.js";
 
 export default class ShipPropulsionPanel extends HTMLElement {
+  // Letrehozza a panel shadow DOM-jat, stilusat es az alap title bart.
   constructor() {
     super();
 
@@ -107,11 +114,13 @@ export default class ShipPropulsionPanel extends HTMLElement {
     this.shadowRoot.appendChild(UI.element("title-bar").setSource(this));
   }
 
+  // A panel adatforrasanak beallitja a jatekos hajot.
   setSource(source) {
     this.source = source;
     return this;
   }
 
+  // Bekot minden olyan esemenyt, ami a thruster-vezérlőkkel vagy a kezdeti pozicionalassal kapcsolatos.
   connectedCallback() {
     if (!this.source) return;
 

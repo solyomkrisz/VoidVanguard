@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/form/InlineEditor.js
+ * Szerep: Kattintasra szerkesztheto szovegmező kulso kattintasos lezárással.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isLoggedIn } from "/common/common.js";
 
 export default class InlineEditor extends HTMLElement {
@@ -28,6 +34,7 @@ export default class InlineEditor extends HTMLElement {
   attachGlobalListeners() {
     if (this._listening) return;
 
+    // Ezek a globális listenerek csak addig kellenek, amig a szerkeszto nyitva van.
     document.addEventListener("pointerdown", this.onPointerDown);
     document.addEventListener("logout", this.onLogout);
 
@@ -140,6 +147,7 @@ export default class InlineEditor extends HTMLElement {
     const oldValue = text.textContent;
     text.textContent = editor.value;
 
+    // A kulso kod nem a belso DOM-ot figyeli, hanem ezt az inline-edit esemenyt kapja meg.
     this.dispatchEvent(
       new CustomEvent("inline-edit", {
         detail: {

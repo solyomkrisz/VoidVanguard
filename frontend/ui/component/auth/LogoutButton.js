@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/auth/LogoutButton.js
+ * Szerep: Kijelentkezes gomb, amely a login/logout esemenyekhez igazitja a lathatosagat.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isLoggedIn, logout } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import { element, text } from "/ui/UI.js";
@@ -17,6 +23,7 @@ export default class LogoutButton extends HTMLElement {
     if (this._built) return;
     this.build();
 
+    // Nem sajat pollinggal dolgozik, hanem a kozos auth esemenyekbol tudja meg, mikor kell latszania.
     on("login", this.onLogin);
     on("logout", this.onLogout);
   }

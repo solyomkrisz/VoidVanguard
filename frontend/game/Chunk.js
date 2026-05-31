@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Chunk.js
+ * Szerep: Proceduralisan epulo hatterchunk dekoracios objektumokkal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec2 from "/common/vec2.js";
 import * as vec3 from "/common/vec3.js";
 import ObjectCollection from "/game/ObjectCollection.js";

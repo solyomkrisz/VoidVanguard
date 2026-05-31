@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/server.js
+ * Szerep: Backend inditofajl: itt indul az Express szerver, middleware-ek es route-ok bekotese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import "dotenv/config";
 import express from "express";
 import cookerParser from "cookie-parser";

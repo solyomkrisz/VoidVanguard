@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/validator/profile.js
+ * Szerep: Profilmezok, avatar-ertekek es lathatosagi beallitasok ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isValidUUIDv4 } from "../common/common.js";
 
 const ALLOWED_AVATAR_PATHS = [
@@ -14,6 +20,7 @@ function validateAvatarPath(value) {
     return true;
   }
 
+  // Csak az elore engedelyezett avatarutvonalak valaszthatok, tetszoleges fajl nem.
   if (!ALLOWED_AVATAR_PATHS.includes(value)) {
     throw new Error("Érvénytelen avatar érték");
   }
@@ -60,6 +67,7 @@ export const POST = {
     optional: { options: { nullable: true } },
     custom: {
       options: (value) => {
+        // A visibility nem szabad szabad szoveg legyen, csak a tamogatott allapotok egyike.
         if (!["public", "private", "friends-only"].includes(value)) {
           throw new Error("Érvénytelen láthatósági érték");
         }

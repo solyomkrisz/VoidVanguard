@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/FriendListItem.js
+ * Szerep: Egyetlen ismeros sor megjelenitese akciogombokkal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { on, off } from "/common/eventhub.js";
 
 const CONTROLS_DEFS = {

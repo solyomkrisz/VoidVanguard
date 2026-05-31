@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/FriendListPreview.js
+ * Szerep: Ismeroslista rovid elonezete a profiloldalon.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as net from "/common/network.js";
 import { on, off } from "/common/eventhub.js";
 import { isLoggedIn } from "/common/common.js";

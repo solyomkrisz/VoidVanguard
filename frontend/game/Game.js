@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Game.js
+ * Szerep: A teljes jatekkort osszefogo fo osztaly renderelessel, frissitessel es rendszerinditassal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import WebGLCanvas from "/game/WebGLCanvas.js";
 import DebugPanel from "/game/DebugPanel.js";
 import Buffer from "/game/Buffer.js";
@@ -227,22 +233,27 @@ export default class Game extends WebGLCanvas {
     this.inBuilderView = false;
   }
 
+  // Elinditja a hatterzenet, ha az audio reteg mar keszen all.
   startBackgroundMusic() {
     this.audioManager.getSound("backgroundmusic")?.instance?.start?.();
   }
 
+  // Folytatja a korabban pauselt hatterzenet.
   resumeBackgroundMusic() {
     this.audioManager.getSound("backgroundmusic")?.instance?.resume?.();
   }
 
+  // Szünetre teszi a hatterzenet a jatek allapotahoz igazodva.
   pauseBackgroundMusic() {
     this.audioManager.getSound("backgroundmusic")?.instance?.pause?.();
   }
 
+  // Teljesen leallitja a hatterzenet.
   stopBackgroundMusic() {
     this.audioManager.getSound("backgroundmusic")?.instance?.stop?.();
   }
 
+  // A kamera alap zoomjat a jatekos aktualis meretehez igazitja.
   getDefaultTileSize() {
     if ((this.player?.proxyCollider?.r ?? 0) > 14) {
       return this.player.proxyCollider.r;
@@ -251,11 +262,13 @@ export default class Game extends WebGLCanvas {
     return 14;
   }
 
+  // Uj tile-meret beallitasa utan a vilag-skálat is frissiti.
   setTileSize(tileSize) {
     this.tileSize = tileSize;
     this.scale = 1 / this.tileSize;
   }
 
+  // Atkapcsol normal jateknezet es builder-zoom kozott.
   toggleBuilderView() {
     if (this.inBuilderView) {
       this.setTileSize(this.getDefaultTileSize());
@@ -266,16 +279,19 @@ export default class Game extends WebGLCanvas {
     this.inBuilderView = !this.inBuilderView;
   }
 
+  // Saját determinisztikus randomot ad az enemy-spawnhoz es archetipusokhoz.
   randomFloat() {
     this.enemyRngState =
       (Math.imul(this.enemyRngState, 1664525) + 1013904223) >>> 0;
     return this.enemyRngState / 4294967296;
   }
 
+  // Egesz szamot valaszt a sajat random generatorral.
   randomInt(min, max) {
     return min + Math.floor(this.randomFloat() * (max - min + 1));
   }
 
+  // A pontszam alapjan visszaadja az aktualis nehezsegi szintet.
   getCurrentDifficulty() {
     const score = this.player?.score ?? 0;
     // hátulról előrefele loopolunk a DIFFICULTY_SCORE_THRESHOLDS listában
@@ -291,6 +307,7 @@ export default class Game extends WebGLCanvas {
   }
 
   // hány enemy lehet max
+  // A nehezsegi szintbol egy fokozatosan novekvo enemy-limitet szamol.
   getEnemyCapByDifficulty(difficulty) {
     const d = Math.max(0, difficulty); // nehézségi szint indexe (min 0, max 15)
     const baselineMin = this.enemyInitialCount; // enemyInitialCount 25
@@ -308,6 +325,7 @@ export default class Game extends WebGLCanvas {
   }
 
   // milyen gyakran spawnolhatnak enemyk
+  // A nehezseggel csokkenti a spawnok kozti varakozasi idot.
   getEnemySpawnIntervalByDifficulty(difficulty) {
     const d = Math.max(0, difficulty);
     const maxInterval = 18;
@@ -324,6 +342,7 @@ export default class Game extends WebGLCanvas {
   }
 
   // elem lüktetése
+  // Egy rovid HUD-animacioval kiemeli a valtozott erteket.
   pulseHudValue(element) {
     if (!element?.animate) return;
     element.animate(
@@ -341,6 +360,7 @@ export default class Game extends WebGLCanvas {
 
   // tickenként meg van hívva
   // hudot updateli
+  // Osszerakja es a HUD-ra kirajzolja az aktualis nehezseg- es pontszamjelzest.
   updateDifficultyIndicator() {
     const score = this.player?.score ?? 0;
     const difficulty = this.getCurrentDifficulty(); // jelenlegi nehézség indexe
@@ -397,6 +417,7 @@ export default class Game extends WebGLCanvas {
    * -> 20% neutral
    * -> 58% aggressive
    */
+  // Random viselkedest valaszt a nehezsegi savnak megfelelo aranyokkal.
   pickEnemyBehavior(difficulty) {
     const r = this.randomFloat();
 
@@ -418,6 +439,7 @@ export default class Game extends WebGLCanvas {
   }
 
   // ugyan az mint a Player.setCurrentChunk
+  // Kiszamolja, melyik hatterchunkban van a jatekos.
   getPlayerChunk() {
     const cx = Math.floor(
       this.player.position[0] / this.chunkSize / this.backgroundZoom,
@@ -430,6 +452,7 @@ export default class Game extends WebGLCanvas {
 
   // melyik grid-ben van a játékos
   // ez a broad phase collision detection gridje
+  // Visszaadja, melyik broad-phase racscellaban all a jatekos.
   getPlayerGridCell() {
     const cx = Math.floor(this.player.position[0] / this.grid.cellSize);
     const cy = Math.floor(this.player.position[1] / this.grid.cellSize);
@@ -437,6 +460,7 @@ export default class Game extends WebGLCanvas {
   }
 
   // adott chunk látható e a játékos számára
+  // Gyors lathatosagi teszt a render tavolsag alapjan.
   isChunkVisibleToPlayer(cx, cy) {
     const [pcx, pcy] = this.getPlayerChunk();
     const visX = this.renderDistance[0] + 1;
@@ -444,6 +468,7 @@ export default class Game extends WebGLCanvas {
     return Math.abs(cx - pcx) <= visX && Math.abs(cy - pcy) <= visY;
   }
 
+  // Megprobal egy uj enemy-t a jatekostol tavol, de meg ertelmes talalkozasi sugarban lespawnolni.
   trySpawnEnemy(difficulty) {
     if (!this.player) return false; // ha nincs player vissza
 
@@ -572,6 +597,7 @@ export default class Game extends WebGLCanvas {
     return false;
   }
 
+  // Az elso tickek egyikén feltolti a vilagot kezdo enemy-populacioval.
   initializeEnemySpawner() {
     if (this.enemySpawnerInitialized || !this.player) return;
 
@@ -590,6 +616,7 @@ export default class Game extends WebGLCanvas {
   }
 
   // tickenként meghívva
+  // Folyamatosan egyensulyban tartja az enemy-populaciot a nehezseghez igazodo cap es timer szerint.
   updateEnemySpawner() {
     if (!this.player) return;
 
@@ -663,6 +690,7 @@ export default class Game extends WebGLCanvas {
     }
   }
 
+  // Halalkor befejezettnek jeloli a mentest, a helyi es tavoli utat kulon kezelve.
   async finishSave() {
     /**
      * kb az ami amugy volt csak tobb helyrol johet a saveType hogy biztosra menjunk
@@ -749,6 +777,7 @@ export default class Game extends WebGLCanvas {
     // kiléptetés vagy endscreen mutatása
   }
 
+  // Leallitja a jatekot, lebontja a hozza tartozo UI-t es kiszedi a sajat DOM-elemeket.
   destroy() {
     this.stop();
 
@@ -780,6 +809,7 @@ export default class Game extends WebGLCanvas {
 
   // prettier-ignore
   // csak ui építése
+  // A jatekhoz szukseges globalis UI-elemeket hozza letre es fuzni a DOM-ba.
   buildUI() {
     this.UI.pauseMenu = document.createElement("pause-menu");
     this.UI.pauseMenu.game = this;
@@ -870,6 +900,7 @@ export default class Game extends WebGLCanvas {
     document.body.appendChild(this.UI.difficultyLabel);
   }
 
+  // A teljes jatek jelenlegi mentheto allapotat sima objektumma alakitja.
   exportSave() {
     this.game_id = this.game_id || crypto.randomUUID();
 
@@ -882,6 +913,7 @@ export default class Game extends WebGLCanvas {
     };
   }
 
+  // Helyileg elmenti a jatekallast localStorage-be.
   localSave(formData) {
     if (this.inSavingProcess) return;
     this.inSavingProcess = true;
@@ -925,6 +957,7 @@ export default class Game extends WebGLCanvas {
     return true;
   }
 
+  // A szerverre kuldi fel vagy frissiti a tavoli jatekmentest.
   async remoteSave(formData) {
     if (this.inSavingProcess) return;
     this.inSavingProcess = true;
@@ -963,6 +996,7 @@ export default class Game extends WebGLCanvas {
     return true;
   }
 
+  // A save_type alapjan kivalasztja, hogy helyi vagy tavoli mentes fusson.
   async save(formData) {
     if (!formData) {
       console.error("Unable to save game: invalid format");
@@ -1086,6 +1120,7 @@ export default class Game extends WebGLCanvas {
     gl.uniform1i(this.uniform.textureArray, 1);
   }
 
+  // A teljes jatek inditasa: eroforrasokra var, GPU-texturakat bindol, majd elinditja a frame loopot.
   start() {
     if (!this.gl) {
       throw new Error(
@@ -1156,6 +1191,7 @@ export default class Game extends WebGLCanvas {
     );
   }
 
+  // Szünetelteti a jatekot es a kapcsolodo audio/UI allapotot.
   stop() {
     if (!this.running) return;
     this.running = false;
@@ -1167,6 +1203,7 @@ export default class Game extends WebGLCanvas {
     this.UI.pauseMenu?.show();
   }
 
+  // Folytatja a frame loopot es visszakapcsolja a jatek kozbeni UI-t/audio-t.
   resume() {
     if (this.running) return;
     this.running = true;
@@ -1180,6 +1217,7 @@ export default class Game extends WebGLCanvas {
     this.resumeBackgroundMusic();
   }
 
+  // A vizualis frame loop: idot mer, tickeket ledolgoz, majd renderel.
   update() {
     this.now = window.performance.now();
     this.vdt = this.now - this.last;
@@ -1206,6 +1244,7 @@ export default class Game extends WebGLCanvas {
     this.frameId = window.requestAnimationFrame(this.update);
   }
 
+  // Egy fix idolepesnyi jatekszimulaciot futtat le: input, AI, fizika, utkozes, UI.
   tick() {
     this.dirty = true;
 
@@ -1247,6 +1286,7 @@ export default class Game extends WebGLCanvas {
     this.tooltip.updateTemplates(this.frameId);
   }
 
+  // A halalesemeny teljes kovetkezmenylancat elinditja: endscreen, finishSave, robbanas, shockwave.
   triggerPlayerDeath() {
     if (this.isFinished) return; // ha játék már be van fejezve vissza
     this.isFinished = true; // játékos meghalt, szóval isFinished true-ra

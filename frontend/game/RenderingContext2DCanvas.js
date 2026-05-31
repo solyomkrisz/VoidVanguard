@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/RenderingContext2DCanvas.js
+ * Szerep: 2D rendering context kore epitett canvas segedosztaly.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec2 from "/common/vec2.js";
 import Buffer from "/game/Buffer.js";
 import Canvas from "/game/Canvas.js";

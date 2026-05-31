@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/form/SearchBar.js
+ * Szerep: Egyszeru keresomezo, ami a talalati lista src attributumaval vezerli a keresest.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { debounce } from "/common/common.js";
 
 export default class SearchBar extends HTMLElement {
@@ -42,6 +48,7 @@ export default class SearchBar extends HTMLElement {
         return;
       }
 
+      // Maga a lista vegzi a lekerest; itt csak a kovetkezo API-cimet allitjuk be neki.
       itemList.setAttribute(
         "src",
         `/api/users?search=${encodeURIComponent(value)}`,

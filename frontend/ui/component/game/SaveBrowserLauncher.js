@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/SaveBrowserLauncher.js
+ * Szerep: Mentesbongeszot megnyito inditoelem.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { on, off } from "/common/eventhub.js";
 import { el } from "/ui/UI.js";
 import { isLoggedIn } from "/common/common.js";

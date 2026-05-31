@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/ResumeButton.js
+ * Szerep: Szunetbol folytatast indito gomb.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { el } from "/ui/UI.js";
 
 export default class ResumeButton extends HTMLElement {

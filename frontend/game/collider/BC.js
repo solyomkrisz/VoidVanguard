@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/collider/BC.js
+ * Szerep: Kor alapu proxy collider sugar- es tavolsagvizsgalattal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Collidable from "/game/Collidable.js";
 import Collider from "/game/Collider.js";
 import Grid from "/game/Grid.js";

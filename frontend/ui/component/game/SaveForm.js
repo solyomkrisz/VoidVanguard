@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/SaveForm.js
+ * Szerep: Mentesi adatok bekero urlap.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import "/ui/component/form/InputGroup.js";
 import { dir } from "/ui/UI.js";

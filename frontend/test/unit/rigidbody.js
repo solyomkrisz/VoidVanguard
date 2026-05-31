@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/test/unit/rigidbody.js
+ * Szerep: Frontend teszt: kliens oldali funkciok es feluleti viselkedes ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { createTestSuite } from "/common/unittest.js";
 import Rigidbody from "/game/Rigidbody.js";
 import Spaceship from "/game/Spaceship.js";

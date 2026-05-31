@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/PauseButton.js
+ * Szerep: Mobilon megjeleno pause esemenyt kibocsato jatekvezerlo gomb.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { path } from "/common/common.js";
 import { dir, el } from "/ui/UI.js";
@@ -48,6 +54,7 @@ export default class PauseButton extends BaseCustomElement {
   }
 
   updateVisibility() {
+    // Asztali gepen jellemzoen van billentyuzet, ezert ott ez a kulon pause gomb rejtve marad.
     if (this.isTouchDevice()) {
       this.style.display = "block";
     } else {

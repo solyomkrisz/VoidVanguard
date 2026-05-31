@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/test/functional/core.js
+ * Szerep: Frontend teszt: kliens oldali funkciok es feluleti viselkedes ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 // prettier-ignore
 import { createTestSuite} from "/common/functionaltest.js";
 const {

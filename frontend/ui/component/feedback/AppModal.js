@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/feedback/AppModal.js
+ * Szerep: Ujrafelhasznalhato megerosito modal Promise-alapu visszateresi ertekkel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { el, dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
@@ -13,6 +19,7 @@ const DEFAULT_CONFIG = {
 
 export default class AppModal extends BaseCustomElement {
   set data(value) {
+    // A hivo csak a megvaltoztatando mezoket adja at; a tobbi marad az alapertelmezett configbol.
     this._data = {
       ...DEFAULT_CONFIG,
       ...value,
@@ -139,6 +146,7 @@ export default class AppModal extends BaseCustomElement {
     this.data = config;
     this.setAttribute("open", "");
 
+    // A modal eredmenyet Promise-szal adjuk vissza, hogy a hivo await-tel varhassa meg a dontest.
     return new Promise((resolve) => {
       this._resolver = resolve;
     });

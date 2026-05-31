@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/common/CustomError.js
+ * Szerep: Kozos backend segedkod: ujrahasznalhato osztalyok, hibakezeles, jogosultsag.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 class CustomError {
   static isCustomError(error) {
     return error instanceof CustomError;

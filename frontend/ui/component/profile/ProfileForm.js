@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/ProfileForm.js
+ * Szerep: Profil szerkeszto urlap mezokkel es mentesi folyamattal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import "/ui/component/form/InputGroup.js";
 import "/ui/component/validator/DisplayNameInputValidator.js";
 import "/ui/component/validator/DescriptionInputValidator.js";
@@ -15,6 +21,7 @@ const METHOD = {
 };
 
 export default class ProfileForm extends BaseCustomElement {
+  // Az action valtozasat attribute-ben is tarolja, majd a gombszoveget is frissiti.
   set action(value) {
     const oldValue = this.getAttribute("action");
 
@@ -24,18 +31,22 @@ export default class ProfileForm extends BaseCustomElement {
     }
   }
 
+  // Visszaadja, hogy create vagy update modban mukodik-e az urlap.
   get action() {
     return this.getAttribute("action");
   }
 
+  // Admin modban a submit nem kuld egybol kérést, hanem alairasi folyamaton megy at.
   get admin() {
     return this.hasAttribute("admin");
   }
 
+  // Onmaga nevében vagy masik user neveben tortenik-e a signolas.
   get selfSign() {
     return this.hasAttribute("self-sign");
   }
 
+  // Elokesziti az urlaphoz tartozo esemenykezeloket.
   constructor() {
     super([path.join(dir, "global.css"), path.join(dir, "profileForm.css")]);
 
@@ -47,11 +58,13 @@ export default class ProfileForm extends BaseCustomElement {
     this.resetForm = this.resetForm.bind(this);
   }
 
+  // Elso csatlakozaskor epiti fel a shadow DOM-ot.
   connectedCallback() {
     if (this._built) return;
     this.build();
   }
 
+  // A submitet admin es normal mod kozott szetvalasztva kezeli.
   async onSubmit(e) {
     e.preventDefault();
 
@@ -85,6 +98,7 @@ export default class ProfileForm extends BaseCustomElement {
     this.sendRequest(formData);
   }
 
+  // A profil API fele elkuldi a megfelelo create/update kérést.
   async sendRequest(formData) {
     const response = await net.send("/api/profiles", {
       method: METHOD[this.action] || "POST",
@@ -94,6 +108,7 @@ export default class ProfileForm extends BaseCustomElement {
     this.onResponse(response);
   }
 
+  // A szervervalasz alapjan hibat kezel vagy sikeres profil-esemenyt bocsat ki.
   onResponse(response) {
     const performedAction = this.action;
 
@@ -126,16 +141,19 @@ export default class ProfileForm extends BaseCustomElement {
   }
 
   /** Needed to be compatible with <admin-module> */
+  // Az admin-modul sikeres alairasa utan ugyanazt a kerest inditja el, mint a normal submit.
   onSignSuccess(data) {
     this.sendRequest(data.formData);
   }
 
   /** Needed to be compatible with <admin-module> */
+  // Az admin-alairasi hibat felhasznalobarat modon jelzi.
   onSignError() {
     console.error("Unable to send signed data");
     ToastManager.ERROR("Nem sikerült az adatok aláíratása");
   }
 
+  // A teljes profilurlap DOM-jat letrehozza, es az alap eventeket bekoti.
   update() {
     const elements = this._elements;
     const button = elements.button;
@@ -144,6 +162,7 @@ export default class ProfileForm extends BaseCustomElement {
     }
   }
 
+  // Felépiti a mezoket, az alapertelmezett profilnevet es a restore/reset hookokat.
   build() {
     this.setShadowInnerHTML(`
       <form>
@@ -231,6 +250,7 @@ export default class ProfileForm extends BaseCustomElement {
     this._built = true;
   }
 
+  // Kulso restore esemenybol visszatolti a profilurlap mezőit.
   restoreFrom(e) {
     const data = e.detail?.data;
     const form = this.queryShadowSelector("form");
@@ -245,10 +265,12 @@ export default class ProfileForm extends BaseCustomElement {
     }
   }
 
+  // Alaphelyzetbe allitja a teljes formot.
   resetForm() {
     this._elements.form?.reset?.();
   }
 
+  // A sikeres muvelethez illo custom event nevét adja vissza.
   getEventName(action = this.action) {
     switch (action) {
       case "update":
@@ -259,6 +281,7 @@ export default class ProfileForm extends BaseCustomElement {
     }
   }
 
+  // A kuldo gomb feliratat az aktualis modnak megfeleloen szamolja ki.
   updateButtonText() {
     switch (this.action) {
       case "update":

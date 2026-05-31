@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/CommentForm.js
+ * Szerep: Uj komment bekuldese profilhoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 import { isLoggedIn, isAdmin } from "/common/common.js";
 import * as net from "/common/network.js";

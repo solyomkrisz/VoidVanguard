@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/BlockStyle.js
+ * Szerep: Blokkfokozatokhoz es tipusokhoz tartozo szin- es stilussegedek.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Canvas from "/game/Canvas.js";
 
 // prettier-ignore

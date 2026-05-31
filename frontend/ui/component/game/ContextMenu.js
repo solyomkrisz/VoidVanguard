@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/ContextMenu.js
+ * Szerep: Pozicionalt kontextusmenu kontener nyitasi es zarasi logikaval.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import _ from "/ui/component/game/ContextMenuItem.js";
 import * as UI from "/ui/UI.js";
 

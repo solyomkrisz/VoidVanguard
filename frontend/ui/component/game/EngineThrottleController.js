@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/EngineThrottleController.js
+ * Szerep: Fohajtomu teljesitmenyet szabalyozo kezeloelem.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import GameControllerElement from "/ui/component/game/GameControllerElement.js";
 import Game from "/game/Game.js";
 import { dir, el } from "/ui/UI.js";

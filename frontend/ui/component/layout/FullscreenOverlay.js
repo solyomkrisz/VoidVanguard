@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/layout/FullscreenOverlay.js
+ * Szerep: Teljes kepernyos overlay slotolt tartalommal es opcionális bezarogombbal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
@@ -37,6 +43,7 @@ export default class FullscreenOverlay extends BaseCustomElement {
   updateCloseButtonVisibility() {
     const closeButton = this._elements?.closeButton;
     if (!closeButton) return;
+    // A no-close attribútum csak a gombot rejti el; magat az overlayt mas kod tovabbra is kezelheti.
     closeButton.hidden = this.noClose;
   }
 

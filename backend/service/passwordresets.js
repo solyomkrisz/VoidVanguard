@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/service/passwordresets.js
+ * Szerep: Service reteg: uzleti logika, adatmuveletek, tobb komponens osszefuzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import crypto from "crypto";
 import PasswordResets from "../sql/table/PasswordResets.js";
 import * as CustomError from "../common/CustomError.js";

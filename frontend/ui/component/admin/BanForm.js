@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/admin/BanForm.js
+ * Szerep: Felhasznalo tiltasi urlap indokkal es idotartammal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 // lekéri adott user-id attrib alapján a státuszt. ha nincs bannolva ban form megjelenítése, ha bannolva van akkor unban form
 import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";

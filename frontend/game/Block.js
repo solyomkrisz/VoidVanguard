@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Block.js
+ * Szerep: Egyetlen blokk renderelesi, mentesi es collider-allapotat kezelo alaposztaly.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec2 from "/common/vec2.js";
 import WebGL from "/game/WebGL.js";
 import * as MATRIX from "/common/common.js";
@@ -217,10 +223,12 @@ export default class Block {
 
     const savedColliderRotation = Number(blockState.colliderRotation);
     if (Number.isFinite(savedColliderRotation)) {
+      // Ha a mentés már tartalmaz kész collider-forgatást, azt közvetlenül visszaállítjuk.
       block.colliderRotationRad = savedColliderRotation;
     } else {
       const inferredRotation = block._getAnyTextureRotation();
       if (Number.isFinite(inferredRotation) && Math.abs(inferredRotation) > 1e-6) {
+        // Régebbi mentéseknél a collider szögét a textúra forgatásából próbáljuk visszakövetkeztetni.
         const colliderAngle = inferredRotation;
         block.setColliderRotation(colliderAngle);
       }
@@ -328,6 +336,7 @@ export default class Block {
   _ensureUniqueShape() {
     if (this._ownsShape) return;
 
+    // A shape több blokk között meg lehet osztva, ezért forgatás előtt saját példány kell.
     this.shape = Shape.from(this.shape.exportSave());
     this._ownsShape = true;
   }
@@ -335,6 +344,7 @@ export default class Block {
   setColliderRotation(targetRad = 0) {
     if (!Number.isFinite(targetRad)) return this;
 
+    // Csak a különbséget forgatjuk rá, így nem kell minden alkalommal nulláról újraszámolni.
     const delta = targetRad - (this.colliderRotationRad ?? 0);
     if (Math.abs(delta) <= 1e-6) {
       this.colliderRotationRad = targetRad;
@@ -347,6 +357,7 @@ export default class Block {
     const s = Math.sin(delta);
     const vertices = this.shape.vertices;
 
+    // A collider csúcspontjait helyben forgatjuk el, ettől változik ténylegesen a találati alakzat.
     for (let i = 0; i < vertices.length; i += 2) {
       const x = vertices[i];
       const y = vertices[i + 1];

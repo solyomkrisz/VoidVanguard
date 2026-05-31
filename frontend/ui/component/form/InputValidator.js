@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/form/InputValidator.js
+ * Szerep: Ujrafelhasznalhato input-ellenorzo custom element szabalylistaval es hiba-visszajelzessel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { debounce } from "/common/common.js";
 
 export default class InputValidator extends HTMLElement {
@@ -9,6 +15,7 @@ export default class InputValidator extends HTMLElement {
     for (const validator of validators) {
       const result = validator.onInput?.();
 
+      // Az elso hibanal megallunk, mert onnantol mar ugysem ervenyes az egesz form.
       if (!result) {
         return result;
       }
@@ -70,6 +77,7 @@ export default class InputValidator extends HTMLElement {
 
       this._elements.input = input;
 
+      // Debounce kell, hogy gepeles kozben ne fusson vegig folyamatosan az osszes szabaly.
       input.addEventListener("input", debounce(this.onInput, 100));
     }
 
@@ -83,11 +91,13 @@ export default class InputValidator extends HTMLElement {
 
   handleNotification(valid = true) {
     if (this.disableOnInvalid) {
+      // Ilyenkor direktben egy masik DOM-elemet tiltunk le vagy engedelyezunk vissza.
       const toDisable = document.querySelector(this.disableOnInvalid);
       if (toDisable) {
         toDisable.disabled = !valid;
       }
     } else {
+      // Ha nincs direkt target, esemenyt dobunk, amit a kulso komponens kezelhet le.
       this.emitEvent(valid ? "submit-enable" : "submit-disable");
     }
   }
@@ -105,6 +115,7 @@ export default class InputValidator extends HTMLElement {
         continue;
       }
 
+      // Mindig az elso elbukott szabaly uzenetet mutatjuk, hogy ne terheljuk tul a felhasznalot.
       this.handleNotification(false);
       this.showMessage(rule.message);
 

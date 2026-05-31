@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/service/profiles.js
+ * Szerep: Service reteg: uzleti logika, adatmuveletek, tobb komponens osszefuzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as CustomError from "../common/CustomError.js";
 import Permission from "../common/Permission.js";
 import Profiles from "../sql/table/Profiles.js";
@@ -16,10 +22,12 @@ const DEFAULT_AVATAR_PATHS = Object.freeze([
 ]);
 const DEFAULT_AVATAR_PATH = DEFAULT_AVATAR_PATHS[0];
 
+// Ellenorzi, hogy a kapott avatar-utvonal a whitelisten levo alapkepek egyike-e.
 function isDefaultAvatarPath(path) {
   return typeof path === "string" && DEFAULT_AVATAR_PATHS.includes(path);
 }
 
+// Normalizalja az avatar-valasztast, es tiltja a nem engedelyezett fajlutakat.
 function normalizeAvatarSelection(body, { defaultOnMissing = false } = {}) {
   const normalized = { ...body };
 
@@ -34,6 +42,7 @@ function normalizeAvatarSelection(body, { defaultOnMissing = false } = {}) {
   return normalized;
 }
 
+// Letrehoz vagy - ha mar letezik - frissit egy profilt, majd a lathato profiladatokat adja vissza.
 export async function createProfile({ userId, role, body }) {
   body = normalizeAvatarSelection(body, { defaultOnMissing: true });
 
@@ -81,6 +90,7 @@ export async function createProfile({ userId, role, body }) {
   return profile;
 }
 
+// Admin jellegu, teljes profilrekord-lekeres szures nelkul.
 export async function getFullProfile({ userId }) {
   const row = await Profiles._select(userId);
 
@@ -91,6 +101,7 @@ export async function getFullProfile({ userId }) {
   return row;
 }
 
+// Meglevo profilt frissit, csak az engedelyezett es tenylegesen valtozott mezokkel.
 export async function updateProfile({ userId, role, body }) {
   body = normalizeAvatarSelection(body);
 
@@ -122,6 +133,7 @@ export async function updateProfile({ userId, role, body }) {
   return result;
 }
 
+// Torli a felhasznalo profiljat.
 export async function deleteProfile({ userId }) {
   if (!(await Profiles.delete(userId))) {
     throw CustomError.PROFILE_NOT_FOUND;
@@ -130,6 +142,7 @@ export async function deleteProfile({ userId }) {
   return null;
 }
 
+// Profilkereso valaszt ad a felhasznalo- es profiladatok osszefuzesebol.
 export async function searchFor({ query, page = 1, limit = 20 }) {
   const safePage = Number.isFinite(Number(page))
     ? Math.max(1, Number(page))
@@ -163,6 +176,7 @@ export async function searchFor({ query, page = 1, limit = 20 }) {
   };
 }
 
+// A requester jogosultsaga es kapcsolata alapjan teljes vagy szurt profilnezetet epit.
 export async function getProfile({ userId, requesterId, role = -1 }) {
   const user = await Users.payload(userId);
   if (!user) {

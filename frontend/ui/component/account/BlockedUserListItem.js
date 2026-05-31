@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/account/BlockedUserListItem.js
+ * Szerep: Egyetlen tiltott felhasznalo sora a blokkolt listaban.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { on, off } from "/common/eventhub.js";
 import { isLoggedIn } from "/common/common.js";
 import { el } from "/ui/UI.js";

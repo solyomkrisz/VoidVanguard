@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/texture/Texture.js
+ * Szerep: Egyetlen texturahoz tartozo frame- es meretmetadata taroloja.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export class TextureID {
   static HEART = 0;
   static BLOCK = 1;

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/ZoomController.js
+ * Szerep: Jateknezet-valto gomb cooldownnal es Game-peldany ellenorzessel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import GameControllerElement from "/ui/component/game/GameControllerElement.js";
 import Game from "/game/Game.js";
 import { dir } from "/ui/UI.js";
@@ -5,6 +11,7 @@ import { path } from "/common/common.js";
 
 export default class ZoomController extends GameControllerElement {
   setGame(value) {
+    // Korán hibazunk, ha rossz tipusu objektumot kap a komponens forraskent.
     if (!(value instanceof Game)) {
       throw new Error(
         "ENGINETHROTTLECONTROLLER-setGame: game must be an instance of Game!",
@@ -31,6 +38,7 @@ export default class ZoomController extends GameControllerElement {
   onPointerUp(e) {
     const now = window.performance.now();
 
+    // A kis cooldown megakadalyozza a veletlen dupla erintesbol jovo gyors nezetcseret.
     if (now - this._lastClickTime < this._cooldownMs) {
       return;
     }

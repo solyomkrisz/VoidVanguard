@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/CollisionCollection.js
+ * Szerep: Utkozesek gyujtemenye ujrafelhasznalhato elemekkel es iteracioval.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class CollisionCollection {
   constructor(game) {
     this.game = game;

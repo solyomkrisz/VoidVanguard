@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/FriendListFull.js
+ * Szerep: Teljes ismeroslista reszletes nezetben.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { on, off } from "/common/eventhub.js";
 import { isLoggedIn, isUserSet } from "/common/common.js";

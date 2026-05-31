@@ -1,3 +1,10 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/jwt.js
+ * Szerep: JWT dekodolas es lejaratellenorzes alkalmazas szinten.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
+// A JWT payload reszet biztonsagosan kicsomagolja JavaScript objektumma.
 export function decode(token) {
   if (!token) return null;
 
@@ -25,6 +32,7 @@ export function decode(token) {
   }
 }
 
+// Megmondja, hogy a token mar lejart-e, vagy a buffer miatt mindjart le fog-e jarni.
 export function isExpired(token, bufferSeconds = 0) {
   const payload = decode(token);
 

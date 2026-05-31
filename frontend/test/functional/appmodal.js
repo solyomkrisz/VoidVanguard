@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/test/functional/appmodal.js
+ * Szerep: Frontend teszt: kliens oldali funkciok es feluleti viselkedes ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { createTestSuite } from "/common/functionaltest.js";
 import AppModal from "/ui/component/feedback/AppModal.js"; // Import your modal component
 

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/BlockActionButton.js
+ * Szerep: Tiltasi statusztol fuggo viselkedesu profil akciogomb.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import ActionButton from "/ui/component/button/ActionButton.js";
 
 export default class BlockActionButton extends ActionButton {
@@ -29,6 +35,7 @@ export default class BlockActionButton extends ActionButton {
   }
 
   getBehaviour() {
+    // A tiltasi allapot mondja meg, hogy uj tiltast kerunk vagy a meglévot oldjuk fel.
     switch (this.status) {
       case "you-blocked":
       case "both-blocked":

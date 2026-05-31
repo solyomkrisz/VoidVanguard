@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/common/Password.js
+ * Szerep: Kozos backend segedkod: ujrahasznalhato osztalyok, hibakezeles, jogosultsag.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import bcrypt from "bcrypt";
 
 class Password {

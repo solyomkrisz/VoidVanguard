@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/decorative/DashedBorderBox.js
+ * Szerep: Szaggatott keretes dekoracios wrapper komponens.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";

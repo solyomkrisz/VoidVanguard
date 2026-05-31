@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/sql/Column.js
+ * Szerep: Egyetlen adatbazisoszlop szerepkoronkénti jogosultsagainak tarolasa es ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Role from "../common/Role.js";
 
 class Column {
@@ -19,6 +25,7 @@ class Column {
       const permissions = new Set();
 
       for (const [_role, _permissions] of this.permissions.entries()) {
+        // A magasabb szerepkör megkapja az alacsonyabb szerepkörök jogait is.
         if (role >= _role) {
           _permissions.forEach((p) => permissions.add(p));
         }
@@ -28,6 +35,7 @@ class Column {
     }
 
     if (this.permissions.has(role)) {
+      // Öröklés nélkül csak a pontosan ehhez a szerepkörhöz rendelt jogot nézzük.
       return this.permissions.get(role).has(permission);
     }
 

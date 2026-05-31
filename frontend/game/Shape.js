@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Shape.js
+ * Szerep: Sokszog-alakzat csucsainak, osszevonasi modjainak es fizikai alapadatainak tarolasa.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { getMinMaxXY } from "/common/common.js";
 import * as vec from "/common/vec.js";
 import * as vec2 from "/common/vec2.js";
@@ -90,6 +96,7 @@ export default class Shape {
 
     let A = 0;
 
+    // Az alakzatot háromszögekre bontva gyűjtjük az előjeles területet és a súlypontot.
     for (let i = 0; i < n; i++) {
       const x0i = i * 2;
       const x1i = ((i + 1) % n) * 2;
@@ -106,11 +113,13 @@ export default class Shape {
       target[1] += (y0 + y1) * det;
     }
 
+    // Ha a terület gyakorlatilag nulla, akkor ez a sokszög fizikailag degenerált.
     if (Math.abs(A) < 1e-6) {
       vec2.reset(target);
       return 0;
     }
 
+    // A súlypontot az összegyűjtött területarányos értékekből kapjuk meg.
     vec2.scale(target, target, 1 / (6 * A));
 
     const cx = target[0];
@@ -118,6 +127,7 @@ export default class Shape {
 
     let I = 0;
 
+    // Most már a súlyponthoz képest számolunk, így a tehetetlenségi nyomaték a test saját tengelyére vonatkozik.
     for (let i = 0; i < n; i++) {
       const x0i = i * 2;
       const x1i = ((i + 1) % n) * 2;

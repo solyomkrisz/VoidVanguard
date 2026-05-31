@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/controller/sessions.js
+ * Szerep: Bejelentkezes es minden session lezarasanak HTTP-kezelese, refresh cookie beallitassal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as service from "../service/auth.js";
 import {
   createResponse,
@@ -5,6 +11,7 @@ import {
   accessTokenLifetimeMin,
 } from "../common/common.js";
 
+// A login vegpont HTTP-szintje: kerest kibont, service-t hiv, cookie-t allit, valaszt kuld.
 export async function login(request, response) {
   try {
     const ip = request.ip ?? null;
@@ -17,6 +24,7 @@ export async function login(request, response) {
       userAgent,
     });
 
+    // A refresh token HTTP-only cookieba megy, hogy a bongeszo kuldhesse, de a JS ne olvashassa ki.
     response.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       sameSite: "Strict",
@@ -47,8 +55,10 @@ export async function login(request, response) {
   }
 }
 
+// Minden session bezarasahoz torli a cookie-t es az adatbazisban levo refresh rekordokat is.
 export async function destroyAllSessions(request, response) {
   try {
+    // A jelenlegi bongeszos session cookiejat is azonnal toroljuk, ne csak az adatbazisrekordokat.
     service.logout(response);
 
     const userId = request?.targetUser?.id;

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/PauseMenu.js
+ * Szerep: Jatek kozbeni szunetmenu.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { dir } from "/ui/UI.js";
 import { path, isLoggedIn } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
@@ -9,14 +15,17 @@ import "/ui/component/game/SaveMenu.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 
 export default class PauseMenu extends BaseCustomElement {
+  // A menuhoz tartozo aktualis game peldanyt tarolja.
   set game(value) {
     this._game = value;
   }
 
+  // Visszaadja a pause menuhoz rendelt game peldanyt.
   get game() {
     return this._game;
   }
 
+  // Elokesziti az alap shadow DOM-ot es a bound event handlereket.
   constructor() {
     super([
       path.join(dir, "global.css"),
@@ -36,6 +45,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.onGameVolumeChange = this.onGameVolumeChange.bind(this);
   }
 
+  // A folytatas gomb esemenyet lekezeli, majd tovabbszol a tobbi komponensnek is.
   onResume(e) {
     e.stopPropagation();
 
@@ -47,6 +57,7 @@ export default class PauseMenu extends BaseCustomElement {
     );
   }
 
+  // A hangero slider valtozasat atadja a jatek audio retegenek.
   onGameVolumeChange(e) {
     e.stopPropagation();
 
@@ -56,6 +67,7 @@ export default class PauseMenu extends BaseCustomElement {
     this.game.setVolume(volume);
   }
 
+  // Kilepeskor lebontja a jatekot es exit-esemenyt bocsat ki.
   onExit(e) {
     e.stopPropagation();
 
@@ -67,11 +79,13 @@ export default class PauseMenu extends BaseCustomElement {
     );
   }
 
+  // Nezetvaltaskor jelenleg csak beolvassa az aktualis drilldown-nezetet.
   onViewChange(e) {
     const currentView = e?.detail?.currentView;
     if (!currentView) return;
   }
 
+  // A save-formtol kapott adatot atadja a game mentesi folyamatnak.
   async onSaveRequest(e) {
     const formData = e?.detail?.formData;
     if (!formData) {
@@ -88,16 +102,19 @@ export default class PauseMenu extends BaseCustomElement {
     e?.detail?.onDone?.(success);
   }
 
+  // A csatlakozo save-formot feltolti a mar betoltott mentes adataival.
   onSaveFormConnect(e) {
     if (!e?.detail?.form) return;
 
     e.detail.form.from(this.game.loadedSave);
   }
 
+  // DOM-ba keruleskor egyszeri buildet ker.
   connectedCallback() {
     this.build();
   }
 
+  // Felépiti a pause menu drilldown szerkezetet es hozzakoti a sajat esemenykezeloket.
   build() {
     if (this._built) return;
 
@@ -127,14 +144,17 @@ export default class PauseMenu extends BaseCustomElement {
     this._built = true;
   }
 
+  // Eltavolitja a komponenst a DOM-bol.
   destroy() {
     this.remove();
   }
 
+  // Lathatova teszi a menu host elemet.
   show() {
     this.hidden = false;
   }
 
+  // Elrejti a menu host elemet.
   hide() {
     this.hidden = true;
   }

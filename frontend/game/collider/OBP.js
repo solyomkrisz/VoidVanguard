@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/collider/OBP.js
+ * Szerep: Forgathato sokszog-collider vilagkoordinatas csucsokkal es SAT-vetitesekkel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Collider from "/game/Collider.js";
 import * as vec from "/common/vec.js";
 import * as vec2 from "/common/vec2.js";
@@ -58,7 +64,7 @@ export default class OBP extends Collider {
 
     const _b = this.entity.game.buffer;
 
-    // Translate and rotate
+    // A lokális csúcsokból itt lesznek világkoordinátás csúcsok: előbb forgatás, aztán eltolás.
     for (let i = 0; i < this.vertices.length; i += 2) {
       vec2.set(_b.vec2_1, this.vertices[i], this.vertices[i + 1]);
       vec2.rotate(_b.vec2_1, this.entity.rotation);
@@ -72,12 +78,13 @@ export default class OBP extends Collider {
       this.center[1] += y;
     }
 
+    // A középpont egyszerűen a csúcsok átlaga, ez kell több ütközési számításhoz is.
     this.center[0] /= this.worldVertices.length / 2;
     this.center[1] /= this.worldVertices.length / 2;
 
     vec.reset(this.axes);
 
-    // Make axes
+    // SAT-hez az élekre merőleges normálokból készítünk vetítési tengelyeket.
     for (let i = 0; i < this.worldVertices.length / 2; i++) {
       const x0i = i * 2;
       const x1i = ((i + 1) % (this.worldVertices.length / 2)) * 2;
@@ -107,6 +114,7 @@ export default class OBP extends Collider {
     let min = Infinity;
     let max = -Infinity;
 
+    // Minden csúcsot rávetítünk a tengelyre, és eltároljuk a legkisebb-legnagyobb értéket.
     for (let i = 0; i < vertices.length; i += 2) {
       const x = vertices[i];
       const y = vertices[i + 1];

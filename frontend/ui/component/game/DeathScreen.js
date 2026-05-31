@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/DeathScreen.js
+ * Szerep: Halal utani eredmeny- es ujrakezdesi kepernyo.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";

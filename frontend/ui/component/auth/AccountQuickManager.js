@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/auth/AccountQuickManager.js
+ * Szerep: Belepesi es fiokallapot muveleteket egy helyre gyujto gyorspanel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isLoggedIn } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import * as net from "/common/network.js";

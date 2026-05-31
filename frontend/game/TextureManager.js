@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/TextureManager.js
+ * Szerep: Texturak, sprite-ok es UV-koordinatak betoltese es kiosztasa.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Sprite from "/game/Sprite.js";
 import WebGL from "/game/WebGL.js";
 import * as MATRIX from "/common/common.js";

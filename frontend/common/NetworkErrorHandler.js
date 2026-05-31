@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/NetworkErrorHandler.js
+ * Szerep: API valaszhibak feldolgozasa forditott uzenetekkel es toast visszajelzessel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import hu from "/translation/hu.js";
 import ToastManager from "/ui/component/feedback/ToastManager.js";
 
@@ -5,6 +11,7 @@ const isDev = true;
 
 const translations = { hu };
 
+// Fejlesztoi modban reszletesen kiirja a hibas valasz tartalmat a konzoIra.
 function logError(response, message, context) {
   console.groupCollapsed(
     `%c[NetworkError] ${context || "Unknown"}`,
@@ -26,6 +33,7 @@ function logError(response, message, context) {
 }
 
 export default class NetworkErrorHandler {
+  // A backend hibanevet leforditja felhasznalobarat uzenetre.
   static translate(errorDefinition) {
     const defaultMessage = translations.hu.none;
 
@@ -38,6 +46,7 @@ export default class NetworkErrorHandler {
     };
   }
 
+  // Egyseges szabalyok alapjan eldonti, hogy hibasnak szamit-e a valasz, majd opcionálisan toastot mutat.
   static handle(
     response,
     { strict = false, failureFn = null, showToast = true, context = null } = {},

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/validator/score.js
+ * Szerep: Validator reteg: bemeneti adatok szabalyellenorzese a hibak megelozesere.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export const GET = {
   limit: {
     in: ["query"],

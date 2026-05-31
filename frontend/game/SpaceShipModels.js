@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/SpaceShipModels.js
+ * Szerep: Elore definialt hajomodellek gyujtemenye.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Shape from "/game/Shape.js";
 import Block from "/game/Block.js";
 import { SpriteID } from "/game/texture/Texture.js";

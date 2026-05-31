@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/account/AccountDeleteButton.js
+ * Szerep: Fioktorlest indito es megerosito gomb.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isLoggedIn, logout } from "/common/common.js";
 import * as net from "/common/network.js";
 import AppModal from "/ui/component/feedback/AppModal.js";

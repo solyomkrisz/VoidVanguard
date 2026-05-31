@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/common.js
+ * Szerep: Altalanos frontend helper gyujtemeny auth, form, random es matek feladatokhoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as net from "/common/network.js";
 import { isExpired, decode } from "/common/jwt.js";
 
@@ -10,15 +16,18 @@ export const DATA_STRUCTURE =
 
 export const EPSILON = 0.01;
 
+// Ket ertek kozott linearis atmenetet szamol az alpha arany alapjan.
 export function LERP(a, b, alpha) {
   return a + (b - a) * alpha;
 }
 
+// Ket szog kozti legrövidebb kulonbseget adja vissza radiánban.
 export function getAngleDiff(a, b) {
   const diff = a - b;
   return Math.atan2(Math.sin(diff), Math.cos(diff));
 }
 
+// Vegigmegy az objektumokon, es kiadja a befoglalo negyszog minimum/maximum koordinatait.
 export function getMinMaxXY(
   target,
   objects,
@@ -45,6 +54,7 @@ export function getMinMaxXY(
   return target;
 }
 
+// Megnezi, hogy az i-edik elem racsszomszedja-e a kapott koordinatanak.
 export function isAdjacent(objects, i, x, y) {
   const [ox, oy] = objects[i].localPosition;
   const dx = Math.abs(x - ox);
@@ -52,6 +62,7 @@ export function isAdjacent(objects, i, x, y) {
   return dx + dy === 1;
 }
 
+// Seedelt veletlengeneratort ad, hogy ugyanazzal a seed-del ugyanaz a sorozat jojjon ki.
 export function mulberry32(seed) {
   return {
     random: function () {
@@ -63,18 +74,22 @@ export function mulberry32(seed) {
   };
 }
 
+// A zajos atmeneteket kisimito gorbe, gyakori proceduralis helper.
 export function smoothstep(t) {
   return t * t * (3 - 2 * t);
 }
 
+// Egy szamot ket hatar koze szorit.
 export function clamp(n, min = 0, max = 1) {
   return Math.min(max, Math.max(min, n));
 }
 
+// Egyszeru korvizsgalat: beleesik-e a pont a korbe.
 export function inCircle(x, y, u, v, r) {
   return (x - u) * (x - u) + (y - v) * (y - v) <= r * r;
 }
 
+// Urlapmezoket olvas ki sima objektumba, hogy konnyebb legyen API-hoz tovabbadni.
 export function extractForm(form, includeEmpty = false) {
   if (!(form instanceof HTMLFormElement)) {
     return console.error("Received a non-form element");
@@ -94,6 +109,7 @@ export const path = Object.freeze({
 });
 
 //#region login stuff start
+// A mar betoltott globalis user-allapot alapjan mondja meg, be vagyunk-e lepve.
 export function isLoggedIn() {
   return Boolean(window.VoidVanguard?.user?.id);
 
@@ -103,10 +119,12 @@ export function isLoggedIn() {
   // return token && !isExpired(token, 10);
 }
 
+// Azt ellenorzi, hogy a user objektum egyaltalan be lett-e mar allitva.
 export function isUserSet() {
   return Boolean(window.VoidVanguard?.user);
 }
 
+// A szervertol kerdez ra, ervenyes-e a session, nem csak a helyi allapotot nezi.
 export async function isLoggedInAsync() {
   const response = await net.send("/api/sessions", { method: "POST" });
 
@@ -117,6 +135,7 @@ export async function isLoggedInAsync() {
   return false;
 }
 
+// Az admin-jogot a belepett user szerepkore alapjan szamolja ki.
 export function isAdmin() {
   return isLoggedIn() && window.VoidVanguard.user?.role >= 1;
 }
@@ -139,6 +158,7 @@ window.addEventListener("storage", (event) => {
   }
 });
 
+// Beallitja a globalis user-allapotot, es login esemenyt kuld a tobbi UI-elemnek.
 export async function setUser(userdata, { origin = "unknown" } = {}) {
   if (!window?.VoidVanguard) {
     window.VoidVanguard = {};
@@ -164,6 +184,7 @@ export async function setUser(userdata, { origin = "unknown" } = {}) {
   );
 }
 
+// Friss oldalbetolteskor megprobalja a sessionbol visszatolteni a felhasznalot.
 export async function autologin() {
   try {
     const response = await net.send("/api/sessions", { method: "POST" });
@@ -178,6 +199,7 @@ export async function autologin() {
   return false;
 }
 
+// Oldalindulaskor opcionisan kenyszeritheti, hogy csak belepett user maradhasson ezen az oldalon.
 export async function onDOMContentLoaded({ requireAuth = false } = {}) {
   const ok = await autologin();
   if (requireAuth && !ok) {
@@ -185,6 +207,7 @@ export async function onDOMContentLoaded({ requireAuth = false } = {}) {
   }
 }
 
+// Kijelentkeztet: szerveroldalon torli a refresh sessiont, kliensoldalon pedig takarit.
 export async function logout() {
   const token = localStorage.getItem("access_token");
 
@@ -234,6 +257,7 @@ export async function logout() {
   return true;
 }
 
+// Kozponti logout esemenyt kuld, hogy minden komponens egyszerre reagalhasson.
 export function dispatchLogoutEvent() {
   let detail = { oldId: null, newId: null };
 
@@ -251,6 +275,7 @@ export function dispatchLogoutEvent() {
 }
 //#region login stuff end
 
+// Olyan wrapper-fuggvenyt keszit, ami csak akkor futtat, ha rovid ideig nem jon ujabb hivas.
 export function debounce(fn, delay) {
   let timerId;
 
@@ -263,14 +288,17 @@ export function debounce(fn, delay) {
   };
 }
 
+// HTML attribute neveket alakit at JavaScript-barat camelCase alakra.
 export function toCamelCase(str) {
   return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
 }
 
+// Az eldonti, hogy az utvonal egy tombindexre mutat-e vagy sima property nev.
 function isIndex(key) {
   return String(Number(key)) === key;
 }
 
+// Ponttal elvalasztott utvonal alapjan keres le egy melyen beagyazott propertyt.
 export function lookupProperty(root, path = "") {
   let current = root;
   if (current == null) return current;
@@ -288,6 +316,7 @@ export function lookupProperty(root, path = "") {
   return current;
 }
 
+// Ket objektumbol ugyanazt a mely propertyt veszi ki, majd pontosan osszehasonlitja.
 export function isEqual(obja, objb, path = "") {
   const vala = lookupProperty(obja, path);
   const valb = lookupProperty(objb, path);
@@ -295,6 +324,7 @@ export function isEqual(obja, objb, path = "") {
   return Object.is(vala, valb);
 }
 
+// Kulonbozo tipusu form-mezokre egységesen ir vissza egy erteket.
 export function setFieldValue(field, value) {
   if (field instanceof RadioNodeList) {
     Array.from(field).forEach((input) => {
@@ -318,6 +348,7 @@ export function setFieldValue(field, value) {
   }
 }
 
+// Unix ido/idobelyeg alapjan olvashato datum-idot keszit.
 export function formatDate(ts) {
   const date = new Date(ts);
 
@@ -333,11 +364,13 @@ export function formatDate(ts) {
   );
 }
 
+// A bongeszo localStorage-abol Map-formara allitja vissza a helyi menteseket.
 export function getLocalSaves() {
   const parsed = JSON.parse(window.localStorage.getItem("localSaves"));
   return new Map(Array.isArray(parsed) ? parsed : []);
 }
 
+// Azt ellenorzi, hogy az elem teljes egeszeben latszik-e az ablakon belul.
 export function isInViewport(element) {
   if (!element) return false;
   const rect = element.getBoundingClientRect();
@@ -345,9 +378,11 @@ export function isInViewport(element) {
 }
 
 //#region for testing
+// Egyszeru teszteredmeny-gyujto objektum, amit a regi bongeszos tesztek hasznalnak.
 export function result() {
   this.title = "Untitled";
 
+  // Lenullazza a szamlalokat, hogy uj tesztblokkot lehessen inditani.
   this.init = function () {
     this.features = 0;
     this.tests = 0;
@@ -357,6 +392,7 @@ export function result() {
     return this;
   };
 
+  // Konzolra irja a tesztosszefoglalot rendezett, olvashato formaban.
   this.see = function () {
     const maxLabelLength = Math.max(
       "Features tested".length,

@@ -1,9 +1,16 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/validator/UsernameInputValidator.js
+ * Szerep: Felhasznalonev mezo kliensoldali szabalyellenorzese es normalizalasa.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import InputValidator from "/ui/component/form/InputValidator.js";
 
 export default class UsernameInputValidator extends InputValidator {
   constructor() {
     super();
 
+    // Minden szabaly ugyanazzal a trimelt ertekkel dolgozik, hogy a veletlen space-ek ne okozzanak felreerteseket.
     const normalize = (v) => (v ?? "").trim();
 
     this.addRule({

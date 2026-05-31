@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Thruster.js
+ * Szerep: Hajtomu blokk toloero- es iranyszamitassal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Block from "/game/Block.js";
 import Shape from "/game/Shape.js";
 import * as vec from "/common/vec.js";

@@ -1,7 +1,14 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/validator/user.js
+ * Szerep: Felhasznalo-regisztracios es frissitesi mezok ellenorzese, plusz UUID-alapu route validalas.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isValidUUIDv4 } from "../common/common.js";
 
 export function GET(request, response, next) {
   const id = request?.params?.id;
+  // A controller kesobb ezt az egyszeru flaget nezi, nem itt dobunk hibát.
   request.valid = isValidUUIDv4(id);
   next();
 }
@@ -64,6 +71,7 @@ export const PATCH = {
   username: {
     in: ["body"],
     customSanitizer: {
+      // Az ures stringet eltuntetjuk, hogy PATCH-nel ne akarjon ures ertekkel felulirni.
       options: (value) => (value === "" ? undefined : value),
     },
     optional: true,
@@ -110,6 +118,7 @@ export const PATCH = {
     },
     custom: {
       options: (value, { req }) => {
+        // PATCH-nel a ket jelszomezonek parban kell megjelennie es egyeznie.
         if (
           (value && !req.body?.passwordConfirm) ||
           value !== req.body?.passwordConfirm
@@ -125,6 +134,7 @@ export const PATCH = {
     optional: { options: { nullable: true } },
     custom: {
       options: (value, { req }) => {
+        // Ugyanezt az ellenorzest a masik iranybol is megtesszuk, hogy egyik mezo se mehessen at egyedul.
         if ((value && !req.body?.password) || value !== req.body?.password) {
           throw new Error("A jelszavak nem egyeznek meg");
         }

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/validator/DisplayNameInputValidator.js
+ * Szerep: Megjelenitesi nev mezo kliensoldali ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import InputValidator from "/ui/component/form/InputValidator.js";
 
 export default class DisplayNameInputValidator extends InputValidator {

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/feedback/ToastManager.js
+ * Szerep: Toast ertesitesek kereset, idoziteset es ujrahasznositasat kezelo komponens.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { element } from "/ui/UI.js";
 import { on, off } from "/common/eventhub.js";
 
@@ -15,6 +21,7 @@ export default class ToastManager extends HTMLElement {
   }
 
   static #emit({ message, onDone, delay = 0, duration = 3000, variant = "info" }) {
+    // A statikus helper egy kozos toast-request esemenyt kuld, hogy ne kelljen konkret peldanyt keresni.
     document.dispatchEvent(
       new CustomEvent("toast-request", {
         detail: {
@@ -85,6 +92,7 @@ export default class ToastManager extends HTMLElement {
     if (this.toasts.length > 10) this.toasts.length = 10;
 
     setTimeout(() => {
+      // A korabban hasznalt toast DOM-elemeket ujrahasznositjuk, hogy sok uzenetnel se nojon a DOM feleslegesen.
       const toast = this.toasts.pop() || this.create();
       const normalizedVariant = this.normalizeVariant(variant);
 

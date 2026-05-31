@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/LocalSaveList.js
+ * Szerep: Helyi mentesek listazasa es megjelenitese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import "/ui/component/game/SaveListSlot.js";
 import { formatDate } from "/common/common.js";

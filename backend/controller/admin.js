@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/controller/admin.js
+ * Szerep: Admin tiltasi vegpontok HTTP-kezelese, beleertve a datum-normalizalast is.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as service from "../service/admin.js";
 import {
   createResponse,
@@ -59,6 +65,7 @@ export async function banUser(request, response) {
     if (request.body.expiresAt) {
       const normalized = String(request.body.expiresAt).trim().replace("T", " ");
 
+      // A datetime-local lehet masodperc nelkuli vagy masodperces is, ezt itt ovatosan normalizaljuk.
       if (normalized.length === 16) {
         expiresAt = `${normalized}:00`;
       } else if (normalized.length >= 19) {

@@ -1,4 +1,10 @@
 /**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/XPBar.js
+ * Szerep: XP-sav megjeleniteset es frissiteset kezelo jatekbeli UI-elem.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
+/**
  * XPBar — a centered HUD bar placed just below the DebugPanel.
  * Matches the DebugPanel's dark-navy, monospace aesthetic.
  *

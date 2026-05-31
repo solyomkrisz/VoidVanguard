@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/texture/StarGenerator.js
+ * Szerep: Proceduralis csillag texturak rajzolo generatora.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { clamp, inCircle } from "/common/common.js";
 
 export default class StarGenerator {

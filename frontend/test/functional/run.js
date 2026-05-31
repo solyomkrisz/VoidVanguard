@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/test/functional/run.js
+ * Szerep: Frontend teszt: kliens oldali funkciok es feluleti viselkedes ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import {
   run as run1,
   results as results1,

@@ -1,4 +1,11 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/core/BaseCustomElement.js
+ * Szerep: Shadow DOM-os alapkomponens kozos stiluslap-cache-sel es segedfuggvenyekkel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class BaseCustomElement extends HTMLElement {
+  // A stiluslapokat globalisan cache-eljük, hogy ugyanazt a CSS-t ne kelljen minden elemnel ujra letolteni.
   static STYLE_CACHE = new Map();
   static PENDING_FETCHES = new Map();
 
@@ -12,7 +19,7 @@ export default class BaseCustomElement extends HTMLElement {
     this._stylesLoaded = Promise.all(
       paths.map((path) => this._loadStyle(path)),
     ).then((sheets) => {
-      // Apply styles in the correct order after all are loaded
+      // Csak akkor rakjuk fel a lapokat, amikor mind megjott, igy a sorrend stabil marad.
       // if (!this.isConnected) return;
       if (!this.shadowRoot) return;
 
@@ -81,6 +88,7 @@ export default class BaseCustomElement extends HTMLElement {
       // console.log(
       //   `BASECUSTOMELEMENT-constructor: Found a pending fetch for: ${path}`,
       // );
+      // Ha mar folyamatban van ugyanennek a CSS-nek a betoltese, ugyanazt a Promise-t hasznaljuk.
       return await BaseCustomElement.PENDING_FETCHES.get(path);
     }
 

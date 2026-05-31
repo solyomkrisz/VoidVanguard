@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/button/ActionButton.js
+ * Szerep: Altalanos felhasznalohoz kotott akciogomb API-statuszlekeressel es allapotszinkronnal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isLoggedIn } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import * as net from "/common/network.js";
@@ -51,6 +57,7 @@ export default class FriendshipActionButton extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "user-id" && oldValue !== newValue) {
+      // Ha megvaltozik, melyik felhasznalora mutat a gomb, a lathatosag es a statusz is ujraszamolodik.
       this.updateVisibility();
       this.updateStatus();
     }
@@ -145,6 +152,7 @@ export default class FriendshipActionButton extends HTMLElement {
     }
 
     if (!this.controlled) {
+      // Nem controlled modban a gomb maga kerdezi le a friss szerver oldali allapotot.
       await this.updateStatus();
     }
 
@@ -168,6 +176,7 @@ export default class FriendshipActionButton extends HTMLElement {
 
     const response = await net.send(this.getStatusEndpoint());
 
+    // Mire a valasz visszaer, lehet hogy a gomb mar mas user-id-re mutat; ezt itt kiszurjuk.
     if (currentUserId !== this.userId) return;
 
     const { success, result } = response;

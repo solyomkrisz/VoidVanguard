@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/misc/LeaderboardItem.js
+ * Szerep: Egyetlen leaderboard sor kirajzolasa helyezessel, eremmel es profil linkkel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { el } from "/ui/UI.js";
 
 const MEDALS = ["\uD83E\uDD47", "\uD83E\uDD48", "\uD83E\uDD49"];
@@ -41,6 +47,7 @@ export default class LeaderboardItem extends HTMLElement {
     const rank = this.data?.rank;
     const medal = rank >= 1 && rank <= 3 ? MEDALS[rank - 1] : null;
 
+    // Az elso harom helyet kulon eremmel emeljuk ki, a tobbi csak sorszammal jelenik meg.
     if (medal) {
       this._elements.rank.innerHTML =
         `<span class="lb-medal">${medal}</span><span class="lb-rank-num">#${rank}</span>`;

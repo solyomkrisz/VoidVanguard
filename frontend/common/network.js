@@ -1,11 +1,19 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/network.js
+ * Szerep: Kozos fetch helper tokenfrissitessel, GET-keres deduplikacioval es hibaturo valaszkezelessel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isExpired, decode } from "/common/jwt.js";
 import { logout } from "/common/common.js";
 
 const pendingRequests = new Map();
 const getReqKey = ({ method }, url) => `${method}:${url}`;
 
+// Egyszerre csak egy tokenfrissítés fusson, különben több kérés egymást taposva írná felül a tokent.
 let refreshPromise = null;
 
+// Szükség esetén új access tokent kér, de közben közös promise-szal összefogja a párhuzamos hívásokat.
 export function refreshAccessToken() {
   console.log("Refreshing access token...");
 
@@ -18,6 +26,7 @@ export function refreshAccessToken() {
     try {
       const token = localStorage.getItem("access_token");
 
+      // 10 másodperces ráhagyással ellenőrzünk, hogy a kérés közben se járjon le a token.
       if (token && !isExpired(token, 10)) {
         console.log("Token is not expired, refresh aborted...");
         return { success: true, refreshed: false };
@@ -66,6 +75,7 @@ export function refreshAccessToken() {
       return { success: false };
     }
   })().finally(() => {
+    // A frissítés végén felszabadítjuk a zárat, így a következő lejárásnál új kérés indulhat.
     refreshPromise = null;
   });
 
@@ -74,12 +84,14 @@ export function refreshAccessToken() {
 
 const isDeduplicationSave = (method) => method === "GET";
 
+// Altalanos fetch wrapper tokenkezelessel, GET-deduplikacioval es egyszeri ujraprobalkozassal.
 export async function send(
   url,
   options = { method: "GET" },
   isProtected = true,
   retry = true,
 ) {
+  // A GET kérések biztonságosan újrahasznosíthatók, ezért ezeknél érdemes duplikációt szűrni.
   const key = isDeduplicationSave(options.method)
     ? getReqKey(options, url)
     : null;
@@ -136,6 +148,7 @@ export async function send(
       };
     }
 
+    // Ha a token pont a kérés közben járt le, egyszer megpróbáljuk frissítés után újraküldeni.
     if (isProtected && response.status === 401 && retry) {
       console.warn("Token likely expired during request, retrying...");
 
@@ -159,6 +172,7 @@ export async function send(
   return promise;
 }
 
+// Dinamikus import elott megprobal tokenfrissitest, ha a vedett modulbetoltes elhasalna.
 export async function importWithRefresh(url, maxRetries = 1) {
   let attempts = 0;
 

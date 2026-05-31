@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Projectile.js
+ * Szerep: Lovesbol szulető fizikai lovedek utkozes- es eltuneslogikaval.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Block from "/game/Block.js";
 import Rigidbody from "/game/Rigidbody.js";
 import * as vec2 from "/common/vec2.js";

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/validator/admin.js
+ * Szerep: Admin tiltasi vegpontok UUID, indoklas es lejarati ido mezoinak ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isValidUUIDv4 } from "../common/common.js";
 
 export const BAN_STATUS = {
@@ -59,6 +65,7 @@ export const BAN = {
         const date = new Date(value);
         const minAllowed = new Date(Date.now() + 5 * 60 * 1000);
 
+        // Legalabb egy kis minimum tavolsag kell, hogy ne jarjon le gyakorlatilag azonnal.
         if (isNaN(date.getTime())) {
           throw new Error("Érvénytelen dátum");
         }

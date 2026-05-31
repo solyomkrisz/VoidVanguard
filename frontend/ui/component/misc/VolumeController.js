@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/misc/VolumeController.js
+ * Szerep: Range slideres hangeroallito localStorage-szinkronnal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class VolumeController extends HTMLElement {
   constructor() {
     super();
@@ -17,6 +23,7 @@ export default class VolumeController extends HTMLElement {
   }
 
   onStorageEvent(e) {
+    // A storage esemeny miatt tobb megnyitott fül kozott is szinkronban marad a hangero.
     if (this.localStorageKey && e.key === this.localStorageKey) {
       this.sync();
     }

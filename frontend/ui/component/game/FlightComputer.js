@@ -1,8 +1,15 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/FlightComputer.js
+ * Szerep: Repulesi adatok es szamolt allapotok panelje.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as UI from "/ui/UI.js";
 import _ from "/ui/component/game/AutopilotToggle.js";
 import _1 from "/ui/component/game/StatusDiagram.js";
 
 export default class FlightComputer extends HTMLElement {
+  // Letrehozza a repulesi panel shadow DOM-jat es az allapotdiagram komponenset.
   constructor() {
     super();
 
@@ -156,11 +163,13 @@ export default class FlightComputer extends HTMLElement {
     this.statusDiagram = UI.element("status-diagram").enableHover();
   }
 
+  // A panelhez tartozo jatekosforrast allitja be.
   setSource(source) {
     this.source = source;
     return this;
   }
 
+  // Felépiti a dock gombot, a statusdiagramot es az autopilot toggle-t, majd esemenyeket kot rajuk.
   connectedCallback() {
     if (!this.source) return;
 
@@ -199,6 +208,7 @@ export default class FlightComputer extends HTMLElement {
     });
   }
 
+  // Kivulrol is allithato az autopilot vizualis allapota.
   setAutopilot(val) {
     this._autopilotToggle?.setChecked(val);
   }

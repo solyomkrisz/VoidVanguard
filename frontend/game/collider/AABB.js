@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/collider/AABB.js
+ * Szerep: Tengelyekhez igazodo befoglalo doboz collider.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { getMinMaxXY } from "/common/common.js";
 import Collider from "/game/Collider.js";
 

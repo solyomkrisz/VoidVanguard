@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/admin/RemoveDisguiseButton.js
+ * Szerep: Az aktiv admin alcazast figyelo es egy kattintassal megszunteto segedgomb.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class RemoveDisguiseButton extends HTMLElement {
   constructor() {
     super();
@@ -53,6 +59,7 @@ export default class RemoveDisguiseButton extends HTMLElement {
     this.build();
 
     if (!this._observer) {
+      // Az alcazas allapota mashol valtozik a DOM-ban, ezert globális MutationObserverrel figyeljuk.
       this._observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           if (mutation.type === "attributes") {

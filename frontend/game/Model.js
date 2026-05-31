@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Model.js
+ * Szerep: Blokkok gyujtemenyet kezeli, masolja es mentesbol ujraepiti.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Block from "./Block.js";
 import Shape from "./Shape.js";
 import * as vec from "../common/vec.js";
@@ -15,6 +21,8 @@ export default class Model {
 
     if (mode === Model.COPY_MODE.PRESERVE) {
 
+      // Itt ugyanazokat az objektumokat használjuk tovább, tehát a módosítás az eredetire is hat.
+
       this.objects = objects;
 
     } else if (mode === Model.COPY_MODE.COPY) {
@@ -23,9 +31,11 @@ export default class Model {
       for (const object of objects) {
 
         if (typeof object.clone === "function") {
+          // Ha van saját clone logika, azt használjuk, mert lehetnek speciális mezők is.
           this.objects.push(object.clone(object));
 
         } else {
+          // Ellenkező esetben készül egy sekély másolat ugyanazzal a prototípussal.
           this.objects.push(Object.assign(Object.create(Object.getPrototypeOf(object)), object));
         }
 
@@ -55,6 +65,7 @@ export default class Model {
       );
     }
 
+    // A mentésből csak a blokk újraépítéséhez szükséges mezőket hozzuk vissza.
     for (const object of savedState.objects) {
       const block = new Block({
         x: object.localPosition[0],
@@ -163,6 +174,7 @@ export default class Model {
         // ha az object turret vagy thruster (feltételezem azért kezeljük külön mert nem szimmetrikus a collider), akkor azt is elforgatjuk
         if (object.isTurret || object.isThruster) {
           const colliderAngle = texAngle;
+          // A collider külön forgatása kell, mert a látvány és a találati alakzat nem mindig szimmetrikus.
           object.setColliderRotation?.(colliderAngle);
         }
       }

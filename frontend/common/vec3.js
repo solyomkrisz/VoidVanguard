@@ -1,5 +1,12 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/vec3.js
+ * Szerep: 3D es homogen vektor muveletek kamera- es matrixtranszformokhoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as MATRIX from "./common.js";
 
+// Ures 3D vektort keszit.
 export function create() {
   const res = new MATRIX.DATA_STRUCTURE(3);
 
@@ -12,6 +19,7 @@ export function create() {
   return res;
 }
 
+// Azonnal feltoltott 3D vektort ad vissza.
 export function get(x, y, z) {
   const res = new MATRIX.DATA_STRUCTURE(3);
 
@@ -22,6 +30,7 @@ export function get(x, y, z) {
   return res;
 }
 
+// Beirja a harom koordinatat a celvektorba.
 export function set(target, x, y, z) {
   target[0] = x;
   target[1] = y;
@@ -30,6 +39,7 @@ export function set(target, x, y, z) {
   return target;
 }
 
+// Ket 3D vektort osszead.
 export function add(target, v1, v2) {
   target[0] = v1[0] + v2[0];
   target[1] = v1[1] + v2[1];
@@ -38,6 +48,7 @@ export function add(target, v1, v2) {
   return target;
 }
 
+// Ket 3D vektor kulonbseget szamolja ki.
 export function subtract(target, v1, v2) {
   target[0] = v1[0] - v2[0];
   target[1] = v1[1] - v2[1];
@@ -46,6 +57,7 @@ export function subtract(target, v1, v2) {
   return target;
 }
 
+// Egy 3D vektort masol at masik taroloba.
 export function copy(target, source) {
   target[0] = source[0];
   target[1] = source[1];
@@ -54,6 +66,7 @@ export function copy(target, source) {
   return target;
 }
 
+// A 3D vektorbol csak az elso ket komponenst tartja meg.
 export function toVec2(target, vec3) {
   target[0] = vec3[0];
   target[1] = vec3[1];
@@ -61,6 +74,7 @@ export function toVec2(target, vec3) {
   return target;
 }
 
+// Uj vektorkent adja vissza a 3x3 matrixszal transzformalt eredmenyt.
 export function transformMat3(m, v) {
   let x = v[0],
     y = v[1],
@@ -73,6 +87,7 @@ export function transformMat3(m, v) {
   ]);
 }
 
+// A transzformalt eredmenyt a mar meglevo target tombbe irja vissza.
 export function transformMat3Into(target, m, v) {
   let x = v[0],
     y = v[1],

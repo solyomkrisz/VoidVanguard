@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Mouse.js
+ * Szerep: Eger- es pointerallapotot koveto bemeneti seged.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec3 from "/common/vec3.js";
 import * as vec2 from "/common/vec2.js";
 import Rigidbody from "/game/Rigidbody.js";

@@ -1,6 +1,13 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/mat3.js
+ * Szerep: 3x3 matrix segedek kamera- es homogen koordinata transzformokhoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as MATRIX from "./common.js";
 import { LERP } from "./common.js";
 
+// Ures 3x3 matrixot keszit.
 export function create() {
   const res = new MATRIX.DATA_STRUCTURE(9);
 
@@ -19,6 +26,7 @@ export function create() {
   return res;
 }
 
+// 3x3 identitasmatrixot hoz letre.
 export function identity() {
   const res = new MATRIX.DATA_STRUCTURE(9);
 
@@ -38,6 +46,7 @@ export function identity() {
   return res;
 }
 
+// A megadott 9 elembol uj 3x3 matrixot rak ossze.
 export function get(m00, m10, m20, m01, m11, m21, m02, m12, m22) {
   const res = new MATRIX.DATA_STRUCTURE(9);
 
@@ -54,6 +63,7 @@ export function get(m00, m10, m20, m01, m11, m21, m02, m12, m22) {
   return res;
 }
 
+// A matrix minden elemet egyszerre beirja a target taroloba.
 export function set(target, m00, m10, m20, m01, m11, m21, m02, m12, m22) {
   target[0] = m00;
   target[1] = m10;
@@ -69,6 +79,7 @@ export function set(target, m00, m10, m20, m01, m11, m21, m02, m12, m22) {
 }
 
 // prettier-ignore
+// A kamera aktualis nezeti matrixat szamolja ki a jatekos interpolalt helyzete alapjan.
 export function cam(target, aspectRatio, scale, alpha, player) {
   let scaleX = scale, scaleY = scale;
 
@@ -93,6 +104,7 @@ export function cam(target, aspectRatio, scale, alpha, player) {
 }
 
 // prettier-ignore
+// A kamera inverz matrixat adja, amikor kepernyorol vilagkoordinatara kell visszavaltani.
 export function camInverse(target, aspectRatio, scale, alpha, player) {
   let scaleX = scale,
     scaleY = scale;

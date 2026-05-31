@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/form/InputGroup.js
+ * Szerep: Label es input osszekapcsolasat vegzo kis urlap-wrapper.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class InputGroup extends HTMLElement {
   constructor() {
     super();
@@ -18,6 +24,7 @@ export default class InputGroup extends HTMLElement {
     let id = input.id;
 
     if (!id && label) {
+      // Ha az inputnak meg nincs id-ja, generalunk egyet, hogy a label kattinthatova valjon.
       id = "input-" + crypto.randomUUID();
       input.id = id;
     }

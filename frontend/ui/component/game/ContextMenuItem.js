@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/ContextMenuItem.js
+ * Szerep: Egyetlen kontextusmenu tetel megjelenitese es kezelese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as UI from "/ui/UI.js";
 
 export default class ContextMenuItem extends HTMLElement {

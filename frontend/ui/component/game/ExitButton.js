@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/ExitButton.js
+ * Szerep: Kilepes esemenyt kuldo egyszeru jatekvezerlo gomb.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { el } from "/ui/UI.js";
 
 export default class ExitButton extends HTMLElement {
@@ -9,6 +15,7 @@ export default class ExitButton extends HTMLElement {
   }
 
   onClick(e) {
+    // Buborékoló custom event kell, hogy a szulo jatek UI barmelyik retegben el tudja kapni.
     this.dispatchEvent(
       new CustomEvent("exit-game", { bubbles: true, composed: true }),
     );

@@ -1,4 +1,10 @@
 /**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Collider.js
+ * Szerep: Collider alaposztaly eletciklus- es validacios hookokkal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
+/**
  * Its important that all object must use the same collider for the given phase.
  */
 export default class Collider {

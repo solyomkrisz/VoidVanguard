@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/SaveListSlot.js
+ * Szerep: Egyetlen menteshely vagy mentessor megjelenitese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { el } from "/ui/UI.js";
 import { dir } from "/ui/UI.js";
 import { path } from "/common/common.js";

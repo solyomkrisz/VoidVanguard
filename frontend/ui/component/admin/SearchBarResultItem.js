@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/admin/SearchBarResultItem.js
+ * Szerep: Egyetlen admin keresesi talalat sora.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import "/ui/component/profile/FriendshipActionButton.js";
 import "/ui/component/profile/BlockActionButton.js";
 import { el } from "/ui/UI.js";

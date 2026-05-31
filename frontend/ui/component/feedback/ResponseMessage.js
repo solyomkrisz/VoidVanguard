@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/feedback/ResponseMessage.js
+ * Szerep: API valaszuzenetet megjelenito siker/hiba allapotu kis visszajelzo komponens.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import _ from "/ui/component/form/InputGroup.js";
 import { dir, element, text } from "/ui/UI.js";
@@ -29,6 +35,7 @@ export default class ResponseMessage extends BaseCustomElement {
   from(response) {
     this.hidden = false;
 
+    // A CSS-osztaly maga a response.success alapjan valasztja ki a sikeres vagy hibas megjelenest.
     if (!response || (response && !response.success)) {
       this.setAttribute("class", "error");
     } else {

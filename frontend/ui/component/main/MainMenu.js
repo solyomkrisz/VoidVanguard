@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/main/MainMenu.js
+ * Szerep: Fo menu navigacios es inditasi elemek gyujtoje.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Game from "/game/Game.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import { dir } from "/ui/UI.js";

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Buffer.js
+ * Szerep: Elore lefoglalt ideiglenes vektor- es matrixbuffer a frame kozbeni allokacio csokkentesere.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec2 from "/common/vec2.js";
 import * as vec3 from "/common/vec3.js";
 import * as mat2 from "/common/mat2.js";

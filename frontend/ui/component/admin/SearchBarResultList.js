@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/admin/SearchBarResultList.js
+ * Szerep: Admin keresosav talalatainak listaja.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import "/ui/component/admin/SearchBarResultItem.js";
 

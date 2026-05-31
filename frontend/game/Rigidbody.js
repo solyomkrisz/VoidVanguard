@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Rigidbody.js
+ * Szerep: Fizikai test pozicioval, forgassal, tomeggel es osszetett colliderrel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec2 from "/common/vec2.js";
 import * as vec3 from "/common/vec3.js";
 import * as mat2 from "/common/mat2.js";
@@ -36,6 +42,7 @@ export default class Rigidbody extends Collidable {
     this.setShapeCollider(new CompositeCollider());
 
     this.position = vec2.fromValues(x, y);
+    // Az előző frame állapotát külön tároljuk, hogy renderkor simán lehessen interpolálni.
     this.previousPosition = vec2.fromValues(x, y);
     this.interpolatedPosition = vec2.fromValues(x, y);
     this.velocity = vec2.fromValues(vx, vy);
@@ -49,6 +56,7 @@ export default class Rigidbody extends Collidable {
     this.rotation = 0;
     this.previousRotation = 0;
     this.interpolatedRotation = 0;
+    // Bitmező: sok logikai állapot tárolható kevés memóriában.
     this.state = new Uint32Array(2);
     this.mass = 0;
     this.CoM = vec2.create();
@@ -118,6 +126,7 @@ export default class Rigidbody extends Collidable {
     this.mass = 0;
     vec2.reset(this.CoM);
 
+    // A teljes tömegközéppont a blokkok tömeg szerinti súlyozott átlaga.
     for (const object of this.model.objects) {
       this.mass += object.mass;
       vec2.addScaled(this.CoM, this.CoM, vec2.add(this.game.buffer.vec2_1, object.CoM, object.localPosition), object.mass);
@@ -134,6 +143,7 @@ export default class Rigidbody extends Collidable {
 
     this.I = 0;
 
+    // Párhuzamos tengelyek tétele: saját I + tömeg * távolság^2 a közös tömegközépponthoz képest.
     for (const object of this.model.objects) {
       const r = vec2.sub(_b.vec2_1, object.CoM, this.CoM);
       this.I += object.I + object.mass * vec2.dot(r, r);

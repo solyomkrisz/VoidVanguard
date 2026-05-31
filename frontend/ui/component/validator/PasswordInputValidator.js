@@ -1,9 +1,16 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/validator/PasswordInputValidator.js
+ * Szerep: Jelszo mezo kliensoldali erossegellenorzese egymas utan futo szabalyokkal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import InputValidator from "/ui/component/form/InputValidator.js";
 
 export default class PasswordInputValidator extends InputValidator {
   constructor() {
     super();
 
+    // Szandekosan egyszeru, soros szabalylista: az InputValidator mindig az elso elbukott szabaly uzenetet mutatja.
     this.addRule({
       test: (v) => v.length >= 8,
       message: "Password must be at least 8 characters",

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/WebGLCanvas.js
+ * Szerep: WebGL-re szakosodott canvas wrapper inicializalassal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Canvas from "/game/Canvas.js";
 import WebGL from "/game/WebGL.js";
 import * as MATRIX from "/common/common.js";

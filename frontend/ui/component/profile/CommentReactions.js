@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/CommentReactions.js
+ * Szerep: Kommentreakciok megjelenitese es kuldese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class CommentReactions extends HTMLElement {
   static get observedAttributes() {
     return ["controls", "readonly", "likes", "dislikes"];

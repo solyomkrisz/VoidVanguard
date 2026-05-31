@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Player.js
+ * Szerep: A jatekos hajo bemenettel, UI-val es mentesi visszaallitassal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Keyboard from "/game/Keyboard.js";
 import Spaceship from "/game/Spaceship.js";
 import Block from "/game/Block.js";
@@ -18,6 +24,7 @@ import ShootButton from "/ui/component/game/ShootButton.js";
 import { General2DCanvas as G2D } from "/game/General2DCanvas.js";
 
 export default class Player extends Spaceship {
+  // Letrehozza a jatekoshajot, hozzaepiti a UI-t, es azonnal osszekoti a modellel/colliderrel.
   constructor(game, model) {
     super({
       type: Type.PLAYER,
@@ -64,28 +71,33 @@ export default class Player extends Spaceship {
     this.updateStatusDiagram();
   }
 
+  // Motorinditasnal elinditja a folyamatos hajtomuhangot.
   onEngineEnabled() {
     const am = this.game.audioManager;
     const sound = am.getSound("enginesound");
     sound.instance.start();
   }
 
+  // Motorleallaskor megallitja a hajtomuhangot.
   onEngineDisabled() {
     const am = this.game.audioManager;
     const sound = am.getSound("enginesound");
     sound.instance.stop();
   }
 
+  // Loveskor lejatszik a jatekoshoz tartozo lezerhang.
   onShoot() {
     this.game.audioManager.getSound("lasershootsound")?.instance?.play?.();
   }
 
+  // A jatekoshoz tartozo UI-elemeket eltakaritja.
   destroy() {
     for (const key of Object.keys(this.UI)) {
       this.UI[key].remove?.();
     }
   }
 
+  // A jatekos extra mentett adatahoz hozzairja a pontszamot.
   exportSave() {
     return {
       ...super.exportSave(),
@@ -93,6 +105,7 @@ export default class Player extends Spaceship {
     };
   }
 
+  // Mentett allapotbol visszatolti a jatekos sajat allapotat es modelljet.
   from(savedState) {
     this.score = savedState.score;
     this.state = new Uint32Array(savedState.state);
@@ -107,6 +120,7 @@ export default class Player extends Spaceship {
   }
 
   // prettier-ignore
+  // A flight computer status-diagramjahoz ujrarajzolja a hajomodell sematikus kepet.
   updateStatusDiagram() {
     if (!this.UI.flightComputer?.statusDiagram) return;
 
@@ -136,6 +150,7 @@ export default class Player extends Spaceship {
     this.UI.flightComputer.statusDiagram.set(G2D.canvas, "image/jpeg", 1.0);
   }
 
+  // Geometriavaltozas utan ujracimkezi a colliderket es a fizikai adatokat.
   onGeometryChange() {
     this.proxyCollider.onGeometryChange();
     this.shapeCollider.onGeometryChange();
@@ -145,17 +160,20 @@ export default class Player extends Spaceship {
   }
 
   // prettier-ignore
+  // Elmenti, melyik hatterchunkban jar eppen a jatekos.
   setCurrentChunk() {
     this.chunk[0] = Math.floor(this.position[0] / this.game.chunkSize / this.game.backgroundZoom);
     this.chunk[1] = Math.floor(this.position[1] / this.game.chunkSize / this.game.backgroundZoom);
   }
 
   //* hasonló az Enemy.js-ben
+  // A turret blokk fokozata alapjan valaszt loveszin-t.
   getTurretBulletColor(block) {
     const grade = Math.max(0, Math.min(14, block.gradeID ?? 0));
     return BlockStyle.getColorForGrade(grade);
   }
 
+  // Kitalalja, hogy a turret lokalisan merre nezzen, eloszor a csatlakozasi geometria, aztan a textura alapjan.
   getTurretLocalDirection(block, out) {
     vec2.set(out, 0, 1); // alap 0, 1 vagyis +y felé mutat
 
@@ -196,6 +214,7 @@ export default class Player extends Spaceship {
     return out;
   }
 
+  // Egy konkret turret blokkbol letrehozza a loves iranyat, csovetorkolati pontjat es parametereit.
   shootFromTurret(block) {
     const _b = this.game.buffer;
 
@@ -232,6 +251,7 @@ export default class Player extends Spaceship {
     );
   }
 
+  // Altalanos lovedek-letrehozo: lokalis csotorkolatbol vilagkoordinatas projectile-t csinal.
   shoot(
     localMuzzle,
     projectileSpeedX,
@@ -283,6 +303,7 @@ export default class Player extends Spaceship {
   }
 
   //* kb ugyan az mint Enemy.js-ben
+  // Huzoero eseten uj trail-pontot rak a hajtomu moge.
   spawnThrusterTrail(thruster) {
     if (!thruster || thruster.throttle <= 0.01) return;
 
@@ -319,6 +340,7 @@ export default class Player extends Spaceship {
   }
 
   //* ugyan az mint Enemy.js-ben
+  // Az eloregedett trail-pontokat frissiti es torli, ha lejart az elettartamuk.
   updateThrusterTrail(dt) {
     for (let i = this.trailParticles.length - 1; i >= 0; i--) {
       const p = this.trailParticles[i];
@@ -334,6 +356,7 @@ export default class Player extends Spaceship {
    * Különbségek:
    * - fix a trail color
    */
+  // A hajtomucsikokat kepernyokoordinatara rajzolja atmeneti atlatszosaggal.
   renderThrusterTrail(ctx, alpha) {
     if (!ctx || this.trailParticles.length === 0) return;
 
@@ -398,6 +421,7 @@ export default class Player extends Spaceship {
     ctx.restore();
   }
 
+  // Manualis uzemben a jatekos kozvetlenul gimbaleli es throttle-olja a kijelolt thruster blokkokat.
   manualPropulsionUpdate(dt, _b, activeControls) {
     const _W =
       activeControls.has(Keyboard.KeyW) ||
@@ -457,6 +481,7 @@ export default class Player extends Spaceship {
     }
   }
 
+  // Automata uzemben a gimbal visszaall alaphelyzetbe, ha nincs oldaliranyu bemenet.
   autoPropulsionUpdate(dt, _b, activeControls) {
     const _W =
       activeControls.has(Keyboard.KeyW) ||
@@ -518,6 +543,7 @@ export default class Player extends Spaceship {
     }
   }
 
+  // A jatekos teljes frame-enkenti logikaja: hajtas, mozgas, trail, turret cooldown, loves, pontszam.
   update() {
     this.angularAcceleration = 0;
 
@@ -586,6 +612,7 @@ export default class Player extends Spaceship {
     }
   }
 
+  // Poziciovaltaskor a colliderrel es a chunkkovetessel is szinkronban tartja a jatekost.
   onPositionChange() {
     this.proxyCollider.onPositionChange();
     this.shapeCollider.onPositionChange();
@@ -617,6 +644,7 @@ export default class Player extends Spaceship {
   }
 
   // prettier-ignore
+  // Interakciokor leválaszt egy blokkot, majd a leszakado reszeket building blockokka alakitja.
   detachBlock(object) {
     const mouse = this.game.mouse;
 
@@ -772,6 +800,7 @@ export default class Player extends Spaceship {
     }
   }
 
+  // Kontakt eseten kezeli az interakciot, a projectile sebzest es a core-halal logikat.
   onContact(collision, object) {
     if (collision.is(Type.INTERACTION)) {
       if (this.game.mouse.isDown) {
@@ -864,6 +893,7 @@ export default class Player extends Spaceship {
   }
 
   //* ugyan az mint Enemy.js-ben
+  // A megmaradt leveheto blokkokat ledobja kulon repulo entitykkent.
   detachRemainingBlocks() {
     for (const block of this.model.objects) {
       if (!block?.isRemovable || block.toRemove) continue;
@@ -895,6 +925,7 @@ export default class Player extends Spaceship {
   }
 
   //* ugyan az mint Enemy.js-ben
+  // A magtol elszakadt blokkokat felderiti, es fizikailag leváló blokkokka alakítja.
   detachDisconnectedBlocks() {
     const core = this.model.objects.find(
       (block) => !block?.isRemovable && !block.toRemove,
@@ -987,6 +1018,7 @@ export default class Player extends Spaceship {
   }
 
   // prettier-ignore
+  // A building blockokat kihagyva csak a jatekos sajat testet tolja ki az atfedésből.
   resolvePenetration(other, collision, epsilon, direction) {
     if (other.is(Type.BUILDING_BLOCK)) return;
 

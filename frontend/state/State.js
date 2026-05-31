@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/state/State.js
+ * Szerep: Allapotkezeles: alkalmazas allapot tarolasa es valtozasainak kovetese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class State {
   static multiSubscribe(listenerInitializers, combinedListener) {
     const values = new Array(listenerInitializers.length);

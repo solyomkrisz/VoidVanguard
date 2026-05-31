@@ -1,15 +1,24 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/functionaltest.js
+ * Szerep: Bongeszos functional teszt segedek UI-szcenariok futtatasahoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { result } from "/common/common.js";
 
+// Egyszeru functional-teszt keszletet ad DOM-hoz, mock fetchhez es aszinkron varakozashoz.
 export function createTestSuite(title = "Test Suite") {
   const results = new result().init();
   results.title = title;
   const tests = [];
   let beforeEachFn = null;
 
+  // CSS selector alapjan tombbe gyujti a talalatokat.
   function $(selector) {
     return Array.from(document.querySelectorAll(selector));
   }
 
+  // Kulonbozo URL-formatumokat egységes string alakka alakit a mockolo retegnek.
   function normalizeUrl(input) {
     if (typeof input === "string") return input;
 
@@ -20,10 +29,12 @@ export function createTestSuite(title = "Test Suite") {
     return String(input);
   }
 
+  // Mock fetch gyarat keszit route-tablaval es hivas-szamlalassal.
   function createFetchMock() {
     const routes = [];
     let calls = 0;
 
+    // Megkeresi, melyik kamu route illik az adott kerésre.
     function matchRoute(rawUrl, method) {
       const url = normalizeUrl(rawUrl);
 
@@ -40,6 +51,7 @@ export function createTestSuite(title = "Test Suite") {
       });
     }
 
+    // A browser fetch helyett ezt futtatjuk a teszt alatt, hogy fix valaszokat kapjunk.
     async function mockFetch(url, options = {}) {
       const method = (options.method || "GET").toUpperCase();
 
@@ -103,6 +115,7 @@ export function createTestSuite(title = "Test Suite") {
   //   response: { value: null },
   // });
 
+  // Kikeres egy pontos szoveget a DOM-bol, es hiba helyett nem csendben bukik el.
   function getByText(root, text, { ignoreHidden = true } = {}) {
     const walker = document.createTreeWalker(
       root,
@@ -133,6 +146,7 @@ export function createTestSuite(title = "Test Suite") {
     throw new Error(`Text not found: ${text}`);
   }
 
+  // Lazabb szovegkereso: reszleges egyezest is elfogad, es nullt ad vissza, ha nincs talalat.
   function queryByText(root, text) {
     const walker = document.createTreeWalker(
       root,
@@ -150,6 +164,7 @@ export function createTestSuite(title = "Test Suite") {
     return null;
   }
 
+  // Addig probal ujra egy ellenorzest, amig sikerul vagy le nem jar az ido.
   function waitFor(fn, timeout = 1000) {
     const start = Date.now();
 
@@ -171,15 +186,18 @@ export function createTestSuite(title = "Test Suite") {
     });
   }
 
+  // Felvesz egy uj tesztesetet a kesobb futtathato listaba.
   function test(name, fn, log = false) {
     tests.push({ name, fn, log });
     results.tests++;
   }
 
+  // Opcionális elokeszitot allit be, ami minden teszt elott lefut.
   function beforeEach(fn) {
     beforeEachFn = fn;
   }
 
+  // Sorban lefuttatja az osszes regisztralt tesztet, es frissiti a statisztikakat.
   async function run() {
     for (const { name, fn, log } of tests) {
       try {

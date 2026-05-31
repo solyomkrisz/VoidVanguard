@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/CommentItem.js
+ * Szerep: Egyetlen komment megjelenitese metaadatokkal es muveletekkel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isLoggedIn, isAdmin } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import "/ui/component/form/InlineEditor.js";

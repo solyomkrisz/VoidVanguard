@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Canvas.js
+ * Szerep: Alap canvas wrapper meret- es contextuskezelessel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import ContextMenu from "/ui/component/game/ContextMenu.js";
 import * as UI from "/ui/UI.js";
 

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/setup/default.js
+ * Szerep: Alap jatekvilag- es hajokonfiguraciot letrehozo setup script.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Block from "/game/Block.js";
 import Mouse from "/game/Mouse.js";
 import Keyboard from "/game/Keyboard.js";

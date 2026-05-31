@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/TooltipTemplate.js
+ * Szerep: Tooltip tartalmi sablonkontener.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as UI from "/ui/UI.js";
 import DynamicTooltip from "/ui/component/game/DynamicTooltip.js";
 

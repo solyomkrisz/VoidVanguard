@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/BlockTypes.js
+ * Szerep: Elerheto blokkfajtak es gyari blokkletrehozo sablonok.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Block from "/game/Block.js";
 import { SpriteID } from "/game/texture/Texture.js";
 import Shape from "/game/Shape.js";

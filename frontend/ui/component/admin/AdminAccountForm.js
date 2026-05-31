@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/admin/AdminAccountForm.js
+ * Szerep: Admin altal szerkesztheto fiokadatok urlapja.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import "/ui/component/form/InputGroup.js";
 import AccountForm from "/ui/component/account/AccountForm.js";
 

@@ -1,14 +1,22 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/service/saves.js
+ * Szerep: Jatekmentesek adatbazisos uzleti logikaja, score-szinkronnal es allapotellenorzessel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { v4 as uuidv4 } from "uuid";
 import * as CustomError from "../common/CustomError.js";
 import Saves from "../sql/table/Saves.js";
 import Permission from "../common/Permission.js";
 import * as scores from "../service/scores.js";
 
+// Egy konkret mentest ker le a sajat tulajdonos szempontjabol.
 export async function selectUserSave({ gameId, userId }) {
   const result = await Saves.selectByIdForUser(gameId, userId);
   return result;
 }
 
+// Eldonti, hogy uj mentest kell letrehozni, vagy a meglevo rekordot kell frissiteni.
 export async function saveOrUpdate({ userId, role, body }) {
   const saveFromDb = await selectUserSave({ gameId: body.game_id, userId });
 
@@ -25,6 +33,7 @@ export async function saveOrUpdate({ userId, role, body }) {
   return await updateSave({ userId, role, body });
 }
 
+// Uj jatekmentest hoz letre, es a leaderboard score-ral is szinkronba hozza.
 export async function save({ userId, body }) {
   const parsedState =
     typeof body.game_state === "string"
@@ -34,6 +43,7 @@ export async function save({ userId, body }) {
   let result;
 
   try {
+    // A játékállapotot mindig egységesen JSON-ként mentjük, akkor is, ha a body-ban már objektumként érkezett.
     result = await Saves.insert({
       gameId: body.game_id,
       userId,
@@ -43,6 +53,7 @@ export async function save({ userId, body }) {
 
     // add score
     if (result.affectedRows === 1) {
+      // Mentéskor a leaderboardhoz tartozó score-t is szinkronban tartjuk.
       await scores.setOrUpdateScoreForGame({
         userId,
         gameId: body.game_id,
@@ -66,6 +77,7 @@ export async function save({ userId, body }) {
   return result;
 }
 
+// Egy mar letezo mentest frissit jogosultsag- es valtozasellenorzessel.
 export async function updateSave({ userId, role, body }) {
   const gameId = body.game_id;
 
@@ -101,7 +113,7 @@ export async function updateSave({ userId, role, body }) {
       : body.game_state;
 
   if (!changedColumns.length) {
-    // megnézzük van e score hozzá és ha nincs függetlenül mindentől berakjuk azt
+    // Akkor is ellenőrizzük a score-t, ha maga a mentés nem változott, mert korábban hiányozhatott a kapcsolódó rekord.
     const associatedScore = await scores.selectByUserAndGameId({
       userId,
       gameId,
@@ -125,6 +137,7 @@ export async function updateSave({ userId, role, body }) {
 
     // update score
     if (result.affectedRows === 1) {
+      // A score itt is újraszámolódik, hogy a mentett állapot és a pontszám ne csússzon szét.
       await scores.setOrUpdateScoreForGame({
         userId,
         gameId,
@@ -148,6 +161,7 @@ export async function updateSave({ userId, role, body }) {
   return result;
 }
 
+// Lapozhato formatumban adja vissza a user sajat menteseit.
 export async function lazySelectByUserId({ userId, page = 1, limit = 20 }) {
   const offset = (page - 1) * limit;
 
@@ -163,6 +177,7 @@ export async function lazySelectByUserId({ userId, page = 1, limit = 20 }) {
   };
 }
 
+// Torol egy sajat mentest a jatek azonositoja alapjan.
 export async function deleteSave({ gameId, userId }) {
   if ((await Saves.delete(userId, gameId)).affectedRows === 0) {
     throw CustomError.TEST;

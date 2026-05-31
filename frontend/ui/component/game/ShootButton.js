@@ -1,9 +1,16 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/ShootButton.js
+ * Szerep: Erinteses loves gomb, amely pointer-allapotbol kapcsol game controlt.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import GameControllerElement from "/ui/component/game/GameControllerElement.js";
 import Game from "/game/Game.js";
 import { dir, el } from "/ui/UI.js";
 import { path } from "/common/common.js";
 
 export default class ShootButton extends GameControllerElement {
+  // A jatek activeControls keszlete ezt a szoveges kulcsot nezi loveshez.
   static SHOOT = "Shoot";
 
   setGame(value) {
@@ -87,6 +94,7 @@ export default class ShootButton extends GameControllerElement {
     this.pointerId = event.pointerId;
     this.game.activeControls.add(control);
 
+    // Pointer capture-rel akkor is megkapjuk a felengedest, ha az ujj kozben lecsuszik a gombrol.
     this.setPointerCapture?.(event.pointerId);
   }
 

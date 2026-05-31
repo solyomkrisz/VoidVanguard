@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/SaveMenu.js
+ * Szerep: Mentesi muveleteket osszefogo menu.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { el } from "/ui/UI.js";
 import { on, off } from "/common/eventhub.js";
 import "/ui/component/game/RemoteSaveList.js";

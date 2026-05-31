@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/service/blocks.js
+ * Szerep: Felhasznalok kozotti tiltasi kapcsolatok uzleti logikaja es allapotosszegzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as CustomError from "../common/CustomError.js";
 import Blocks from "../sql/table/Blocks.js";
 import Friends from "../sql/table/Friends.js";
@@ -45,6 +51,7 @@ export async function getBlockStatus({ initiatorId, recipientId }) {
     return "not-blocked";
   }
 
+  // Két irányt kell ellenőrizni: lehet, hogy én tiltottam le őt, ő tiltott le engem, vagy mindkettő.
   const iniBlockedRec = await Blocks.isBlocked(initiatorId, recipientId);
   const recBlockedIni = await Blocks.isBlocked(recipientId, initiatorId);
 
@@ -68,6 +75,7 @@ export async function checkBlockStatus({ initiatorId, recipientId }) {
     return false;
   }
 
+  // Itt nem státusz-szöveget adunk vissza, hanem a konkrét üzleti hibát dobjuk tovább.
   const iniBlockedRec = await Blocks.isBlocked(initiatorId, recipientId);
   const recBlockedIni = await Blocks.isBlocked(recipientId, initiatorId);
 
@@ -91,6 +99,7 @@ export async function blockUser({ blockerId, blockedId }) {
     throw CustomError.CANNOT_BLOCK_YOURSELF;
   }
 
+  // Tiltás előtt a barátságot takarítjuk, hogy a két kapcsolat ne üssön egymással.
   await Friends.delete(blockerId, blockedId);
 
   await Blocks.delete(blockerId, blockedId);

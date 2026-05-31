@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/misc/LeaderboardElement.js
+ * Szerep: Ranglista nezetet osszefogo komponens.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { on, off } from "/common/eventhub.js";
 import { isLoggedIn, isInViewport } from "/common/common.js";
 import * as net from "/common/network.js";

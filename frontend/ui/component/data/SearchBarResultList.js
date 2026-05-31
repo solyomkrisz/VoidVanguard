@@ -1,7 +1,14 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/data/SearchBarResultList.js
+ * Szerep: Keresesi talalatlista a LazyItemList-re epitett egyszeru adapterrel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 
 class SearchBarResultList extends LazyItemList {
   renderItem(item) {
+    // Itt csak azt adjuk meg, hogyan nez ki egyetlen elem; a lapozast es a toltést maga a LazyItemList intezi.
     const div = document.createElement("div");
 
     div.innerHTML = `

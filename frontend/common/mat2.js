@@ -1,5 +1,12 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/mat2.js
+ * Szerep: 2x2 matrix segedek foleg 2D forgatasokhoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as MATRIX from "./common.js";
 
+// 2D identitasmatrixot ad vissza.
 export function identity() {
   const res = new MATRIX.DATA_STRUCTURE(4);
 
@@ -14,6 +21,7 @@ export function identity() {
   return res;
 }
 
+// Forgatasi matrixot ir a targetbe a kapott szog alapjan.
 export function fromRotation(target, rad) {
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);

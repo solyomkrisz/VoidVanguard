@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/game/AutopilotToggle.js
+ * Szerep: Autopilot be- es kikapcsolasat vegzo gomb.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as UI from "/ui/UI.js";
 
 export default class AutopilotToggle extends HTMLElement {

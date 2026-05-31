@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/account/ActiveRefreshTokenList.js
+ * Szerep: Aktiv refresh sessionok es tokenek listazasa.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { isLoggedIn, isUserSet, logout } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";

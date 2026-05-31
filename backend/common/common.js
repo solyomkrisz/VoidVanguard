@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/common/common.js
+ * Szerep: Kozos backend segedkod: ujrahasznalhato osztalyok, hibakezeles, jogosultsag.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import jwt from "jsonwebtoken";
 import { validate, version } from "uuid";
 import { validationResult } from "express-validator";

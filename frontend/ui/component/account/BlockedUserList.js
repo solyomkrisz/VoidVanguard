@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/account/BlockedUserList.js
+ * Szerep: Letiltott felhasznalok listaja feloldasi lehetoseggel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import LazyItemList from "/ui/component/data/LazyItemList.js";
 import { isLoggedIn, isUserSet } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";

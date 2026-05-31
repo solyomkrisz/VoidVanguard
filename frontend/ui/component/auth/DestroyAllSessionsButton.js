@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/auth/DestroyAllSessionsButton.js
+ * Szerep: Az osszes aktiv munkamenetet lezaro gomb megerosito modallal es szerverhivassal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isLoggedIn, logout } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";
 import { element, text } from "/ui/UI.js";
@@ -47,9 +53,11 @@ export default class DestroyAllSessionsButton extends HTMLElement {
   }
 
   async onClick(e) {
+    // A pending flag megakadalyozza, hogy dupla kattintasra ket session-torles induljon.
     if (this._pending) return;
     this._pending = true;
 
+    // Mivel ez minden eszkozrol kileptet, elotte mindig kulon megerositest kerunk.
     const result = await this._modal.open({
       title: "Összes munkamenet felfüggesztése",
       message:
@@ -81,6 +89,7 @@ export default class DestroyAllSessionsButton extends HTMLElement {
       console.error(error);
     } finally {
       this._pending = false;
+      // Torles utan a legegyszerubb biztos allapot az oldal teljes ujratoltese.
       window.top.location.reload();
     }
   }

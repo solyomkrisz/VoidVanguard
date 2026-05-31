@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/core/Core.js
+ * Szerep: UI komponensek kozponti exportja es alap osszekotese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { toCamelCase } from "/common/common.js";
 
 export function defineAttributeAccessors(prototype, attributes) {

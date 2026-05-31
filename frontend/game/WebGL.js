@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/WebGL.js
+ * Szerep: WebGL shader-, program- es buffersegedek gyujtemenye.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class WebGL {
   static IS_WEBGL2_RENDERING_CONTEXT(gl) {
     return gl instanceof WebGL2RenderingContext;

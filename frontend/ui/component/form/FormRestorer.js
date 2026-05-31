@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/form/FormRestorer.js
+ * Szerep: API-rol erkezo adatok visszatoltese formokba vagy mas custom elementekbe.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { setFieldValue } from "/common/common.js";
 import * as net from "/common/network.js";
 import NetworkErrorHandler from "/common/NetworkErrorHandler.js";
@@ -50,6 +56,7 @@ export default class FormRestorer extends HTMLElement {
     if (!url) return;
     if (!this._target) return;
 
+    // Ezzel jelezzuk, hogy ez a legfrissebb betoltes; a kesobbi valaszok a regebbieket felulirhatjak.
     const token = Symbol();
     this._loadToken = token;
 
@@ -70,6 +77,7 @@ export default class FormRestorer extends HTMLElement {
 
     this._data = response?.result;
 
+    // A nyers API-objektumot a konkret form-mezokre forditjuk le.
     const mapped = this.mapDataToFields(response?.result);
     this.restore(mapped);
 
@@ -90,6 +98,7 @@ export default class FormRestorer extends HTMLElement {
     const mapping = this.constructor.mapping;
 
     if (!mapping) {
+      // Ha nincs kulon mapping, csak azokat a mezoket visszuk tovabb, amiknek van megfelelo form fieldje.
       return Object.fromEntries(
         Object.entries(data).filter(([key]) =>
           this._target.elements.namedItem(key),
@@ -135,20 +144,8 @@ export default class FormRestorer extends HTMLElement {
   async restoreCustomElement(mapped) {
     await window.customElements.whenDefined(this._target.tagName.toLowerCase());
 
-    /**
-     * This class is usually extended and may target another custom element.
-     * If the target of the dispatched restore event is a custom element,
-     * the restoration is deferred to that element.
-     * In that case you must import the target's class in the same module as the subclass
-     * to ensure the event dispatch works correctly, and more importantly, so that the target custom element instances
-     * are upgraded and have the required handlers.
-     *
-     * In JS modules, top-level imports block execution until resolved.
-     * Custom elements are upgraded synchronously when defined, so the target
-     * must already be defined by the time this logic runs.
-     * Using CustomElementRegistry.prototype.whenDefined here may not be necessary if the target
-     * is imported at the top.
-     */
+    // Ha a cel maga is custom element, akkor nem kozvetlenul irogatjuk a DOM-jat,
+    // hanem egy restore esemenyen keresztul atadjuk neki a visszatoltott adatokat.
     this._target.dispatchEvent(
       new CustomEvent("restore", {
         detail: { data: mapped },

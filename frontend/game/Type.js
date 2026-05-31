@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Type.js
+ * Szerep: Kozponti tipuskonstansok a jatekbeli entitasok azonositashoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export const UNKNOWN = 0;
 export const MOUSE = 1;
 export const PLAYER = 2;

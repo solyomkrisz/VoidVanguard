@@ -1,4 +1,11 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/Sound.js
+ * Szerep: Egyetlen hang lejatszasa pause/resume/loop allapottal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class Sound {
+  // Elokesziti az egy darab hanghoz tartozo allapotot es opcionális gain csatornat.
   constructor(ctx, buffer, options = {}) {
     this.ctx = ctx;
     this.buffer = buffer;
@@ -23,6 +30,7 @@ export default class Sound {
     this.stopped = false;
   }
 
+  // Letrehoz egy uj BufferSource-t, es loop eseten gondoskodik az ujrainditasrol is.
   _createSource() {
     const src = this.ctx.createBufferSource();
     src.buffer = this.buffer;
@@ -43,6 +51,7 @@ export default class Sound {
     return src;
   }
 
+  // Elinditja a hangot az aktualis offsetrol vagy az adott lejatszashoz tartozo felulirasrol.
   start() {
     if (this.isPlaying) return;
 
@@ -69,6 +78,7 @@ export default class Sound {
     this.playCount++;
   }
 
+  // Megallitja a lejatszast, de elmenti, honnan lehessen folytatni.
   pause() {
     if (!this.isPlaying) return;
 
@@ -81,11 +91,13 @@ export default class Sound {
     this.paused = true;
   }
 
+  // A pause utan ugyanonnan probalja ujrainditani a hangot.
   resume() {
     this.start();
     this.paused = false;
   }
 
+  // Teljesen leallitja es alaphelyzetbe teszi a hangobjektumot.
   stop() {
     if (this.source) this.source.stop();
 

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/common/Token.js
+ * Szerep: JWT tokenek letrehozasat, ellenorzeset es hash-eleset vegzo kozos helper.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { accessTokenLifetimeMin } from "./common.js";
@@ -14,6 +20,7 @@ class Token {
       ...payload,
       iat,
       exp,
+      // A jti minden tokennek egyedi azonosítót ad, így később külön is nyomon követhető.
       jti: crypto.randomUUID(),
     };
 
@@ -25,6 +32,7 @@ class Token {
   }
 
   static hash(token) {
+    // A refresh tokent fix kulccsal HMAC-eljük, így összevethető marad, de a nyers érték nem tárolódik.
     return crypto
       .createHmac("sha256", process.env.REFRESH_TOKEN_HASH_SECRET)
       .update(token)

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/validator/save.js
+ * Szerep: Mentesazonosito, mentesnev es JSON-formaju jatekallapot ellenorzese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { isValidUUIDv4 } from "../common/common.js";
 
 export const GET = function (request, response, next) {
@@ -41,6 +47,7 @@ export const PATCH = {
         try {
           const parsed = JSON.parse(value);
 
+          // Nem eleg, hogy parse-olhato legyen: objektumot varunk, nem tombot vagy egyszeru erteket.
           if (
             typeof value !== "string" ||
             typeof parsed !== "object" ||
@@ -100,6 +107,7 @@ export const PUT = {
         try {
           const parsed = JSON.parse(value);
 
+          // PUT-nel kotelezo a teljes jatekallapot, ezert itt nincs optional.
           if (
             typeof value !== "string" ||
             typeof parsed !== "object" ||

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/button/BackButton.js
+ * Szerep: Egyszeru vissza gomb, amely modtol fuggoen elozo oldalra vagy a fooldalra visz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class BackButton extends HTMLElement {
   get mode() {
     return this.getAttribute("mode");
@@ -22,6 +28,7 @@ export default class BackButton extends HTMLElement {
     this.appendChild(button);
 
     button.addEventListener("click", () => {
+      // A to-previous mod csak akkor lep vissza, ha a bongeszo history-ban tenyleg van elozo oldal.
       if (this.mode === "to-previous" && window.history.length > 1) {
         window.history.back();
         return;

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/profile/FullProfile.js
+ * Szerep: Teljes profilnezet adatokkal, listakkal es muveleti gombokkal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as net from "/common/network.js";
 import { isEqual, isLoggedIn, isAdmin } from "/common/common.js";
 import { on, off } from "/common/eventhub.js";

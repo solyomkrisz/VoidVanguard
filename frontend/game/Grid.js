@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Grid.js
+ * Szerep: Epitesi racs kirajzolasat es koordinata-segedmuveleteit kezelo osztaly.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec2 from "/common/vec2.js";
 import * as vec3 from "/common/vec3.js";
 import CollisionCollection from "/game/CollisionCollection.js";

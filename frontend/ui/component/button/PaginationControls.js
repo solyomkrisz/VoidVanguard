@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/button/PaginationControls.js
+ * Szerep: Lapozo vezerlo oldalszamokkal es szulo altal visszaigazolt oldalvaltassal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class PaginationControls extends HTMLElement {
   static get observedAttributes() {
     return ["page", "total"];
@@ -23,6 +29,7 @@ export default class PaginationControls extends HTMLElement {
     // this._currentPage = page;
     // this.setAttribute("page", page);
 
+    // A komponens csak kerest kuld a lapvaltasra; a tenyleges adatbetoltest a szulo vegzi el.
     this.dispatchEvent(
       new CustomEvent("page-request", {
         detail: { page, onDone: () => this.onSuccessfulPageLoad(page) },
@@ -105,6 +112,7 @@ export default class PaginationControls extends HTMLElement {
       const start = Math.max(1, this._currentPage - maxWindow);
       const end = Math.min(this._totalPages, this._currentPage + maxWindow);
 
+      // Nem az osszes oldalszam latszik, csak az aktualis oldal kornyezete es a ket szelso oldal.
       if (start > 1) {
         this._container.appendChild(this.createPageButton(1));
 

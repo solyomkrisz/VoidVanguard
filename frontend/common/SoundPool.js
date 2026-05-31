@@ -1,4 +1,11 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/SoundPool.js
+ * Szerep: Rovid effekthangok parhuzamos lejatszasara szolgalo objektumpool.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class SoundPool {
+  // Beallitja a pool meretet es az aktivan szolo forrasok tarolojat.
   constructor(ctx, buffer, options = {}) {
     this.ctx = ctx;
     this.buffer = buffer;
@@ -17,6 +24,7 @@ export default class SoundPool {
     }
   }
 
+  // Elindit egy uj hangot, es ha betelt a pool, a legrgebbit kiloki.
   play({ volume = 1, playbackRate = 1 } = {}) {
     if (this.activeSounds.size >= this.maxSounds) {
       // stop oldest sound
@@ -44,10 +52,12 @@ export default class SoundPool {
     };
   }
 
+  // A teljes pool kimeneti hangerejet allitja.
   setVolume(v) {
     this.gainNode.gain.value = v;
   }
 
+  // Minden aktiv forrast leallit es kiuritja a poolt.
   stopAll() {
     this.activeSounds.forEach((src) => src.stop());
     this.activeSounds.clear();

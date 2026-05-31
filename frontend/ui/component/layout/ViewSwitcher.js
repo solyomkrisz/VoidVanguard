@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/layout/ViewSwitcher.js
+ * Szerep: Template-alapu nezetszervezo navigacioval es opcionális view-cache-sel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { el } from "/ui/UI.js";
 
 export default class ViewSwitcher extends HTMLElement {
@@ -77,11 +83,13 @@ export default class ViewSwitcher extends HTMLElement {
     let view;
 
     if (this.noCache) {
+      // no-cache modban minden valtas uj DOM-peldanyt klonoz a template-bol.
       view = Array.from(template.content.cloneNode(true).children);
     } else {
       view = this._viewNodesCache.get(id);
 
       if (!view) {
+        // Cache modban ugyanazokat a node-okat tartjuk meg, hogy a belso allapotuk megmaradjon.
         view = Array.from(template.content.cloneNode(true).children);
         this._viewNodesCache.set(id, view);
       }

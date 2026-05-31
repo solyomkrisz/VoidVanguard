@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/validator/passwordreset.js
+ * Szerep: Validator reteg: bemeneti adatok szabalyellenorzese a hibak megelozesere.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export const REQUEST = {
   email: {
     in: ["body"],

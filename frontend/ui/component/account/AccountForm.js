@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/account/AccountForm.js
+ * Szerep: Fiokadatok szerkeszto urlapja.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import "/ui/component/form/InputGroup.js";
 import BaseCustomElement from "/ui/component/core/BaseCustomElement.js";
 import * as net from "/common/network.js";
@@ -51,14 +57,17 @@ const METHOD = {
 };
 
 export default class AccountForm extends BaseCustomElement {
+  // A create/update modot attribute-bol olvassa.
   get action() {
     return this.getAttribute("action");
   }
 
+  // Admin modban a submit nem megy ki egybol, hanem admin-alairason halad at.
   get admin() {
     return this.hasAttribute("admin");
   }
 
+  // Elokesziti az urlap shadow DOM-jat es a kulso restore/validator handlereket.
   constructor(extraPaths = []) {
     super([
       path.join(dir, "global.css"),
@@ -77,11 +86,13 @@ export default class AccountForm extends BaseCustomElement {
     this.onSubmitEnable = this.onSubmitEnable.bind(this);
   }
 
+  // Elso csatlakozaskor egyszer epiti fel a komponenst.
   connectedCallback() {
     if (this._built) return;
     this.build();
   }
 
+  // A submitnel normalizalja az ures update-mezoket, majd admin vagy normal utra kuldi a kerest.
   async onSubmit(e) {
     e.preventDefault();
 
@@ -124,6 +135,7 @@ export default class AccountForm extends BaseCustomElement {
     this.sendRequest(formData);
   }
 
+  // Elkuld egy create/update user-kerest a backendnek.
   async sendRequest(formData) {
     const response = await net.send("/api/users", {
       method: METHOD[this.action] || "POST",
@@ -133,6 +145,7 @@ export default class AccountForm extends BaseCustomElement {
     this.onResponse(response);
   }
 
+  // Hibat kezel vagy sikeres fiok-esemenyt bocsat ki a szervervalasz alapjan.
   onResponse(response) {
     const { success, result, message } = response;
 
@@ -161,16 +174,19 @@ export default class AccountForm extends BaseCustomElement {
   }
 
   /** Needed to be compatible with <admin-module> */
+  // Az admin-alairasi folyamat sikeres lezarasa utan elkuldi az eredeti kerest.
   onSignSuccess(data) {
     this.sendRequest(data.formData);
   }
 
   /** Needed to be compatible with <admin-module> */
+  // Az admin-alairasi hibara konzol- es toast-visszajelzest ad.
   onSignError(detail) {
     console.error("Unable to send signed data.");
     ToastManager.ERROR("Nem sikerült az adatok aláíratása");
   }
 
+  // Felépiti a fiokurlapot es a restore/validator eventkoteseket.
   build() {
     this.setShadowInnerHTML(this._innerHTML);
 
@@ -191,16 +207,19 @@ export default class AccountForm extends BaseCustomElement {
     this._built = true;
   }
 
+  // Kivulrol erkezo validator-esemeny alapjan letiltja a submit gombot.
   onSubmitDisable(e) {
     e.stopPropagation();
     this._elements.button.disabled = true;
   }
 
+  // Ujra engedelyezi a submit gombot, ha a validator ezt jelzi.
   onSubmitEnable(e) {
     e.stopPropagation();
     this._elements.button.disabled = false;
   }
 
+  // Restore esemenybol visszatolti a form mezőit.
   restoreFrom(e) {
     const data = e.detail?.data;
     const form = this.queryShadowSelector("form");
@@ -213,10 +232,12 @@ export default class AccountForm extends BaseCustomElement {
     }
   }
 
+  // Alaphelyzetbe rakja a fiokurlapot.
   resetForm() {
     this._elements.form?.reset?.();
   }
 
+  // A muvelet tipusahoz tartozo custom event nevet adja vissza.
   getEventName() {
     switch (this.action) {
       case "update":
@@ -227,6 +248,7 @@ export default class AccountForm extends BaseCustomElement {
     }
   }
 
+  // Az action alapjan szamolja ki a submit gomb feliratat.
   updateButtonText() {
     switch (this.action) {
       case "update":

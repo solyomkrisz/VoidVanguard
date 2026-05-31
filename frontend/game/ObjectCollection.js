@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/ObjectCollection.js
+ * Szerep: Jatekobjektumok gyujtemenye kozos update/render eletciklussal.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { GlobalState } from "/game/State.js";
 
 export default class ObjectCollection {

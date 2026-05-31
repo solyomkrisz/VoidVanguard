@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/BuildingBlock.js
+ * Szerep: Epites kozben hasznalt blokk logika kapcsolodasi es forgatasi segedekkel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as vec2 from "/common/vec2.js";
 import Collidable from "/game/Collidable.js";
 import Player from "/game/Player.js";

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/translation/hu.js
+ * Szerep: Forditasi reteg: tobbnyelvu szovegek es lokalizacios segedfuggvenyek.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 // prettier-ignore
 export default {
   "none": "A kérés feldolgozása közben váratlan hiba történt",

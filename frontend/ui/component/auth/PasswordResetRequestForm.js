@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/auth/PasswordResetRequestForm.js
+ * Szerep: Jelszo-visszaallito email kereset kuldo urlap.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { el } from "/ui/UI.js";
 import * as net from "/common/network.js";
 import "/ui/component/form/InputGroup.js";

@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/controller/profiles.js
+ * Szerep: Profil-vegpontok HTTP-kezelese, beleertve az admin nezet es a publikus preview elagazast.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as service from "../service/profiles.js";
 import * as CustomError from "../common/CustomError.js";
 import {
@@ -8,6 +14,7 @@ import {
 } from "../common/common.js";
 import Role from "../common/Role.js";
 
+// A profil lekereso vegpont admin teljes nezetet vagy publikus/szurt previewt ad vissza.
 export async function get(request, response) {
   try {
     if (!request.valid) throw CustomError.INVALID_REQUEST;
@@ -18,6 +25,7 @@ export async function get(request, response) {
     const userId = request?.params?.id;
     const isAdmin = request?.user?.role >= Role.ADMIN;
 
+    // Ugyanaz a vegpont ket nezetet tud: admin teljes adatot, egyebkent csak a szurt profilnezetet.
     if (view === "admin") {
       if (!isAdmin) throw CustomError.FORBIDDEN;
 
@@ -38,6 +46,7 @@ export async function get(request, response) {
   }
 }
 
+// A profilkeresot lapozhato HTTP-valassza csomagolja.
 export async function search(request, response) {
   try {
     if (!request.valid) throw CustomError.INVALID_REQUEST;
@@ -59,6 +68,7 @@ export async function search(request, response) {
   }
 }
 
+// Uj profil letrehozasat inditja el, vagy a service oldali upsert logikat hasznalja.
 export async function create(request, response) {
   try {
     const result = await service.createProfile({
@@ -81,6 +91,7 @@ export async function create(request, response) {
   }
 }
 
+// Meglevo profil frissitesenek HTTP-kezelese.
 export async function update(request, response) {
   try {
     if (!request.body) throw CustomError.INVALID_REQUEST;
@@ -99,6 +110,7 @@ export async function update(request, response) {
   }
 }
 
+// Profiltorles vegpont egyszeru service-hivassal es sikeres valasszal.
 export async function remove(request, response) {
   try {
     await service.deleteProfile({ userId: request.targetUser.id });

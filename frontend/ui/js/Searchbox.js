@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/js/Searchbox.js
+ * Szerep: Keresodoboz lapozott API-talalatokkal, debounce-szal es gorgetesre torteno tovabbi betoltessel.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { debounce } from "../../../common/common.js";
 import * as net from "../../common/network.js";
 import { on, off } from "/common/eventhub.js";
@@ -11,6 +17,7 @@ function listResults(results, container, template, { append = false } = {}) {
     console.log(result);
     const fragment = template.content.cloneNode(true);
 
+    // A sablonban a data-bind mondja meg, melyik API-mezo melyik DOM-celra keruljon.
     Array.from(fragment.querySelectorAll("[data-bind]")).forEach((e) => {
       const bindTarget = e.getAttribute("bind-target") || "textContent";
       e[bindTarget] = result[e.dataset.bind] ?? e.dataset.default ?? "";
@@ -72,6 +79,7 @@ export default function Searchbox(target, url, getIterable, options = {}) {
     if (!currentQuery || loading) return;
 
     loading = true;
+    // Minden keresesi valtozas uj verziot kap, hogy a keson visszaero regi valaszokat el tudjuk dobni.
     const versionAtStart = queryVersion;
     const targetPage = reset ? 1 : page + 1;
 
@@ -82,7 +90,7 @@ export default function Searchbox(target, url, getIterable, options = {}) {
         isProtected,
       );
 
-      // Ignore outdated responses when the query changed meanwhile.
+      // Ha kozben masik keresokifejezesre valtott a felhasznalo, ezt a regi valaszt mar nem hasznaljuk.
       if (versionAtStart !== queryVersion) return;
 
       const results = getIterable(response) || [];
@@ -129,6 +137,7 @@ export default function Searchbox(target, url, getIterable, options = {}) {
   });
 
   on("pointerdown", ({ target }) => {
+    // Kattintaskor bezarjuk a talalati listat, ha a kattintas mar a searchboxon kivul tortent.
     if (!searchbox.contains(target)) {
       div.hidden = true;
     }

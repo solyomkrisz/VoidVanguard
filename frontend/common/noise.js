@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/common/noise.js
+ * Szerep: Proceduralis zajgeneratorok es fraktalretegzes hatterekhez es texturakhoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { LERP, mulberry32, smoothstep } from "./common.js";
 
 class SeededNoise {

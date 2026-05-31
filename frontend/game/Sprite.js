@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/game/Sprite.js
+ * Szerep: Animacios frame-lista es idozites logika rajzolt objektumokhoz.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 export default class Sprite {
   constructor() {
     // Frames (a list of texture coordinates belonging to the same animation)

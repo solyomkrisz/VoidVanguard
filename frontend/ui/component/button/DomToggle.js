@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/ui/component/button/DomToggle.js
+ * Szerep: CSS-szelektorral kijelolt DOM-elemek lathatosagat valtogato gomb.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import { element, text } from "/ui/UI.js";
 
 export default class DomToggle extends HTMLElement {
@@ -29,6 +35,7 @@ export default class DomToggle extends HTMLElement {
   onClick() {
     if (!this.targetSelector?.trim()) return;
 
+    // A target-selector attribútum egy teljes CSS-szelektor, ami egyszerre tobb elemet is kijelolhet.
     const targets = Array.from(document.querySelectorAll(this.targetSelector));
 
     if (!targets.length) return;

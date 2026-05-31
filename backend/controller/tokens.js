@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: backend/controller/tokens.js
+ * Szerep: Refresh tokennel mukodo session-listazo, tokenfrissito es kijelentkezteto vegpontok HTTP-kezelese.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import * as service from "../service/tokens.js";
 import * as authService from "../service/auth.js";
 import {
@@ -7,6 +13,7 @@ import {
 } from "../common/common.js";
 import * as CustomError from "../common/CustomError.js";
 
+// Refresh vegpont: a cookieban kapott refresh tokenbol uj access tokent ker.
 export async function refresh(request, response) {
   const token = request?.cookies?.refresh_token;
 
@@ -15,6 +22,7 @@ export async function refresh(request, response) {
       throw CustomError.NO_REFRESH_TOKEN;
     }
 
+    // A kliens csak a refresh tokent tarolja cookieban; ebbol keszul uj access token.
     const accessToken = await service.refresh(token);
 
     /** */
@@ -41,6 +49,7 @@ export async function refresh(request, response) {
   }
 }
 
+// Lapozhato listaban adja vissza a user aktiv sessionjeit/tokenjeit.
 export async function lazySelectActiveTokens(request, response) {
   try {
     const currentRefreshToken = request?.cookies?.refresh_token;
@@ -60,6 +69,7 @@ export async function lazySelectActiveTokens(request, response) {
   }
 }
 
+// Egy konkret session rekordot szuntet meg ID alapjan.
 export async function revokeSessionById(request, response) {
   try {
     const currentRefreshToken = request?.cookies?.refresh_token;
@@ -78,10 +88,12 @@ export async function revokeSessionById(request, response) {
   }
 }
 
+// A jelenlegi refresh tokenhez tartozo sessiont revoke-olja es a bongeszos cookie-t is takaritja.
 export async function revokeSessionByToken(request, response) {
   const token = request?.cookies?.refresh_token;
 
   try {
+    // A cookie-t akkor is toroljuk, ha a DB-ben mar nem talalunk hozza sessiont.
     authService.logout(response);
 
     if (token) {

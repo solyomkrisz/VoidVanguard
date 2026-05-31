@@ -1,3 +1,9 @@
+/**
+ * Kezdobarat magyarazat:
+ * Fajl: frontend/App.js
+ * Szerep: Frontend inditofajl: innen indul a kliens oldal, UI elemek es jatek inicializalasa.
+ * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
+ */
 import Game from "/game/Game.js";
 import * as jwt from "/common/jwt.js";
 import { logout, isAdmin } from "/common/common.js";
