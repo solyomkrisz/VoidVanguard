@@ -17,6 +17,7 @@ export async function lazySelectByTarget({
   status = "accepted",
   direction = null,
 }) {
+  // Itt egyszerre tortenik szures, lapozas es a blokkolasi szabalyok ervenyesitese a baratlista lekerdezesenel.
   if (!["accepted", "pending"].includes(status)) {
     throw CustomError.INVALID_REQUEST;
   }
@@ -57,6 +58,7 @@ export async function lazySelectByTarget({
 }
 
 export async function getSummary({ userId, requesterId, include = [] }) {
+  // A profil oldali kis osszegzo panel csak azt kerdezi le, amire tenyleg szukseg van az include tomb alapjan.
   const result = {};
 
   if (include.includes("incomingCount") && userId === requesterId) {
@@ -95,6 +97,7 @@ export async function getSummary({ userId, requesterId, include = [] }) {
 }
 
 export async function getFriendshipStatus({ initiatorId, recipientId }) {
+  // Ez a fuggveny a nyers adatbazis allapotot forditja at frontendbarat cimkekre, pl. sent vagy received.
   if (!initiatorId || !recipientId) {
     return "not-friends";
   }
@@ -113,6 +116,7 @@ export async function getFriendshipStatus({ initiatorId, recipientId }) {
 }
 
 export async function list({ userId, limit = null, orderBy = null }) {
+  // Egyszeru tovabbitas, amikor csak a mar elfogadott baratok listaja kell extra uzleti logika nelkul.
   const rows = await Friends.list(userId, { limit, orderBy });
   return rows;
 }
@@ -123,11 +127,13 @@ export async function getAllFriends({ userId }) {
 }
 
 export async function checkFriendExists({ aId, bId }) {
+  // Uj jeloles kuldese elott ezzel vedjuk ki a duplazott kapcsolatokat.
   const exists = await Friends.exists(aId, bId);
   return exists;
 }
 
 export async function sendFriendRequest({ initiatorId, recipientId }) {
+  // A jeloles kuldese tobb uzleti szabalyt is osszefuz: onjeloles tiltasa, letezo user, duplikacio, blokklista.
   if (initiatorId === recipientId) {
     throw CustomError.CANNOT_FRIEND_YOURSELF;
   }
@@ -153,6 +159,7 @@ export async function sendFriendRequest({ initiatorId, recipientId }) {
 }
 
 export async function acceptFriendRequest({ initiatorId, recipientId }) {
+  // Csak akkor tekintjuk sikeresnek az elfogadast, ha tenyleg modosult is egy pending kapcsolat.
   const result = await Friends.accept(initiatorId, recipientId);
 
   if (result.affectedRows === 0) {
@@ -163,6 +170,7 @@ export async function acceptFriendRequest({ initiatorId, recipientId }) {
 }
 
 export async function deleteFriendship({ aId, bId }) {
+  // Ugyanaz a torles kezeli a visszautasitast es a mar meglevo baratsag megszunteteset is.
   const result = await Friends.delete(aId, bId);
 
   if (result.affectedRows === 0) {

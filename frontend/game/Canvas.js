@@ -29,6 +29,7 @@ export default class Canvas {
   }
 
   createContextMenu() {
+    // A canvas sajat context menuje itt kapcsolodik a jobbklikkhez es a sima kattintasos elrejtéshez.
     if (this.contextMenu instanceof ContextMenu || !this.hasCanvas()) {
       throw new Error(
         "Unable to create context menu: it already exists or no canvas is provided",
@@ -54,6 +55,7 @@ export default class Canvas {
   }
 
   createCanvas(append = true) {
+    // Ha nincs meg renderfelulet, itt hozzuk letre, beallitjuk az alap stilust, es eltaroljuk a DOM-mereteit is.
     if (this.hasCanvas()) return;
 
     const canvas = document.createElement("canvas");
@@ -70,6 +72,7 @@ export default class Canvas {
   }
 
   setCanvas(selector) {
+    // Ez a valtozat egy mar letezo DOM canvas elemet vesz at a wrapper ala.
     if (this.hasCanvas()) return;
 
     const element = document.querySelector(selector);
@@ -88,6 +91,7 @@ export default class Canvas {
   }
 
   canvasToFullWindow() {
+    // A vaszon pixelmeretet a teljes ablakmerethez igazítjuk, nem csak a CSS-meretet.
     const canvas = this.canvas;
 
     canvas.width = window.innerWidth;
@@ -98,6 +102,7 @@ export default class Canvas {
   }
 
   canvasToResponsiveFullWindow() {
+    // Itt nemcsak egyszer meretezunk, hanem resize esemenyre is ujra lefuttatjuk a teljes ablakhoz igazítast.
     if (!this.hasCanvas()) {
       throw new Error(
         "CANVAS-canvasToResponsiveFullWindow: There is no canvas selected that could be made responsive!",
@@ -109,6 +114,7 @@ export default class Canvas {
   }
 
   pointerLockChangeHandler() {
+    // A pointer lock valtozasabol kepzett allapot hatarozza meg, hogy a jatek elinduljon vagy megalljon-e.
     if (document.pointerLockElement === this.canvas) {
       this.pointerLocked = true;
       this.start();
@@ -123,11 +129,13 @@ export default class Canvas {
   }
 
   pointerLockRequestHandler() {
+    // A tenyleges lock-kerelem kulon handlerben van, hogy ugyanaz a logika tobbszor is ujrakotheto legyen.
     if (this.pointerLocked) return;
     this.canvas.requestPointerLock();
   }
 
   enablePointerLock() {
+    // A pointer lockhoz kulon canvas- es document-szintu eseménykezeloket kapcsolunk fel.
     if (!this.hasCanvas()) {
       console.error(
         "CANVAS-enablePointerLock: There is no canvas selected that could have pointer locked to!",
@@ -145,6 +153,7 @@ export default class Canvas {
   }
 
   disablePointerLock() {
+    // Leallitasnal a pointer lockhoz tartozo minden hallgato leszedese egy helyen tortenik.
     this.canvas.removeEventListener("click", this.pointerLockRequestHandler);
     document.removeEventListener(
       "pointerlockchange",

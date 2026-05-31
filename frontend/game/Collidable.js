@@ -10,6 +10,7 @@ export default class Collidable {
   static MODEL_CENTER = vec2.create();
 
   constructor(game, model) {
+    // A collidable az a kozos alaposztaly, amely mar minden utkozo entitasnak ad collider-helyet es alap eletciklust.
     this.halfDiagonal = Math.SQRT2 / 2;
 
     this.game = game;
@@ -24,38 +25,45 @@ export default class Collidable {
   }
 
   setProxyCollider(collider) {
+    // A proxy collider a gyors broad-phase szureshez kell.
     this.proxyCollider = collider;
     this.proxyCollider.onAttach(this);
     return this;
   }
 
   setShapeCollider(collider) {
+    // A shape collider a reszletesebb, valos alak szerinti utkozesvizsgalatot vegzi.
     this.shapeCollider = collider;
     this.shapeCollider.onAttach(this);
     return this;
   }
 
   setContactCollider(collider) {
+    // A contact collider a finomabb kontaktpont- vagy blokk-szintu interakciokhoz hasznalhato.
     this.contactCollider = collider;
     this.contactCollider.onAttach(this);
     return this;
   }
 
   onDeath() {
+    // Halalkor az entitas altal foglalt ID visszakerul az ujrahasznalhato poolba.
     this.game.idManager.release(this.id);
   }
 
   onPositionChange() {
+    // A poziciovaltozast legalabb a proxy- es a shape collidernek tudnia kell.
     this.proxyCollider.onPositionChange();
     this.shapeCollider.onPositionChange();
   }
 
   onRotationChange() {
+    // Forgatasnal ugyanigy mindket fo collider koveti az uj allapotot.
     this.proxyCollider.onRotationChange();
     this.shapeCollider.onRotationChange();
   }
 
   onGeometryChange() {
+    // Modellvaltozas utan a collidergeometria is ujraszamolando.
     this.proxyCollider.onGeometryChange();
     this.shapeCollider.onGeometryChange();
   }

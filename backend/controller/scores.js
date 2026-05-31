@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/controller/scores.js
- * Szerep: Controller reteg: bejovo keres feldolgozasa, service meghivasa, valasz osszeallitasa.
+ * Szerep: Pontszamlistak es sajat helyezes HTTP-vegpontjainak vezerlese.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import * as service from "../service/scores.js";
@@ -10,6 +10,7 @@ import * as CustomError from "../common/CustomError.js";
 
 export async function lazySelectBestUserScores(request, response) {
   try {
+    // A privat nezettol csak hitelesitett user kerhet adatot, a publikus toplista viszont barkinek mehet.
     const view = request?.query?.view || "public";
 
     if (view !== "public" && !request?.targetUser?.id) {
@@ -33,6 +34,7 @@ export async function lazySelectBestUserScores(request, response) {
 
 export async function getBestScoreWithRankForUser(request, response) {
   try {
+    // Itt mindig a sajat user id-javal kerunk helyezest, nem tetszoleges query parameterrel.
     const result = await service.getBestScoreWithRankForUser({
       userId: request.user.id,
     });

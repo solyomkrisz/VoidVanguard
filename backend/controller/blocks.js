@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/controller/blocks.js
- * Szerep: Controller reteg: bejovo keres feldolgozasa, service meghivasa, valasz osszeallitasa.
+ * Szerep: Tiltasi lista, blokkstatusz es block/unblock valaszok HTTP-szintu vezerlese.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import * as service from "../service/blocks.js";
@@ -22,6 +22,7 @@ export async function lazySelectByTarget(request, response) {
   }
 
   try {
+    // A controller itt egyszerre ellenorzi a jogosultsagot es alakítja at a lapozasi parametereket.
     const targetId = request.query.targetId;
 
     if (targetId !== request.user.id && request.user.role < Role.ADMIN) {
@@ -52,8 +53,10 @@ export async function lazySelectByTarget(request, response) {
 
 export async function summary(request, response) {
   try {
+    // A frontend profilkartyaja innen kapja meg a kert tiltasi osszegzest a tobbi statusz melle.
     const requesterId = request.targetUser.id;
     const userId = request.params.id;
+    // Az include query teszi lehetove, hogy a kliens csak a szukseges reszstatuszokat kerje le.
     const include = (request.query.include || "").split(",");
 
     const result = await service.getSummary({ userId, requesterId, include });
@@ -74,6 +77,7 @@ export async function getBlockedUsers(request, response) {
   }
 
   try {
+    // Ez az endpoint a bejelentkezett felhasznalo sajat tiltott listajat adja vissza.
     const result = await service.getBlockedUsers({
       blockerId: request.targetUser.id,
     });
@@ -100,6 +104,7 @@ export async function blockUser(request, response) {
   }
 
   try {
+    // A request body-bol jon a letiltando user, de a blokkolast mindig az aktualis targetUser neveben hajtjuk vegre.
     await service.blockUser({
       blockerId: request.targetUser.id,
       blockedId: request.body.userId,
@@ -127,6 +132,7 @@ export async function unblockUser(request, response) {
   }
 
   try {
+    // A feloldas ugyanazt az azonositasi mintat koveti, mint a tiltasi muvelet, csak torlesi iranyban.
     await service.unblockUser({
       blockerId: request.targetUser.id,
       blockedId: request.body.userId,

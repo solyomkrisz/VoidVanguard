@@ -34,6 +34,7 @@ export default class Mouse extends Rigidbody {
 
     this.id = game.idManager.get();
 
+  // Az egermutato fizikai testkent viselkedik a collision-rendszerben, de gyakorlatilag pontszeru hitboxszal.
     this.halfDiagonal = 0;
 
     this.isDown = false;
@@ -52,6 +53,7 @@ export default class Mouse extends Rigidbody {
   }
 
   enableListening() {
+    // Az inputkezeles kozvetlenul a jatek canvasara van kotve, hogy a pointer koordinatai mindig a renderfelulethez igazodjanak.
     const el = this.game.canvas;
 
     el.addEventListener("pointermove", this.pointerMoveEventHandler, {
@@ -67,6 +69,7 @@ export default class Mouse extends Rigidbody {
   }
 
   disableListening() {
+    // Megallitasnal vagy destroy eseten le kell venni az osszes handlert, kulonben a regi Game példány tovabb figyelne az esemenyeket.
     const el = this.game.canvas;
 
     el.removeEventListener("pointermove", this.pointerMoveEventHandler);
@@ -78,6 +81,7 @@ export default class Mouse extends Rigidbody {
   pointerMoveEventHandler(event) {
     // if (event.pointerId !== this.activePointerId) return;
 
+    // A DOM koordinatakat itt alakitjuk at normalizalt device coordinate-ra, mert a kamera-visszatranszformacio kesobb ebbol indul.
     event.preventDefault();
 
     const game = this.game;
@@ -91,6 +95,7 @@ export default class Mouse extends Rigidbody {
   }
 
   pointerDownEventHandler(event) {
+    // Egyszerre csak egy aktiv pointert kovetunk, kulonben a drag-logika tobb ujjal vagy egerekkel osszekeveredne.
     event.preventDefault();
 
     // ignore if already tracking a finger
@@ -121,6 +126,7 @@ export default class Mouse extends Rigidbody {
   }
 
   pointerUpEventHandler(event) {
+    // Felengedesre minden drag-allapotot egyszerre zarunk le: pointer, keslelteto timer es a csatolt objektum is itt nullazodik.
     if (event.pointerId !== this.activePointerId) return;
 
     const isMouseLeft = event.pointerType === "mouse" && event.button === 0;
@@ -142,11 +148,13 @@ export default class Mouse extends Rigidbody {
   }
 
   reset() {
+    // Ez a kozos takarito pont a touch megszakitas, az egérfelengedes es mas leallasi utak szamara.
     this.isDown = false;
     this.detach();
   }
 
   attach(entity) {
+    // Ujonnan megfogott entitasnal ujrainditjuk a drag időzítését, hogy az indulasi boost és a snap-kesleltetes konzisztens maradjon.
     if (this.dragged !== entity) {
       this.dragElapsed = 0;
       entity?.onDragStart?.();
@@ -165,6 +173,7 @@ export default class Mouse extends Rigidbody {
     const dragged = this.dragged;
     if (!dragged) return;
 
+    // A drag nem teleport, hanem erot fejt ki a megragadott testre, igy a mozgas beleillik a fizikai rendszer tobbi reszebe.
     this.dragElapsed += this.game.fdt;
     dragged.onDragged?.(this.game.fdt);
 
@@ -186,6 +195,7 @@ export default class Mouse extends Rigidbody {
 
     this.hovered = null;
 
+    // A kamera inverz matrixa viszi at a kurzort a kepernyokoordinatakbol vilagkoordinataba.
     vec3.copy(_b.vec3_1, this.ndc);
     vec3.transformMat3Into(_b.vec3_1, this.game.cameraMatrixInverse, _b.vec3_1);
     vec3.toVec2(this.position, _b.vec3_1);

@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/service/scores.js
- * Szerep: Service reteg: uzleti logika, adatmuveletek, tobb komponens osszefuzese.
+ * Szerep: Pontszamlista-lekerdezes es menteshez kotott score-frissites uzleti logikaja.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import Scores from "../sql/table/Scores.js";
@@ -14,6 +14,7 @@ export async function lazySelectBestUserScores({
   page = 1,
   limit = 20,
 }) {
+  // Ugyanaz a vegpont ket nezetet tud kiszolgalni: publikus toplistat vagy a sajat privat eredmenylistat.
   const offset = (page - 1) * limit;
 
   let scores, total;
@@ -45,16 +46,19 @@ export async function lazySelectBestUserScores({
 }
 
 export async function getBestScoreWithRankForUser({ userId }) {
+  // Ez a lekerdezes a nyers pontszam melle a helyezest is visszaadja.
   const rows = await Scores.selectBestUserScoreWithRank(userId);
   return rows;
 }
 
 export async function selectByUserAndGameId({ userId, gameId }) {
+  // Akkor hasznos, amikor egy konkret menteshez tartozó score-t kell visszakeresni.
   const rows = await Scores.select(gameId, userId);
   return rows;
 }
 
 export async function setOrUpdateScoreForGame({ gameId, userId, score }) {
+  // Score-t csak a mentes tulajdonosa allithat be, es csak akkor irunk adatbazisba, ha tenyleg valtozott az ertek.
   // ownership check
   const save = await Saves.selectByIdForUser(gameId, userId);
 

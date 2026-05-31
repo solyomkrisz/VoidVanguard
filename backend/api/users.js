@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/api/users.js
- * Szerep: API reteg: HTTP endpoint definicio, keretek kozotti tovabbitas a controllernek.
+ * Szerep: Felhasznalo-kereso, regisztracios es sajat fiokkezelo vegpontok middleware-lancai.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import express from "express";
@@ -20,10 +20,14 @@ import Role from "../common/Role.js";
 
 const router = express.Router();
 
-// only admin
+// GET /api/users/:id
+// Egyetlen user lekerese az URL-ben kapott :id alapjan.
+// Ez a route vedett, mert a felhasznaloreszletekhez itt kotelezo a hitelesites.
 router.get("/:id", authenticate(), validator.GET, controller.get);
 
-// for searching
+// GET /api/users?search=
+// Felhasznalo-kereso vegpont. A search query parameterbol dolgozik, es optional auth mellett is futhat.
+// A kis koztes middleware a request.valid mezot allitja be, hogy ures keresoszora ne fusson felesleges lekerdezes.
 router.get(
   "/",
   authenticate({
@@ -37,6 +41,9 @@ router.get(
   controller.search,
 );
 
+// POST /api/users
+// Regisztracio. A body mezoket az upload.none() olvassa be, a validator.POST pedig ellenorzi.
+// Ha a kliens mar be van jelentkezve ervenyes tokennel, a route inkabb udvarias sikeruzenettel leall, nem kezd uj regisztraciot.
 router.post(
   "/",
   authenticate({
@@ -59,6 +66,9 @@ router.post(
   controller.register,
 );
 
+// PATCH /api/users
+// Sajat felhasznaloi adatok modositasa. A modifyTargetUser az aktualis usert teszi a requestbe,
+// hogy a controllernek ne a kliens altal kuldott id-ben kelljen megbiznia.
 router.patch(
   "/",
   authenticate(),
@@ -69,6 +79,8 @@ router.patch(
   controller.update,
 );
 
+// DELETE /api/users
+// A hitelesitett user sajat fiokjanak torlese. Itt is a targetUser middleware mondja meg, kirol van szo.
 router.delete(
   "/",
   authenticate(),

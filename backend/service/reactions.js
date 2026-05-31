@@ -1,12 +1,13 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/service/reactions.js
- * Szerep: Service reteg: uzleti logika, adatmuveletek, tobb komponens osszefuzese.
+ * Szerep: Like/dislike jellegu reakciok lekerdezese es atkapcsolasa egy celobjektumon.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import Reactions from "../sql/table/Reactions.js";
 
 export async function getUserReaction({ userId, targetId }) {
+  // Ha nincs meg reakcio, akkor is visszaadunk egy stabil alapszerkezetet, hogy a frontendnek ne kelljen nullal szamolnia.
   const result = await Reactions.select(userId, targetId);
 
   if (!result) {
@@ -35,6 +36,7 @@ export async function getUserReaction({ userId, targetId }) {
 // }
 
 export async function createUserReaction({ userId, targetId, reactionType }) {
+  // Ugyanazzal a tipussal kattintva toroljuk a reakciot, masik tipussal pedig atvaltjuk ra.
   const existing = await Reactions.select(userId, targetId);
 
   let nextState = null;

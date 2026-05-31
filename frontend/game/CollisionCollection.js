@@ -13,6 +13,7 @@ export default class CollisionCollection {
   }
 
   reset() {
+    // Uj frame vagy uj iteracios kor elott minden gyujtolistat kiuritunk, de a tomboket ujrahasznaljuk.
     this.objects.length = 0;
     this.toResolve.length = 0;
     this.forContactPhase.length = 0;
@@ -21,10 +22,12 @@ export default class CollisionCollection {
   }
 
   add(pair) {
+    // Ide csak potencialis utkozo parok kerulnek, a tenyleges vizsgalat kesobb jon.
     this.objects.push(pair);
   }
 
   detect() {
+    // Ebben a fazisban valik el, mely paroknal van valodi shape-utkozes, es ezek kozul melyek mehetnek tovabb a kontaktfázisba.
     this.toResolve.length = 0;
     this.forContactPhase.length = 0;
 
@@ -49,6 +52,7 @@ export default class CollisionCollection {
 
   // prettier-ignore
   contact() {
+    // A kontaktfazis mar a kisebb alreszek szintjen hivja meg az objektumok onContact logikajat.
     for (const { subCollisions } of this.forContactPhase) {
       for (const { a, b } of subCollisions) {
         a.contactCollider.validate();
@@ -69,6 +73,7 @@ export default class CollisionCollection {
   }
 
   resolve() {
+    // A resolve itt a mar osszegyujtott utkozeseken fut vegig, magat a matekot a Collision objektumok vegzik.
     for (const collision of this.toResolve) {
       collision.resolve();
     }
@@ -77,6 +82,7 @@ export default class CollisionCollection {
   }
 
   iterate() {
+    // Egyetlen frame-ben tobbszor is ujraszamolhatjuk az utkozeseket, hogy a sebesseg- es behatolascsokkentes stabilabb legyen.
     if (!this.objects.length) return this;
 
     let i = 0;

@@ -18,6 +18,7 @@ const EPSILON = 1e-8;
 
 export default class Rigidbody extends Collidable {
   static from(saved, recoveredModel, game) {
+    // A mentesbol csak azokat az alap fizikai adatokat emeljuk vissza, amelyekbol a tobbi allapot mar ujraszamolhato.
     const rigidbody = new Rigidbody({
       type: saved.type,
       game,
@@ -87,6 +88,7 @@ export default class Rigidbody extends Collidable {
   }
 
   teleportTo(x, y) {
+    // A jelenlegi es elozo poziciot egyszerre frissitjuk, hogy teleport utan ne legyen latvanyos interpolacios csik.
     this.position[0] = x;
     this.position[1] = y;
 
@@ -95,6 +97,7 @@ export default class Rigidbody extends Collidable {
   }
 
   setState(state) {
+    // A bitmezoben minden allapot egyetlen bitet foglal, ezert olcso egyszerre sok jelzot tarolni.
     const i = Math.floor(state / 32);
     const b = state % 32;
 
@@ -108,6 +111,7 @@ export default class Rigidbody extends Collidable {
   }
 
   hasState(state) {
+    // Ugyanabbol a bitmezos tarolasbol olvassuk ki, hogy az adott allapotjelzo be van-e kapcsolva.
     const i = Math.floor(state / 32);
     const b = state % 32;
 
@@ -115,6 +119,7 @@ export default class Rigidbody extends Collidable {
   }
 
   clearState(state) {
+    // Itt ugyanazt a bitet kapcsoljuk vissza nullara, amit a setState korabban bekapcsolt.
     const i = Math.floor(state / 32);
     const b = state % 32;
 
@@ -173,6 +178,7 @@ export default class Rigidbody extends Collidable {
   }
 
   save() {
+    // Frame elejen lementjuk az elozo allapotot, mert a render a jelen es elozo frame kozott interpolal.
     this.previousPosition.set(this.position);
     this.previousRotation = this.rotation;
     this.previousForward.set(this.forward);
@@ -188,6 +194,8 @@ export default class Rigidbody extends Collidable {
 
   posDiff() {
     const vec2_1 = this.game.buffer.vec2_1;
+
+    // Ez a segedfuggveny megmondja, mennyit mozdult a test a legutobbi mentett frame ota.
 
     vec2.copy(vec2_1, this.position);
     vec2.sub(vec2_1, vec2_1, this.previousPosition);
@@ -207,6 +215,7 @@ export default class Rigidbody extends Collidable {
 
     const _b = this.game.buffer;
 
+    // Rajzolasnal nem a nyers fizikai allapotot hasznaljuk, hanem az elozo es mostani frame kozt szepen koztes allapotot kepzunk.
     this.interpolatedPosition = vec2.lerp(this.interpolatedPosition, this.previousPosition, this.position, this.game.alpha);
     this.interpolatedRotation = LERP(this.previousRotation, this.rotation, this.game.alpha);
     const rotationMatrix = mat2.fromRotation(_b.mat2_1, this.interpolatedRotation);
@@ -266,6 +275,8 @@ export default class Rigidbody extends Collidable {
   updateAngularVelocity() {
     const angularFriction = 0.04;
 
+    // A szogsebesseg ugyanugy gyorsul, majd surlodik, mint a linearis mozgas, csak itt forgasra alkalmazva.
+
     this.angularVelocity += this.angularAcceleration * this.game.fdt;
     this.angularVelocity *= 1 - angularFriction;
 
@@ -286,6 +297,7 @@ export default class Rigidbody extends Collidable {
 
     // prettier-ignore
     if (this.previousRotation !== this.rotation) {
+      // Ha a szog valtozott, a forward vektort is vele forgatjuk, kulonben a test mashova nezne, mint amerre a logikaja szerint halad.
       const rotationMatrix = mat2.fromRotation(_b.mat2_1, this.rotation - this.previousRotation);
       vec2.transformMat2(this.forward, rotationMatrix, this.forward);
       vec2.normalize(this.forward, this.forward);

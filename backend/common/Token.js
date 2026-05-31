@@ -16,6 +16,7 @@ class Token {
     secret = process.env.ACCESS_TOKEN_SECRET,
     options = {},
   ) {
+    // Itt keszul a teljes JWT payload: a hivo altal adott adatok melle bekerul a kiadas, lejarat es az egyedi jti is.
     const fullPayload = {
       ...payload,
       iat,
@@ -28,6 +29,7 @@ class Token {
   }
 
   static verify(token, secret) {
+    // A verify a jwt konyvtar hibajat tovabbdobja, ezt a hivo middleware vagy service kezeli le sajat szabaly szerint.
     return jwt.verify(token, secret);
   }
 

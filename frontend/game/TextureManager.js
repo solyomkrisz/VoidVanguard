@@ -20,6 +20,7 @@ export default class TextureManager {
   static S7 = 7;
 
   static TEXTURE_EXISTS(textureManager, name) {
+    // Megmondja, hogy a manager ismer-e mar egy adott nevu texturakoordinata-bejegyzest.
     return textureManager.texture[name] !== undefined;
   }
 
@@ -55,6 +56,7 @@ export default class TextureManager {
   }
 
   constructor(game) {
+    // A manager egyszerre tartja nyilvan a betoltes alatt allo texture promise-okat, az atlasz UV-kat es a spriteokat.
     this.game = game;
     this.promises = [];
     this.textureCoordinateQueue = [];
@@ -66,6 +68,7 @@ export default class TextureManager {
   }
 
   setActiveSlot(slot) {
+    // Az aktiv slot hatarozza meg, melyik betoltott GL texturet kotjuk be a shadernek a kovetkezo loadnal.
     if (typeof slot != "number") {
       throw new Error(
         "TEXTUREMANAGER-setActiveSlot: The value for the 'slot' parameter is not a number!",
@@ -82,6 +85,7 @@ export default class TextureManager {
   }
 
   loadFromActiveSlot() {
+    // Az aktiv texturat bekoti a GPU-ra es a shader sampler uniformjat is beallitja hozza.
     if (!this.texture[this.activeSlot]) {
       throw new Error(
         `TEXTUREMANAGER-loadFromActiveSlot: There is no texture bound to the slot (${this.activeSlot}) which you marked as active!`,
@@ -97,6 +101,7 @@ export default class TextureManager {
   }
 
   addTexture(slot, path, tileNumX, tileNumY) {
+    // Aszinkron kepbetoltes indul, es ha kesz, a textura felkerul a megadott slotra a tile atlasz mereteivel egyutt.
     WebGL.THROW_NO_GL_ERROR(this.game.gl, "addTexture");
 
     if (typeof slot != "number") {
@@ -160,10 +165,12 @@ export default class TextureManager {
 
   // prettier-ignore
   queueTextureCoordinate(name, slot, offsetX, offsetY) {
+    // Az UV-koordinatak listaja kulon queue-ba is teheto, ha csak kesobb akarjuk oket tenylegesen letrehozni.
     this.textureCoordinateQueue.push({ name, slot, offsetX, offsetY });
   }
 
   addTextureCoordinates(name, slot, offsetX, offsetY) {
+    // Egy atlasz adott cellajahoz kiszamoljuk az UV-kat, es elmentjuk oket egy beszedes nev ala.
     if (this.texture.length - 1 < slot) {
       throw new Error(
         "TEXTUREMANAGER-addTextureCoordinates: The texture you are looking for doesn't exist!",
@@ -180,6 +187,7 @@ export default class TextureManager {
   }
 
   addSprite(name, sprite) {
+    // A spriteok kulon nev alatt vannak nyilvantartva, hogy a renderelo kod csak a nevet ismerje, a belso frame-listat ne kelljen.
     if (!(sprite instanceof Sprite)) {
       throw new Error(
         "TEXTUREMANAGER-addSprite: The provided value is not a Sprite!",
@@ -191,6 +199,7 @@ export default class TextureManager {
   }
 
   updateSprites() {
+    // Minden aktiv sprite animaciojat a jatek valos delta idejevel leptetjuk.
     this.spriteKeys.forEach((key) => this.sprites[key].update(this.game.vdt));
   }
 }

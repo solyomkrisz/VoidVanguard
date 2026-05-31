@@ -13,6 +13,7 @@ import Force from "/game/Force.js";
 
 export default class Buffer {
   constructor() {
+    // A frame kozben gyakran ujrahasznalt tombok, vektorok, matrixok es ideiglenes objektumok itt egy helyen elore le vannak foglalva.
     this.arrn_1 = [];
     this.arrn_2 = [];
     this.arrn_3 = [];

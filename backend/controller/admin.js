@@ -16,6 +16,7 @@ import * as CustomError from "../common/CustomError.js";
 
 export async function getBanStatus(request, response) {
   try {
+    // A query stringbol vesszuk a cel usert, majd a service egységes statuszvalaszt ad vissza ra.
     const userId = request?.query?.targetUserId;
 
     const result = await service.getBanStatus({ userId });
@@ -36,6 +37,7 @@ export async function getBanStatus(request, response) {
 
 export async function lazySelectUserBans(request, response) {
   try {
+    // A controller csak a lapozasi parametereket alakítja at szamma, a listazas logikaja a service-ben van.
     const userId = request?.query?.targetUserId;
 
     const result = await service.lazySelectUserBans({
@@ -60,6 +62,7 @@ export async function lazySelectUserBans(request, response) {
 
 export async function banUser(request, response) {
   try {
+    // Itt normalizaljuk a datetime-local mezot, hogy a backend kesobb kovetkezetes datumformatumot kapjon.
     let expiresAt = null;
 
     if (request.body.expiresAt) {
@@ -93,6 +96,7 @@ export async function banUser(request, response) {
 
 export async function unbanUser(request, response) {
   try {
+    // A feloldasnal a request body kuldi a cel usert, de a muveletet mindig az aktualis admin neveben hajtjuk vegre.
     const result = await service.unBanUser({
       userId: request.body.userId,
       revokedBy: request.user.id,

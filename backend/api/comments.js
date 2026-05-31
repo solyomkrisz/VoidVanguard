@@ -17,6 +17,9 @@ import * as validator from "../validator/comment.js";
 
 const router = express.Router();
 
+// GET /api/comments?targetId=&page=&limit=
+// Nyilvanos listazo vegpont: token nelkul is mukodhet, de ha van hitelesitett user,
+// akkor a modifyTargetUser a request.targetUser-ba beteszi, es a controller figyelembe tudja venni.
 router.get(
   "/",
   authenticate({
@@ -29,6 +32,9 @@ router.get(
   controller.lazySelectComments,
 );
 
+// GET /api/comments/:id
+// Egyetlen komment lekerese az URL-parametereben kapott kommentazonosito alapjan.
+// Itt is optional auth megy, hogy ugyanaz a route vendegkent es bejelentkezve is hasznalhato legyen.
 router.get(
   "/:id",
   authenticate({
@@ -39,6 +45,9 @@ router.get(
   controller.getComment,
 );
 
+// POST /api/comments
+// Uj komment letrehozasa. A body tipikusan targetId, parentId es content mezoket var.
+// A sorrend fontos: auth utan upload.none() olvassa be a form mezoket, aztan jon a validacio.
 router.post(
   "/",
   authenticate(),
@@ -49,6 +58,8 @@ router.post(
   controller.createComment,
 );
 
+// PATCH /api/comments
+// Meglevo komment modositasa. A validator.PATCH mondja meg, mely body mezok kotelezoek.
 router.patch(
   "/",
   authenticate(),
@@ -59,6 +70,9 @@ router.patch(
   controller.updateComment,
 );
 
+// DELETE /api/comments
+// Komment torlese body-ban kuldott commentId alapjan.
+// A target user es az auth itt kell ahhoz, hogy a controller el tudja donteni: sajat komment torlese vagy admin torles tortenik.
 router.delete(
   "/",
   authenticate(),

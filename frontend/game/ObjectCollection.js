@@ -14,6 +14,7 @@ export default class ObjectCollection {
   }
 
   clear() {
+    // Teljes ujrainditaskor vagy mas nagyobb takaritaskor mind az aktiv, mind a torolt lista kiurul.
     this.objects.length = 0;
     this.deleted.length = 0;
 
@@ -21,6 +22,7 @@ export default class ObjectCollection {
   }
 
   add(...entities) {
+    // Tobb entitas is hozzaadhato egyszerre, igy a hivo egyetlen hívással tolhat be egy uj csoportot.
     for (const entity of entities) {
       this.objects.push(entity);
     }
@@ -29,6 +31,7 @@ export default class ObjectCollection {
   }
 
   update() {
+    // Egyetlen korben intezi az elhalalozott objektumok kiszurest, az aktivak updatejet es az ideiglenes erok lenullazasat.
     let writeIndex = 0;
 
     for (const object of this.objects) {
@@ -41,9 +44,10 @@ export default class ObjectCollection {
       object.save();
       object.update();
       object.previousNetForce.apply(object.netForce);
-      object.netForce.reset(); // csak az erőket reseteljük, a sebességet soha, így a collision dependent erőkből módosított sebesség alkalmazza az erőt
+      // Csak az aktualis frame-re adott erok nullazodnak; a sebesseg mar az update es collision utan magaban hordja a hatasukat.
+      object.netForce.reset();
 
-      //
+      // Ha az objektum modellje kozben kiurult vagy valtozott, lehet hogy uj tomeg/collider szamitas kell.
       object.model.clear() && object.onGeometryChange();
     }
 
@@ -53,6 +57,7 @@ export default class ObjectCollection {
   }
 
   render() {
+    // A gyujtemeny csak tovabbitja a renderhivast az osszes aktiv objektumnak.
     this.objects.forEach((object) => object.render());
 
     return this;
@@ -64,6 +69,7 @@ export default class ObjectCollection {
   }
 
   merge(...collections) {
+    // Több kulon gyujtemeny aktiv listajat tudja egyetlen nezetbe osszefuzni.
     this.objects.length = 0;
 
     for (const { objects } of collections) {
@@ -74,6 +80,7 @@ export default class ObjectCollection {
   }
 
   exportSave() {
+    // Menteshez minden objektum sajat exportSave eredmenye kerul egy tombbe.
     const result = [];
 
     for (const object of this.objects) {

@@ -5,18 +5,12 @@
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 /**
- * XPBar — a centered HUD bar placed just below the DebugPanel.
- * Matches the DebugPanel's dark-navy, monospace aesthetic.
- *
- * Usage:
- *   const xpBar = new XPBar();
- *   document.body.appendChild(xpBar.container);
- *   xpBar.set(currentXP, maxXP);   // update values
- *   xpBar.setLevel(3);              // update level display
+ * Az XPBar egy kozepre igazított HUD-elem, amely a DebugPanel ala ul be.
+ * A stilusa szandekosan ugyanazt a "fedelzeti muszerfal" hangulatot koveti, mint a debug panel.
  */
 export default class XPBar {
   constructor() {
-    // ── outer wrapper ────────────────────────────────────────────────
+    // Kulso wrapper: ez pozicionalja a teljes XP savat fixen a kepernyon.
     const wrap = document.createElement("div");
     wrap.style.cssText = [
       "position:fixed",
@@ -34,7 +28,7 @@ export default class XPBar {
       "-webkit-font-smoothing:none",
     ].join(";");
 
-    // ── inner panel (matches DebugPanel cell style) ──────────────────
+    // Belso panel: ugyanazt a keretes, sotet stilust kapja, mint a DebugPanel cellai.
     const panel = document.createElement("div");
     panel.style.cssText = [
       "display:flex",
@@ -50,7 +44,7 @@ export default class XPBar {
       "gap:0.25vmin",
     ].join(";");
 
-    // ── header row: LABEL + LEVEL ────────────────────────────────────
+    // Fejlec sor: bal oldalt az XP cimke, jobb oldalt az aktualis szint.
     const header = document.createElement("div");
     header.style.cssText = [
       "display:flex",
@@ -85,7 +79,7 @@ export default class XPBar {
     header.appendChild(label);
     header.appendChild(this._levelEl);
 
-    // ── progress bar track ───────────────────────────────────────────
+    // A track a teljes XP sav hattere, ezen belul no majd a fill szelessege.
     const track = document.createElement("div");
     track.style.cssText = [
       "width:34vmin",
@@ -108,7 +102,7 @@ export default class XPBar {
 
     track.appendChild(this._fill);
 
-    // ── xp numbers ───────────────────────────────────────────────────
+    // Az aktualis es maximum XP ertek szovegesen is megjelenik a sav alatt.
     this._numEl = document.createElement("div");
     this._numEl.textContent = "0 / 100";
     this._numEl.style.cssText = [
@@ -130,7 +124,7 @@ export default class XPBar {
     this._maxXP = 100;
   }
 
-  /** Update the XP values and progress fill. */
+  // Az aktualis XP ertekekbol ujraszamolja a sav toltottseget es a kijelzett szoveget.
   set(current, max) {
     this._currentXP = current;
     this._maxXP = max;
@@ -139,7 +133,7 @@ export default class XPBar {
     this._numEl.textContent = `${current} / ${max}`;
   }
 
-  /** Update the level label. */
+  // Kulon frissitheto a szintfelirat, mert a szint es az XP nem feltetlenul egyszerre valtozik.
   setLevel(level) {
     this._levelEl.textContent = `LVL ${level}`;
   }

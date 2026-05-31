@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/api/friends.js
- * Szerep: API reteg: HTTP endpoint definicio, keretek kozotti tovabbitas a controllernek.
+ * Szerep: Ismeroslista, kapcsolatstatusz es jeloleskezelo route-ok middleware-lancai.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import express from "express";
@@ -17,6 +17,9 @@ import {
 
 const router = express.Router();
 
+// GET /api/friends?targetId=&page=&limit=&status=&direction=
+// Egy user ismeros- vagy pending listajanak lekerese query parameterek alapjan.
+// Optional auth fut elotte, mert bizonyos nezetei vendegkent is kerhetok, de bejelentkezve pontosabb statuszok szamolhatok.
 router.get(
   "/",
   authenticate({
@@ -27,6 +30,9 @@ router.get(
   controller.lazySelectByTarget,
 );
 
+// GET /api/friends/:id?include=
+// Osszegzo vegpont egy adott userhez: az URL-ben jon a user id, a query include pedig megmondja,
+// hogy pl. preview, incomingCount vagy status is kell-e a valaszba.
 router.get(
   "/:id",
   authenticate({
@@ -37,6 +43,8 @@ router.get(
   controller.summary,
 );
 
+// POST /api/friends
+// Ismerosjeloles kuldese. A body-ban erkezik a cel user azonositoja, amelyet a validator.POST ellenoriz.
 router.post(
   "/",
   authenticate(),
@@ -47,6 +55,8 @@ router.post(
   controller.sendFriendRequest,
 );
 
+// PATCH /api/friends
+// Bejovo ismerosjeloles elfogadasa. Ugyanazt a validator.POST sémát hasznalja, mert itt is egy userId-t varunk a body-ban.
 router.patch(
   "/",
   authenticate(),
@@ -57,6 +67,8 @@ router.patch(
   controller.acceptFriendRequest,
 );
 
+// DELETE /api/friends
+// Baratsag vagy pending kapcsolat torlese. A controller a hitelesitett es a body-ban kapott userbol rakja ossze a torlendo part.
 router.delete(
   "/",
   authenticate(),

@@ -6,10 +6,12 @@
  */
 export default class DebugPanel {
   static SANITIZE_NAME(name) {
+    // A kijelzoelemek neve property-kent is felhasznalhato lesz az objektumon, ezert kiszurjuk az ervenytelen karaktereket.
     return name.replace(/[^a-zA-Z0-9_$]/g, "_");
   }
 
   constructor(src = null) {
+    // A panel DOM-ja teljesen kodbol epul, hogy gyorsan lehessen fejlesztoi mezoket felvenni kulon HTML nelkul.
     this.container = document.createElement("div");
     this.container.style.cssText = [
       "position:fixed",
@@ -49,12 +51,14 @@ export default class DebugPanel {
   }
 
   toggle() {
+    // A debug panelt gyorsan lehet ki-be kapcsolni anelkul, hogy a DOM-bol eltavolitanank.
     if (this.container.style.display !== "none") {
       this.container.style.display = "none";
     } else this.container.style.display = this.ogDisplayValue;
   }
 
   setSource(src) {
+    // A source tipikusan a Game peldany, amelyrol a mezok periodikusan adatot olvasnak.
     if (!src) {
       throw new Error("DEBUGPANEL-setSource: You didn't specify a source!");
     }
@@ -63,6 +67,7 @@ export default class DebugPanel {
   }
 
   addElement(name, width = "7vmin") {
+    // Egy debug cella ket reszbol all: cimke es aktualis ertek, a value elem referenciat pedig eltaroljuk a panel objektumon.
     const cell = document.createElement("div");
     cell.style.cssText = [
       "display:flex",
@@ -113,6 +118,7 @@ export default class DebugPanel {
    * Therefore you can work with that in you calculations.
    */
   bindSource(name, property, func = null) {
+    // Itt kotjuk ossze a kirajzolt cellat egy source propertyvel vagy egyedi frissitofuggvennyel.
     if (typeof property !== "string") {
       throw new Error("DEBUGPANEL-bindSource: The given data source is wrong!");
     }
@@ -142,6 +148,7 @@ export default class DebugPanel {
 
   /** Starts updating all the update function the user has provided using the update interval. */
   startDebugUpdating() {
+    // Periodikusan futtatjuk az osszes bekotott frissitest, hogy a panel a jatek futasa kozben eljen.
     this.intervalId = setInterval(() => {
       this.updateFunctions.forEach((fn) => fn());
     }, this.updateInterval);
@@ -149,6 +156,7 @@ export default class DebugPanel {
 
   /** Clears the interval responsible for running all user provided update functions. */
   stopDebugUpdating() {
+    // A frissitociklus leallitasa fontos, kulonben a panel a jatek megallasa utan is dolgozna a hatterben.
     if (!this.intervalId) return;
 
     clearInterval(this.intervalId);

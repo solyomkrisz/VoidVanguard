@@ -7,13 +7,14 @@
 import * as vec2 from "/common/vec2.js";
 import * as vec3 from "/common/vec3.js";
 
-// A lightweight version of Rigidbody for background blocks
+// A DecorationBlock szandekosan nem teljes Rigidbody: csak annyi allapotot tart, ami a parallax hatter kirajzolasahoz kell.
 export default class DecorationBlock {
   static TEXTURE_WIDTH = 64;
   static TEXTURE_HEIGHT = 64;
 
   // prettier-ignore
   constructor({ type, game, x, y, density } = {}) {
+    // A density a proceduralis zajbol jon, es kesobb befolyasolja, hogy mennyi kod vagy csillag kerul ide.
     this.type = type;
     this.game = game;
     this.position = vec2.fromValues(x, y);
@@ -27,6 +28,7 @@ export default class DecorationBlock {
   }
 
   onRemove() {
+    // Ha a chunk eltunik, a hozza tartozo texture layer id-k visszakerulnek az ujrahasznalhato poolba.
     this.game.layerId.release(this.textureLayerId);
     this.textureLayerId = null;
 
@@ -39,6 +41,7 @@ export default class DecorationBlock {
   }
 
   onInsert() {
+    // Visszakeruleskor vagy legeneraljuk a texturakat, vagy a mar kesz pixelekbol ujra felvesszuk oket a GPU texture tombjebe.
     if (!this.pixels) {
       this.game._textureBuildQueue.push(() => {
         this.pixels = this.game.ng.get(this.position, true);
@@ -53,7 +56,7 @@ export default class DecorationBlock {
           else if (this.density > 0.5) { radius = 1; starCount = 4; }
           else                          { radius = 1; starCount = 3; }
 
-          // minden elem clampelve van 0, 255 közé
+          // A csillagtexture kulon pixelbufferbe kerul, hogy a kod es a csillagok kulon parallax retegben rajzolhatoak legyenek.
           this.starPixels = new Uint8ClampedArray(DecorationBlock.TEXTURE_WIDTH * DecorationBlock.TEXTURE_HEIGHT * 4);
 
           let distanceFactor = 1;
@@ -86,6 +89,7 @@ export default class DecorationBlock {
 
   // prettier-ignore
   renderNebula() {
+    // A kodreteg csak akkor pushol instanciát a dataCollectorba, ha a játékban engedelyezve van a nebula megjelenites.
     if (this.game.showNebula && this.textureLayerId) {
       this.game.dataCollector.push(0, 0, ...this.position, 1, 0, 0, 1, 0, 0, 1, 1, 0, this.textureLayerId, this.game.nebulaParallax);
     }
@@ -93,6 +97,7 @@ export default class DecorationBlock {
 
   // prettier-ignore
   renderStars() {
+    // A csillagoknak sajat texture layeruk es sajat parallaxuk lehet, hogy tavolabbi vagy kozelebbi hatast adjanak.
     if (this.game.showNebula && this.starTextureLayerId) {
       this.game.dataCollector.push(0, 0, ...this.position, 1, 0, 0, 1, 0, 0, 1, 1, 0, this.starTextureLayerId, this.instanceParallax);
     }
@@ -102,6 +107,7 @@ export default class DecorationBlock {
 
   // prettier-ignore
   createTexture() {
+    // A nyers pixelbuffer egyetlen reteget foglal a kozos 2D texture arrayben.
     if (this.textureLayerId) return;
 
     const gl = this.game.gl;
@@ -125,6 +131,7 @@ export default class DecorationBlock {
 
   // prettier-ignore
   createStarTexture() {
+    // A csillagtexture ugyanabba a texture arraybe megy, csak masik layerre.
     if (this.starTextureLayerId) return;
 
     const gl = this.game.gl;

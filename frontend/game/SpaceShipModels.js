@@ -13,7 +13,7 @@ import Thruster from "/game/Thruster.js";
 
 const THRUSTER_SHAPE = new Shape(true, Shape.MERGE_MODE.AABB, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5);
 
-/**it creates a Thruster with a fixed shape and sprite, so you don't repeat those boilerplate args in every blueprint */
+// Kis gyari helper: egy szabvanyos thruster peldanyt hoz letre, hogy a blueprint-ekben ne kelljen mindig ugyanazokat az alapadatokat ismetelni.
 function makeThruster(x, y, hasGimbal = false, gimbalRange = 15) {
   return new Thruster({
     x, y,
@@ -25,11 +25,12 @@ function makeThruster(x, y, hasGimbal = false, gimbalRange = 15) {
 }
 
 function clampDifficulty(difficulty) {
-  // ? itt már 0-ás difficulty nem is lehet?????
+  // A nehezseget 1 es 15 koze szoritjuk, mert a block- es turret-grade rendszer is ezen a tartomanyon alapul.
   return Math.max(1, Math.min(15, Math.floor(difficulty || 1)));
 }
 
-// olyan mint a Game.pickEnemyBehavior csak részletesebb, több lehetséges enemy
+// Ez valasztja ki, hogy az adott nehezsegi savban milyen enemy-archetype legyen a kovetkezo jelolt.
+// Az eredmeny nem konkret Model, csak egy cimke, amelyhez kesobb blueprint tartozik.
 function pickArchetypeByDifficulty(difficulty, rng = Math.random) {
   if (difficulty <= 3) {
     const r = rng();
@@ -79,7 +80,7 @@ function pickArchetypeByDifficulty(difficulty, rng = Math.random) {
   return "FIGHTER";
 }
 
-/**It creates a non-removable CORE block at (0,0) */
+// A magblokk minden hajomodel kozepe, es szandekosan nem eltavolithato.
 function createCore() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -87,14 +88,13 @@ function createCore() {
 }
 
 function getLocalPositionKey(object) {
+  // A blueprint-szintű duplikacios szureshez stringge alakitjuk a blokk helyi racskoordinatajat.
   const lp = object?.localPosition;
   if (!lp || lp.length < 2) return null;
   return `${lp[0]},${lp[1]}`;
 }
 
-/**
- * Remove duplicate blocks that occupy the same grid position
- */
+// Biztonsagi takarito lepes: ha ket blokk ugyanarra a helyi racspontra kerult, csak az elso marad meg.
 function sanitizeBlueprintObjects(objects) {
   const occupied = new Set();
   const sanitized = [];
@@ -117,6 +117,8 @@ function sanitizeBlueprintObjects(objects) {
 }
 
 function getArchetypeBlueprint(selected, blockType, turretType) {
+  // Itt alakul at az archetype nev konkret blokklistava es mozgasjellegge.
+  // A visszaadott objektum meg nem Model, hanem egy koztes blueprint a blokkokkal es a sebessegszorzokkal.
   switch (selected) {
     case "DART":
       return {
@@ -457,37 +459,19 @@ function getArchetypeBlueprint(selected, blockType, turretType) {
   }
 }
 
-/**
- * ha nincs megadva típus, választ egyet random
- */
+// Ez a modern belepesi pont: nehezsegbol es optional archetype-bol komplett enemy modellt es mozgasparametereket epit.
 export function createEnemyModelByDifficulty(difficulty, archetype = "AUTO", rng = Math.random) {
   const d = clampDifficulty(difficulty);
   const blockType = `BLOCK_${d}`;
   const turretType = `TURRET_${d}`;
   const selected = archetype === "AUTO" ? pickArchetypeByDifficulty(d, rng) : archetype; // enemy típusa
   
-  /**
-   * return value of getArchetypeBlueprint
-   * {
-        speedMultiplier: 0.82,
-        turnRateMultiplier: 0.85,
-        objects: [
-          createCore(),
-          createBlock(-1, 0, blockType),
-          createBlock( 1, 0, blockType),
-          createBlock(-1, 1, turretType),
-          createBlock( 1, 1, turretType),
-          makeThruster(0, -1, false),
-        ],
-      }
-   */
   const blueprint = getArchetypeBlueprint(selected, blockType, turretType);
   
-  // remove blocks that occupy the same positions
+  // Egy utolso tisztitas, hogy ugyanazon a helyen ne maradjon ket blokk a vegso modellben.
   const sanitizedObjects = sanitizeBlueprintObjects(blueprint.objects);
 
-  // alap sebesség minimum 1.625 (difficulty itt nem lehet 0 a clamp fn miatt)
-  // alap sebesség maximum 2.675
+  // Az alap nehezseg megad egy nyers sebessegszintet, amit az archetype sajat karaktere tovabb szoroz.
   const baseSpeed = 1.55 + d * 0.075;
   
   const maxSpeed = baseSpeed * blueprint.speedMultiplier;
@@ -503,7 +487,7 @@ export function createEnemyModelByDifficulty(difficulty, archetype = "AUTO", rng
 }
 
 const offset = 0;
-// starting player model - CORE block is the non-removable center
+// A kezdojatekos-modell fix blueprint: ezzel spawnol a jatekos egy uj jatek elejen.
 const coreBlock = createBlock(0, 0, "CORE");
 coreBlock.isRemovable = false;
 
@@ -525,6 +509,8 @@ const PLAYER = [
   })
 ];
 
+// A kovetkezo buildEnemy... fuggvenyek a regebbi, kezzel definialt enemy modelleket adjak vissza.
+// Ezeket a MODELFACTORY exporton keresztul lehet direkt, nev alapjan kerni.
 function buildEnemyDart() {
   const core = createBlock(0, 0, "CORE");
   core.isRemovable = false;
@@ -849,7 +835,7 @@ function buildEnemyDreadnought() {
   ];
 }
 
-// debug model with all the blocks (temp)
+// Fejlesztoi modell, amellyel egyszerre sok blokkvarians gyorsan kiprobalhato.
 const DEBUG_MODEL = [
   createBlock(0, 0, 'BLOCK_1'),
   createBlock(1, 0, 'BLOCK_2'),
@@ -865,6 +851,7 @@ const DEBUG_MODEL = [
 ];
 
 export const MODELFACTORY = {
+  // Nev alapu gyari tarolo: aki nem proceduralisan akar enemyt, innen kerhet kesz Model peldanyokat.
   PLAYER:               () => new Model(PLAYER),
   DEBUG_MODEL:          () => new Model(DEBUG_MODEL),
   ENEMY_DART:           () => new Model(buildEnemyDart()),

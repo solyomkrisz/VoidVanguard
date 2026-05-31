@@ -21,6 +21,7 @@ export default class NebulaGenerator {
   ];
 
   constructor(noise, noiseScale, width, height, backgroundColor) {
+    // A generator egyszerre tarolja a zajforrast, a celmeretet es a belso buffer tomboket, hogy sok pixelt lehessen ujrafelhasznalva szamolni.
     this.n = noise;
     this.ns = noiseScale;
     this.w = width;
@@ -38,6 +39,7 @@ export default class NebulaGenerator {
   }
 
   setColor(r, g, b, a) {
+    // A visszaadott szin mindig ugyanabba a bufferbe ir, igy pixelgeneralas kozben nem keletkezik felesleges uj tomb minden mintanal.
     this.color[0] = r;
     this.color[1] = g;
     this.color[2] = b;
@@ -48,6 +50,7 @@ export default class NebulaGenerator {
 
   // prettier-ignore
   at() {
+    // Egyetlen fragCoord helyen itt dol el a kod szine es atlatszosaga a kulonbozo zajmintak keveresebol.
     // Type noise uses a higher frequency (0.25) so the visible world spans multiple
     // lattice periods, ensuring color variety across all seeds
     // We also blend continuously between adjacent types to avoid sharp colour edges(previously was clipping at multiple parts))
@@ -107,6 +110,7 @@ export default class NebulaGenerator {
   }
 
   get(parentPosition, newArray = false) {
+    // Vegigmegyunk a teljes texturan, minden pixelhez vilagpoziciot kepezunk, majd az at() eredmenyet irjuk be az RGBA tombbe.
     for (let y = 0; y < this.h; y++) {
       for (let x = 0; x < this.w; x++) {
         // Must set fragCoord here, because it is used by the at function
@@ -127,6 +131,7 @@ export default class NebulaGenerator {
   }
 
   getImage(parentPosition) {
+    // Ez a helper a nyers pixelbufferbol keszit egy tenyleges kepobjektumot, amit a tobbi renderresz mar kozvetlenul fel tud hasznalni.
     this.get(parentPosition); // Must call it up here because it fills the pixels array.
 
     const img = new Image();

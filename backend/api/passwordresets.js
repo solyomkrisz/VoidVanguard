@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/api/passwordresets.js
- * Szerep: API reteg: HTTP endpoint definicio, keretek kozotti tovabbitas a controllernek.
+ * Szerep: Jelszo-visszaallitasi kerelmek es tokenes megerosites ketlepcsos route-jai.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import express from "express";
@@ -17,6 +17,9 @@ import {
 
 const router = express.Router();
 
+// POST /api/reset-password/request
+// Jelszo-visszaallitasi email kerese. A body jellemzoen email mezot tartalmaz,
+// amit a validator.REQUEST ellenoriz, mielott rate limiting es emailkuldes indul.
 router.post(
   "/request",
   upload.none(),
@@ -25,6 +28,8 @@ router.post(
   controller.requestPasswordReset,
 );
 
+// POST /api/reset-password/confirm
+// A visszaallitasi token es az uj jelszo bekuldese. A body tipikusan token + password mezoket var.
 router.post(
   "/confirm",
   upload.none(),

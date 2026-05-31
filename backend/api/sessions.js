@@ -1,7 +1,7 @@
 /**
  * Kezdobarat magyarazat:
  * Fajl: backend/api/sessions.js
- * Szerep: API reteg: HTTP endpoint definicio, keretek kozotti tovabbitas a controllernek.
+ * Szerep: Bejelentkezes es session-torles route-jai az auth middleware kulonbozo agaival.
  * Olvasasi tipp: ne soronkent, hanem adatfolyamkent nezd (mi jon be -> mi tortenik vele -> mi megy ki).
  */
 import express from "express";
@@ -16,6 +16,9 @@ import * as validator from "../validator/session.js";
 
 const router = express.Router();
 
+// POST /api/sessions
+// Bejelentkezes. Ha mar van ervenyes access token, a route nem jelentkeztet be ujra,
+// hanem az onValidAccessToken ag azonnal visszaadja a jelenlegi usert.
 router.post(
   "/",
   authenticate({
@@ -31,6 +34,9 @@ router.post(
   controller.login,
 );
 
+// DELETE /api/sessions
+// Az aktualis vagy epp lejart access token melletti sessionok takaritasa.
+// Azert optional az auth, mert kijelentkezeskor a kliens oldalon mar lehet lejart token is.
 router.delete(
   "/",
   authenticate({

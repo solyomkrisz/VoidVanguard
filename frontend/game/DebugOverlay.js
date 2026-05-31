@@ -18,6 +18,7 @@ export default class DebugOverlay extends Canvas {
   }
 
   init() {
+    // Kulon, atlatszo rajzreteget epitunk a fo canvas fole, hogy debug alakzatokat lehessen rajzolni a rendes render modosítása nelkul.
     this.createCanvas();
 
     if (!this.hasCanvas()) {
@@ -42,10 +43,12 @@ export default class DebugOverlay extends Canvas {
   }
 
   clearCanvas() {
+    // Minden frame elejen innen lehet teljesen letakaritani a debug rajzokat.
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   drawCircle(x, y, r, color) {
+    // Egyszeru kor segedfuggveny collider- vagy sugarvizualizalashoz.
     const c = this.ctx;
 
     c.beginPath();
@@ -63,6 +66,7 @@ export default class DebugOverlay extends Canvas {
     ctx.lineWidth = lineWidth,
     ctx.stroke();
   }) {
+    // A callback miatt ugyanaz a dobozrajzolo alap tobb fele debug stilushoz ujrahasznosithato.
     const c = this.ctx;
 
     c.beginPath();
@@ -75,6 +79,7 @@ export default class DebugOverlay extends Canvas {
   }
 
   drawText(x, y, text, font, color) {
+    // Kozepre igazított debug szoveget rajzol, es visszaadja a meretet is, ha a hivo tovabbi pozicionalashoz hasznalna.
     const c = this.ctx;
 
     c.save();
@@ -90,6 +95,7 @@ export default class DebugOverlay extends Canvas {
   }
 
   drawPolygon(vertices, color = "rgba(255, 255, 255, 0.5)") {
+    // Osszetettebb collider- vagy shape-debughoz a csucspontokbol zarunk vissza sokszoget.
     const c = this.ctx;
 
     c.beginPath();
