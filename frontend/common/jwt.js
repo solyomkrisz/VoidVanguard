@@ -15,10 +15,16 @@ export function decode(token) {
   if (!base64Url) return null;
 
   try {
+    // base64 url attól tér el, hogy + helyett - használ _ helyett pedig /
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
 
+    // 4 többszörösének kell lennie, kipaddingoljunk
     const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
 
+    // atob - ascii to binary
+    // charCodeAt - ascii char for letter
+    // toString(16) 16 a számrendszer alapja, átkonvertál számot 16os számrendszerbe
+    // padStart, ha nem 2 hosszúra paddingolja
     const payload = decodeURIComponent(
       atob(padded)
         .split("")
